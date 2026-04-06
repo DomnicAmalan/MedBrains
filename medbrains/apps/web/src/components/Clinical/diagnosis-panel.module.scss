@@ -1,0 +1,11 @@
+.diagnosisCard {
+  border-left: 3px solid transparent;
+  border-top: 1px solid var(--mb-border-subtle);
+  border-right: 1px solid var(--mb-border-subtle);
+  border-bottom: 1px solid var(--mb-border-subtle);
+  transition: box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+}

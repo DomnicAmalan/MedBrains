@@ -1,0 +1,212 @@
+// ── Activity Rail + Expanded Sidebar ──
+
+// ── Navbar modes ──
+
+.navbarRail {
+  padding: 4px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.navbarExpanded {
+  padding: 8px !important;
+}
+
+// ── Nav content area ──
+
+.navContent {
+  flex: 1;
+  overflow-y: auto;
+}
+
+// ── Rail items (56px collapsed mode) ──
+
+.railGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.railItem {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--mb-text-secondary);
+  transition: background 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--mb-bg-content, var(--mantine-color-gray-1));
+    color: var(--mb-text-primary);
+  }
+}
+
+.railItemActive {
+  composes: railItem;
+  background: var(--mantine-color-primary-0, #eef3ff);
+  color: var(--mantine-color-primary-5, #4c6ef5);
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--mantine-color-primary-5, #4c6ef5);
+  }
+
+  &:hover {
+    background: var(--mantine-color-primary-0, #eef3ff);
+    color: var(--mantine-color-primary-5, #4c6ef5);
+  }
+}
+
+// ── Dividers between groups ──
+
+.railDivider {
+  opacity: 0.5;
+}
+
+// ── Expanded items (240px mode) ──
+
+.expandedItem {
+  border-radius: 8px;
+  margin-bottom: 1px;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--mb-text-secondary);
+
+  &:hover {
+    background: var(--mb-bg-content, var(--mantine-color-gray-1));
+    color: var(--mb-text-primary);
+  }
+}
+
+.expandedItemActive {
+  composes: expandedItem;
+  font-weight: 600;
+  color: var(--mantine-color-primary-5, #4c6ef5);
+  background: var(--mantine-color-primary-0, #eef3ff);
+
+  &:hover {
+    background: var(--mantine-color-primary-0, #eef3ff);
+    color: var(--mantine-color-primary-5, #4c6ef5);
+  }
+}
+
+// ── Admin nested children ──
+
+.expandedChild {
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--mb-text-secondary);
+  padding-left: 28px;
+
+  &:hover {
+    background: var(--mb-bg-content, var(--mantine-color-gray-1));
+    color: var(--mb-text-primary);
+  }
+}
+
+.expandedChildActive {
+  composes: expandedChild;
+  font-weight: 600;
+  color: var(--mantine-color-primary-5, #4c6ef5);
+  background: var(--mantine-color-primary-0, #eef3ff);
+
+  &:hover {
+    background: var(--mantine-color-primary-0, #eef3ff);
+    color: var(--mantine-color-primary-5, #4c6ef5);
+  }
+}
+
+// ── Footer section ──
+
+.navFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 4px;
+}
+
+.footerAction {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 2px 0;
+}
+
+.versionBadge {
+  padding: 4px 0 2px;
+}
+
+// ── Header search trigger (Spotlight) ──
+
+.searchTrigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: var(--mb-bg-content, var(--mantine-color-gray-0));
+  border: 1px solid var(--mantine-color-gray-3, #dee2e6);
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+  min-width: 200px;
+
+  &:hover {
+    background: var(--mantine-color-gray-1, #f1f3f5);
+    border-color: var(--mantine-color-gray-4, #ced4da);
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+// ── Logo area ──
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.logoIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mantine-color-primary-filled, var(--mantine-color-primary-5));
+}
+
+// ── Breadcrumbs ──
+
+.breadcrumbs {
+  margin-bottom: 16px;
+}
+
+.breadcrumbLink {
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.1s ease;
+  display: inline-block;
+
+  &:hover {
+    color: var(--mantine-color-primary-5, #4c6ef5);
+    text-decoration: underline;
+    transform: translateX(2px);
+  }
+}

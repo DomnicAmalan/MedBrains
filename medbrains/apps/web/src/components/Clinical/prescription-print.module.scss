@@ -1,0 +1,135 @@
+.printContainer {
+  padding: 20px;
+
+  @media print {
+    padding: 0;
+  }
+}
+
+.header {
+  text-align: center;
+  border-bottom: 2px solid #333;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.hospitalName {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  color: #111;
+}
+
+.hospitalInfo {
+  font-size: 12px;
+  color: #555;
+  margin: 2px 0;
+}
+
+.patientRow {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.patientField {
+  display: flex;
+  gap: 4px;
+}
+
+.fieldLabel {
+  font-weight: 600;
+  color: #555;
+}
+
+.fieldValue {
+  color: #111;
+}
+
+.rxSymbol {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: serif;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.drugTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 13px;
+
+  th {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 2px solid #333;
+    font-weight: 600;
+    color: #333;
+  }
+
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #ddd;
+    color: #111;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.drugName {
+  font-weight: 600;
+}
+
+.notes {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #555;
+  font-style: italic;
+}
+
+.footer {
+  margin-top: 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.dateSection {
+  font-size: 12px;
+  color: #555;
+}
+
+.signatureSection {
+  text-align: center;
+}
+
+.signatureLine {
+  width: 200px;
+  border-top: 1px solid #333;
+  padding-top: 4px;
+  font-size: 12px;
+  color: #555;
+}
+
+.doctorName {
+  font-weight: 600;
+  color: #111;
+  font-size: 13px;
+}
+
+/* Print-specific: hide everything except the print content */
+@media print {
+  .noPrint {
+    display: none !important;
+  }
+}

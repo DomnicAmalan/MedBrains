@@ -1,0 +1,63 @@
+{
+  "vitals": {
+    "title": "Vitals",
+    "recordVitals": "Record Vitals",
+    "temperature": "Temperature",
+    "pulse": "Pulse Rate",
+    "spo2": "SpO₂",
+    "respiratoryRate": "Resp. Rate",
+    "systolicBp": "Systolic BP",
+    "diastolicBp": "Diastolic BP",
+    "weight": "Weight",
+    "height": "Height",
+    "bmi": "BMI",
+    "map": "MAP",
+    "notes": "Notes",
+    "additionalObservations": "Additional observations...",
+    "underweight": "Underweight",
+    "normal": "Normal",
+    "overweight": "Overweight",
+    "obese": "Obese"
+  },
+  "soap": {
+    "subjective": "Subjective",
+    "objective": "Objective",
+    "assessment": "Assessment",
+    "plan": "Plan",
+    "chiefComplaint": "Chief Complaint & History of Present Illness",
+    "examination": "Physical Examination Findings",
+    "clinicalAssessment": "Clinical Assessment & Diagnosis",
+    "treatmentPlan": "Treatment Plan",
+    "saveNotes": "Save Notes",
+    "updateNotes": "Update Notes",
+    "placeholderSubjective": "Patient's chief complaint, symptoms, duration, history...",
+    "placeholderObjective": "Examination findings, observations, test results...",
+    "placeholderAssessment": "Working diagnosis, differential diagnoses, clinical impression...",
+    "placeholderPlan": "Treatment plan, medications, investigations, follow-up..."
+  },
+  "diagnosis": {
+    "title": "Diagnosis",
+    "description": "Diagnosis description",
+    "icdCode": "ICD code",
+    "primary": "Primary",
+    "noDiagnoses": "No diagnoses recorded yet."
+  },
+  "prescription": {
+    "title": "Prescription",
+    "newPrescription": "New Prescription",
+    "drugName": "Drug name",
+    "dosage": "Dosage",
+    "frequency": "Freq",
+    "duration": "Duration",
+    "route": "Route",
+    "instructions": "Instructions",
+    "generalNotes": "General prescription notes / instructions...",
+    "savePrescription": "Save Prescription",
+    "noPrescriptions": "No prescriptions yet.",
+    "drug": "Drug",
+    "items_one": "{{count}} item",
+    "items_other": "{{count}} items",
+    "print": "Print Prescription",
+    "typeCustomDrug": "Type to use custom drug name"
+  }
+}

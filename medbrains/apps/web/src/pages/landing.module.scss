@@ -1,0 +1,421 @@
+// Landing page — clean & minimal
+
+.page {
+  scroll-behavior: smooth;
+}
+
+// ─── Navbar ───
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbarInner {
+  max-width: 1100px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navLogo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.navLogoText {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.03em;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.navLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: #0F6CBD;
+  }
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+// ─── Hero ───
+.hero {
+  padding: 120px 24px 100px;
+  text-align: center;
+  background: #ffffff;
+
+  @media (max-width: 768px) {
+    padding: 80px 20px 60px;
+  }
+}
+
+.heroInner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: #EBF3FC;
+  color: #0F6CBD;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.heroTitle {
+  font-size: 48px;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    font-size: 32px;
+  }
+}
+
+.heroSubtitle {
+  font-size: 18px;
+  color: #475569;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto 40px;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+}
+
+.heroCtas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+// ─── Stats ───
+.stats {
+  padding: 48px 24px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.statsInner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+}
+
+.statItem {
+  flex: 1;
+  text-align: center;
+  padding: 0 32px;
+
+  &:not(:last-child) {
+    border-right: 1px solid #e2e8f0;
+
+    @media (max-width: 768px) {
+      border-right: none;
+    }
+  }
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0F6CBD;
+  letter-spacing: -0.02em;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #475569;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+// ─── Features Grid ───
+.features {
+  padding: 80px 24px;
+  background: #f8fafc;
+
+  @media (max-width: 768px) {
+    padding: 60px 20px;
+  }
+}
+
+.sectionInner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1e293b;
+  text-align: center;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.sectionSubtitle {
+  font-size: 16px;
+  color: #475569;
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.featureCard {
+  padding: 28px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  transition: box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14);
+  }
+}
+
+.featureTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.featureDesc {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+// ─── Modules Section ───
+.modules {
+  padding: 80px 24px;
+  background: #ffffff;
+
+  @media (max-width: 768px) {
+    padding: 60px 20px;
+  }
+}
+
+.moduleCategory {
+  margin-bottom: 24px;
+}
+
+.moduleCategoryTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+
+.moduleBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+// ─── Open Source Section ───
+.openSource {
+  padding: 80px 24px;
+  background: #f8fafc;
+
+  @media (max-width: 768px) {
+    padding: 60px 20px;
+  }
+}
+
+.codeBlock {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 20px 24px;
+  border-radius: 8px;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.osCard {
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.osCardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+}
+
+.osCardDesc {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+// ─── Footer ───
+.footer {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 64px 24px 32px;
+
+  @media (max-width: 768px) {
+    padding: 48px 20px 24px;
+  }
+}
+
+.footerInner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.footerBrand {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footerBrandName {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.footerBrandDesc {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.footerColTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+}
+
+.footerLinks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footerLink {
+  font-size: 14px;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+.footerBottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footerCopyright {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+// ─── Features Modal ───
+.featureListModal {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.featureListItem {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f3f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: #f8fafc;
+  }
+}

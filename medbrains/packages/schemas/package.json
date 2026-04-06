@@ -1,0 +1,20 @@
+{
+  "name": "@medbrains/schemas",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@medbrains/types": "workspace:*",
+    "zod": "^3.24.4"
+  }
+}

@@ -1,0 +1,50 @@
+.vitalCard {
+  padding: 10px;
+  border-radius: var(--mantine-radius-md);
+  border: 1px solid var(--mb-border);
+  background: var(--mb-card-bg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &[data-level="normal"] {
+    border-color: var(--mantine-color-green-3);
+    box-shadow: 0 0 0 1px var(--mantine-color-green-1);
+  }
+
+  &[data-level="borderline"] {
+    border-color: var(--mantine-color-yellow-4);
+    box-shadow: 0 0 0 1px var(--mantine-color-yellow-1);
+  }
+
+  &[data-level="critical"] {
+    border-color: var(--mantine-color-red-4);
+    box-shadow: 0 0 0 2px var(--mantine-color-red-1);
+    animation: criticalPulse 2s ease-in-out infinite;
+  }
+}
+
+.vitalInput {
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.calcBadge {
+  padding: 8px 14px;
+  border-radius: var(--mantine-radius-md);
+  background: var(--mb-bg-content);
+  border: 1px solid var(--mb-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@keyframes criticalPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px var(--mantine-color-red-1);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px var(--mantine-color-red-2);
+  }
+}

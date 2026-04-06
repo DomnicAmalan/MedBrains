@@ -1,0 +1,115 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/medbrains-server",
+    "crates/medbrains-core",
+    "crates/medbrains-db",
+    "crates/medbrains-yottadb",
+    "crates/medbrains-loadtest",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "UNLICENSED"
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Web framework
+axum = { version = "0.8", features = ["macros"] }
+tower = { version = "0.5" }
+tower-http = { version = "0.6", features = ["cors", "trace", "request-id", "util", "set-header"] }
+
+# Database
+sqlx = { version = "0.8", features = ["runtime-tokio", "tls-rustls", "postgres", "uuid", "chrono", "json", "migrate", "rust_decimal"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Configuration
+figment = { version = "0.10", features = ["toml", "env"] }
+
+# Auth
+jsonwebtoken = { version = "10", features = ["rust_crypto"] }
+argon2 = "0.5"
+
+# Utilities
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+dotenvy = "0.15"
+
+# Decimal
+rust_decimal = { version = "1", features = ["serde-with-str"] }
+
+# Crypto
+rand = "0.9"
+sha2 = "0.10"
+hex = "0.4"
+base64 = "0.22"
+
+# Validation
+regex = "1"
+url = "2"
+
+# HTTP client (for YottaDB REST)
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
+# ── Build profiles ──────────────────────────────────────────
+
+[profile.dev]
+debug = true
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+unused_qualifications = "warn"
+
+[workspace.lints.clippy]
+# Groups
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+
+# Specific denials
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+dbg_macro = "deny"
+print_stdout = "deny"
+print_stderr = "deny"
+clone_on_ref_ptr = "deny"
+inefficient_to_string = "deny"
+manual_let_else = "deny"
+needless_pass_by_value = "deny"
+semicolon_if_nothing_returned = "deny"
+wildcard_imports = "deny"
+
+# Relax some pedantic lints
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+cast_precision_loss = "allow"

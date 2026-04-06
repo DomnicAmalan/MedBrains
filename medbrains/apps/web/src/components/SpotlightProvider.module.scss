@@ -1,0 +1,151 @@
+// ── Spotlight Command Palette — polished hospital-grade design ──
+
+// Modal content wrapper
+.content {
+  border-radius: 16px !important;
+  border: 1px solid var(--mantine-color-gray-2, #e9ecef);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.12),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+// Search input area
+.search {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--mantine-color-gray-2, #e9ecef);
+
+  input {
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    padding: 0;
+    height: 28px;
+
+    &::placeholder {
+      color: var(--mantine-color-gray-4, #adb5bd);
+      font-weight: 400;
+    }
+  }
+}
+
+// Actions list container
+.actionsList {
+  padding: 8px;
+}
+
+// Group label
+.actionsGroup {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mantine-color-gray-5, #868e96);
+  padding: 10px 12px 4px;
+}
+
+// Individual action item
+.action {
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 2px;
+  transition: background 120ms ease;
+
+  &:hover,
+  &[data-selected] {
+    background: var(--mantine-color-primary-0, #eef3ff);
+  }
+
+  &[data-selected] {
+    .actionLabel {
+      color: var(--mantine-color-primary-7, #3b5bdb);
+    }
+  }
+}
+
+// Action icon container
+.actionSection {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--mantine-color-gray-0, #f8f9fa);
+  color: var(--mantine-color-gray-6, #868e96);
+  flex-shrink: 0;
+
+  [data-selected] & {
+    background: var(--mantine-color-primary-1, #dbe4ff);
+    color: var(--mantine-color-primary-6, #4263eb);
+  }
+}
+
+// Action label
+.actionLabel {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--mb-text-primary, var(--mantine-color-gray-8, #343a40));
+}
+
+// Action description
+.actionDescription {
+  font-size: 12px;
+  color: var(--mantine-color-gray-5, #868e96);
+  margin-top: 1px;
+}
+
+// Empty state
+.empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--mantine-color-gray-5, #868e96);
+  font-size: 13px;
+}
+
+// Footer
+.footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--mantine-color-gray-2, #e9ecef);
+  background: var(--mantine-color-gray-0, #f8f9fa);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footerHint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--mantine-color-gray-5, #868e96);
+}
+
+.footerKbd {
+  font-size: 10px;
+  padding: 1px 5px;
+  min-width: 20px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mantine-color-white, #fff);
+  border: 1px solid var(--mantine-color-gray-3, #dee2e6);
+  border-radius: 4px;
+  font-weight: 600;
+  color: var(--mantine-color-gray-6, #868e96);
+}
+
+// Overlay
+.overlay {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+// Inner modal positioning
+.inner {
+  padding-top: 12vh;
+  align-items: flex-start;
+}

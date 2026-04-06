@@ -1,0 +1,18 @@
+[package]
+name = "medbrains-core"
+description = "Domain types for MedBrains HMS — zero framework dependencies"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+sqlx = { workspace = true }
+rust_decimal = { workspace = true }
+
+[lints]
+workspace = true

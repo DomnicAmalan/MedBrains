@@ -1,0 +1,60 @@
+// ─── PageHeader — accent bar + card styling ───
+
+.wrapper {
+  margin-bottom: var(--mantine-spacing-lg);
+  animation: pageEnter 0.2s ease-out;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--mb-border-subtle);
+}
+
+.accentBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--mantine-color-primary-5) 0%,
+    var(--mantine-color-violet-5) 50%,
+    var(--mantine-color-teal-5) 100%
+  );
+}
+
+.accentBarColored {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.inner {
+  padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
+}
+
+.breadcrumbs {
+  margin-bottom: var(--mantine-spacing-xs);
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--mantine-spacing-md);
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+}
+
+.textBlock {
+  display: flex;
+  flex-direction: column;
+}

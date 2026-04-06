@@ -1,0 +1,23 @@
+{
+  "name": "@medbrains/utils",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react-hook-form": "^7.71.2"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}

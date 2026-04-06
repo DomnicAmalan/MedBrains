@@ -1,0 +1,103 @@
+// ── Page Skeleton — Branded ECG loader with indigo-teal gradient ──
+
+.wrapper {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(99, 102, 241, 0.03) 0%,
+    transparent 70%
+  );
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.ecg {
+  width: 240px;
+  height: 52px;
+  overflow: visible;
+}
+
+// ── Shadow trace (always visible, faint) ──
+
+.shadowLine {
+  fill: none;
+  opacity: 0.15;
+}
+
+// ── Main trace (mask-revealed) ──
+
+.mainLine {
+  fill: none;
+  filter: drop-shadow(0 0 4px rgba(99, 102, 241, 0.4))
+    drop-shadow(0 0 8px rgba(13, 148, 136, 0.2));
+}
+
+// ── Sweep mask rectangle ──
+
+.sweepRect {
+  animation: pageSweep 2.8s ease-in-out infinite;
+}
+
+@keyframes pageSweep {
+  0% {
+    width: 0;
+  }
+  65% {
+    width: 200;
+    opacity: 1;
+  }
+  82% {
+    width: 200;
+    opacity: 1;
+  }
+  95% {
+    width: 200;
+    opacity: 0;
+  }
+  100% {
+    width: 0;
+    opacity: 0;
+  }
+}
+
+// ── Branded text ──
+
+.text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mantine-color-dimmed, #868e96);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  animation: textPulse 2.8s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    letter-spacing: 0.12em;
+  }
+  30%,
+  60% {
+    opacity: 1;
+    letter-spacing: 0.18em;
+  }
+}
+
+// ── Reduced motion ──
+
+@media (prefers-reduced-motion: reduce) {
+  .sweepRect {
+    animation: none;
+    width: 200;
+  }
+
+  .text {
+    animation: none;
+    opacity: 1;
+  }
+}

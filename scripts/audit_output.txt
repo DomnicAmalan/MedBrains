@@ -1,0 +1,1215 @@
+
+============================================================================================================================================
+SHEET: Onboarding & Setup
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  1. INITIAL SETUP WIZARD                  1.1 Welcome & Prerequisites              6      5        1        0       0      0      0
+  1. INITIAL SETUP WIZARD                  1.2 Super Admin Creation                 4      3        0        1       0      0      0
+  1. INITIAL SETUP WIZARD                  1.3 Tenant / Hospital Setup              8      8        0        0       0      0      0
+    >> 1. INITIAL SETUP WIZARD             ** SUBTOTAL **                          18     16        1        1       0      0      0
+                                                                                                                                    
+  2. ORGANIZATIONAL STRUCTURE              2.1 Campus & Location Hierarchy          7      5        1        1       0      0      0
+  2. ORGANIZATIONAL STRUCTURE              2.2 Department Setup                     7      5        2        0       0      0      0
+  2. ORGANIZATIONAL STRUCTURE              2.3 Service Catalog                      5      3        2        0       0      0      0
+    >> 2. ORGANIZATIONAL STRUCTURE         ** SUBTOTAL **                          19     13        5        1       0      0      0
+                                                                                                                                    
+  3. USER & ROLE SETUP                     3.1 Role Definition                      5      3        2        0       0      0      0
+  3. USER & ROLE SETUP                     3.2 User Creation                        7      3        3        1       0      0      0
+    >> 3. USER & ROLE SETUP                ** SUBTOTAL **                          12      6        5        1       0      0      0
+                                                                                                                                    
+  4. GEOSPATIAL & REGULATORY SETUP         4.1 Geographic Hierarchy                13      6        1        6       0      0      0
+  4. GEOSPATIAL & REGULATORY SETUP         4.2 Regulatory Auto-Detection           10      8        2        0       0      0      0
+  4. GEOSPATIAL & REGULATORY SETUP         4.3 Compliance Tracking                  9      4        1        4       0      0      0
+    >> 4. GEOSPATIAL & REGULATORY SETUP    ** SUBTOTAL **                          32     18        4       10       0      0      0
+                                                                                                                                    
+  4. MODULE ACTIVATION                     4.1 Module Toggle                        4      2        2        0       0      0      0
+  4. MODULE ACTIVATION                     4.2 Module Masters Setup                 8      3        5        0       0      0      0
+    >> 4. MODULE ACTIVATION                ** SUBTOTAL **                          12      5        7        0       0      0      0
+                                                                                                                                    
+  5. FACILITIES & INSTITUTIONS             5.1 Facility Management                 10      7        2        1       0      0      0
+  5. FACILITIES & INSTITUTIONS             5.2 Academic Facility Setup              5      0        0        5       0      0      0
+  5. FACILITIES & INSTITUTIONS             5.3 Operational Scope & Resource        10      8        0        2       0      0      0
+    >> 5. FACILITIES & INSTITUTIONS        ** SUBTOTAL **                          25     15        2        8       0      0      0
+                                                                                                                                    
+  5. NUMBERING & SEQUENCES                 5.1 Auto-numbering Setup                 7      7        0        0       0      0      0
+    >> 5. NUMBERING & SEQUENCES            ** SUBTOTAL **                           7      7        0        0       0      0      0
+                                                                                                                                    
+  6. INTEGRATION SETUP                     6.1 Communication                        4      0        2        2       0      0      0
+  6. INTEGRATION SETUP                     6.2 External Systems                     4      0        0        4       0      0      0
+    >> 6. INTEGRATION SETUP                ** SUBTOTAL **                           8      0        2        6       0      0      0
+                                                                                                                                    
+  7. PRINT & BRANDING                      7.1 Branding                             3      2        1        0       0      0      0
+  7. PRINT & BRANDING                      7.2 Print Templates                      5      0        3        2       0      0      0
+    >> 7. PRINT & BRANDING                 ** SUBTOTAL **                           8      2        4        2       0      0      0
+                                                                                                                                    
+  8. OPEN SOURCE SETUP                     8.1 Self-Hosting                         6      1        2        3       0      0      0
+  8. OPEN SOURCE SETUP                     8.2 Community & Contribution             6      1        0        5       0      0      0
+  8. OPEN SOURCE SETUP                     8.3 Demo & Documentation                 6      0        2        4       0      0      0
+    >> 8. OPEN SOURCE SETUP                ** SUBTOTAL **                          18      2        4       12       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                     159     84       34       41       0      0      0
+
+============================================================================================================================================
+SHEET: Clinical
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  AI Documentation                         Ambient                                  7      0        0        7       0      0      0
+  AI Documentation                         Templates                                3      0        0        3       0      0      0
+    >> AI Documentation                    ** SUBTOTAL **                          10      0        0       10       0      0      0
+                                                                                                                                    
+  Bedside Portal                           Communication                            2      0        0        2       0      0      0
+  Bedside Portal                           Education                                1      0        0        1       0      0      0
+  Bedside Portal                           Feedback                                 1      0        0        1       0      0      0
+  Bedside Portal                           Patient View                             4      0        0        4       0      0      0
+    >> Bedside Portal                      ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  Care View                                Ward Dashboard                           8      0        0        8       0      0      0
+    >> Care View                           ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  Chronic Care                             Drug-o-gram                              8      0        0        8       0      0      0
+    >> Chronic Care                        ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  ICU                                      Bundle Compliance                        6      5        1        0       0      0      0
+  ICU                                      Documentation                            6      4        2        0       0      0      0
+  ICU                                      NICU Specific                            6      4        2        0       0      0      0
+  ICU                                      Scoring & Outcomes                       6      4        2        0       0      0      0
+    >> ICU                                 ** SUBTOTAL **                          24     17        7        0       0      0      0
+                                                                                                                                    
+  IPD                                      Admission                               13      4        9        0       0      0      0
+  IPD                                      Clinical Inpatient                      21     12        9        0       0      0      0
+  IPD                                      Discharge                               15      7        8        0       0      0      0
+  IPD                                      Nursing Services                        24      6       18        0       0      0      0
+  IPD                                      Operation Theatre                       23     16        7        0       0      0      0
+  IPD                                      Ward & Bed Mgmt                         12      4        8        0       0      0      0
+    >> IPD                                 ** SUBTOTAL **                         108     49       59        0       0      0      0
+                                                                                                                                    
+  Infection Surv.                          Detection                                2      1        1        0       0      0      0
+  Infection Surv.                          Reporting                                2      1        1        0       0      0      0
+  Infection Surv.                          Response                                 1      1        0        0       0      0      0
+  Infection Surv.                          Trending                                 3      0        3        0       0      0      0
+    >> Infection Surv.                     ** SUBTOTAL **                           8      3        5        0       0      0      0
+                                                                                                                                    
+  OPD                                      Appointments                            13      7        1        5       0      0      0
+  OPD                                      Clinical Decision Support                7      7        0        0       0      0      0
+  OPD                                      Consultation                            19     17        2        0       0      0      0
+  OPD                                      Orders & Referrals                       8      8        0        0       0      0      0
+  OPD                                      PG/Intern Integration                    5      5        0        0       0      0      0
+  OPD                                      Post-Consultation                       10     10        0        0       0      0      0
+  OPD                                      Prescription                             9      9        0        0       0      0      0
+    >> OPD                                 ** SUBTOTAL **                          71     63        3        5       0      0      0
+                                                                                                                                    
+  Order Sets                               Analytics                                1      0        0        1       0      0      0
+  Order Sets                               Configuration                            4      0        0        4       0      0      0
+  Order Sets                               Execution                                2      0        0        2       0      0      0
+    >> Order Sets                          ** SUBTOTAL **                           7      0        0        7       0      0      0
+                                                                                                                                    
+  Patient Mgmt                             Categories                               9      9        0        0       0      0      0
+  Patient Mgmt                             Registration                            19     15        4        0       0      0      0
+    >> Patient Mgmt                        ** SUBTOTAL **                          28     24        4        0       0      0      0
+                                                                                                                                    
+  Retrospective                            Data Entry                               5      0        0        5       0      0      0
+    >> Retrospective                       ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                     285    156       78       51       0      0      0
+
+============================================================================================================================================
+SHEET: Diagnostics & Support
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  Ambulance                                Fleet Mgmt                               9      0        0        9       0      0      0
+    >> Ambulance                           ** SUBTOTAL **                           9      0        0        9       0      0      0
+                                                                                                                                    
+  Blood Bank                               Cross-Match & Issue                      6      2        2        2       0      0      0
+  Blood Bank                               Donor Mgmt                               6      3        2        1       0      0      0
+  Blood Bank                               Hemovigilance                            8      3        2        3       0      0      0
+  Blood Bank                               Processing & Storage                     7      4        2        1       0      0      0
+    >> Blood Bank                          ** SUBTOTAL **                          27     12        8        7       0      0      0
+                                                                                                                                    
+  CSSD                                     Sterilization                           13     11        2        0       0      0      0
+    >> CSSD                                ** SUBTOTAL **                          13     11        2        0       0      0      0
+                                                                                                                                    
+  Diet & Kitchen                           Dietary Services                        13     12        1        0       0      0      0
+    >> Diet & Kitchen                      ** SUBTOTAL **                          13     12        1        0       0      0      0
+                                                                                                                                    
+  Genetics                                 Counseling                               2      0        0        2       0      0      0
+  Genetics                                 Oncology                                 2      0        0        2       0      0      0
+  Genetics                                 Pharmacogenomics                         2      0        0        2       0      0      0
+  Genetics                                 Testing                                  2      0        0        2       0      0      0
+    >> Genetics                            ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  Inventory                                Procurement & Store                     33      8       25        0       0      0      0
+    >> Inventory                           ** SUBTOTAL **                          33      8       25        0       0      0      0
+                                                                                                                                    
+  Laboratory                               Analyzer Integration                     6      0        0        6       0      0      0
+  Laboratory                               B2B & Referral                           8      0        0        8       0      0      0
+  Laboratory                               QC & NABL                                8      0        0        8       0      0      0
+  Laboratory                               Results & Reporting                     19      2        4       13       0      0      0
+  Laboratory                               Sample Management                       16      6        2        8       0      0      0
+  Laboratory                               Specialized Labs                         5      0        1        4       0      0      0
+    >> Laboratory                          ** SUBTOTAL **                          62      8        7       47       0      0      0
+                                                                                                                                    
+  Pharmacy                                 Billing & Returns                        4      2        2        0       0      0      0
+  Pharmacy                                 Dispensing                               9      5        4        0       0      0      0
+  Pharmacy                                 Formulary & Control                      6      5        1        0       0      0      0
+  Pharmacy                                 Inventory                                8      4        4        0       0      0      0
+  Pharmacy                                 Reporting                                5      0        5        0       0      0      0
+    >> Pharmacy                            ** SUBTOTAL **                          32     16       16        0       0      0      0
+                                                                                                                                    
+  Radiology                                AERB Compliance                          6      3        2        1       0      0      0
+  Radiology                                Orders & Scheduling                      6      4        2        0       0      0      0
+  Radiology                                PACS & DICOM                             7      0        1        6       0      0      0
+  Radiology                                Reporting                                6      3        2        1       0      0      0
+    >> Radiology                           ** SUBTOTAL **                          25     10        7        8       0      0      0
+                                                                                                                                    
+  Rx Benefits                              Alternatives                             2      0        0        2       0      0      0
+  Rx Benefits                              Coverage                                 3      0        0        3       0      0      0
+  Rx Benefits                              PA                                       1      0        0        1       0      0      0
+    >> Rx Benefits                         ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                     228     77       66       85       0      0      0
+
+============================================================================================================================================
+SHEET: Admin & Operations
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  BME/CMMS                                 AMC/CMC                                  5      3        2        0       0      0      0
+  BME/CMMS                                 Breakdown Maint.                         6      4        2        0       0      0      0
+  BME/CMMS                                 Calibration                              5      3        2        0       0      0      0
+  BME/CMMS                                 Equipment Master                         6      5        1        0       0      0      0
+  BME/CMMS                                 Preventive Maint.                        6      5        1        0       0      0      0
+    >> BME/CMMS                            ** SUBTOTAL **                          28     20        8        0       0      0      0
+                                                                                                                                    
+  Billing                                  Insurance & TPA                         12      7        1        4       0      0      0
+  Billing                                  Operations                              25     20        1        4       0      0      0
+  Billing                                  Revenue & Accounts                      16      7        1        8       0      0      0
+    >> Billing                             ** SUBTOTAL **                          53     34        3       16       0      0      0
+                                                                                                                                    
+  Camp Mgmt                                Camps                                    8      7        1        0       0      0      0
+    >> Camp Mgmt                           ** SUBTOTAL **                           8      7        1        0       0      0      0
+                                                                                                                                    
+  Case Mgmt                                Discharge                                5      0        0        5       0      0      0
+    >> Case Mgmt                           ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  Facilities                               Energy Mgmt                              5      3        2        0       0      0      0
+  Facilities                               Fire Safety                              5      5        0        0       0      0      0
+  Facilities                               MGPS                                     8      7        1        0       0      0      0
+  Facilities                               Water Quality                            5      4        1        0       0      0      0
+  Facilities                               Work Orders                              5      4        1        0       0      0      0
+    >> Facilities                          ** SUBTOTAL **                          28     23        5        0       0      0      0
+                                                                                                                                    
+  Front Office                             Queue Mgmt                               8      5        3        0       0      0      0
+  Front Office                             Visitor Mgmt                             8      5        3        0       0      0      0
+    >> Front Office                        ** SUBTOTAL **                          16     10        6        0       0      0      0
+                                                                                                                                    
+  HR                                       Attendance                               6      4        2        0       0      0      0
+  HR                                       Employee Mgmt                            6      3        3        0       0      0      0
+  HR                                       Payroll & Leave                          6      2        4        0       0      0      0
+  HR                                       Scheduling                               8      6        2        0       0      0      0
+    >> HR                                  ** SUBTOTAL **                          26     15       11        0       0      0      0
+                                                                                                                                    
+  Housekeeping                             BMW Collection                           5      0        5        0       0      0      0
+  Housekeeping                             Linen & Laundry                          7      5        2        0       0      0      0
+  Housekeeping                             Room & Bed                               5      5        0        0       0      0      0
+    >> Housekeeping                        ** SUBTOTAL **                          17     10        7        0       0      0      0
+                                                                                                                                    
+  Infection Ctrl                           Antibiotic Stewardship                   5      3        2        0       0      0      0
+  Infection Ctrl                           Bio-Waste Mgmt                           7      7        0        0       0      0      0
+  Infection Ctrl                           HAI Surveillance                         6      2        4        0       0      0      0
+  Infection Ctrl                           Hand Hygiene                             5      5        0        0       0      0      0
+  Infection Ctrl                           Outbreak Mgmt                            5      4        1        0       0      0      0
+    >> Infection Ctrl                      ** SUBTOTAL **                          28     21        7        0       0      0      0
+                                                                                                                                    
+  Insurance                                Prior Auth                               6      0        0        6       0      0      0
+  Insurance                                Verification                             4      0        0        4       0      0      0
+    >> Insurance                           ** SUBTOTAL **                          10      0        0       10       0      0      0
+                                                                                                                                    
+  MRD                                      Medical Records                         11     10        1        0       0      0      0
+    >> MRD                                 ** SUBTOTAL **                          11     10        1        0       0      0      0
+                                                                                                                                    
+  Occ Health                               Injury                                   3      0        0        3       0      0      0
+  Occ Health                               Needle Stick                             1      1        0        0       0      0      0
+  Occ Health                               Pre-Employment                           3      1        0        2       0      0      0
+  Occ Health                               Privacy                                  1      0        0        1       0      0      0
+  Occ Health                               Surveillance                             1      0        0        1       0      0      0
+  Occ Health                               Wellness                                 1      0        0        1       0      0      0
+    >> Occ Health                          ** SUBTOTAL **                          10      2        0        8       0      0      0
+                                                                                                                                    
+  Quality                                  Accreditation                           10      6        4        0       0      0      0
+  Quality                                  Committee Mgmt                           6      3        3        0       0      0      0
+  Quality                                  Document Control                         7      3        4        0       0      0      0
+  Quality                                  Incident Reporting                       7      4        3        0       0      0      0
+  Quality                                  Indicators                               6      4        2        0       0      0      0
+    >> Quality                             ** SUBTOTAL **                          36     20       16        0       0      0      0
+                                                                                                                                    
+  Scheduling                               No-Show AI                               5      0        1        4       0      0      0
+    >> Scheduling                          ** SUBTOTAL **                           5      0        1        4       0      0      0
+                                                                                                                                    
+  Security Dept                            CCTV & Incidents                         4      3        1        0       0      0      0
+  Security Dept                            Code Protocols                           6      6        0        0       0      0      0
+  Security Dept                            Patient Security                         5      2        3        0       0      0      0
+  Security Dept                            Physical Access                          5      4        1        0       0      0      0
+    >> Security Dept                       ** SUBTOTAL **                          20     15        5        0       0      0      0
+                                                                                                                                    
+  Utilization                              Review                                   5      0        0        5       0      0      0
+    >> Utilization                         ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                     306    187       71       48       0      0      0
+
+============================================================================================================================================
+SHEET: Specialty & Academic
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  Academic ERP                             Accreditation                           11      0        0       11       0      0      0
+  Academic ERP                             CME & Conferences                        5      0        0        5       0      0      0
+  Academic ERP                             Hostel & Welfare                         7      0        0        7       0      0      0
+  Academic ERP                             Labs & Anatomy                           6      0        0        6       0      0      0
+  Academic ERP                             Library                                  5      0        0        5       0      0      0
+  Academic ERP                             Research & Ethics                        7      0        0        7       0      0      0
+  Academic ERP                             Simulation & OSCE                        5      0        0        5       0      0      0
+  Academic ERP                             Student & Curriculum                     8      0        0        8       0      0      0
+    >> Academic ERP                        ** SUBTOTAL **                          54      0        0       54       0      0      0
+                                                                                                                                    
+  Clinical Trials                          Compliance                               2      0        0        2       0      0      0
+  Clinical Trials                          Execution                                3      0        0        3       0      0      0
+  Clinical Trials                          Recruitment                              3      1        0        2       0      0      0
+    >> Clinical Trials                     ** SUBTOTAL **                           8      1        0        7       0      0      0
+                                                                                                                                    
+  Communication                            Clinical Comms                           9      0        0        9       0      0      0
+  Communication                            Feedback & Grievance                    11      0        0       11       0      0      0
+  Communication                            Patient Comms                            5      1        0        4       0      0      0
+    >> Communication                       ** SUBTOTAL **                          25      1        0       24       0      0      0
+                                                                                                                                    
+  Consent                                  Digital Signature                        6      2        4        0       0      0      0
+  Consent                                  MLC Documents                            7      3        4        0       0      0      0
+  Consent                                  Types & Generation                      10      8        2        0       0      0      0
+    >> Consent                             ** SUBTOTAL **                          23     13       10        0       0      0      0
+                                                                                                                                    
+  Correctional                             Chronic Care                             1      0        0        1       0      0      0
+  Correctional                             Communication                            1      0        0        1       0      0      0
+  Correctional                             Intake                                   2      0        0        2       0      0      0
+  Correctional                             Mental Health                            1      0        0        1       0      0      0
+  Correctional                             Release                                  1      0        0        1       0      0      0
+  Correctional                             Security                                 1      0        0        1       0      0      0
+    >> Correctional                        ** SUBTOTAL **                           7      0        0        7       0      0      0
+                                                                                                                                    
+  Emergency                                Clinical Workflow                        6      2        4        0       0      0      0
+  Emergency                                MLC Mgmt                                 6      3        3        0       0      0      0
+  Emergency                                Mass Casualty                            5      3        2        0       0      0      0
+  Emergency                                Triage                                   6      4        2        0       0      0      0
+    >> Emergency                           ** SUBTOTAL **                          23     12       11        0       0      0      0
+                                                                                                                                    
+  Home Care                                Home Nursing                             6      0        0        6       0      0      0
+    >> Home Care                           ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  Home Dialysis                            Compliance                               1      0        0        1       0      0      0
+  Home Dialysis                            Monitoring                               2      0        0        2       0      0      0
+  Home Dialysis                            Review                                   1      0        0        1       0      0      0
+  Home Dialysis                            Setup                                    1      0        0        1       0      0      0
+  Home Dialysis                            Supply                                   1      0        0        1       0      0      0
+    >> Home Dialysis                       ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  Home Infusion                            Administration                           1      0        0        1       0      0      0
+  Home Infusion                            Monitoring                               1      0        0        1       0      0      0
+  Home Infusion                            Orders                                   1      0        0        1       0      0      0
+  Home Infusion                            Pharmacy                                 1      0        0        1       0      0      0
+  Home Infusion                            Scheduling                               1      0        0        1       0      0      0
+  Home Infusion                            Supply                                   1      0        0        1       0      0      0
+    >> Home Infusion                       ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  Hospice                                  Palliative                               5      0        0        5       0      0      0
+    >> Hospice                             ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  Hospital@Home                            Program                                  7      0        0        7       0      0      0
+    >> Hospital@Home                       ** SUBTOTAL **                           7      0        0        7       0      0      0
+                                                                                                                                    
+  Micro Website                            Builder                                 10      0        0       10       0      0      0
+    >> Micro Website                       ** SUBTOTAL **                          10      0        0       10       0      0      0
+                                                                                                                                    
+  Post-Acute                               SNF                                      6      0        0        6       0      0      0
+    >> Post-Acute                          ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  Specialty                                Cath Lab                                 8      6        2        0       0      0      0
+  Specialty                                Endoscopy                                6      6        0        0       0      0      0
+  Specialty                                Maternity/OB-GYN                        10      9        1        0       0      0      0
+  Specialty                                Other Specialties                        9      4        5        0       0      0      0
+  Specialty                                PMR/Audiology/Psych                      9      7        2        0       0      0      0
+  Specialty                                Palliative/Mortuary/NucMed               7      6        1        0       0      0      0
+  Specialty                                Psychiatry                              12      7        5        0       0      0      0
+    >> Specialty                           ** SUBTOTAL **                          61     45       16        0       0      0      0
+                                                                                                                                    
+  Telemedicine                             Video Consult                           10      0        0       10       0      0      0
+    >> Telemedicine                        ** SUBTOTAL **                          10      0        0       10       0      0      0
+                                                                                                                                    
+  Transplant                               Evaluation                               3      0        0        3       0      0      0
+  Transplant                               Post-Op                                  2      0        0        2       0      0      0
+  Transplant                               Registry                                 2      0        0        2       0      0      0
+  Transplant                               Surgery                                  2      0        0        2       0      0      0
+    >> Transplant                          ** SUBTOTAL **                           9      0        0        9       0      0      0
+                                                                                                                                    
+  Urology                                  Clinical                                 3      0        0        3       0      0      0
+  Urology                                  Follow-up                                1      0        0        1       0      0      0
+  Urology                                  Orders                                   1      0        0        1       0      0      0
+    >> Urology                             ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                     271     72       37      162       0      0      0
+
+============================================================================================================================================
+SHEET: IT, Security & Infrastructure
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  AI Comms                                 Handoff                                  1      0        0        1       0      0      0
+  AI Comms                                 Message Draft                            2      0        0        2       0      0      0
+  AI Comms                                 Plain Language                           1      0        0        1       0      0      0
+  AI Comms                                 Pre-Visit                                2      0        0        2       0      0      0
+    >> AI Comms                            ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  AI Governance                            Validation                               5      1        0        4       0      0      0
+    >> AI Governance                       ** SUBTOTAL **                           5      1        0        4       0      0      0
+                                                                                                                                    
+  AI Ops                                   Clinical AI                              4      1        0        3       0      0      0
+  AI Ops                                   Predictions                              4      0        0        4       0      0      0
+  AI Ops                                   Staffing                                 2      0        0        2       0      0      0
+    >> AI Ops                              ** SUBTOTAL **                          10      1        0        9       0      0      0
+                                                                                                                                    
+  Admin                                    Configuration                           17      6        1       10       0      0      0
+    >> Admin                               ** SUBTOTAL **                          17      6        1       10       0      0      0
+                                                                                                                                    
+  Audit                                    ABAC Monitoring                          7      2        0        5       0      0      0
+  Audit                                    Access Logs                              8      6        0        2       0      0      0
+  Audit                                    Audit Trail                             10      6        0        4       0      0      0
+  Audit                                    Break-Glass                              6      0        0        6       0      0      0
+  Audit                                    Clinical Access Monitor                  9      0        0        9       0      0      0
+  Audit                                    Incident Log Audit                       6      1        0        5       0      0      0
+  Audit                                    SIEM                                     8      1        0        7       0      0      0
+    >> Audit                               ** SUBTOTAL **                          54     16        0       38       0      0      0
+                                                                                                                                    
+  CRM                                      Analytics                                1      0        0        1       0      0      0
+  CRM                                      Caller Mgmt                              2      0        0        2       0      0      0
+  CRM                                      Engagement                               2      0        0        2       0      0      0
+  CRM                                      Outreach                                 4      0        0        4       0      0      0
+    >> CRM                                 ** SUBTOTAL **                           9      0        0        9       0      0      0
+                                                                                                                                    
+  Care Transitions                         Follow-up                                2      0        0        2       0      0      0
+  Care Transitions                         Handoff                                  2      0        0        2       0      0      0
+  Care Transitions                         Medication                               1      0        0        1       0      0      0
+  Care Transitions                         Referral                                 1      0        0        1       0      0      0
+    >> Care Transitions                    ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  Command Center                           Analytics                                1      0        1        0       0      0      0
+  Command Center                           Coordination                             3      0        0        3       0      0      0
+  Command Center                           Visibility                               4      0        1        3       0      0      0
+    >> Command Center                      ** SUBTOTAL **                           8      0        2        6       0      0      0
+                                                                                                                                    
+  Compliance                               CERT-In                                  9      0        0        9       0      0      0
+    >> Compliance                          ** SUBTOTAL **                           9      0        0        9       0      0      0
+                                                                                                                                    
+  Dashboards                               Analytics                               18      1        3       14       0      0      0
+    >> Dashboards                          ** SUBTOTAL **                          18      1        3       14       0      0      0
+                                                                                                                                    
+  Data Migration                           Export                                   2      0        0        2       0      0      0
+  Data Migration                           Import                                   4      0        0        4       0      0      0
+  Data Migration                           Validation                               2      0        0        2       0      0      0
+    >> Data Migration                      ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  Data Quality                             Coding                                   1      1        0        0       0      0      0
+  Data Quality                             Completeness                             2      0        0        2       0      0      0
+  Data Quality                             Duplicates                               2      1        0        1       0      0      0
+  Data Quality                             Reports                                  1      0        0        1       0      0      0
+  Data Quality                             Timeliness                               1      0        0        1       0      0      0
+    >> Data Quality                        ** SUBTOTAL **                           7      2        0        5       0      0      0
+                                                                                                                                    
+  Digital Front Door                       Engagement                               2      0        0        2       0      0      0
+  Digital Front Door                       Pre-Visit                                2      0        0        2       0      0      0
+  Digital Front Door                       Provider Search                          2      0        0        2       0      0      0
+  Digital Front Door                       Scheduling                               2      0        0        2       0      0      0
+  Digital Front Door                       Symptom Checker                          1      0        0        1       0      0      0
+    >> Digital Front Door                  ** SUBTOTAL **                           9      0        0        9       0      0      0
+                                                                                                                                    
+  EOD Digest                               Notifications                            6      0        0        6       0      0      0
+    >> EOD Digest                          ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  Encryption                               Privacy                                 15      2        0       13       0      0      0
+    >> Encryption                          ** SUBTOTAL **                          15      2        0       13       0      0      0
+                                                                                                                                    
+  External Platforms                       Booking                                  2      0        0        2       0      0      0
+  External Platforms                       Reviews                                  2      1        0        1       0      0      0
+  External Platforms                       Visibility                               1      0        0        1       0      0      0
+    >> External Platforms                  ** SUBTOTAL **                           5      1        0        4       0      0      0
+                                                                                                                                    
+  Incentive                                Configuration                            8      1        0        7       0      0      0
+    >> Incentive                           ** SUBTOTAL **                           8      1        0        7       0      0      0
+                                                                                                                                    
+  Inflow Analytics                         Comparison                               3      0        0        3       0      0      0
+  Inflow Analytics                         Patterns                                 3      0        0        3       0      0      0
+    >> Inflow Analytics                    ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  Integrations                             Aggregators                              7      0        0        7       0      0      0
+  Integrations                             ERP & Standards                         11      1        0       10       0      0      0
+  Integrations                             Government                               4      0        0        4       0      0      0
+  Integrations                             Payment & Comms                          7      0        0        7       0      0      0
+    >> Integrations                        ** SUBTOTAL **                          29      1        0       28       0      0      0
+                                                                                                                                    
+  Network                                  Alert                                    1      0        0        1       0      0      0
+  Network                                  Detection                                2      0        0        2       0      0      0
+  Network                                  Sync                                     2      0        0        2       0      0      0
+    >> Network                             ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  Onboarding                               Wizard                                   7      0        0        7       0      0      0
+    >> Onboarding                          ** SUBTOTAL **                           7      0        0        7       0      0      0
+                                                                                                                                    
+  Population Health                        Analytics                                3      0        0        3       0      0      0
+  Population Health                        Care Gaps                                2      0        0        2       0      0      0
+  Population Health                        Risk                                     2      0        0        2       0      0      0
+    >> Population Health                   ** SUBTOTAL **                           7      0        0        7       0      0      0
+                                                                                                                                    
+  SDOH                                     Analytics                                1      0        0        1       0      0      0
+  SDOH                                     Referral                                 2      0        0        2       0      0      0
+  SDOH                                     Screening                                2      1        0        1       0      0      0
+    >> SDOH                                ** SUBTOTAL **                           5      1        0        4       0      0      0
+                                                                                                                                    
+  Security                                 Access Control                          22     12        0       10       0      0      0
+    >> Security                            ** SUBTOTAL **                          22     12        0       10       0      0      0
+                                                                                                                                    
+  Stock Disposal                           Disposal                                 8      0        0        8       0      0      0
+    >> Stock Disposal                      ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  TAT                                      Alerts                                   1      0        0        1       0      0      0
+  TAT                                      Dashboard                                2      0        0        2       0      0      0
+  TAT                                      Discharge                                1      0        0        1       0      0      0
+  TAT                                      Emergency                                1      0        0        1       0      0      0
+  TAT                                      Lab                                      1      0        0        1       0      0      0
+  TAT                                      Pharmacy                                 1      0        0        1       0      0      0
+  TAT                                      Radiology                                1      0        0        1       0      0      0
+    >> TAT                                 ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  Wearables                                Integration                              3      0        0        3       0      0      0
+  Wearables                                Monitoring                               4      0        0        4       0      0      0
+    >> Wearables                           ** SUBTOTAL **                           7      0        0        7       0      0      0
+                                                                                                                                    
+  Workflow                                 Engine                                  14      1        0       13       0      0      0
+    >> Workflow                            ** SUBTOTAL **                          14      1        0       13       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                     318     46        6      266       0      0      0
+
+============================================================================================================================================
+SHEET: TV Displays & Queue
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  TV/Queue                                 Billing & Analytics                     16      0        0       16       0      0      0
+  TV/Queue                                 Doctor Room Display                     10      0        0       10       0      0      0
+  TV/Queue                                 ER & IPD Display                        12      0        0       12       0      0      0
+  TV/Queue                                 Hardware & Signage                      30      0        0       30       0      0      0
+  TV/Queue                                 Kiosk                                    8      0        0        8       0      0      0
+  TV/Queue                                 Lab Queue                                8      0        0        8       0      0      0
+  TV/Queue                                 OPD Display                             12      0        0       12       0      0      0
+  TV/Queue                                 Pharmacy Queue                           7      0        0        7       0      0      0
+  TV/Queue                                 Radiology Queue                          6      0        0        6       0      0      0
+  TV/Queue                                 Token Generation                        11      0        0       11       0      0      0
+    >> TV/Queue                            ** SUBTOTAL **                         120      0        0      120       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                     120      0        0      120       0      0      0
+
+============================================================================================================================================
+SHEET: Printing & Forms
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  Printing                                 Admin/BME Forms                         25      0        0       25       0      0      0
+  Printing                                 Billing Prints                          13      0        0       13       0      0      0
+  Printing                                 Branding & Signage                      11      9        1        1       0      0      0
+  Printing                                 Clinical Prints                         11      4        2        5       0      0      0
+  Printing                                 Consent Forms                           17      1        2       14       0      0      0
+  Printing                                 Form Builder                            10      8        2        0       0      0      0
+  Printing                                 Form Compliance                          8      7        1        0       0      0      0
+  Printing                                 IC & Safety Forms                       13      6        0        7       0      0      0
+  Printing                                 Identity Prints                          6      0        0        6       0      0      0
+  Printing                                 MRD Forms                               28      2        0       26       0      0      0
+  Printing                                 Print Infrastructure                    13      4        9        0       0      0      0
+  Printing                                 Regulatory Prints                       13      0        1       12       0      0      0
+  Printing                                 Report Prints                            8      0        0        8       0      0      0
+  Printing                                 Specialty/Academic Forms                35     14        1       20       0      0      0
+    >> Printing                            ** SUBTOTAL **                         211     55       19      137       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                     211     55       19      137       0      0      0
+
+============================================================================================================================================
+SHEET: Mobile Apps
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  Doctor App                               Alerts                                   1      0        0        1       0      0      0
+  Doctor App                               Auth                                     1      0        0        1       0      0      0
+  Doctor App                               Consult                                  1      0        0        1       0      0      0
+  Doctor App                               Discharge                                1      0        0        1       0      0      0
+  Doctor App                               EMR                                      1      0        0        1       0      0      0
+  Doctor App                               IPD                                      2      0        0        2       0      0      0
+  Doctor App                               Incentive                                1      0        0        1       0      0      0
+  Doctor App                               Lab                                      1      0        0        1       0      0      0
+  Doctor App                               OPD                                      1      0        0        1       0      0      0
+  Doctor App                               OT                                       1      0        0        1       0      0      0
+  Doctor App                               Offline                                  1      0        0        1       0      0      0
+  Doctor App                               Radiology                                1      0        0        1       0      0      0
+  Doctor App                               Rx                                       1      0        0        1       0      0      0
+  Doctor App                               Schedule                                 1      0        0        1       0      0      0
+  Doctor App                               Search                                   1      0        0        1       0      0      0
+  Doctor App                               Telemedicine                             1      0        0        1       0      0      0
+    >> Doctor App                          ** SUBTOTAL **                          17      0        0       17       0      0      0
+                                                                                                                                    
+  Patient App                              ABDM                                     1      0        0        1       0      0      0
+  Patient App                              Appointments                             2      0        0        2       0      0      0
+  Patient App                              Billing                                  1      0        0        1       0      0      0
+  Patient App                              Family                                   1      0        0        1       0      0      0
+  Patient App                              Feedback                                 1      0        0        1       0      0      0
+  Patient App                              Insurance                                1      0        0        1       0      0      0
+  Patient App                              Lab                                      1      0        0        1       0      0      0
+  Patient App                              Navigation                               1      0        0        1       0      0      0
+  Patient App                              Notifications                            1      0        0        1       0      0      0
+  Patient App                              Pharmacy                                 1      1        0        0       0      0      0
+  Patient App                              Queue                                    1      0        0        1       0      0      0
+  Patient App                              Records                                  1      0        0        1       0      0      0
+  Patient App                              Registration                             1      0        0        1       0      0      0
+  Patient App                              Telemedicine                             1      0        0        1       0      0      0
+    >> Patient App                         ** SUBTOTAL **                          15      1        0       14       0      0      0
+                                                                                                                                    
+  Phlebo App                               Barcode                                  1      0        0        1       0      0      0
+  Phlebo App                               Collection                               1      0        0        1       0      0      0
+  Phlebo App                               Handover                                 1      0        0        1       0      0      0
+  Phlebo App                               Navigation                               1      0        0        1       0      0      0
+  Phlebo App                               Offline                                  1      0        0        1       0      0      0
+  Phlebo App                               Orders                                   1      0        0        1       0      0      0
+  Phlebo App                               Payment                                  1      0        0        1       0      0      0
+  Phlebo App                               Tracking                                 1      0        0        1       0      0      0
+    >> Phlebo App                          ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                      40      1        0       39       0      0      0
+
+============================================================================================================================================
+SHEET: Technical Infrastructure
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  API                                      Gateway                                  2      0        2        0       0      0      0
+  API                                      Integration                              2      0        0        2       0      0      0
+  API                                      Security                                 4      1        0        3       0      0      0
+  API                                      Versioning                               2      0        1        1       0      0      0
+    >> API                                 ** SUBTOTAL **                          10      1        3        6       0      0      0
+                                                                                                                                    
+  Backup                                   DR                                       3      0        0        3       0      0      0
+  Backup                                   Strategy                                 4      1        0        3       0      0      0
+  Backup                                   Testing                                  1      0        0        1       0      0      0
+    >> Backup                              ** SUBTOTAL **                           8      1        0        7       0      0      0
+                                                                                                                                    
+  CI/CD                                    Pipeline                                 7      3        0        4       0      0      0
+    >> CI/CD                               ** SUBTOTAL **                           7      3        0        4       0      0      0
+                                                                                                                                    
+  Cache                                    Redis/Dragonfly                          4      0        1        3       0      0      0
+    >> Cache                               ** SUBTOTAL **                           4      0        1        3       0      0      0
+                                                                                                                                    
+  Comms                                    Email                                    2      0        0        2       0      0      0
+  Comms                                    Push                                     2      0        0        2       0      0      0
+  Comms                                    SMS                                      2      0        0        2       0      0      0
+  Comms                                    WhatsApp                                 2      0        0        2       0      0      0
+    >> Comms                               ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  Database                                 PostgreSQL                               9      3        0        6       0      0      0
+  Database                                 YottaDB                                  5      1        0        4       0      0      0
+    >> Database                            ** SUBTOTAL **                          14      4        0       10       0      0      0
+                                                                                                                                    
+  DevOps                                   Docker                                   2      1        0        1       0      0      0
+  DevOps                                   Kubernetes                               5      0        0        5       0      0      0
+    >> DevOps                              ** SUBTOTAL **                           7      1        0        6       0      0      0
+                                                                                                                                    
+  Errors                                   Performance                              2      0        0        2       0      0      0
+  Errors                                   Tracking                                 3      0        0        3       0      0      0
+    >> Errors                              ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  Events                                   NATS JetStream                           5      0        0        5       0      0      0
+  Events                                   Webhooks                                 1      0        0        1       0      0      0
+    >> Events                              ** SUBTOTAL **                           6      0        0        6       0      0      0
+                                                                                                                                    
+  Jobs                                     Scheduler                                5      0        0        5       0      0      0
+    >> Jobs                                ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  Logging                                  Aggregation                              1      0        0        1       0      0      0
+  Logging                                  Retention                                1      0        0        1       0      0      0
+  Logging                                  Structured                               1      1        0        0       0      0      0
+  Logging                                  Tracing                                  1      1        0        0       0      0      0
+    >> Logging                             ** SUBTOTAL **                           4      2        0        2       0      0      0
+                                                                                                                                    
+  Monitoring                               Alerting                                 3      1        0        2       0      0      0
+  Monitoring                               Metrics                                  3      1        0        2       0      0      0
+    >> Monitoring                          ** SUBTOTAL **                           6      2        0        4       0      0      0
+                                                                                                                                    
+  Payments                                 Gateway                                  5      0        0        5       0      0      0
+    >> Payments                            ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  Search                                   Meilisearch                              5      2        0        3       0      0      0
+    >> Search                              ** SUBTOTAL **                           5      2        0        3       0      0      0
+                                                                                                                                    
+  Security                                 Network                                  4      0        0        4       0      0      0
+  Security                                 Scanning                                 3      0        0        3       0      0      0
+  Security                                 Secrets                                  2      0        0        2       0      0      0
+    >> Security                            ** SUBTOTAL **                           9      0        0        9       0      0      0
+                                                                                                                                    
+  Storage                                  CDN                                      1      0        0        1       0      0      0
+  Storage                                  S3/MinIO                                 6      0        0        6       0      0      0
+    >> Storage                             ** SUBTOTAL **                           7      0        0        7       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                     110     16        4       90       0      0      0
+
+============================================================================================================================================
+SHEET: Regulatory & Compliance
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  AASANDHA                                 Maldives                                 1      0        0        1       0      0      0
+    >> AASANDHA                            ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  ABDM                                     Digital Health                           1      0        1        0       0      0      0
+    >> ABDM                                ** SUBTOTAL **                           1      0        1        0       0      0      0
+                                                                                                                                    
+  AERB                                     Radiology                                2      0        2        0       0      0      0
+    >> AERB                                ** SUBTOTAL **                           2      0        2        0       0      0      0
+                                                                                                                                    
+  CDSCO                                    Compliance                               1      1        0        0       0      0      0
+  CDSCO                                    Reporting                                3      0        1        2       0      0      0
+    >> CDSCO                               ** SUBTOTAL **                           4      1        1        2       0      0      0
+                                                                                                                                    
+  CE/MDR                                   Devices                                  1      0        0        1       0      0      0
+    >> CE/MDR                              ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  CEA                                      Biomedical                               1      1        0        0       0      0      0
+    >> CEA                                 ** SUBTOTAL **                           1      1        0        0       0      0      0
+                                                                                                                                    
+  CERT-In                                  India                                    1      0        1        0       0      0      0
+    >> CERT-In                             ** SUBTOTAL **                           1      0        1        0       0      0      0
+                                                                                                                                    
+  CMS                                      Compliance                               1      0        0        1       0      0      0
+    >> CMS                                 ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  DHA                                      Dubai                                    1      0        0        1       0      0      0
+    >> DHA                                 ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  DOH                                      Abu Dhabi                                1      0        0        1       0      0      0
+    >> DOH                                 ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  Fire                                     Safety                                   1      1        0        0       0      0      0
+    >> Fire                                ** SUBTOTAL **                           1      1        0        0       0      0      0
+                                                                                                                                    
+  GDPR                                     DPO                                      1      0        0        1       0      0      0
+  GDPR                                     Privacy                                  1      0        1        0       0      0      0
+  GDPR                                     Rights                                   1      0        0        1       0      0      0
+    >> GDPR                                ** SUBTOTAL **                           3      0        1        2       0      0      0
+                                                                                                                                    
+  Geospatial                               Country                                  2      1        1        0       0      0      0
+  Geospatial                               Data                                     7      0        1        6       0      0      0
+  Geospatial                               District                                 2      0        1        1       0      0      0
+  Geospatial                               Facility                                 1      0        1        0       0      0      0
+  Geospatial                               Mapping                                  6      0        1        5       0      0      0
+  Geospatial                               State                                    2      1        0        1       0      0      0
+  Geospatial                               Subdistrict                              1      0        0        1       0      0      0
+  Geospatial                               Village/Town                             1      0        0        1       0      0      0
+    >> Geospatial                          ** SUBTOTAL **                          22      2        5       15       0      0      0
+                                                                                                                                    
+  HIPAA                                    Breach                                   1      0        1        0       0      0      0
+  HIPAA                                    Privacy                                  1      0        1        0       0      0      0
+  HIPAA                                    Security                                 1      0        1        0       0      0      0
+    >> HIPAA                               ** SUBTOTAL **                           3      0        3        0       0      0      0
+                                                                                                                                    
+  HITRUST                                  Security                                 1      0        0        1       0      0      0
+    >> HITRUST                             ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  IRDAI                                    Insurance                                1      0        1        0       0      0      0
+    >> IRDAI                               ** SUBTOTAL **                           1      0        1        0       0      0      0
+                                                                                                                                    
+  ISO                                      27001                                    1      0        1        0       0      0      0
+  ISO                                      9001                                     1      0        1        0       0      0      0
+    >> ISO                                 ** SUBTOTAL **                           2      0        2        0       0      0      0
+                                                                                                                                    
+  JCI                                      Dashboard                                1      0        1        0       0      0      0
+  JCI                                      Documentation                            1      0        1        0       0      0      0
+  JCI                                      IPSG                                     1      0        1        0       0      0      0
+  JCI                                      QI                                       1      0        1        0       0      0      0
+  JCI                                      Standards                                1      1        0        0       0      0      0
+    >> JCI                                 ** SUBTOTAL **                           5      1        4        0       0      0      0
+                                                                                                                                    
+  KHDA                                     Kenya                                    1      0        0        1       0      0      0
+    >> KHDA                                ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  MOH-Oman                                 Oman                                     1      0        0        1       0      0      0
+    >> MOH-Oman                            ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  MOH-SA                                   Saudi                                    2      0        0        2       0      0      0
+    >> MOH-SA                              ** SUBTOTAL **                           2      0        0        2       0      0      0
+                                                                                                                                    
+  NABH                                     Audit                                    1      0        1        0       0      0      0
+  NABH                                     Dashboard                                1      0        1        0       0      0      0
+  NABH                                     Documentation                            1      0        1        0       0      0      0
+  NABH                                     QI                                       1      1        0        0       0      0      0
+  NABH                                     Standards                                2      2        0        0       0      0      0
+    >> NABH                                ** SUBTOTAL **                           6      3        3        0       0      0      0
+                                                                                                                                    
+  NABL                                     Lab                                      2      1        1        0       0      0      0
+    >> NABL                                ** SUBTOTAL **                           2      1        1        0       0      0      0
+                                                                                                                                    
+  NMC                                      Compliance                               3      0        2        1       0      0      0
+    >> NMC                                 ** SUBTOTAL **                           3      0        2        1       0      0      0
+                                                                                                                                    
+  ONC                                      Certification                            1      0        0        1       0      0      0
+    >> ONC                                 ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  PCPNDT                                   Imaging                                  2      0        0        2       0      0      0
+    >> PCPNDT                              ** SUBTOTAL **                           2      0        0        2       0      0      0
+                                                                                                                                    
+  PDPA                                     SEA                                      1      0        0        1       0      0      0
+    >> PDPA                                ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  QCHP                                     Qatar                                    1      0        0        1       0      0      0
+    >> QCHP                                ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  SAHPRA                                   South Africa                             1      0        0        1       0      0      0
+    >> SAHPRA                              ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  SOC2                                     Security                                 1      0        1        0       0      0      0
+    >> SOC2                                ** SUBTOTAL **                           1      0        1        0       0      0      0
+                                                                                                                                    
+  TGA                                      Australia                                1      0        0        1       0      0      0
+    >> TGA                                 ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  VAT-Fiji                                 Fiji                                     1      0        0        1       0      0      0
+    >> VAT-Fiji                            ** SUBTOTAL **                           1      0        0        1       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                      76     10       28       38       0      0      0
+
+============================================================================================================================================
+SHEET: Multi-Hospital & Vendors
+  Columns found: Module=1, Sub-Module=2, Feature=3, Status=6
+  Header: ['S.No', 'Module', 'Sub-Module', 'Feature', 'Source', 'Priority', 'Status', 'RFC Ref', 'Web', 'Mobile', 'TV']
+
+  Module                                   Sub-Module                           Total   Done  Partial  Pending  InProg  Defer  Other
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  Ext Lab                                  Billing                                  2      0        0        2       0      0      0
+  Ext Lab                                  NABL                                     1      0        0        1       0      0      0
+  Ext Lab                                  Orders                                   3      0        0        3       0      0      0
+  Ext Lab                                  QC                                       1      0        0        1       0      0      0
+  Ext Lab                                  Results                                  3      0        0        3       0      0      0
+  Ext Lab                                  Sample                                   2      0        0        2       0      0      0
+  Ext Lab                                  TAT                                      1      0        0        1       0      0      0
+    >> Ext Lab                             ** SUBTOTAL **                          13      0        0       13       0      0      0
+                                                                                                                                    
+  Ext Pharmacy                             Billing                                  2      0        0        2       0      0      0
+  Ext Pharmacy                             Compliance                               1      0        0        1       0      0      0
+  Ext Pharmacy                             Fulfillment                              2      0        0        2       0      0      0
+  Ext Pharmacy                             Prescribing                              3      0        0        3       0      0      0
+  Ext Pharmacy                             Refill                                   1      0        0        1       0      0      0
+    >> Ext Pharmacy                        ** SUBTOTAL **                           9      0        0        9       0      0      0
+                                                                                                                                    
+  Ext Services                             Ambulance                                1      0        0        1       0      0      0
+  Ext Services                             Catering                                 1      0        0        1       0      0      0
+  Ext Services                             Equipment                                2      0        0        2       0      0      0
+  Ext Services                             Housekeeping                             1      0        0        1       0      0      0
+  Ext Services                             Insurance                                1      0        0        1       0      0      0
+  Ext Services                             Laundry                                  1      0        0        1       0      0      0
+  Ext Services                             Security                                 1      0        0        1       0      0      0
+    >> Ext Services                        ** SUBTOTAL **                           8      0        0        8       0      0      0
+                                                                                                                                    
+  Multi-Hospital                           Admin                                    6      0        0        6       0      0      0
+  Multi-Hospital                           Inventory                                3      0        3        0       0      0      0
+  Multi-Hospital                           Pricing                                  2      0        0        2       0      0      0
+  Multi-Hospital                           Reporting                                6      0        0        6       0      0      0
+  Multi-Hospital                           Staff                                    2      0        0        2       0      0      0
+  Multi-Hospital                           Transfer                                 3      0        0        3       0      0      0
+    >> Multi-Hospital                      ** SUBTOTAL **                          22      0        3       19       0      0      0
+                                                                                                                                    
+  Teleradiology                            Billing                                  1      0        0        1       0      0      0
+  Teleradiology                            PACS                                     1      0        0        1       0      0      0
+  Teleradiology                            Reporting                                3      0        0        3       0      0      0
+    >> Teleradiology                       ** SUBTOTAL **                           5      0        0        5       0      0      0
+                                                                                                                                    
+  Vendors                                  Contracts                                2      2        0        0       0      0      0
+  Vendors                                  Onboarding                               2      1        1        0       0      0      0
+  Vendors                                  Payments                                 2      0        2        0       0      0      0
+  Vendors                                  Performance                              2      0        2        0       0      0      0
+    >> Vendors                             ** SUBTOTAL **                           8      3        5        0       0      0      0
+                                                                                                                                    
+  --------------------------------------------------------------------------------------------------------------------------------------------
+  SHEET TOTAL                                                                      65      3        8       54       0      0      0
+
+
+============================================================================================================================================
+GRAND TOTAL ACROSS ALL SHEETS
+============================================================================================================================================
+  Total Features: 2189
+  Done:           707 (32.3%)
+  Partial:        351 (16.0%)
+  Pending:        1131 (51.7%)
+  In Progress:    0 (0.0%)
+  Deferred:       0 (0.0%)
+  Other:          0 (0.0%)
+
+
+============================================================================================================================================
+FLAG: Features marked 'In Progress' (0 total)
+============================================================================================================================================
+  None found.
+
+============================================================================================================================================
+FLAG: Completed modules with PENDING features (275 total)
+============================================================================================================================================
+
+  MODULE: 5. FACILITIES & INSTITUTIONS (8 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Onboarding & Setup] 5.1 Facility Management             | Bulk import facilities from CSV
+    [Onboarding & Setup] 5.2 Academic Facility Setup         | Affiliated university assignment (e.g., RGUHS, MUHS)
+    [Onboarding & Setup] 5.2 Academic Facility Setup         | Recognition body and number (NMC, PCI, INC, DCI)
+    [Onboarding & Setup] 5.2 Academic Facility Setup         | Student intake capacity per academic facility
+    [Onboarding & Setup] 5.2 Academic Facility Setup         | Academic year configuration per college
+    [Onboarding & Setup] 5.2 Academic Facility Setup         | Course/program listing per academic facility
+    [Onboarding & Setup] 5.3 Operational Scope & Resource Sharing | Cross-facility patient referral tracking
+    [Onboarding & Setup] 5.3 Operational Scope & Resource Sharing | Consolidated reporting across all facilities
+
+  MODULE: Billing (16 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Admin & Operations] Insurance & TPA                     | Reimbursement claim documentation generation
+    [Admin & Operations] Insurance & TPA                     | CGHS/ECHS/ESI/Ayushman Bharat integration
+    [Admin & Operations] Insurance & TPA                     | Dual insurance (primary + secondary)
+    [Admin & Operations] Insurance & TPA                     | NHCX (National Health Claim Exchange) integration
+    [Admin & Operations] Operations                          | OT billing
+    [Admin & Operations] Operations                          | Bill print (customizable format with GST breakup)
+    [Admin & Operations] Operations                          | Multi-currency support
+    [Admin & Operations] Operations                          | Billing threshold control
+    [Admin & Operations] Revenue & Accounts                  | Credit patient management
+    [Admin & Operations] Revenue & Accounts                  | GST compliance (invoicing, return filing support)
+    [Admin & Operations] Revenue & Accounts                  | TDS management
+    [Admin & Operations] Revenue & Accounts                  | Financial MIS for management (configurable dashboards)
+    [Admin & Operations] Revenue & Accounts                  | Accounting journal entries
+    [Admin & Operations] Revenue & Accounts                  | Bank reconciliation
+    [Admin & Operations] Revenue & Accounts                  | ERP integration (Tally, SAP, Odoo, Zoho Books)
+    [Admin & Operations] Revenue & Accounts                  | Profit & loss by department
+
+  MODULE: Blood Bank (7 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Diagnostics & Support] Cross-Match & Issue                 | Unused blood return workflow with temperature verification
+    [Diagnostics & Support] Cross-Match & Issue                 | Maximum Surgical Blood Order Schedule (MSBOS) enforcement
+    [Diagnostics & Support] Donor Mgmt                          | Repeat donor tracking and recruitment management
+    [Diagnostics & Support] Hemovigilance                       | Lookback/traceback for post-donation infection detection
+    [Diagnostics & Support] Hemovigilance                       | SBTC (State Blood Transfusion Council) compliance reporting
+    [Diagnostics & Support] Hemovigilance                       | Blood bank billing
+    [Diagnostics & Support] Processing & Storage                | Cold chain monitoring (refrigerator/freezer temperature IoT alerts)
+
+  MODULE: Chronic Care (8 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Clinical] Drug-o-gram                         | Drug-o-gram — visual timeline of all medications for chronic patients (diabetes, TB, 
+    [Clinical] Drug-o-gram                         | Medication change tracking on timeline (start, stop, dose change, switch)
+    [Clinical] Drug-o-gram                         | Side-by-side lab value overlay on drug timeline (HbA1c trend vs insulin dose)
+    [Clinical] Drug-o-gram                         | Treatment program enrollment (TB DOTS, HIV ART, Diabetes, Hypertension)
+    [Clinical] Drug-o-gram                         | Protocol adherence tracking — missed doses, late refills, appointment no-shows
+    [Clinical] Drug-o-gram                         | Chronic disease outcome dashboard (target vs actual — BP, sugar, viral load)
+    [Clinical] Drug-o-gram                         | Multi-drug interaction timeline alerts for polypharmacy patients
+    [Clinical] Drug-o-gram                         | Printable chronic treatment summary for patient/referral
+
+  MODULE: Data Quality (5 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [IT, Security & Infrastructure] Completeness                        | Data completeness dashboard — % of records with missing demographics, diagnosis, vita
+    [IT, Security & Infrastructure] Completeness                        | Mandatory field compliance tracking per department
+    [IT, Security & Infrastructure] Duplicates                          | Duplicate patient detection (fuzzy matching on name, DOB, phone, Aadhaar)
+    [IT, Security & Infrastructure] Reports                             | Monthly data quality scorecard per department (completeness, accuracy, timeliness)
+    [IT, Security & Infrastructure] Timeliness                          | Documentation timeliness — time from event to chart entry per department
+
+  MODULE: Ext Lab (13 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Multi-Hospital & Vendors] Billing                             | Reference lab billing reconciliation (hospital price vs lab price, margin tracking)
+    [Multi-Hospital & Vendors] Billing                             | Split billing for outsourced tests (patient pays hospital, hospital remits to lab)
+    [Multi-Hospital & Vendors] NABL                                | NABL accredited lab preference in routing rules
+    [Multi-Hospital & Vendors] Orders                              | Reference lab order routing — auto-route tests not available in-house to partner lab
+    [Multi-Hospital & Vendors] Orders                              | Reference lab directory with test menu, pricing, TAT per lab
+    [Multi-Hospital & Vendors] Orders                              | HL7/FHIR-based order transmission to external labs (ORM/OBR messages)
+    [Multi-Hospital & Vendors] QC                                  | External lab quality monitoring (proficiency testing results, accreditation status)
+    [Multi-Hospital & Vendors] Results                             | Automatic result ingestion from reference lab (HL7 ORU / FHIR DiagnosticReport)
+    [Multi-Hospital & Vendors] Results                             | External lab result review and approval workflow before patient release
+    [Multi-Hospital & Vendors] Results                             | Result branding — hospital logo on report even when test done at reference lab
+    [Multi-Hospital & Vendors] Sample                              | Sample pickup coordination (external lab courier scheduling and tracking)
+    [Multi-Hospital & Vendors] Sample                              | Sample handover documentation with temperature and time logging
+    [Multi-Hospital & Vendors] TAT                                 | External lab TAT tracking with SLA breach alerts
+
+  MODULE: Ext Pharmacy (9 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Multi-Hospital & Vendors] Billing                             | Split billing — hospital prescribes, external pharmacy bills directly to patient/insu
+    [Multi-Hospital & Vendors] Billing                             | Pharmacy commission/margin tracking for partner pharmacies
+    [Multi-Hospital & Vendors] Compliance                          | Controlled substance prescription tracking (Narcotic/Schedule H1 external dispensing 
+    [Multi-Hospital & Vendors] Fulfillment                         | External pharmacy fulfillment tracking (sent → acknowledged → dispensed → picked up)
+    [Multi-Hospital & Vendors] Fulfillment                         | Home delivery pharmacy integration (Dunzo, Swiggy Instamart, PharmEasy, 1mg)
+    [Multi-Hospital & Vendors] Prescribing                         | E-prescribing to external/retail pharmacies (electronic Rx transmission)
+    [Multi-Hospital & Vendors] Prescribing                         | Pharmacy network directory (nearby pharmacies with stock availability)
+    [Multi-Hospital & Vendors] Prescribing                         | Prescription routing — in-house first, external if out-of-stock or patient preference
+    [Multi-Hospital & Vendors] Refill                              | Prescription refill request from patient to external pharmacy via app
+
+  MODULE: Laboratory (47 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Diagnostics & Support] Analyzer Integration                | Bi-directional HL7/ASTM interface with analyzers
+    [Diagnostics & Support] Analyzer Integration                | Supported analyzer list (Sysmex, Beckman, Roche, etc.) — verify models
+    [Diagnostics & Support] Analyzer Integration                | Auto-result capture from analyzer to LIS
+    [Diagnostics & Support] Analyzer Integration                | Worklist generation for analyzer from pending orders
+    [Diagnostics & Support] Analyzer Integration                | Multi-analyzer support per test (failover capability)
+    [Diagnostics & Support] Analyzer Integration                | Machine-specific drivers (Beckman, Roche, Sysmex, Siemens, Erba)
+    [Diagnostics & Support] B2B & Referral                      | B2B client registration
+    [Diagnostics & Support] B2B & Referral                      | B2B rate management (contract pricing)
+    [Diagnostics & Support] B2B & Referral                      | B2B portal (order placement, report viewing)
+    [Diagnostics & Support] B2B & Referral                      | Referral doctor registration & portal
+    [Diagnostics & Support] B2B & Referral                      | Referral doctor payout/commission management
+    [Diagnostics & Support] B2B & Referral                      | Bulk invoicing for postpaid accounts
+    [Diagnostics & Support] B2B & Referral                      | Credit management
+    [Diagnostics & Support] B2B & Referral                      | Online payment settlement on portal
+    [Diagnostics & Support] QC & NABL                           | Internal QC (Levey-Jennings charts, Westgard rules)
+    [Diagnostics & Support] QC & NABL                           | External QA program (EQAS) result tracking
+    [Diagnostics & Support] QC & NABL                           | Calibration tracking per analyzer/method
+    [Diagnostics & Support] QC & NABL                           | Reagent lot tracking with expiry management
+    [Diagnostics & Support] QC & NABL                           | Reagent consumption reports & re-order alerts
+    [Diagnostics & Support] QC & NABL                           | NABL document control integration
+    [Diagnostics & Support] QC & NABL                           | Proficiency testing result management
+    [Diagnostics & Support] QC & NABL                           | CAP accreditation compliance
+    [Diagnostics & Support] Results & Reporting                 | Delta check (comparison with previous result for same patient)
+    [Diagnostics & Support] Results & Reporting                 | Cumulative report view for repeat investigations
+    [Diagnostics & Support] Results & Reporting                 | Report format customization per department
+    [Diagnostics & Support] Results & Reporting                 | Preliminary report generation
+    [Diagnostics & Support] Results & Reporting                 | Report locking (auto-lock after approval)
+    [Diagnostics & Support] Results & Reporting                 | Report amendment with audit trail
+    [Diagnostics & Support] Results & Reporting                 | Omni-channel report delivery (WhatsApp, SMS, Email)
+    [Diagnostics & Support] Results & Reporting                 | Bulk report printing
+    [Diagnostics & Support] Results & Reporting                 | Report dispatch tracking
+    [Diagnostics & Support] Results & Reporting                 | Referring doctor portal (view reports)
+    [Diagnostics & Support] Results & Reporting                 | Trend charts (patient lab value history)
+    [Diagnostics & Support] Results & Reporting                 | QR code on lab reports (verification)
+    [Diagnostics & Support] Results & Reporting                 | STAT test monitoring
+    [Diagnostics & Support] Sample Management                   | Phlebotomy queue management for walk-in patients
+    [Diagnostics & Support] Sample Management                   | Phlebotomist assignment
+    [Diagnostics & Support] Sample Management                   | Home collection management
+    [Diagnostics & Support] Sample Management                   | Collection center management
+    [Diagnostics & Support] Sample Management                   | Camp-based sample collection
+    [Diagnostics & Support] Sample Management                   | Outsourced test management (external lab integration)
+    [Diagnostics & Support] Sample Management                   | Sample archival & retrieval
+    [Diagnostics & Support] Sample Management                   | Add-on test to existing sample
+    [Diagnostics & Support] Specialized Labs                    | Histopathology — gross/microscopy, special stains, IHC, synoptic reporting
+    [Diagnostics & Support] Specialized Labs                    | Blood bank cross-match integration
+    [Diagnostics & Support] Specialized Labs                    | Cytology (Pap smear, FNAC) reporting
+    [Diagnostics & Support] Specialized Labs                    | Molecular/PCR result management
+
+  MODULE: OPD (5 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Clinical] Appointments                        | Online appointment booking (patient portal/app)
+    [Clinical] Appointments                        | QR code check-in at kiosk
+    [Clinical] Appointments                        | Token display system (TV/monitor)
+    [Clinical] Appointments                        | SMS/WhatsApp appointment reminders
+    [Clinical] Appointments                        | Waiting time estimation
+
+  MODULE: Onboarding (7 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [IT, Security & Infrastructure] Wizard                              | Step-by-step hospital setup wizard (org details → departments → users → config)
+    [IT, Security & Infrastructure] Wizard                              | Import existing data (CSV/Excel for patients, doctors, inventory)
+    [IT, Security & Infrastructure] Wizard                              | Template selection (clinic vs hospital vs chain — pre-configured modules)
+    [IT, Security & Infrastructure] Wizard                              | Branding setup (logo, colors, letterhead, receipt format)
+    [IT, Security & Infrastructure] Wizard                              | Integration configuration (ABDM, payment gateway, SMS/WhatsApp)
+    [IT, Security & Infrastructure] Wizard                              | Sample data mode (demo patients/visits for training)
+    [IT, Security & Infrastructure] Wizard                              | Progress tracker with completion percentage
+
+  MODULE: Printing (137 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Printing & Forms] Admin/BME Forms                     | Employee ID Card (photo, designation, dept, access zone, barcode)
+    [Printing & Forms] Admin/BME Forms                     | Duty Roster / Shift Schedule (dept-wise grid)
+    [Printing & Forms] Admin/BME Forms                     | Leave Application Form
+    [Printing & Forms] Admin/BME Forms                     | Staff Attendance Report (monthly)
+    [Printing & Forms] Admin/BME Forms                     | Training Attendance / Certificate
+    [Printing & Forms] Admin/BME Forms                     | Staff Credential Verification Form
+    [Printing & Forms] Admin/BME Forms                     | Visitor Register (daily for security desk)
+    [Printing & Forms] Admin/BME Forms                     | Indent Form (dept → store requisition)
+    [Printing & Forms] Admin/BME Forms                     | Purchase Order (hospital letterhead, authorized signatory)
+    [Printing & Forms] Admin/BME Forms                     | Goods Receipt Note (GRN)
+    [Printing & Forms] Admin/BME Forms                     | Material Issue Voucher
+    [Printing & Forms] Admin/BME Forms                     | Stock Transfer Voucher (inter-location)
+    [Printing & Forms] Admin/BME Forms                     | Controlled Substance Register (NDPS narcotic drug log)
+    [Printing & Forms] Admin/BME Forms                     | Drug Expiry Alert List (monthly for pharmacy)
+    [Printing & Forms] Admin/BME Forms                     | Equipment Condemnation Form (committee approval)
+    [Printing & Forms] Admin/BME Forms                     | AMC/CMC Contract Summary Sheet
+    [Printing & Forms] Admin/BME Forms                     | Equipment Maintenance Work Order
+    [Printing & Forms] Admin/BME Forms                     | PM Checklist (per equipment type)
+    [Printing & Forms] Admin/BME Forms                     | Calibration Certificate / Record
+    [Printing & Forms] Admin/BME Forms                     | Equipment Breakdown Report
+    [Printing & Forms] Admin/BME Forms                     | Equipment History Card (lifecycle summary)
+    [Printing & Forms] Admin/BME Forms                     | MGPS Daily Log (O2 purity, pressure, manifold, consumption)
+    [Printing & Forms] Admin/BME Forms                     | Water Quality Test Record Sheet
+    [Printing & Forms] Admin/BME Forms                     | DG/UPS Run Log
+    [Printing & Forms] Admin/BME Forms                     | Fire Equipment Inspection Checklist
+    [Printing & Forms] Billing Prints                      | OPD Bill / Receipt (charges, GST breakup, payment mode)
+    [Printing & Forms] Billing Prints                      | IPD Interim Bill (running bill for long-stay)
+    [Printing & Forms] Billing Prints                      | IPD Final Bill (itemized: room, investigation, procedure, pharmacy, consumables, fees
+    [Printing & Forms] Billing Prints                      | Advance / Deposit Receipt
+    [Printing & Forms] Billing Prints                      | Refund Receipt
+    [Printing & Forms] Billing Prints                      | Insurance / TPA Pre-Authorization Form
+    [Printing & Forms] Billing Prints                      | Cashless Claim Form (treatment details auto-filled)
+    [Printing & Forms] Billing Prints                      | Credit Note (returns/adjustments)
+    [Printing & Forms] Billing Prints                      | Package Bill (surgery/day care with inclusions/exclusions)
+    [Printing & Forms] Billing Prints                      | Estimate / Proforma Invoice (pre-admission cost estimate)
+    [Printing & Forms] Billing Prints                      | CGHS / ECHS / ESI / Ayushman Bharat claim forms
+    [Printing & Forms] Billing Prints                      | TDS Certificate (Form 16A for vendor payments)
+    [Printing & Forms] Billing Prints                      | GST Invoice (GSTIN, SAC codes)
+    [Printing & Forms] Branding & Signage                  | Multi-entity branding (Hospital vs Medical College vs Trust)
+    [Printing & Forms] Clinical Prints                     | OPD Prescription Print (logo, doctor Reg No, drug details, signature, follow-up, phar
+    [Printing & Forms] Clinical Prints                     | IPD Treatment Chart (medication schedule, nurse initials grid)
+    [Printing & Forms] Clinical Prints                     | Death Certificate (Form 4/4A per Registration of Births and Deaths Act)
+    [Printing & Forms] Clinical Prints                     | Transfer Summary (inter-dept/hospital clinical handover)
+    [Printing & Forms] Clinical Prints                     | Patient Education Material (disease-specific, post-operative care instructions)
+    [Printing & Forms] Consent Forms                       | General Consent for Admission & Treatment
+    [Printing & Forms] Consent Forms                       | Surgical / Procedure-Specific Consent (risks, benefits, alternatives)
+    [Printing & Forms] Consent Forms                       | Anesthesia Consent
+    [Printing & Forms] Consent Forms                       | Blood Transfusion Consent
+    [Printing & Forms] Consent Forms                       | HIV Testing Consent
+    [Printing & Forms] Consent Forms                       | Informed Refusal / AMA / DAMA / LAMA Form
+    [Printing & Forms] Consent Forms                       | Photography / Video / Telemedicine Consent
+    [Printing & Forms] Consent Forms                       | Teaching / Student Observation Consent
+    [Printing & Forms] Consent Forms                       | Research Participation Consent (IEC-approved)
+    [Printing & Forms] Consent Forms                       | ABDM/ABHA Health Data Sharing Consent
+    [Printing & Forms] Consent Forms                       | DNR / Advance Directive / End-of-Life Wishes
+    [Printing & Forms] Consent Forms                       | Organ Donation Consent (THOA compliance)
+    [Printing & Forms] Consent Forms                       | DPDP Act Data Processing Consent
+    [Printing & Forms] Consent Forms                       | Video consent recording attachment (QR to video on printed form)
+    [Printing & Forms] IC & Safety Forms                   | Incident Report Form (medication error, fall, near-miss, sentinel)
+    [Printing & Forms] IC & Safety Forms                   | RCA Template (NABH format)
+    [Printing & Forms] IC & Safety Forms                   | CAPA Tracking Form
+    [Printing & Forms] IC & Safety Forms                   | ADR Report Form (PvPI format for CDSCO)
+    [Printing & Forms] IC & Safety Forms                   | Transfusion Reaction Report Form (Hemovigilance NACO)
+    [Printing & Forms] IC & Safety Forms                   | Equipment Malfunction / Materiovigilance Report Form
+    [Printing & Forms] IC & Safety Forms                   | Fire Safety Mock Drill Report Form
+    [Printing & Forms] Identity Prints                     | Patient Registration Card (UHID, Name, Photo, QR, Blood Group)
+    [Printing & Forms] Identity Prints                     | Patient Wristband — IPD (Name, UHID, DOB, Blood Group, Allergy, Barcode)
+    [Printing & Forms] Identity Prints                     | Infant Wristband — NICU (Mother name, Baby ID, DOB, Gender, RFID)
+    [Printing & Forms] Identity Prints                     | Queue Token Slip (Token no, Doctor, Dept, Wait time)
+    [Printing & Forms] Identity Prints                     | Appointment Confirmation Slip (Date, Time, Doctor, Dept, Prep instructions)
+    [Printing & Forms] Identity Prints                     | Visitor Pass (Name, Photo, Ward/Bed, Time-limited, QR entry/exit)
+    [Printing & Forms] MRD Forms                           | Case Sheet Cover Page
+    [Printing & Forms] MRD Forms                           | Progress Notes Sheet
+    [Printing & Forms] MRD Forms                           | Nursing Assessment Form (initial + ongoing)
+    [Printing & Forms] MRD Forms                           | MAR — printable grid (drug/dose/time/nurse columns)
+    [Printing & Forms] MRD Forms                           | Vital Signs Chart (graphical trending for MRD filing)
+    [Printing & Forms] MRD Forms                           | Intake-Output Chart
+    [Printing & Forms] MRD Forms                           | Fluid Balance Chart
+    [Printing & Forms] MRD Forms                           | Pain Assessment Chart
+    [Printing & Forms] MRD Forms                           | Fall Risk Assessment Form (Morse Fall Scale)
+    [Printing & Forms] MRD Forms                           | Pressure Ulcer Risk Assessment (Braden Scale)
+    [Printing & Forms] MRD Forms                           | Glasgow Coma Scale Chart
+    [Printing & Forms] MRD Forms                           | Restraint Documentation Form (MHCA 2017 for psychiatry)
+    [Printing & Forms] MRD Forms                           | Pre-Operative Assessment Checklist
+    [Printing & Forms] MRD Forms                           | WHO Surgical Safety Checklist (printable for OT)
+    [Printing & Forms] MRD Forms                           | Anesthesia Record (pre-printed vitals grid, drug log, airway)
+    [Printing & Forms] MRD Forms                           | Operation Notes (template: procedure, findings, complications, specimens)
+    [Printing & Forms] MRD Forms                           | Post-Operative Orders Sheet
+    [Printing & Forms] MRD Forms                           | Blood Transfusion Requisition Form
+    [Printing & Forms] MRD Forms                           | Blood Transfusion Monitoring Form (bedside checklist)
+    [Printing & Forms] MRD Forms                           | Discharge Checklist (clearance from all departments)
+    [Printing & Forms] MRD Forms                           | Against Medical Advice (AMA) Form
+    [Printing & Forms] MRD Forms                           | MLC Register Entry Form
+    [Printing & Forms] MRD Forms                           | Wound Certificate
+    [Printing & Forms] MRD Forms                           | Age Estimation Form
+    [Printing & Forms] MRD Forms                           | Death Declaration Form
+    [Printing & Forms] MRD Forms                           | Medico-Legal Case Documentation Form
+    [Printing & Forms] Regulatory Prints                   | NABH Quality Indicator Report (monthly/quarterly)
+    [Printing & Forms] Regulatory Prints                   | NMC Inspection Compliance Report
+    [Printing & Forms] Regulatory Prints                   | NABL Lab Quality Report
+    [Printing & Forms] Regulatory Prints                   | SPCB BMW Quarterly Return (Form IV)
+    [Printing & Forms] Regulatory Prints                   | PESO Compliance Report (LMO storage)
+    [Printing & Forms] Regulatory Prints                   | Drug License Related Reports
+    [Printing & Forms] Regulatory Prints                   | PCPNDT Monthly Report (Form G)
+    [Printing & Forms] Regulatory Prints                   | Birth Register (municipal authority)
+    [Printing & Forms] Regulatory Prints                   | Death Register (municipal authority)
+    [Printing & Forms] Regulatory Prints                   | MLC Register (police / court)
+    [Printing & Forms] Regulatory Prints                   | AEBAS Attendance Report (government compliance)
+    [Printing & Forms] Regulatory Prints                   | NMC NARF Self-Assessment Data Report
+    [Printing & Forms] Report Prints                       | Lab Report (hospital+NABL logo, test, result, range, flag, pathologist sig, barcode)
+    [Printing & Forms] Report Prints                       | Cumulative Lab Report (multiple visits side-by-side trending)
+    [Printing & Forms] Report Prints                       | Microbiology Culture Sensitivity Report (organism, antibiotic, MIC, S/I/R)
+    [Printing & Forms] Report Prints                       | Histopathology Report (synoptic for cancers)
+    [Printing & Forms] Report Prints                       | Radiology Report (logo, key images, radiologist sig + Reg No)
+    [Printing & Forms] Report Prints                       | Blood Bank Cross-Match Report (ABO/Rh, bag number, expiry)
+    [Printing & Forms] Report Prints                       | Blood Component Issue Slip (bag barcode, patient verification)
+    [Printing & Forms] Report Prints                       | Investigation Requisition Form (auto-printed from e-order)
+    [Printing & Forms] Specialty/Academic Forms            | OT Register (daily OT list)
+    [Printing & Forms] Specialty/Academic Forms            | Blood Bank Donor Registration Form
+    [Printing & Forms] Specialty/Academic Forms            | Blood Bank Cross-Match Requisition
+    [Printing & Forms] Specialty/Academic Forms            | Student Admission Form
+    [Printing & Forms] Specialty/Academic Forms            | Intern Rotation Schedule / Posting Order
+    [Printing & Forms] Specialty/Academic Forms            | PG Logbook Case Entry (HMS auto-populated)
+    [Printing & Forms] Specialty/Academic Forms            | Intern Logbook Entry Form
+    [Printing & Forms] Specialty/Academic Forms            | Internal Assessment Mark Sheet
+    [Printing & Forms] Specialty/Academic Forms            | Exam Hall Ticket
+    [Printing & Forms] Specialty/Academic Forms            | OSCE Station Scoring Sheet
+    [Printing & Forms] Specialty/Academic Forms            | Simulation Session Debriefing Form
+    [Printing & Forms] Specialty/Academic Forms            | CME / FDP Certificate (QR verified)
+    [Printing & Forms] Specialty/Academic Forms            | IEC Ethics Approval Certificate
+    [Printing & Forms] Specialty/Academic Forms            | Research Proposal Submission Form
+    [Printing & Forms] Specialty/Academic Forms            | Hostel Room Allotment Order
+    [Printing & Forms] Specialty/Academic Forms            | Anti-Ragging Undertaking (student + parent)
+    [Printing & Forms] Specialty/Academic Forms            | Disability Accommodation Plan Form
+    [Printing & Forms] Specialty/Academic Forms            | Internship Completion Certificate (NMC format)
+    [Printing & Forms] Specialty/Academic Forms            | Service Bond Agreement
+    [Printing & Forms] Specialty/Academic Forms            | Stipend Payment Advice
+
+  MODULE: Radiology (8 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Diagnostics & Support] AERB Compliance                     | Personnel dosimetry record integration
+    [Diagnostics & Support] PACS & DICOM                        | DICOM image storage and retrieval
+    [Diagnostics & Support] PACS & DICOM                        | Web-based DICOM viewer (no thick client needed)
+    [Diagnostics & Support] PACS & DICOM                        | Prior study comparison (side-by-side)
+    [Diagnostics & Support] PACS & DICOM                        | Image sharing with referring doctor via DICOM viewer link
+    [Diagnostics & Support] PACS & DICOM                        | CD/USB burning for patient with viewer
+    [Diagnostics & Support] PACS & DICOM                        | Integration with Orthanc or existing PACS
+    [Diagnostics & Support] Reporting                           | Voice-to-text dictation for radiology reports
+
+  MODULE: Teleradiology (5 pending features)
+  ------------------------------------------------------------------------------------------------------------------------
+    [Multi-Hospital & Vendors] Billing                             | Teleradiology fee management (per-study billing to external radiologist)
+    [Multi-Hospital & Vendors] PACS                                | Cloud PACS integration for multi-site image access
+    [Multi-Hospital & Vendors] Reporting                           | DICOM image transmission to external reporting radiologist (teleradiology)
+    [Multi-Hospital & Vendors] Reporting                           | External radiologist report ingestion (structured report with findings/impression)
+    [Multi-Hospital & Vendors] Reporting                           | After-hours / weekend teleradiology routing (auto-send to night-reading partner)
+
+
+Audit complete.

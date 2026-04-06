@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmit": true,
+    "lib": ["ES2020"],
+    "jsx": "react-native",
+    "types": ["react-native"],
+    "baseUrl": ".",
+    "paths": {
+      "@medbrains/types": ["../../packages/types/src"],
+      "@medbrains/utils": ["../../packages/utils/src"],
+      "@medbrains/schemas": ["../../packages/schemas/src"],
+      "@medbrains/api": ["../../packages/api/src"],
+      "@medbrains/stores": ["../../packages/stores/src"]
+    }
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@medbrains/expressions",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@medbrains/types": "workspace:*",
+    "expr-eval": "^2.0.2",
+    "json-logic-js": "^2.0.5",
+    "handlebars": "^4.7.8"
+  }
+}

@@ -1,0 +1,416 @@
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--mantine-color-body);
+}
+
+#root {
+  height: 100%;
+}
+
+// ─── Selection ───
+::selection {
+  background: var(--mb-selection-bg);
+  color: var(--mb-text-primary);
+}
+
+// ─── Focus ring (branded indigo) ───
+:focus-visible {
+  outline: 2px solid var(--mb-focus-ring);
+  outline-offset: 2px;
+}
+
+// ─── Animations ───
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes staggerIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── LAYOUT SHELL ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+
+.mantine-AppShell-main {
+  background: var(--mb-bg-content);
+  animation: pageEnter 0.2s ease-out;
+}
+
+.mantine-AppShell-navbar {
+  background: var(--mb-sidebar-bg);
+  border-right: 1px solid var(--mb-border-subtle);
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--mb-text-faint);
+    border-radius: 3px;
+  }
+}
+
+// Header — frosted glass effect
+.mantine-AppShell-header {
+  background: var(--mb-header-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--mb-border-subtle);
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: var(--mb-text-faint);
+  border-radius: 3px;
+  &:hover { background-color: var(--mb-text-muted); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── BUTTONS — 3 distinct visual tiers ────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//
+// FILLED (primary CTA): solid indigo bg, white text, colored glow shadow
+// DEFAULT (secondary):  white bg, no border, neutral shadow, floats
+// LIGHT (tertiary):     soft tinted bg, matching text, subtle lift
+// OUTLINE:              white bg + themed border, clean corporate
+// SUBTLE:               no bg, text only, hover reveals tint
+//
+
+.mantine-Button-root {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+
+  &:active { transform: scale(0.97); }
+
+  // Filled — branded glow shadow (indigo tinted)
+  &[data-variant="filled"] {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 12px var(--mantine-color-primary-light);
+
+    &:hover {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 8px 20px var(--mantine-color-primary-light);
+      transform: translateY(-1px);
+    }
+  }
+
+  // Default — white floating pill, no border
+  &[data-variant="default"] {
+    background: var(--mb-card-bg);
+    border-color: var(--mb-border);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.03);
+
+    &:hover {
+      background: var(--mb-card-bg);
+      border-color: var(--mb-text-faint);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.05);
+      transform: translateY(-1px);
+    }
+  }
+
+  // Light — soft tinted bg with subtle lift
+  &[data-variant="light"] {
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transform: translateY(-1px);
+    }
+  }
+
+  // Outline — white bg, clean border
+  &[data-variant="outline"] {
+    background: var(--mb-card-bg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+    &:hover {
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── ACTION ICONS — white floating or subtle ghost ────────────
+// ═══════════════════════════════════════════════════════════════
+
+.mantine-ActionIcon-root {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:active { transform: scale(0.92); }
+
+  &[data-variant="default"] {
+    background: var(--mb-card-bg);
+    border-color: var(--mb-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    &:hover {
+      border-color: var(--mb-text-faint);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  &[data-variant="subtle"] {
+    &:hover {
+      background: var(--mb-bg-content);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── INPUTS — pill shape, subtle border → glow on focus ───────
+// ═══════════════════════════════════════════════════════════════
+
+.mantine-TextInput-input,
+.mantine-Textarea-input,
+.mantine-NumberInput-input,
+.mantine-PasswordInput-input,
+.mantine-PasswordInput-innerInput,
+.mantine-Select-input,
+.mantine-DateInput-input,
+.mantine-MultiSelect-input {
+  background: var(--mb-input-bg);
+  border-color: var(--mb-border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--mb-text-faint);
+  }
+
+  &:focus,
+  &:focus-within {
+    border-color: var(--mb-focus-ring);
+    box-shadow: 0 0 0 3px var(--mantine-color-primary-light);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── BADGES — semantic status chips ───────────────────────────
+// ═══════════════════════════════════════════════════════════════
+//
+// light variant = soft tinted bg with matching text
+// No border, pill shape, clean status indication
+//
+
+.mantine-Badge-root {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  &[data-variant="light"] {
+    border: none;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── CARDS & PAPER — white, borderless, layered shadows ───────
+// ═══════════════════════════════════════════════════════════════
+
+.mantine-Card-root,
+.mantine-Paper-root {
+  background: var(--mb-card-bg);
+}
+
+// ─── Stat cards: entrance + hover lift ───
+.stat-card {
+  animation: scaleIn 0.25s ease-out backwards;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 75}ms;
+    }
+  }
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03), 0 12px 32px rgba(0, 0, 0, 0.08);
+    transform: translateY(-3px);
+  }
+}
+
+// ─── Clickable cards ───
+.clickable-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03), 0 12px 32px rgba(0, 0, 0, 0.08);
+    transform: translateY(-3px);
+  }
+
+  &:active { transform: scale(0.99); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── TABLES — clean, professional data display ────────────────
+// ═══════════════════════════════════════════════════════════════
+
+.mantine-Table-th {
+  background: var(--mb-table-header-bg) !important;
+  color: var(--mb-text-muted) !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--mb-table-border) !important;
+}
+
+.mantine-Table-tr {
+  transition: background-color 0.1s ease;
+}
+
+.mantine-Table-tbody .mantine-Table-tr {
+  animation: staggerIn 0.2s ease-out backwards;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 30}ms;
+    }
+  }
+}
+
+.mantine-Table-tbody .mantine-Table-tr:hover {
+  background-color: var(--mb-table-hover) !important;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── NAVIGATION ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+
+.mantine-NavLink-root {
+  animation: staggerIn 0.2s ease-out backwards;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 25}ms;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── TABS — smooth entry animation + button transitions ───────
+// ═══════════════════════════════════════════════════════════════
+
+@keyframes tabPanelEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mantine-Tabs-panel {
+  animation: tabPanelEnter 0.2s ease-out;
+}
+
+.mantine-Tabs-tab {
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &[data-active] {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── OVERLAYS — floating, borderless ──────────────────────────
+// ═══════════════════════════════════════════════════════════════
+
+.mantine-Menu-dropdown {
+  border-color: var(--mb-border-subtle);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04), 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.mantine-Popover-dropdown {
+  border-color: var(--mb-border-subtle);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04), 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.mantine-Modal-content {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04), 0 20px 48px rgba(0, 0, 0, 0.1);
+}
+
+.mantine-Tooltip-tooltip {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── GRADIENT UTILITIES (CTA: "Ask AI", "Book a Call") ────────
+// ═══════════════════════════════════════════════════════════════
+
+.gradient-accent {
+  background: linear-gradient(135deg, #f97316 0%, #ec4899 35%, #8b5cf6 70%, #6366f1 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 6px 24px rgba(139, 92, 246, 0.4);
+    transform: translateY(-1px);
+  }
+}
+
+.gradient-accent-soft {
+  background: linear-gradient(
+    135deg,
+    rgba(249, 115, 22, 0.1) 0%,
+    rgba(236, 72, 153, 0.1) 35%,
+    rgba(139, 92, 246, 0.1) 70%,
+    rgba(99, 102, 241, 0.1) 100%
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── UTILITIES ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+
+.page-content {
+  animation: pageEnter 0.2s ease-out;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, var(--mb-shimmer-from) 25%, var(--mb-shimmer-mid) 50%, var(--mb-shimmer-from) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+// ─── Reduced motion ───
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

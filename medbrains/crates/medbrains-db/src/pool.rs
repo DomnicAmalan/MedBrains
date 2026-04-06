@@ -1,0 +1,76 @@
+use sqlx::{PgPool, Postgres, Transaction, postgres::PgPoolOptions};
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum DbError {
+    #[error("database error: {0}")]
+    Sqlx(#[from] sqlx::Error),
+
+    #[error("migration error: {0}")]
+    Migrate(#[from] sqlx::migrate::MigrateError),
+}
+
+/// Create a `PostgreSQL` connection pool with sensible defaults.
+pub async fn create_pool(database_url: &str) -> Result<PgPool, DbError> {
+    let pool = PgPoolOptions::new()
+        .max_connections(20)
+        .min_connections(2)
+        .acquire_timeout(std::time::Duration::from_secs(5))
+        .connect(database_url)
+        .await?;
+
+    tracing::info!("PostgreSQL connection pool established");
+    Ok(pool)
+}
+
+/// Run embedded `SQLx` migrations.
+pub async fn run_migrations(pool: &PgPool) -> Result<(), DbError> {
+    sqlx::migrate!("src/migrations").run(pool).await?;
+    tracing::info!("Database migrations applied");
+    Ok(())
+}
+
+/// Set the tenant context for Row-Level Security within a transaction.
+/// This ensures RLS applies to the correct connection, not a random pool connection.
+pub async fn set_tenant_context(
+    tx: &mut Transaction<'_, Postgres>,
+    tenant_id: &uuid::Uuid,
+) -> Result<(), DbError> {
+    sqlx::query("SELECT set_config('app.tenant_id', $1::text, true)")
+        .bind(tenant_id.to_string())
+        .execute(&mut **tx)
+        .await?;
+    Ok(())
+}
+
+/// Set both tenant and department context for RLS.
+///
+/// Sets `app.tenant_id` for tenant isolation and `app.user_department_ids`
+/// for department-scoped policies. Pass an empty slice for bypass roles
+/// (no department restriction).
+pub async fn set_full_context(
+    tx: &mut Transaction<'_, Postgres>,
+    tenant_id: &uuid::Uuid,
+    department_ids: &[uuid::Uuid],
+) -> Result<(), DbError> {
+    set_tenant_context(tx, tenant_id).await?;
+
+    let dept_str = if department_ids.is_empty() {
+        String::new()
+    } else {
+        let parts: Vec<String> = department_ids.iter().map(ToString::to_string).collect();
+        format!("{{{}}}", parts.join(","))
+    };
+
+    sqlx::query("SELECT set_config('app.user_department_ids', $1::text, true)")
+        .bind(&dept_str)
+        .execute(&mut **tx)
+        .await?;
+    Ok(())
+}
+
+/// Simple health check — runs `SELECT 1`.
+pub async fn health_check(pool: &PgPool) -> Result<bool, DbError> {
+    let row: (i32,) = sqlx::query_as("SELECT 1").fetch_one(pool).await?;
+    Ok(row.0 == 1)
+}

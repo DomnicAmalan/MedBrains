@@ -1,0 +1,27 @@
+// ─── DataTable — sticky header + enhanced visuals ───
+
+.tableWrapper {
+  overflow: auto;
+  max-height: calc(100vh - 280px);
+}
+
+.stickyHead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.columnHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.columnIcon {
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.footerCount {
+  font-variant-numeric: tabular-nums;
+}

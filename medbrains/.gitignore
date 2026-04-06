@@ -1,0 +1,71 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Environment
+.env
+.env*.local
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/launch.json
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+apps/web/dist/
+packages/*/lib/
+
+# Test coverage
+coverage/
+
+# Turbo
+.turbo/
+
+# React Native — Mobile
+apps/mobile/android/app/build/
+apps/mobile/android/build/
+apps/mobile/android/.gradle/
+apps/mobile/ios/build/
+apps/mobile/ios/Pods/
+
+# React Native — TV
+apps/tv/android/app/build/
+apps/tv/android/build/
+apps/tv/android/.gradle/
+
+# Metro
+*.hbc
+
+# Profiling
+flamegraph.svg
+perf.data
+perf.data.old
+
+# SQLx offline data
+.sqlx/
+
+# Docker volumes
+pgdata/
+yottadata/
+
+# TanStack
+.tanstack/
+
+# Playwright
+apps/web/e2e/.auth/
+apps/web/test-results/
+apps/web/playwright-report/
+
+# Generated smoke tests (regenerate via: make generate-smoke)
+apps/web/e2e/smoke/*.smoke.spec.ts

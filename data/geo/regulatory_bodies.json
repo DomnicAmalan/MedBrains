@@ -1,0 +1,1038 @@
+[
+  {
+    "code": "JCI",
+    "name": "Joint Commission International",
+    "level": "international",
+    "country_code": null,
+    "description": "Global hospital accreditation and quality standards"
+  },
+  {
+    "code": "WHO",
+    "name": "World Health Organization",
+    "level": "international",
+    "country_code": null,
+    "description": "United Nations agency for international public health"
+  },
+  {
+    "code": "ISQua",
+    "name": "International Society for Quality in Health Care",
+    "level": "international",
+    "country_code": null,
+    "description": "International accreditation body for healthcare quality organizations"
+  },
+  {
+    "code": "GHA",
+    "name": "Global Healthcare Accreditation",
+    "level": "international",
+    "country_code": null,
+    "description": "Accreditation for medical travel and health tourism programs"
+  },
+  {
+    "code": "ACI",
+    "name": "Accreditation Canada International",
+    "level": "international",
+    "country_code": null,
+    "description": "International arm of Accreditation Canada for global health accreditation"
+  },
+
+  {
+    "code": "NABH",
+    "name": "National Accreditation Board for Hospitals & Healthcare Providers",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Indian hospital accreditation under Quality Council of India"
+  },
+  {
+    "code": "NABL",
+    "name": "National Accreditation Board for Testing and Calibration Laboratories",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Indian laboratory accreditation under Quality Council of India"
+  },
+  {
+    "code": "NMC",
+    "name": "National Medical Commission",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Regulates medical education and practice in India"
+  },
+  {
+    "code": "INC",
+    "name": "Indian Nursing Council",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Regulates nursing education and practice in India"
+  },
+  {
+    "code": "PCI",
+    "name": "Pharmacy Council of India",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Regulates pharmacy education and practice in India"
+  },
+  {
+    "code": "DCI",
+    "name": "Dental Council of India",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Regulates dental education and practice in India"
+  },
+  {
+    "code": "CDSCO",
+    "name": "Central Drugs Standard Control Organisation",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Indian national regulatory body for pharmaceuticals and medical devices"
+  },
+  {
+    "code": "AERB",
+    "name": "Atomic Energy Regulatory Board",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Regulates use of ionizing radiation in medical facilities in India"
+  },
+  {
+    "code": "PNDT",
+    "name": "Pre-Natal Diagnostic Techniques Act Authority",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Regulates prenatal diagnostic techniques to prevent sex selection in India"
+  },
+  {
+    "code": "PCPNDT",
+    "name": "Pre-Conception and Pre-Natal Diagnostic Techniques Act Authority",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Enforces prohibition of sex selection and regulates prenatal diagnostics in India"
+  },
+  {
+    "code": "NACO",
+    "name": "National AIDS Control Organisation",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Leads HIV/AIDS control programme and blood safety standards in India"
+  },
+  {
+    "code": "FSSAI",
+    "name": "Food Safety and Standards Authority of India",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Regulates food safety in hospital kitchens and dietary services in India"
+  },
+  {
+    "code": "CPCB",
+    "name": "Central Pollution Control Board",
+    "level": "national",
+    "country_code": "IN",
+    "description": "Regulates biomedical waste management and environmental compliance in India"
+  },
+  {
+    "code": "ABDM",
+    "name": "Ayushman Bharat Digital Mission",
+    "level": "national",
+    "country_code": "IN",
+    "description": "National digital health ecosystem including ABHA IDs and health records in India"
+  },
+
+  {
+    "code": "UGC",
+    "name": "University Grants Commission",
+    "level": "education",
+    "country_code": "IN",
+    "description": "Regulates university-level education standards and funding in India"
+  },
+  {
+    "code": "AICTE",
+    "name": "All India Council for Technical Education",
+    "level": "education",
+    "country_code": "IN",
+    "description": "Regulates technical and professional education including biomedical engineering in India"
+  },
+  {
+    "code": "NAAC",
+    "name": "National Assessment and Accreditation Council",
+    "level": "education",
+    "country_code": "IN",
+    "description": "Accredits higher education institutions including medical colleges in India"
+  },
+  {
+    "code": "NBA",
+    "name": "National Board of Accreditation",
+    "level": "education",
+    "country_code": "IN",
+    "description": "Accredits technical and professional programmes in India"
+  },
+  {
+    "code": "NBE",
+    "name": "National Board of Examinations in Medical Sciences",
+    "level": "education",
+    "country_code": "IN",
+    "description": "Conducts DNB and postgraduate medical examinations in India"
+  },
+  {
+    "code": "RGUHS",
+    "name": "Rajiv Gandhi University of Health Sciences",
+    "level": "education",
+    "country_code": "IN",
+    "description": "State health university for Karnataka affiliating medical and allied health colleges"
+  },
+  {
+    "code": "TNMGRMU",
+    "name": "Tamil Nadu Dr. M.G.R. Medical University",
+    "level": "education",
+    "country_code": "IN",
+    "description": "State medical university for Tamil Nadu affiliating medical and health science colleges"
+  },
+  {
+    "code": "MUHS",
+    "name": "Maharashtra University of Health Sciences",
+    "level": "education",
+    "country_code": "IN",
+    "description": "State health university for Maharashtra affiliating medical and health science colleges"
+  },
+
+  {
+    "code": "CMS",
+    "name": "Centers for Medicare & Medicaid Services",
+    "level": "national",
+    "country_code": "US",
+    "description": "Federal agency administering Medicare, Medicaid, and hospital conditions of participation"
+  },
+  {
+    "code": "TJC",
+    "name": "The Joint Commission",
+    "level": "national",
+    "country_code": "US",
+    "description": "Accredits and certifies healthcare organizations and programs in the United States"
+  },
+  {
+    "code": "DNV",
+    "name": "DNV Healthcare",
+    "level": "national",
+    "country_code": "US",
+    "description": "CMS-approved hospital accreditation integrating ISO 9001 quality management"
+  },
+  {
+    "code": "AAAHC",
+    "name": "Accreditation Association for Ambulatory Health Care",
+    "level": "national",
+    "country_code": "US",
+    "description": "Accredits ambulatory and outpatient healthcare facilities in the United States"
+  },
+  {
+    "code": "NCQA",
+    "name": "National Committee for Quality Assurance",
+    "level": "national",
+    "country_code": "US",
+    "description": "Accredits health plans and certifies healthcare quality programs in the United States"
+  },
+  {
+    "code": "HFAP",
+    "name": "Healthcare Facilities Accreditation Program",
+    "level": "national",
+    "country_code": "US",
+    "description": "CMS-approved deeming authority for hospital accreditation in the United States"
+  },
+
+  {
+    "code": "CQC",
+    "name": "Care Quality Commission",
+    "level": "national",
+    "country_code": "GB",
+    "description": "Independent regulator of health and social care in England"
+  },
+  {
+    "code": "NHSE",
+    "name": "NHS England",
+    "level": "national",
+    "country_code": "GB",
+    "description": "Oversees NHS commissioning, quality standards, and provider performance in England"
+  },
+  {
+    "code": "GMC",
+    "name": "General Medical Council",
+    "level": "national",
+    "country_code": "GB",
+    "description": "Regulates medical education and physician licensing in the United Kingdom"
+  },
+  {
+    "code": "NMC_UK",
+    "name": "Nursing and Midwifery Council",
+    "level": "national",
+    "country_code": "GB",
+    "description": "Regulates nursing and midwifery professionals in the United Kingdom"
+  },
+
+  {
+    "code": "ACSQHC",
+    "name": "Australian Commission on Safety and Quality in Health Care",
+    "level": "national",
+    "country_code": "AU",
+    "description": "Develops national safety and quality standards for healthcare in Australia"
+  },
+  {
+    "code": "ACHS",
+    "name": "Australian Council on Healthcare Standards",
+    "level": "national",
+    "country_code": "AU",
+    "description": "Independent accreditation body for healthcare organizations in Australia"
+  },
+  {
+    "code": "AHPRA",
+    "name": "Australian Health Practitioner Regulation Agency",
+    "level": "national",
+    "country_code": "AU",
+    "description": "Regulates health practitioners across all professions in Australia"
+  },
+
+  {
+    "code": "AC",
+    "name": "Accreditation Canada",
+    "level": "national",
+    "country_code": "CA",
+    "description": "National accreditation body for healthcare organizations in Canada"
+  },
+  {
+    "code": "HC",
+    "name": "Health Canada",
+    "level": "national",
+    "country_code": "CA",
+    "description": "Federal department responsible for health policy, drug regulation, and safety in Canada"
+  },
+  {
+    "code": "CPSO",
+    "name": "College of Physicians and Surgeons of Ontario",
+    "level": "state",
+    "country_code": "CA",
+    "description": "Regulates medical practice and physician licensing in Ontario, Canada"
+  },
+
+  {
+    "code": "BfArM",
+    "name": "Bundesinstitut fur Arzneimittel und Medizinprodukte",
+    "level": "national",
+    "country_code": "DE",
+    "description": "Federal Institute for Drugs and Medical Devices in Germany"
+  },
+  {
+    "code": "GBA",
+    "name": "Gemeinsamer Bundesausschuss",
+    "level": "national",
+    "country_code": "DE",
+    "description": "Federal Joint Committee setting healthcare quality and coverage standards in Germany"
+  },
+
+  {
+    "code": "HAS",
+    "name": "Haute Autorite de Sante",
+    "level": "national",
+    "country_code": "FR",
+    "description": "National authority for health accreditation and clinical guidelines in France"
+  },
+
+  {
+    "code": "JCQHC",
+    "name": "Japan Council for Quality Health Care",
+    "level": "national",
+    "country_code": "JP",
+    "description": "Hospital accreditation and quality evaluation body in Japan"
+  },
+  {
+    "code": "MHLW",
+    "name": "Ministry of Health, Labour and Welfare",
+    "level": "national",
+    "country_code": "JP",
+    "description": "National regulatory authority for healthcare, pharmaceuticals, and labor in Japan"
+  },
+
+  {
+    "code": "NHSA",
+    "name": "National Health Security Administration",
+    "level": "national",
+    "country_code": "CN",
+    "description": "Administers national health insurance and medical pricing policies in China"
+  },
+  {
+    "code": "NMPA",
+    "name": "National Medical Products Administration",
+    "level": "national",
+    "country_code": "CN",
+    "description": "Regulates drugs, medical devices, and cosmetics in China"
+  },
+
+  {
+    "code": "ANVISA",
+    "name": "Agencia Nacional de Vigilancia Sanitaria",
+    "level": "national",
+    "country_code": "BR",
+    "description": "National health surveillance agency regulating pharmaceuticals and healthcare in Brazil"
+  },
+  {
+    "code": "ONA",
+    "name": "Organizacao Nacional de Acreditacao",
+    "level": "national",
+    "country_code": "BR",
+    "description": "National accreditation organization for hospitals and healthcare services in Brazil"
+  },
+
+  {
+    "code": "CBAHI",
+    "name": "Saudi Central Board for Accreditation of Healthcare Institutions",
+    "level": "national",
+    "country_code": "SA",
+    "description": "National accreditation body for healthcare facilities in Saudi Arabia"
+  },
+
+  {
+    "code": "DOH_AD",
+    "name": "Department of Health Abu Dhabi",
+    "level": "state",
+    "country_code": "AE",
+    "description": "Regulates healthcare services and licensing in Abu Dhabi, UAE"
+  },
+  {
+    "code": "DHA",
+    "name": "Dubai Health Authority",
+    "level": "state",
+    "country_code": "AE",
+    "description": "Regulates and licenses healthcare providers and professionals in Dubai, UAE"
+  },
+  {
+    "code": "MOHAP",
+    "name": "Ministry of Health and Prevention",
+    "level": "national",
+    "country_code": "AE",
+    "description": "Federal healthcare regulatory body for the United Arab Emirates"
+  },
+
+  {
+    "code": "KOIHA",
+    "name": "Korea Institute for Healthcare Accreditation",
+    "level": "national",
+    "country_code": "KR",
+    "description": "National hospital accreditation body in South Korea"
+  },
+
+  {
+    "code": "MOH_SG",
+    "name": "Ministry of Health Singapore",
+    "level": "national",
+    "country_code": "SG",
+    "description": "Regulates healthcare services, licensing, and public health in Singapore"
+  },
+
+  {
+    "code": "MSQH",
+    "name": "Malaysian Society for Quality in Health",
+    "level": "national",
+    "country_code": "MY",
+    "description": "National hospital accreditation body in Malaysia"
+  },
+
+  {
+    "code": "HA_TH",
+    "name": "Healthcare Accreditation Institute",
+    "level": "national",
+    "country_code": "TH",
+    "description": "National hospital accreditation body in Thailand"
+  },
+
+  {
+    "code": "KARS",
+    "name": "Komisi Akreditasi Rumah Sakit",
+    "level": "national",
+    "country_code": "ID",
+    "description": "National hospital accreditation commission in Indonesia"
+  },
+
+  {
+    "code": "OHSC",
+    "name": "Office of Health Standards Compliance",
+    "level": "national",
+    "country_code": "ZA",
+    "description": "Enforces healthcare quality standards and inspects facilities in South Africa"
+  },
+  {
+    "code": "COHSASA",
+    "name": "Council for Health Service Accreditation of Southern Africa",
+    "level": "national",
+    "country_code": "ZA",
+    "description": "ISQua-accredited healthcare accreditation body for southern Africa"
+  },
+
+  {
+    "code": "NHIS_NG",
+    "name": "National Health Insurance Scheme",
+    "level": "national",
+    "country_code": "NG",
+    "description": "Regulates health insurance and provider standards in Nigeria"
+  },
+
+  {
+    "code": "KMPDB",
+    "name": "Kenya Medical Practitioners and Dentists Board",
+    "level": "national",
+    "country_code": "KE",
+    "description": "Regulates medical and dental practitioners and healthcare facilities in Kenya"
+  },
+
+  {
+    "code": "GAHAR",
+    "name": "General Authority for Healthcare Accreditation and Regulation",
+    "level": "national",
+    "country_code": "EG",
+    "description": "National healthcare accreditation and regulation authority in Egypt"
+  },
+
+  {
+    "code": "SKS",
+    "name": "Saglik Hizmetleri Genel Mudurlugu",
+    "level": "national",
+    "country_code": "TR",
+    "description": "General Directorate of Health Services overseeing hospital quality standards in Turkey"
+  },
+
+  {
+    "code": "HEC_PK",
+    "name": "Higher Education Commission Pakistan",
+    "level": "education",
+    "country_code": "PK",
+    "description": "Regulates medical and health sciences education in Pakistan"
+  },
+
+  {
+    "code": "DGHS_BD",
+    "name": "Directorate General of Health Services Bangladesh",
+    "level": "national",
+    "country_code": "BD",
+    "description": "National healthcare regulatory and public health authority in Bangladesh"
+  },
+
+  {
+    "code": "SLMC",
+    "name": "Sri Lanka Medical Council",
+    "level": "national",
+    "country_code": "LK",
+    "description": "Regulates medical education and physician registration in Sri Lanka"
+  },
+
+  {
+    "code": "NMC_NP",
+    "name": "Nepal Medical Council",
+    "level": "national",
+    "country_code": "NP",
+    "description": "Regulates medical education and physician registration in Nepal"
+  },
+
+  {
+    "code": "PHIC",
+    "name": "Philippine Health Insurance Corporation",
+    "level": "national",
+    "country_code": "PH",
+    "description": "National health insurance provider regulating facility accreditation in the Philippines"
+  },
+
+  {
+    "code": "CSG",
+    "name": "Consejo de Salubridad General",
+    "level": "national",
+    "country_code": "MX",
+    "description": "National health council overseeing hospital certification and quality in Mexico"
+  },
+
+  {
+    "code": "MINSALUD",
+    "name": "Ministerio de Salud y Proteccion Social",
+    "level": "national",
+    "country_code": "CO",
+    "description": "National ministry regulating healthcare services and quality standards in Colombia"
+  },
+
+  {
+    "code": "SPS_AR",
+    "name": "Superintendencia de Servicios de Salud",
+    "level": "national",
+    "country_code": "AR",
+    "description": "National superintendence overseeing health service quality and insurance in Argentina"
+  },
+
+  {
+    "code": "SIS",
+    "name": "Superintendencia de Salud",
+    "level": "national",
+    "country_code": "CL",
+    "description": "National superintendence regulating healthcare providers and insurers in Chile"
+  },
+
+  {
+    "code": "SUSALUD",
+    "name": "Superintendencia Nacional de Salud",
+    "level": "national",
+    "country_code": "PE",
+    "description": "National health superintendence regulating healthcare quality and insurance in Peru"
+  },
+
+  {
+    "code": "HQSC",
+    "name": "Health Quality & Safety Commission",
+    "level": "national",
+    "country_code": "NZ",
+    "description": "National agency improving healthcare quality and patient safety in New Zealand"
+  },
+
+  {
+    "code": "HIQA",
+    "name": "Health Information and Quality Authority",
+    "level": "national",
+    "country_code": "IE",
+    "description": "Independent authority monitoring healthcare quality and safety in Ireland"
+  },
+
+  {
+    "code": "IGJ",
+    "name": "Inspectie Gezondheidszorg en Jeugd",
+    "level": "national",
+    "country_code": "NL",
+    "description": "Health and Youth Care Inspectorate regulating healthcare quality in the Netherlands"
+  },
+
+  {
+    "code": "IVO",
+    "name": "Inspektionen for Vard och Omsorg",
+    "level": "national",
+    "country_code": "SE",
+    "description": "Health and Social Care Inspectorate supervising healthcare quality in Sweden"
+  },
+
+  {
+    "code": "HELFO",
+    "name": "Helseokonomisk Forvaltning",
+    "level": "national",
+    "country_code": "NO",
+    "description": "Norwegian Health Economics Administration managing health reimbursement and provider standards"
+  },
+
+  {
+    "code": "STPS",
+    "name": "Styrelsen for Patientsikkerhed",
+    "level": "national",
+    "country_code": "DK",
+    "description": "Danish Patient Safety Authority regulating healthcare quality and patient safety"
+  },
+
+  {
+    "code": "BAG_CH",
+    "name": "Bundesamt fur Gesundheit",
+    "level": "national",
+    "country_code": "CH",
+    "description": "Federal Office of Public Health regulating healthcare standards in Switzerland"
+  },
+
+  {
+    "code": "ISS_IT",
+    "name": "Istituto Superiore di Sanita",
+    "level": "national",
+    "country_code": "IT",
+    "description": "National institute of health providing scientific guidance and standards in Italy"
+  },
+
+  {
+    "code": "AEMPS",
+    "name": "Agencia Espanola de Medicamentos y Productos Sanitarios",
+    "level": "national",
+    "country_code": "ES",
+    "description": "Spanish agency regulating medicines, medical devices, and healthcare products"
+  },
+
+  {
+    "code": "ROSZDRAVNADZOR",
+    "name": "Federal Service for Surveillance in Healthcare",
+    "level": "national",
+    "country_code": "RU",
+    "description": "Federal healthcare surveillance authority regulating medical activities in Russia"
+  },
+
+  {
+    "code": "MOH_IL",
+    "name": "Ministry of Health Israel",
+    "level": "national",
+    "country_code": "IL",
+    "description": "National authority regulating healthcare services and hospital licensing in Israel"
+  },
+
+  {
+    "code": "JCT",
+    "name": "Joint Commission of Taiwan",
+    "level": "national",
+    "country_code": "TW",
+    "description": "National hospital accreditation body in Taiwan"
+  },
+
+  {
+    "code": "MOH_VN",
+    "name": "Ministry of Health Vietnam",
+    "level": "national",
+    "country_code": "VN",
+    "description": "National authority regulating healthcare services and hospital standards in Vietnam"
+  },
+
+  {
+    "code": "MOH_MM",
+    "name": "Ministry of Health Myanmar",
+    "level": "national",
+    "country_code": "MM",
+    "description": "National authority regulating healthcare services and facilities in Myanmar"
+  },
+
+  {
+    "code": "PMDA",
+    "name": "Pharmaceuticals and Medical Devices Agency",
+    "level": "national",
+    "country_code": "JP",
+    "description": "Regulates approval and safety of pharmaceuticals and medical devices in Japan"
+  },
+
+  {
+    "code": "TGA",
+    "name": "Therapeutic Goods Administration",
+    "level": "national",
+    "country_code": "AU",
+    "description": "Regulates therapeutic goods including medicines, medical devices, and biologicals in Australia"
+  },
+
+  {
+    "code": "MHRA",
+    "name": "Medicines and Healthcare products Regulatory Agency",
+    "level": "national",
+    "country_code": "GB",
+    "description": "Regulates medicines, medical devices, and blood products in the United Kingdom"
+  },
+
+  {
+    "code": "FDA",
+    "name": "Food and Drug Administration",
+    "level": "national",
+    "country_code": "US",
+    "description": "Regulates food safety, drugs, medical devices, and biologics in the United States"
+  },
+
+  {
+    "code": "EMA",
+    "name": "European Medicines Agency",
+    "level": "international",
+    "country_code": null,
+    "description": "Evaluates and supervises medicinal products across the European Union"
+  },
+
+  {
+    "code": "IAEA",
+    "name": "International Atomic Energy Agency",
+    "level": "international",
+    "country_code": null,
+    "description": "Sets international standards for radiation safety in medical applications"
+  },
+
+  {
+    "code": "ICN",
+    "name": "International Council of Nurses",
+    "level": "international",
+    "country_code": null,
+    "description": "International federation representing nursing professionals worldwide"
+  },
+
+  {
+    "code": "WFME",
+    "name": "World Federation for Medical Education",
+    "level": "international",
+    "country_code": null,
+    "description": "Sets global standards for medical education quality improvement"
+  },
+
+  {
+    "code": "SFDA",
+    "name": "Saudi Food and Drug Authority",
+    "level": "national",
+    "country_code": "SA",
+    "description": "Regulates food, drugs, and medical devices in Saudi Arabia"
+  },
+
+  {
+    "code": "HSA_SG",
+    "name": "Health Sciences Authority",
+    "level": "national",
+    "country_code": "SG",
+    "description": "Regulates health products including drugs, medical devices, and blood services in Singapore"
+  },
+
+  {
+    "code": "SAHPRA",
+    "name": "South African Health Products Regulatory Authority",
+    "level": "national",
+    "country_code": "ZA",
+    "description": "Regulates health products including medicines, medical devices, and diagnostics in South Africa"
+  },
+
+  {
+    "code": "NAFDAC",
+    "name": "National Agency for Food and Drug Administration and Control",
+    "level": "national",
+    "country_code": "NG",
+    "description": "Regulates food, drugs, medical devices, and chemicals in Nigeria"
+  },
+
+  {
+    "code": "COFEPRIS",
+    "name": "Comision Federal para la Proteccion contra Riesgos Sanitarios",
+    "level": "national",
+    "country_code": "MX",
+    "description": "Federal commission for health risk protection regulating drugs and medical devices in Mexico"
+  },
+
+  {
+    "code": "INVIMA",
+    "name": "Instituto Nacional de Vigilancia de Medicamentos y Alimentos",
+    "level": "national",
+    "country_code": "CO",
+    "description": "National institute for drug and food surveillance and regulation in Colombia"
+  },
+
+  {
+    "code": "ANMAT",
+    "name": "Administracion Nacional de Medicamentos, Alimentos y Tecnologia Medica",
+    "level": "national",
+    "country_code": "AR",
+    "description": "National administration regulating drugs, food, and medical technology in Argentina"
+  },
+
+  {
+    "code": "ISP_CL",
+    "name": "Instituto de Salud Publica de Chile",
+    "level": "national",
+    "country_code": "CL",
+    "description": "Public health institute regulating pharmaceuticals and clinical laboratories in Chile"
+  },
+
+  {
+    "code": "DIGEMID",
+    "name": "Direccion General de Medicamentos, Insumos y Drogas",
+    "level": "national",
+    "country_code": "PE",
+    "description": "General directorate regulating medicines, supplies, and drugs in Peru"
+  },
+
+  {
+    "code": "KFDA",
+    "name": "Korea Ministry of Food and Drug Safety",
+    "level": "national",
+    "country_code": "KR",
+    "description": "Regulates food, pharmaceuticals, and medical devices in South Korea"
+  },
+
+  {
+    "code": "TFDA",
+    "name": "Taiwan Food and Drug Administration",
+    "level": "national",
+    "country_code": "TW",
+    "description": "Regulates food safety, pharmaceuticals, and medical devices in Taiwan"
+  },
+
+  {
+    "code": "BPOM",
+    "name": "Badan Pengawas Obat dan Makanan",
+    "level": "national",
+    "country_code": "ID",
+    "description": "National agency for drug and food control in Indonesia"
+  },
+
+  {
+    "code": "PPB_KE",
+    "name": "Pharmacy and Poisons Board",
+    "level": "national",
+    "country_code": "KE",
+    "description": "Regulates pharmaceuticals, medical devices, and poisons in Kenya"
+  },
+
+  {
+    "code": "EDA_EG",
+    "name": "Egyptian Drug Authority",
+    "level": "national",
+    "country_code": "EG",
+    "description": "National authority regulating pharmaceuticals and biological products in Egypt"
+  },
+
+  {
+    "code": "TITCK",
+    "name": "Turkish Medicines and Medical Devices Agency",
+    "level": "national",
+    "country_code": "TR",
+    "description": "Regulates pharmaceuticals, medical devices, and cosmetics in Turkey"
+  },
+
+  {
+    "code": "DRAP",
+    "name": "Drug Regulatory Authority of Pakistan",
+    "level": "national",
+    "country_code": "PK",
+    "description": "Regulates manufacture, import, and sale of therapeutic goods in Pakistan"
+  },
+
+  {
+    "code": "DGDA_BD",
+    "name": "Directorate General of Drug Administration",
+    "level": "national",
+    "country_code": "BD",
+    "description": "National drug regulatory authority in Bangladesh"
+  },
+
+  {
+    "code": "NMRA_LK",
+    "name": "National Medicines Regulatory Authority",
+    "level": "national",
+    "country_code": "LK",
+    "description": "Regulates medicines, medical devices, and borderline products in Sri Lanka"
+  },
+
+  {
+    "code": "DDA_NP",
+    "name": "Department of Drug Administration",
+    "level": "national",
+    "country_code": "NP",
+    "description": "National authority regulating drugs and pharmaceutical products in Nepal"
+  },
+
+  {
+    "code": "FDA_PH",
+    "name": "Food and Drug Administration Philippines",
+    "level": "national",
+    "country_code": "PH",
+    "description": "Regulates food, drugs, medical devices, and cosmetics in the Philippines"
+  },
+
+  {
+    "code": "FDA_TH",
+    "name": "Food and Drug Administration Thailand",
+    "level": "national",
+    "country_code": "TH",
+    "description": "Regulates food, drugs, medical devices, and cosmetics in Thailand"
+  },
+
+  {
+    "code": "DAV",
+    "name": "Drug Administration of Vietnam",
+    "level": "national",
+    "country_code": "VN",
+    "description": "National authority regulating pharmaceuticals and pharmacy practice in Vietnam"
+  },
+
+  {
+    "code": "FDA_MY",
+    "name": "National Pharmaceutical Regulatory Agency Malaysia",
+    "level": "national",
+    "country_code": "MY",
+    "description": "Regulates pharmaceutical products and medical devices in Malaysia"
+  },
+
+  {
+    "code": "MEDSAFE",
+    "name": "Medsafe New Zealand Medicines and Medical Devices Safety Authority",
+    "level": "national",
+    "country_code": "NZ",
+    "description": "Regulates therapeutic products including medicines and medical devices in New Zealand"
+  },
+
+  {
+    "code": "HPRA",
+    "name": "Health Products Regulatory Authority",
+    "level": "national",
+    "country_code": "IE",
+    "description": "Regulates medicines, medical devices, and health products in Ireland"
+  },
+
+  {
+    "code": "SWISSMEDIC",
+    "name": "Swiss Agency for Therapeutic Products",
+    "level": "national",
+    "country_code": "CH",
+    "description": "National authorization and supervisory authority for therapeutic products in Switzerland"
+  },
+
+  {
+    "code": "AIFA",
+    "name": "Agenzia Italiana del Farmaco",
+    "level": "national",
+    "country_code": "IT",
+    "description": "Italian medicines agency regulating pharmaceuticals in Italy"
+  },
+
+  {
+    "code": "ANSM",
+    "name": "Agence Nationale de Securite du Medicament et des Produits de Sante",
+    "level": "national",
+    "country_code": "FR",
+    "description": "National agency for the safety of medicines and health products in France"
+  },
+
+  {
+    "code": "MOH_KW",
+    "name": "Ministry of Health Kuwait",
+    "level": "national",
+    "country_code": "KW",
+    "description": "National authority regulating healthcare services and facilities in Kuwait"
+  },
+
+  {
+    "code": "NHRA_BH",
+    "name": "National Health Regulatory Authority Bahrain",
+    "level": "national",
+    "country_code": "BH",
+    "description": "Regulates healthcare facilities, professionals, and pharmaceuticals in Bahrain"
+  },
+
+  {
+    "code": "MOH_QA",
+    "name": "Ministry of Public Health Qatar",
+    "level": "national",
+    "country_code": "QA",
+    "description": "National authority regulating healthcare services and licensing in Qatar"
+  },
+
+  {
+    "code": "MOH_OM",
+    "name": "Ministry of Health Oman",
+    "level": "national",
+    "country_code": "OM",
+    "description": "National authority regulating healthcare services and facilities in Oman"
+  },
+
+  {
+    "code": "CCHSA",
+    "name": "Canadian Centre for Accreditation",
+    "level": "national",
+    "country_code": "CA",
+    "description": "Accredits community-based health and social services organizations in Canada"
+  },
+
+  {
+    "code": "NIAHO",
+    "name": "National Integrated Accreditation for Healthcare Organizations",
+    "level": "national",
+    "country_code": "US",
+    "description": "DNV-administered accreditation program integrating ISO 9001 with Medicare requirements"
+  },
+
+  {
+    "code": "PCMC",
+    "name": "Pakistan Medical Commission",
+    "level": "national",
+    "country_code": "PK",
+    "description": "Regulates medical education and physician licensing in Pakistan"
+  },
+
+  {
+    "code": "BMDC",
+    "name": "Bangladesh Medical and Dental Council",
+    "level": "national",
+    "country_code": "BD",
+    "description": "Regulates medical and dental education and practitioner registration in Bangladesh"
+  }
+]

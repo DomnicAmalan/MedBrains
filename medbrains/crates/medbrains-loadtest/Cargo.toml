@@ -1,0 +1,26 @@
+[package]
+name = "medbrains-loadtest"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "loadtest"
+path = "src/main.rs"
+
+[dependencies]
+goose = "0.18"
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Override workspace lints — load test tooling needs relaxed rules
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"

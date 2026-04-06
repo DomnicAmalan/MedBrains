@@ -1,0 +1,101 @@
+import { test as setup, expect } from "@playwright/test";
+
+/**
+ * Authenticate once and save browser storage state for reuse by all tests.
+ * Runs as a project dependency before the main test suite.
+ */
+setup("authenticate as admin", async ({ page, request }) => {
+  // Call backend directly (port 3000) — bypasses Vite proxy
+  const loginResp = await request.post("http://127.0.0.1:3000/api/auth/login", {
+    data: { username: "admin", password: "admin123" },
+  });
+
+  // eslint-disable-next-line no-console
+  console.log("Login API status:", loginResp.status());
+
+  if (loginResp.status() !== 200) {
+    const body = await loginResp.text();
+    // eslint-disable-next-line no-console
+    console.log("Login error:", body);
+    throw new Error(`Login failed with status ${loginResp.status()}`);
+  }
+
+  const data = await loginResp.json();
+
+  // Navigate to the app and inject auth state
+  await page.goto("/login");
+  await expect(page.getByLabel("Username")).toBeVisible({ timeout: 10_000 });
+
+  // Set localStorage auth state (Zustand persist format)
+  await page.evaluate(
+    (user) => {
+      localStorage.setItem(
+        "auth-storage",
+        JSON.stringify({ state: { user }, version: 0 }),
+      );
+    },
+    data.user,
+  );
+
+  // Add cookies from the login response to the browser context
+  const setCookieHeader = loginResp.headersArray().filter(
+    (h) => h.name.toLowerCase() === "set-cookie",
+  );
+
+  // eslint-disable-next-line no-console
+  console.log("Set-Cookie headers:", setCookieHeader.length);
+
+  const browserCookies = setCookieHeader
+    .map((h) => {
+      const parts = h.value.split(";").map((p: string) => p.trim());
+      const [nameVal] = parts;
+      if (!nameVal) return null;
+      const eqIdx = nameVal.indexOf("=");
+      if (eqIdx < 0) return null;
+      const name = nameVal.slice(0, eqIdx);
+      const value = nameVal.slice(eqIdx + 1);
+
+      const httpOnly = parts.some(
+        (p: string) => p.toLowerCase() === "httponly",
+      );
+      const pathMatch = parts.find((p: string) =>
+        p.toLowerCase().startsWith("path="),
+      );
+      const path = pathMatch ? pathMatch.split("=")[1] : "/";
+
+      return {
+        name,
+        value,
+        domain: "localhost",
+        path: path ?? "/",
+        httpOnly,
+        secure: false,
+        sameSite: "Lax" as const,
+      };
+    })
+    .filter(Boolean) as Array<{
+    name: string;
+    value: string;
+    domain: string;
+    path: string;
+    httpOnly: boolean;
+    secure: boolean;
+    sameSite: "Lax";
+  }>;
+
+  if (browserCookies.length > 0) {
+    // eslint-disable-next-line no-console
+    console.log(
+      "Adding cookies:",
+      browserCookies.map((c) => c.name),
+    );
+    await page.context().addCookies(browserCookies);
+  }
+
+  // Navigate to dashboard — app reads localStorage and renders authenticated state
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
+
+  // Persist authenticated state
+  await page.context().storageState({ path: "e2e/.auth/user.json" });
+});

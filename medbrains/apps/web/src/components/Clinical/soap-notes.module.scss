@@ -1,0 +1,14 @@
+.soapSection {
+  padding: 12px 14px;
+  border-left: 3px solid transparent;
+  border-radius: 0 var(--mantine-radius-md) var(--mantine-radius-md) 0;
+  background: var(--mb-card-bg);
+  border-top: 1px solid var(--mb-border-subtle);
+  border-right: 1px solid var(--mb-border-subtle);
+  border-bottom: 1px solid var(--mb-border-subtle);
+  transition: box-shadow 0.2s ease;
+
+  &:focus-within {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+}

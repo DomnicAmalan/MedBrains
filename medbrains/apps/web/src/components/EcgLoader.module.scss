@@ -1,0 +1,46 @@
+// ── ECG Loader (inline Mantine Loader) — indigo-teal gradient + mask sweep ──
+
+.ecgLoader {
+  display: inline-block;
+  vertical-align: middle;
+  overflow: visible;
+}
+
+.trace {
+  fill: none;
+  filter: drop-shadow(0 0 3px rgba(99, 102, 241, 0.4))
+    drop-shadow(0 0 6px rgba(13, 148, 136, 0.25));
+}
+
+.sweepRect {
+  animation: ecgSweep 2s ease-in-out infinite;
+}
+
+@keyframes ecgSweep {
+  0% {
+    width: 0;
+  }
+  70% {
+    width: 120;
+    opacity: 1;
+  }
+  85% {
+    width: 120;
+    opacity: 1;
+  }
+  95% {
+    width: 120;
+    opacity: 0;
+  }
+  100% {
+    width: 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweepRect {
+    animation: none;
+    width: 120;
+  }
+}

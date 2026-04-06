@@ -1,0 +1,65 @@
+.mapperModal {
+  display: flex;
+  flex-direction: column;
+  height: calc(90vh - 60px);
+  overflow: hidden;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.leftPanel {
+  width: 220px;
+  min-width: 220px;
+  border-right: 1px solid var(--mantine-color-gray-2);
+  background: var(--mantine-color-gray-0);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.centerPanel {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  position: relative;
+  background: var(--mantine-color-white);
+}
+
+.centerDiagram {
+  padding: var(--mantine-spacing-md);
+}
+
+.centerFreeform {
+  height: 100%;
+}
+
+.rightPanel {
+  width: 200px;
+  min-width: 200px;
+  border-left: 1px solid var(--mantine-color-gray-2);
+  background: var(--mantine-color-gray-0);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.emptyCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: var(--mantine-spacing-xl);
+  text-align: center;
+}
+
+.diagramGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--mantine-spacing-sm);
+}

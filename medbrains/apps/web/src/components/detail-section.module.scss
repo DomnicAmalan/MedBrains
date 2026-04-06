@@ -1,0 +1,48 @@
+// ─── DetailSection — card-based detail view ───
+
+.card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--mb-border-subtle);
+}
+
+.leftBorder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  padding-left: calc(var(--mantine-spacing-md) + 3px);
+}
+
+.content {
+  padding: 0 var(--mantine-spacing-md) var(--mantine-spacing-md);
+  padding-left: calc(var(--mantine-spacing-md) + 3px);
+}
+
+.fieldItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fieldLabel {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mb-text-muted);
+  font-weight: 600;
+}
+
+.fieldValue {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  color: var(--mb-text-primary);
+}
