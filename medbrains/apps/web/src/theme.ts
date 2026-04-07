@@ -12,78 +12,83 @@ import {
 import { EcgLoader } from "./components/EcgLoader";
 
 // ═══════════════════════════════════════════════════════════════════
-// ── MedBrains Design System: Modern Semantic Color Palette ───────
+// ── MedBrains Design System: Healthcare-Optimized Palette ────────
 // ═══════════════════════════════════════════════════════════════════
 //
-// Inspired by: Linear, Vercel Geist, Stripe
-// Philosophy: purpose-driven colors, not just "a blue and some grays"
+// Inspired by: IBM Carbon (authority, accessibility), Stripe (polish),
+//              Apple (clarity), clinical UI best practices
+//
+// Philosophy: trust, calm, clarity — designed for 12-hour clinical shifts
 //
 // COLOR ROLES:
-//   primary   — brand / interactive (indigo-violet, sophisticated)
-//   success   — positive states, healthy, active, completed
-//   warning   — attention needed, pending, in-progress
-//   danger    — errors, destructive actions, critical alerts
-//   info      — informational, neutral-blue for data display
+//   primary   — brand / interactive (healthcare blue — trust, calm)
+//   success   — positive states, healthy, normal vitals, completed
+//   warning   — attention needed, pending, abnormal values
+//   danger    — critical alerts, emergencies, destructive actions
+//   info      — informational, neutral-cool for data display
 //   violet    — premium features, AI/smart actions
 //   orange    — warm accent, billing, revenue, highlights
-//   teal      — clinical, healthcare-specific, calm trust
+//   teal      — clinical accent, healthcare-specific, calm trust
 //   slate     — elevated neutral for subtle UI elements
 // ═══════════════════════════════════════════════════════════════════
 
-// Brand — Indigo Violet (sophisticated, modern, not generic blue)
+// Brand — Healthcare Blue (trustworthy, calm, clinical)
 const primary: MantineColorsTuple = [
-  "#f0f0ff", // 0  ghost
-  "#e0e0ff", // 1  dimmed
-  "#c7c7ff", // 2  subtle
-  "#a5a5ff", // 3  medium
-  "#8b8bf5", // 4  strong
-  "#6366f1", // 5  accent      ← PRIMARY (Stripe-like indigo)
-  "#5558e3", // 6  hover
-  "#4547d0", // 7  pressed
-  "#3538a8", // 8  deep
-  "#252780", // 9  abyss
+  "#eff6ff", // 0  ghost
+  "#dbeafe", // 1  dimmed / selection
+  "#bfdbfe", // 2  subtle
+  "#93c5fd", // 3  medium
+  "#60a5fa", // 4  strong
+  "#2563eb", // 5  accent      ← PRIMARY (clinical blue)
+  "#1d4ed8", // 6  hover
+  "#1e40af", // 7  pressed
+  "#1e3a8a", // 8  deep
+  "#172554", // 9  abyss
 ];
 
-// Success — Emerald (growth, healthy, completed, active)
+// Success — Clinical Green (normal vitals, healthy, completed, active)
+// Higher saturation for unambiguous "all clear" in clinical context
 const success: MantineColorsTuple = [
   "#ecfdf5", // 0
   "#d1fae5", // 1
   "#a7f3d0", // 2
   "#6ee7b7", // 3
   "#34d399", // 4
-  "#10b981", // 5  ← success
-  "#059669", // 6
-  "#047857", // 7
-  "#065f46", // 8
-  "#064e3b", // 9
+  "#16a34a", // 5  ← success (stronger green, IBM-inspired)
+  "#15803d", // 6
+  "#166534", // 7
+  "#14532d", // 8
+  "#052e16", // 9
 ];
 
-// Warning — Amber (attention, pending, caution)
+// Warning — Clinical Amber (abnormal values, pending, requires attention)
+// Must be clearly distinct from danger red — amber/gold tone
 const warning: MantineColorsTuple = [
   "#fffbeb", // 0
   "#fef3c7", // 1
   "#fde68a", // 2
   "#fcd34d", // 3
   "#fbbf24", // 4
-  "#f59e0b", // 5  ← warning
-  "#d97706", // 6
-  "#b45309", // 7
-  "#92400e", // 8
-  "#78350f", // 9
+  "#eab308", // 5  ← warning (purer gold, less orange)
+  "#ca8a04", // 6
+  "#a16207", // 7
+  "#854d0e", // 8
+  "#713f12", // 9
 ];
 
-// Danger — Rose (errors, destructive, critical)
+// Danger — Clinical Red (critical alerts, emergencies, destructive)
+// True red, not rose — must signal urgency unambiguously
 const danger: MantineColorsTuple = [
-  "#fff1f2", // 0
-  "#ffe4e6", // 1
-  "#fecdd3", // 2
-  "#fda4af", // 3
-  "#fb7185", // 4
-  "#f43f5e", // 5  ← danger
-  "#e11d48", // 6
-  "#be123c", // 7
-  "#9f1239", // 8
-  "#881337", // 9
+  "#fef2f2", // 0
+  "#fee2e2", // 1
+  "#fecaca", // 2
+  "#fca5a5", // 3
+  "#f87171", // 4
+  "#dc2626", // 5  ← danger (true red, IBM-inspired)
+  "#b91c1c", // 6
+  "#991b1b", // 7
+  "#7f1d1d", // 8
+  "#450a0a", // 9
 ];
 
 // Info — Sky Blue (informational, data, neutral-cool)
@@ -186,6 +191,7 @@ export const theme = createTheme({
 
   fontFamily:
     "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  fontSmoothing: true,
 
   fontSizes: {
     xs: rem("12px"),
@@ -222,20 +228,20 @@ export const theme = createTheme({
       "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     fontWeight: "600",
     sizes: {
-      h1: { fontSize: rem("28px"), lineHeight: "1.2" },
+      h1: { fontSize: rem("28px"), lineHeight: "1.2", fontWeight: "700" },
       h2: { fontSize: rem("22px"), lineHeight: "1.25" },
       h3: { fontSize: rem("18px"), lineHeight: "1.3" },
-      h4: { fontSize: rem("15px"), lineHeight: "1.35" },
+      h4: { fontSize: rem("15px"), lineHeight: "1.35", fontWeight: "500" },
     },
   },
 
-  // Soft floating shadows — layered for realistic depth
+  // Stripe-inspired blue-tinted layered shadows for refined depth
   shadows: {
-    xs: "0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.04)",
-    sm: "0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.04)",
-    md: "0 2px 4px rgba(0, 0, 0, 0.03), 0 8px 20px rgba(0, 0, 0, 0.06)",
-    lg: "0 4px 8px rgba(0, 0, 0, 0.03), 0 12px 32px rgba(0, 0, 0, 0.08)",
-    xl: "0 8px 16px rgba(0, 0, 0, 0.04), 0 20px 48px rgba(0, 0, 0, 0.1)",
+    xs: "0 1px 2px rgba(50, 50, 93, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03)",
+    sm: "0 1px 3px rgba(50, 50, 93, 0.06), 0 4px 8px rgba(0, 0, 0, 0.04)",
+    md: "0 2px 8px rgba(50, 50, 93, 0.08), 0 6px 20px rgba(0, 0, 0, 0.05)",
+    lg: "0 4px 12px rgba(50, 50, 93, 0.1), 0 12px 32px rgba(0, 0, 0, 0.06)",
+    xl: "0 8px 20px rgba(50, 50, 93, 0.12), 0 20px 48px rgba(0, 0, 0, 0.08)",
   },
 
   components: {
@@ -462,22 +468,22 @@ export const cssVariableResolver: CSSVariablesResolver = (t) => {
     },
     light: {
       // ── Surfaces ──
-      "--mantine-color-body": "#fafafa",
-      "--mb-bg-content": "#f4f4f5",
+      "--mantine-color-body": "#fafbfc",
+      "--mb-bg-content": "#f4f5f7",
       "--mb-sidebar-bg": "#ffffff",
-      "--mb-header-bg": "rgba(255, 255, 255, 0.85)",
+      "--mb-header-bg": "rgba(255, 255, 255, 0.82)",
       "--mb-card-bg": "#ffffff",
       "--mb-input-bg": "#ffffff",
 
-      // ── Borders ──
-      "--mb-border": "#e4e4e7",
-      "--mb-border-subtle": "#f0f0f2",
+      // ── Borders (blue-tinted, Stripe-inspired) ──
+      "--mb-border": "#e3e8ef",
+      "--mb-border-subtle": "#eef1f6",
 
       // ── Text hierarchy (4 levels) ──
-      "--mb-text-primary": "#09090b",
-      "--mb-text-secondary": "#52525b",
-      "--mb-text-muted": "#a1a1aa",
-      "--mb-text-faint": "#d4d4d8",
+      "--mb-text-primary": "#0a0d14",
+      "--mb-text-secondary": "#4b5563",
+      "--mb-text-muted": "#9ca3af",
+      "--mb-text-faint": "#d1d5db",
 
       // ── Interactive ──
       "--mb-selection-bg": p[1],
@@ -500,32 +506,44 @@ export const cssVariableResolver: CSSVariablesResolver = (t) => {
       "--mb-info-accent": i[5],
 
       // ── Table ──
-      "--mb-table-header-bg": "#fafafa",
-      "--mb-table-hover": "#f4f4f5",
-      "--mb-table-border": "#e4e4e7",
+      "--mb-table-header-bg": "#f8f9fb",
+      "--mb-table-hover": "#f4f5f7",
+      "--mb-table-border": "#e3e8ef",
 
       // ── Shimmer ──
-      "--mb-shimmer-from": "#f4f4f5",
-      "--mb-shimmer-mid": "#e4e4e7",
+      "--mb-shimmer-from": "#f4f5f7",
+      "--mb-shimmer-mid": "#e3e8ef",
 
-      // ── Shadows ──
-      "--mb-float-shadow": "0 1px 3px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.04)",
+      // ── Shadows (blue-tinted) ──
+      "--mb-float-shadow":
+        "0 1px 3px rgba(50,50,93,0.06), 0 4px 8px rgba(0,0,0,0.04)",
+
+      // ── Clinical status (high-visibility for patient safety) ──
+      "--mb-critical-bg": "#fef2f2",
+      "--mb-critical-text": "#991b1b",
+      "--mb-critical-border": "#fecaca",
+      "--mb-abnormal-bg": "#fffbeb",
+      "--mb-abnormal-text": "#854d0e",
+      "--mb-abnormal-border": "#fde68a",
+      "--mb-normal-bg": "#ecfdf5",
+      "--mb-normal-text": "#14532d",
+      "--mb-normal-border": "#a7f3d0",
     },
     dark: {
-      "--mantine-color-body": "#09090b",
-      "--mb-bg-content": "#18181b",
-      "--mb-sidebar-bg": "#18181b",
-      "--mb-header-bg": "rgba(24, 24, 27, 0.85)",
-      "--mb-card-bg": "#1c1c20",
-      "--mb-input-bg": "#1c1c20",
+      "--mantine-color-body": "#0a0a0c",
+      "--mb-bg-content": "#111114",
+      "--mb-sidebar-bg": "#111114",
+      "--mb-header-bg": "rgba(17, 17, 20, 0.82)",
+      "--mb-card-bg": "#191a1e",
+      "--mb-input-bg": "#191a1e",
 
-      "--mb-border": "#27272a",
-      "--mb-border-subtle": "#1f1f23",
+      "--mb-border": "#28292e",
+      "--mb-border-subtle": "#1e1f24",
 
-      "--mb-text-primary": "#fafafa",
-      "--mb-text-secondary": "#a1a1aa",
-      "--mb-text-muted": "#71717a",
-      "--mb-text-faint": "#3f3f46",
+      "--mb-text-primary": "#f0f1f3",
+      "--mb-text-secondary": "#a0a4ab",
+      "--mb-text-muted": "#6b7078",
+      "--mb-text-faint": "#3a3d44",
 
       "--mb-selection-bg": p[8],
       "--mb-focus-ring": p[4],
@@ -533,26 +551,38 @@ export const cssVariableResolver: CSSVariablesResolver = (t) => {
       "--mb-link-hover": p[3],
 
       "--mb-success-bg": "#052e16",
-      "--mb-success-text": s[3],
+      "--mb-success-text": s[2],
       "--mb-success-accent": s[4],
-      "--mb-warning-bg": "#451a03",
-      "--mb-warning-text": w[3],
+      "--mb-warning-bg": "#422006",
+      "--mb-warning-text": w[2],
       "--mb-warning-accent": w[4],
-      "--mb-danger-bg": "#4c0519",
-      "--mb-danger-text": d[3],
+      "--mb-danger-bg": "#450a0a",
+      "--mb-danger-text": d[2],
       "--mb-danger-accent": d[4],
       "--mb-info-bg": "#0c4a6e",
-      "--mb-info-text": i[3],
+      "--mb-info-text": i[2],
       "--mb-info-accent": i[4],
 
-      "--mb-table-header-bg": "#1c1c20",
-      "--mb-table-hover": "#1f1f23",
-      "--mb-table-border": "#27272a",
+      "--mb-table-header-bg": "#15161a",
+      "--mb-table-hover": "#1e1f24",
+      "--mb-table-border": "#28292e",
 
-      "--mb-shimmer-from": "#1f1f23",
-      "--mb-shimmer-mid": "#27272a",
+      "--mb-shimmer-from": "#1e1f24",
+      "--mb-shimmer-mid": "#28292e",
 
-      "--mb-float-shadow": "0 1px 3px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.2)",
+      "--mb-float-shadow":
+        "0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.25)",
+
+      // ── Clinical status (dark mode — high-visibility) ──
+      "--mb-critical-bg": "#450a0a",
+      "--mb-critical-text": "#fecaca",
+      "--mb-critical-border": "#7f1d1d",
+      "--mb-abnormal-bg": "#422006",
+      "--mb-abnormal-text": "#fde68a",
+      "--mb-abnormal-border": "#854d0e",
+      "--mb-normal-bg": "#052e16",
+      "--mb-normal-text": "#a7f3d0",
+      "--mb-normal-border": "#14532d",
     },
   };
 };

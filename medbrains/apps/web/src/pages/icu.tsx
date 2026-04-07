@@ -703,7 +703,7 @@ function DevicesTab({ admissionId }: { admissionId: string }) {
   // Bundle check state
   const { data: bundleChecks = [] } = useQuery({
     queryKey: ["icu-bundle-checks", selectedDevice?.id],
-    queryFn: () => api.listIcuBundleChecks(selectedDevice?.id ?? ""),
+    queryFn: () => api.listIcuBundleChecks(admissionId, selectedDevice?.id ?? ""),
     enabled: !!selectedDevice,
   });
 
@@ -713,7 +713,7 @@ function DevicesTab({ admissionId }: { admissionId: string }) {
   });
   const bundleMut = useMutation({
     mutationFn: (data: CreateIcuBundleCheckRequest) =>
-      api.createIcuBundleCheck(selectedDevice?.id ?? "", data),
+      api.createIcuBundleCheck(admissionId, selectedDevice?.id ?? "", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-bundle-checks", selectedDevice?.id] });
       notifications.show({ title: "Bundle check saved", message: "", color: "green" });

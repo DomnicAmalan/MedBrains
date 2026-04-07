@@ -3,9 +3,11 @@ import type {
   Appointment,
   AppointmentWithPatient,
   AvailableSlot,
+  BedOccupancyRow,
   BedTypeRow,
   BookAppointmentRequest,
   CancelAppointmentRequest,
+  ClinicalIndicatorRow,
   CreateFieldRequest,
   CreateFormRequest,
   CreateModuleLinkRequest,
@@ -20,6 +22,9 @@ import type {
   CreateSectionRequest,
   CustomRole,
   DepartmentRow,
+  DeptRevenueRow,
+  AnalyticsDoctorRevenueRow,
+  ErVolumeRow,
   Facility,
   FieldAccessLevel,
   FieldAuditEntry,
@@ -37,6 +42,8 @@ import type {
   GeoSubdistrict,
   GeoTown,
   HealthResponse,
+  IpdCensusRow,
+  LabTatRow,
   LocationRow,
   MasterItem,
   CreateMasterItemRequest,
@@ -55,6 +62,8 @@ import type {
   ModuleFormLinkRow,
   MpiMatchRequest,
   MpiMatchResult,
+  OpdFootfallRow,
+  OtUtilizationRow,
   OnboardingInitRequest,
   OnboardingInitResponse,
   OnboardingProgress,
@@ -74,6 +83,7 @@ import type {
   PatientListResponse,
   PatientMergeHistory,
   PatientVisitRow,
+  PharmacySalesRow,
   FamilyLinkRow,
   CreateFamilyLinkRequest,
   MergePatientRequest,
@@ -1236,6 +1246,31 @@ import type {
   VisitorAnalytics,
   QueueMetrics,
   TrainingComplianceRow,
+  // Command Center
+  PatientFlowSnapshot,
+  HourlyFlowRow,
+  BottleneckRow,
+  DepartmentLoadRow,
+  DepartmentAlertRow,
+  AlertThresholdRow,
+  CreateAlertThresholdRequest,
+  UpdateAlertThresholdRequest,
+  PendingDischargeRow,
+  BedTurnaroundRow,
+  TurnaroundStatsRow,
+  TransportRequestRow,
+  CreateTransportRequest,
+  UpdateTransportRequest,
+  AssignTransportRequest,
+  KpiTile,
+  // Audit Trail
+  AuditLogEntry,
+  AuditLogSummary,
+  AuditLogQuery,
+  AccessLogEntry,
+  AccessLogQuery,
+  AuditStats,
+  LogAccessRequest,
 } from "@medbrains/types";
 import { getApiBase } from "./config.js";
 
@@ -1418,7 +1453,8 @@ export const api = {
     return resp;
   },
   me: () => request<MeResponse>("/auth/me"),
-  refreshToken: () => tryRefresh(),
+  refreshToken: () =>
+    request<{ token: string }>("/auth/refresh", { method: "POST" }),
   logout: () =>
     request<{ status: string }>("/auth/logout", {
       method: "POST",
@@ -1626,6 +1662,7 @@ export const api = {
 
   // Setup — users
   listSetupUsers: () => request<SetupUser[]>("/setup/users"),
+  listDoctors: () => request<SetupUser[]>("/setup/doctors"),
   createSetupUser: (data: {
     username: string;
     email: string;
@@ -1906,6 +1943,11 @@ export const api = {
     request<{ status: string }>(`/patients/${patientId}/identifiers/${id}`, {
       method: "DELETE",
     }),
+  updatePatientIdentifier: (patientId: string, id: string, data: Record<string, unknown>) =>
+    request<PatientIdentifier>(`/patients/${patientId}/identifiers/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
 
   listPatientAddresses: (patientId: string) =>
     request<PatientAddress[]>(`/patients/${patientId}/addresses`),
@@ -1917,6 +1959,11 @@ export const api = {
   deletePatientAddress: (patientId: string, id: string) =>
     request<{ status: string }>(`/patients/${patientId}/addresses/${id}`, {
       method: "DELETE",
+    }),
+  updatePatientAddress: (patientId: string, id: string, data: Record<string, unknown>) =>
+    request<PatientAddress>(`/patients/${patientId}/addresses/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
     }),
 
   listPatientContacts: (patientId: string) =>
@@ -1930,6 +1977,11 @@ export const api = {
     request<{ status: string }>(`/patients/${patientId}/contacts/${id}`, {
       method: "DELETE",
     }),
+  updatePatientContact: (patientId: string, id: string, data: Record<string, unknown>) =>
+    request<PatientContact>(`/patients/${patientId}/contacts/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
 
   listPatientAllergies: (patientId: string) =>
     request<PatientAllergy[]>(`/patients/${patientId}/allergies`),
@@ -1942,6 +1994,29 @@ export const api = {
     request<{ status: string }>(`/patients/${patientId}/allergies/${id}`, {
       method: "DELETE",
     }),
+  updatePatientAllergy: (patientId: string, id: string, data: Record<string, unknown>) =>
+    request<PatientAllergy>(`/patients/${patientId}/allergies/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  // Patient Insurance
+  listPatientInsurance: (patientId: string) =>
+    request<Record<string, unknown>[]>(`/patients/${patientId}/insurance`),
+  createPatientInsurance: (patientId: string, data: Record<string, unknown>) =>
+    request<Record<string, unknown>>(`/patients/${patientId}/insurance`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updatePatientInsurance: (patientId: string, id: string, data: Record<string, unknown>) =>
+    request<Record<string, unknown>>(`/patients/${patientId}/insurance/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  deletePatientInsurance: (patientId: string, id: string) =>
+    request<{ status: string }>(`/patients/${patientId}/insurance/${id}`, {
+      method: "DELETE",
+    }),
 
   listPatientConsents: (patientId: string) =>
     request<PatientConsent[]>(`/patients/${patientId}/consents`),
@@ -1949,6 +2024,15 @@ export const api = {
     request<PatientConsent>(`/patients/${patientId}/consents`, {
       method: "POST",
       body: JSON.stringify(data),
+    }),
+  updatePatientConsent: (patientId: string, id: string, data: Record<string, unknown>) =>
+    request<PatientConsent>(`/patients/${patientId}/consents/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  deletePatientConsent: (patientId: string, id: string) =>
+    request<{ status: string }>(`/patients/${patientId}/consents/${id}`, {
+      method: "DELETE",
     }),
 
   // Masters (read-only for patient forms)
@@ -3945,7 +4029,7 @@ export const api = {
   listDischargeChecklist: (admissionId: string) =>
     request<IpdDischargeChecklist[]>(`/ipd/admissions/${admissionId}/discharge-checklist`),
   initDischargeChecklist: (admissionId: string) =>
-    request<IpdDischargeChecklist[]>(`/ipd/admissions/${admissionId}/discharge-checklist/init`, {
+    request<IpdDischargeChecklist[]>(`/ipd/admissions/${admissionId}/discharge-checklist`, {
       method: "POST",
     }),
   updateDischargeChecklistItem: (admissionId: string, itemId: string, data: UpdateDischargeChecklistRequest) =>
@@ -4062,7 +4146,7 @@ export const api = {
   updateOtBookingStatus: (id: string, data: UpdateOtBookingStatusRequest) =>
     request<OtBooking>(`/ot/bookings/${id}/status`, { method: "PUT", body: JSON.stringify(data) }),
   cancelOtBooking: (id: string, data: { cancellation_reason?: string }) =>
-    request<OtBooking>(`/ot/bookings/${id}/cancel`, { method: "PUT", body: JSON.stringify(data) }),
+    request<OtBooking>(`/ot/bookings/${id}/status`, { method: "PUT", body: JSON.stringify(data) }),
 
   // OT Pre-op
   listPreopAssessments: (bookingId: string) =>
@@ -4072,22 +4156,22 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  updatePreopAssessment: (bookingId: string, id: string, data: UpdatePreopAssessmentRequest) =>
-    request<OtPreopAssessment>(`/ot/bookings/${bookingId}/preop/${id}`, {
+  updatePreopAssessment: (bookingId: string, data: UpdatePreopAssessmentRequest) =>
+    request<OtPreopAssessment>(`/ot/bookings/${bookingId}/preop`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   // OT Safety Checklist
   listSafetyChecklists: (bookingId: string) =>
-    request<OtSurgicalSafetyChecklist[]>(`/ot/bookings/${bookingId}/safety-checklist`),
+    request<OtSurgicalSafetyChecklist[]>(`/ot/bookings/${bookingId}/checklists`),
   createSafetyChecklist: (bookingId: string, data: CreateSafetyChecklistRequest) =>
-    request<OtSurgicalSafetyChecklist>(`/ot/bookings/${bookingId}/safety-checklist`, {
+    request<OtSurgicalSafetyChecklist>(`/ot/bookings/${bookingId}/checklists`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
   updateSafetyChecklist: (bookingId: string, id: string, data: UpdateSafetyChecklistRequest) =>
-    request<OtSurgicalSafetyChecklist>(`/ot/bookings/${bookingId}/safety-checklist/${id}`, {
+    request<OtSurgicalSafetyChecklist>(`/ot/bookings/${bookingId}/checklists/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
@@ -4100,8 +4184,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  updateCaseRecord: (bookingId: string, id: string, data: UpdateCaseRecordRequest) =>
-    request<OtCaseRecord>(`/ot/bookings/${bookingId}/case-record/${id}`, {
+  updateCaseRecord: (bookingId: string, data: UpdateCaseRecordRequest) =>
+    request<OtCaseRecord>(`/ot/bookings/${bookingId}/case-record`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
@@ -4114,8 +4198,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  updateAnesthesiaRecord: (bookingId: string, id: string, data: UpdateAnesthesiaRecordRequest) =>
-    request<OtAnesthesiaRecord>(`/ot/bookings/${bookingId}/anesthesia/${id}`, {
+  updateAnesthesiaRecord: (bookingId: string, data: UpdateAnesthesiaRecordRequest) =>
+    request<OtAnesthesiaRecord>(`/ot/bookings/${bookingId}/anesthesia`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
@@ -4128,8 +4212,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  updatePostopRecord: (bookingId: string, id: string, data: UpdatePostopRecordRequest) =>
-    request<OtPostopRecord>(`/ot/bookings/${bookingId}/postop/${id}`, {
+  updatePostopRecord: (bookingId: string, data: UpdatePostopRecordRequest) =>
+    request<OtPostopRecord>(`/ot/bookings/${bookingId}/postop`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
@@ -4137,20 +4221,20 @@ export const api = {
   // OT Surgeon Preferences
   listSurgeonPreferences: (params?: Record<string, string>) => {
     const qs = params ? `?${new URLSearchParams(params)}` : "";
-    return request<OtSurgeonPreference[]>(`/ot/preferences${qs}`);
+    return request<OtSurgeonPreference[]>(`/ot/surgeon-preferences${qs}`);
   },
   createSurgeonPreference: (data: CreateSurgeonPreferenceRequest) =>
-    request<OtSurgeonPreference>("/ot/preferences", {
+    request<OtSurgeonPreference>("/ot/surgeon-preferences", {
       method: "POST",
       body: JSON.stringify(data),
     }),
   updateSurgeonPreference: (id: string, data: UpdateSurgeonPreferenceRequest) =>
-    request<OtSurgeonPreference>(`/ot/preferences/${id}`, {
+    request<OtSurgeonPreference>(`/ot/surgeon-preferences/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
   deleteSurgeonPreference: (id: string) =>
-    request<void>(`/ot/preferences/${id}`, { method: "DELETE" }),
+    request<void>(`/ot/surgeon-preferences/${id}`, { method: "DELETE" }),
 
   // OT Schedule
   getOtSchedule: (params?: Record<string, string>) => {
@@ -4259,12 +4343,12 @@ export const api = {
     }),
   removeIcuDevice: (admissionId: string, deviceId: string) =>
     request<IcuDevice>(`/icu/admissions/${admissionId}/devices/${deviceId}`, {
-      method: "DELETE",
+      method: "PUT",
     }),
-  listIcuBundleChecks: (deviceId: string) =>
-    request<IcuBundleCheck[]>(`/icu/devices/${deviceId}/bundle-checks`),
-  createIcuBundleCheck: (deviceId: string, data: CreateIcuBundleCheckRequest) =>
-    request<IcuBundleCheck>(`/icu/devices/${deviceId}/bundle-checks`, {
+  listIcuBundleChecks: (admissionId: string, deviceId: string) =>
+    request<IcuBundleCheck[]>(`/icu/admissions/${admissionId}/devices/${deviceId}/bundle-checks`),
+  createIcuBundleCheck: (admissionId: string, deviceId: string, data: CreateIcuBundleCheckRequest) =>
+    request<IcuBundleCheck>(`/icu/admissions/${admissionId}/devices/${deviceId}/bundle-checks`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -4710,6 +4794,11 @@ export const api = {
     request<IntegrationExecution>(`/integration/executions/${id}`),
   listNodeTemplates: () =>
     request<IntegrationNodeTemplate[]>("/integration/node-templates"),
+  createNodeTemplate: (data: Record<string, unknown>) =>
+    request<IntegrationNodeTemplate>("/integration/node-templates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
   // ── Schema Registry ─────────────────────────────────────
 
@@ -4913,111 +5002,111 @@ export const api = {
   // ── Emergency ─────────────────────────────────────────
 
   listErVisits: () =>
-    request<ErVisit[]>("/api/emergency/visits"),
+    request<ErVisit[]>("/emergency/visits"),
 
   getErVisit: (id: string) =>
-    request<ErVisit>(`/api/emergency/visits/${id}`),
+    request<ErVisit>(`/emergency/visits/${id}`),
 
   createErVisit: (data: CreateErVisitRequest) =>
-    request<ErVisit>("/api/emergency/visits", {
+    request<ErVisit>("/emergency/visits", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateErVisit: (id: string, data: UpdateErVisitRequest) =>
-    request<ErVisit>(`/api/emergency/visits/${id}`, {
+    request<ErVisit>(`/emergency/visits/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   listTriageAssessments: (visitId: string) =>
-    request<ErTriageAssessment[]>(`/api/emergency/visits/${visitId}/triage`),
+    request<ErTriageAssessment[]>(`/emergency/visits/${visitId}/triage`),
 
   createTriageAssessment: (visitId: string, data: CreateTriageRequest) =>
-    request<ErTriageAssessment>(`/api/emergency/visits/${visitId}/triage`, {
+    request<ErTriageAssessment>(`/emergency/visits/${visitId}/triage`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   listResuscitationLogs: (visitId: string) =>
-    request<ErResuscitationLog[]>(`/api/emergency/visits/${visitId}/resuscitation`),
+    request<ErResuscitationLog[]>(`/emergency/visits/${visitId}/resuscitation`),
 
   createResuscitationLog: (visitId: string, data: CreateResuscitationLogRequest) =>
-    request<ErResuscitationLog>(`/api/emergency/visits/${visitId}/resuscitation`, {
+    request<ErResuscitationLog>(`/emergency/visits/${visitId}/resuscitation`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   listCodeActivations: () =>
-    request<ErCodeActivation[]>("/api/emergency/codes"),
+    request<ErCodeActivation[]>("/emergency/codes"),
 
   createCodeActivation: (data: CreateCodeActivationRequest) =>
-    request<ErCodeActivation>("/api/emergency/codes", {
+    request<ErCodeActivation>("/emergency/codes", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   deactivateCode: (id: string, data: DeactivateCodeRequest) =>
-    request<ErCodeActivation>(`/api/emergency/codes/${id}/deactivate`, {
+    request<ErCodeActivation>(`/emergency/codes/${id}/deactivate`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   listMlcCases: () =>
-    request<MlcCase[]>("/api/emergency/mlc"),
+    request<MlcCase[]>("/emergency/mlc"),
 
   createMlcCase: (data: CreateMlcCaseRequest) =>
-    request<MlcCase>("/api/emergency/mlc", {
+    request<MlcCase>("/emergency/mlc", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateMlcCase: (id: string, data: UpdateMlcCaseRequest) =>
-    request<MlcCase>(`/api/emergency/mlc/${id}`, {
+    request<MlcCase>(`/emergency/mlc/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   listMlcDocuments: (mlcId: string) =>
-    request<MlcDocument[]>(`/api/emergency/mlc/${mlcId}/documents`),
+    request<MlcDocument[]>(`/emergency/mlc/${mlcId}/documents`),
 
   createMlcDocument: (mlcId: string, data: CreateMlcDocumentRequest) =>
-    request<MlcDocument>(`/api/emergency/mlc/${mlcId}/documents`, {
+    request<MlcDocument>(`/emergency/mlc/${mlcId}/documents`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   listPoliceIntimations: (mlcId: string) =>
-    request<MlcPoliceIntimation[]>(`/api/emergency/mlc/${mlcId}/police-intimations`),
+    request<MlcPoliceIntimation[]>(`/emergency/mlc/${mlcId}/police-intimations`),
 
   createPoliceIntimation: (mlcId: string, data: CreatePoliceIntimationRequest) =>
-    request<MlcPoliceIntimation>(`/api/emergency/mlc/${mlcId}/police-intimations`, {
+    request<MlcPoliceIntimation>(`/emergency/mlc/${mlcId}/police-intimations`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   confirmPoliceReceipt: (id: string) =>
-    request<MlcPoliceIntimation>(`/api/emergency/mlc/police-intimations/${id}/confirm`, {
+    request<MlcPoliceIntimation>(`/emergency/mlc/police-intimations/${id}/confirm`, {
       method: "PUT",
     }),
 
   listMassCasualtyEvents: () =>
-    request<MassCasualtyEvent[]>("/api/emergency/mass-casualty"),
+    request<MassCasualtyEvent[]>("/emergency/mass-casualty"),
 
   createMassCasualtyEvent: (data: CreateMassCasualtyEventRequest) =>
-    request<MassCasualtyEvent>("/api/emergency/mass-casualty", {
+    request<MassCasualtyEvent>("/emergency/mass-casualty", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateMassCasualtyEvent: (id: string, data: UpdateMassCasualtyEventRequest) =>
-    request<MassCasualtyEvent>(`/api/emergency/mass-casualty/${id}`, {
+    request<MassCasualtyEvent>(`/emergency/mass-casualty/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   admitFromEr: (visitId: string, data: AdmitFromErRequest) =>
-    request<Record<string, unknown>>(`/api/emergency/visits/${visitId}/admit`, {
+    request<Record<string, unknown>>(`/emergency/visits/${visitId}/admit`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5026,122 +5115,122 @@ export const api = {
 
   // Vendors
   listVendors: (params?: Record<string, string>) =>
-    request<Vendor[]>(`/api/procurement/vendors${params ? `?${new URLSearchParams(params)}` : ""}`),
+    request<Vendor[]>(`/procurement/vendors${params ? `?${new URLSearchParams(params)}` : ""}`),
 
   getVendor: (id: string) =>
-    request<Vendor>(`/api/procurement/vendors/${id}`),
+    request<Vendor>(`/procurement/vendors/${id}`),
 
   createVendor: (data: CreateVendorRequest) =>
-    request<Vendor>("/api/procurement/vendors", {
+    request<Vendor>("/procurement/vendors", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateVendor: (id: string, data: UpdateVendorRequest) =>
-    request<Vendor>(`/api/procurement/vendors/${id}`, {
+    request<Vendor>(`/procurement/vendors/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   // Store Locations
   listStoreLocations: () =>
-    request<StoreLocation[]>("/api/procurement/store-locations"),
+    request<StoreLocation[]>("/procurement/store-locations"),
 
   createStoreLocation: (data: CreateStoreLocationRequest) =>
-    request<StoreLocation>("/api/procurement/store-locations", {
+    request<StoreLocation>("/procurement/store-locations", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateStoreLocation: (id: string, data: UpdateStoreLocationRequest) =>
-    request<StoreLocation>(`/api/procurement/store-locations/${id}`, {
+    request<StoreLocation>(`/procurement/store-locations/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   // Purchase Orders
   listPurchaseOrders: (params?: Record<string, string>) =>
-    request<PoListResponse>(`/api/procurement/purchase-orders${params ? `?${new URLSearchParams(params)}` : ""}`),
+    request<PoListResponse>(`/procurement/purchase-orders${params ? `?${new URLSearchParams(params)}` : ""}`),
 
   getPurchaseOrder: (id: string) =>
-    request<PoDetailResponse>(`/api/procurement/purchase-orders/${id}`),
+    request<PoDetailResponse>(`/procurement/purchase-orders/${id}`),
 
   createPurchaseOrder: (data: CreatePurchaseOrderRequest) =>
-    request<PoDetailResponse>("/api/procurement/purchase-orders", {
+    request<PoDetailResponse>("/procurement/purchase-orders", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   approvePurchaseOrder: (id: string) =>
-    request<PurchaseOrder>(`/api/procurement/purchase-orders/${id}/approve`, {
+    request<PurchaseOrder>(`/procurement/purchase-orders/${id}/approve`, {
       method: "PUT",
     }),
 
   sendPurchaseOrder: (id: string) =>
-    request<PurchaseOrder>(`/api/procurement/purchase-orders/${id}/send`, {
+    request<PurchaseOrder>(`/procurement/purchase-orders/${id}/send`, {
       method: "PUT",
     }),
 
   cancelPurchaseOrder: (id: string) =>
-    request<PurchaseOrder>(`/api/procurement/purchase-orders/${id}/cancel`, {
+    request<PurchaseOrder>(`/procurement/purchase-orders/${id}/cancel`, {
       method: "PUT",
     }),
 
   // GRN
   listGrns: (params?: Record<string, string>) =>
-    request<GrnListResponse>(`/api/procurement/grns${params ? `?${new URLSearchParams(params)}` : ""}`),
+    request<GrnListResponse>(`/procurement/grns${params ? `?${new URLSearchParams(params)}` : ""}`),
 
   getGrn: (id: string) =>
-    request<GrnDetailResponse>(`/api/procurement/grns/${id}`),
+    request<GrnDetailResponse>(`/procurement/grns/${id}`),
 
   createGrn: (data: CreateGrnRequest) =>
-    request<GrnDetailResponse>("/api/procurement/grns", {
+    request<GrnDetailResponse>("/procurement/grns", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   completeGrn: (id: string) =>
-    request<GoodsReceiptNote>(`/api/procurement/grns/${id}/complete`, {
+    request<GoodsReceiptNote>(`/procurement/grns/${id}/complete`, {
       method: "PUT",
     }),
 
   // Rate Contracts
   listRateContracts: (params?: Record<string, string>) =>
-    request<RateContract[]>(`/api/procurement/rate-contracts${params ? `?${new URLSearchParams(params)}` : ""}`),
+    request<RateContract[]>(`/procurement/rate-contracts${params ? `?${new URLSearchParams(params)}` : ""}`),
 
   getRateContract: (id: string) =>
-    request<RcDetailResponse>(`/api/procurement/rate-contracts/${id}`),
+    request<RcDetailResponse>(`/procurement/rate-contracts/${id}`),
 
   createRateContract: (data: CreateRateContractRequest) =>
-    request<RcDetailResponse>("/api/procurement/rate-contracts", {
+    request<RcDetailResponse>("/procurement/rate-contracts", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Batch Stock
   listBatchStock: (params?: Record<string, string>) =>
-    request<BatchStock[]>(`/api/procurement/batch-stock${params ? `?${new URLSearchParams(params)}` : ""}`),
+    request<BatchStock[]>(`/procurement/batch-stock${params ? `?${new URLSearchParams(params)}` : ""}`),
 
   // ── Procurement Phase 2 ──
   getVendorPerformance: () =>
-    request<VendorPerformanceRow[]>("/api/procurement/vendor-performance"),
+    request<VendorPerformanceRow[]>("/procurement/vendor-performance"),
   getVendorComparison: (catalogItemId: string) =>
-    request<VendorComparisonRow[]>(`/api/procurement/vendor-comparison?catalog_item_id=${catalogItemId}`),
+    request<VendorComparisonRow[]>(`/procurement/vendor-comparison?catalog_item_id=${catalogItemId}`),
   createEmergencyPo: (data: CreateEmergencyPoRequest) =>
-    request<PoDetailResponse>("/api/procurement/emergency-purchase", { method: "POST", body: JSON.stringify(data) }),
+    request<PoDetailResponse>("/procurement/emergency-purchase", { method: "POST", body: JSON.stringify(data) }),
   listSupplierPayments: (params?: Record<string, string>) =>
-    request<SupplierPayment[]>(`/api/procurement/supplier-payments${params ? `?${new URLSearchParams(params)}` : ""}`),
+    request<SupplierPayment[]>(`/procurement/supplier-payments${params ? `?${new URLSearchParams(params)}` : ""}`),
   createSupplierPayment: (data: CreateSupplierPaymentRequest) =>
-    request<SupplierPayment>("/api/procurement/supplier-payments", { method: "POST", body: JSON.stringify(data) }),
+    request<SupplierPayment>("/procurement/supplier-payments", { method: "POST", body: JSON.stringify(data) }),
   updateSupplierPayment: (id: string, data: UpdateSupplierPaymentRequest) =>
-    request<SupplierPayment>(`/api/procurement/supplier-payments/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    request<SupplierPayment>(`/procurement/supplier-payments/${id}`, { method: "PUT", body: JSON.stringify(data) }),
 
   // ── Quality Management ──
   listQualityIndicators: (params?: { category?: string }) =>
-    request<QualityIndicator[]>(`/api/quality/indicators${params?.category ? `?category=${encodeURIComponent(params.category)}` : ""}`),
+    request<QualityIndicator[]>(`/quality/indicators${params?.category ? `?category=${encodeURIComponent(params.category)}` : ""}`),
 
   createQualityIndicator: (data: CreateQualityIndicatorRequest) =>
-    request<QualityIndicator>("/api/quality/indicators", {
+    request<QualityIndicator>("/quality/indicators", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5151,11 +5240,11 @@ export const api = {
     if (params?.indicator_id) qs.set("indicator_id", params.indicator_id);
     if (params?.period) qs.set("period", params.period);
     const q = qs.toString();
-    return request<QualityIndicatorValue[]>(`/api/quality/indicator-values${q ? `?${q}` : ""}`);
+    return request<QualityIndicatorValue[]>(`/quality/indicator-values${q ? `?${q}` : ""}`);
   },
 
   recordIndicatorValue: (data: RecordIndicatorValueRequest) =>
-    request<QualityIndicatorValue>("/api/quality/indicator-values", {
+    request<QualityIndicatorValue>("/quality/indicator-values", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5165,26 +5254,26 @@ export const api = {
     if (params?.status) qs.set("status", params.status);
     if (params?.category) qs.set("category", params.category);
     const q = qs.toString();
-    return request<QualityDocument[]>(`/api/quality/documents${q ? `?${q}` : ""}`);
+    return request<QualityDocument[]>(`/quality/documents${q ? `?${q}` : ""}`);
   },
 
   getQualityDocument: (id: string) =>
-    request<QualityDocument>(`/api/quality/documents/${id}`),
+    request<QualityDocument>(`/quality/documents/${id}`),
 
   createQualityDocument: (data: CreateQualityDocumentRequest) =>
-    request<QualityDocument>("/api/quality/documents", {
+    request<QualityDocument>("/quality/documents", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateDocumentStatus: (id: string, data: { status: string }) =>
-    request<QualityDocument>(`/api/quality/documents/${id}/status`, {
+    request<QualityDocument>(`/quality/documents/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
 
   acknowledgeDocument: (id: string) =>
-    request<{ acknowledged: boolean }>(`/api/quality/documents/${id}/acknowledge`, {
+    request<{ acknowledged: boolean }>(`/quality/documents/${id}/acknowledge`, {
       method: "POST",
       body: JSON.stringify({}),
     }),
@@ -5194,20 +5283,20 @@ export const api = {
     if (params?.status) qs.set("status", params.status);
     if (params?.severity) qs.set("severity", params.severity);
     const q = qs.toString();
-    return request<QualityIncident[]>(`/api/quality/incidents${q ? `?${q}` : ""}`);
+    return request<QualityIncident[]>(`/quality/incidents${q ? `?${q}` : ""}`);
   },
 
   getQualityIncident: (id: string) =>
-    request<QualityIncident>(`/api/quality/incidents/${id}`),
+    request<QualityIncident>(`/quality/incidents/${id}`),
 
   createQualityIncident: (data: CreateQualityIncidentRequest) =>
-    request<QualityIncident>("/api/quality/incidents", {
+    request<QualityIncident>("/quality/incidents", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateQualityIncident: (id: string, data: UpdateQualityIncidentRequest) =>
-    request<QualityIncident>(`/api/quality/incidents/${id}`, {
+    request<QualityIncident>(`/quality/incidents/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
@@ -5217,41 +5306,41 @@ export const api = {
     if (params?.incident_id) qs.set("incident_id", params.incident_id);
     if (params?.status) qs.set("status", params.status);
     const q = qs.toString();
-    return request<QualityCapa[]>(`/api/quality/capa${q ? `?${q}` : ""}`);
+    return request<QualityCapa[]>(`/quality/capa${q ? `?${q}` : ""}`);
   },
 
   createCapa: (data: CreateCapaRequest) =>
-    request<QualityCapa>("/api/quality/capa", {
+    request<QualityCapa>("/quality/capa", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateCapa: (id: string, data: { status?: string; effectiveness_check?: string }) =>
-    request<QualityCapa>(`/api/quality/capa/${id}`, {
+    request<QualityCapa>(`/quality/capa/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
 
   listQualityCommittees: () =>
-    request<QualityCommittee[]>("/api/quality/committees"),
+    request<QualityCommittee[]>("/quality/committees"),
 
   createQualityCommittee: (data: CreateQualityCommitteeRequest) =>
-    request<QualityCommittee>("/api/quality/committees", {
+    request<QualityCommittee>("/quality/committees", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   listCommitteeMeetings: (params?: { committee_id?: string }) =>
-    request<QualityCommitteeMeeting[]>(`/api/quality/meetings${params?.committee_id ? `?committee_id=${encodeURIComponent(params.committee_id)}` : ""}`),
+    request<QualityCommitteeMeeting[]>(`/quality/meetings${params?.committee_id ? `?committee_id=${encodeURIComponent(params.committee_id)}` : ""}`),
 
   createCommitteeMeeting: (data: CreateMeetingRequest) =>
-    request<QualityCommitteeMeeting>("/api/quality/meetings", {
+    request<QualityCommitteeMeeting>("/quality/meetings", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateCommitteeMeeting: (id: string, data: Record<string, unknown>) =>
-    request<QualityCommitteeMeeting>(`/api/quality/meetings/${id}`, {
+    request<QualityCommitteeMeeting>(`/quality/meetings/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
@@ -5261,29 +5350,29 @@ export const api = {
     if (params?.source_type) qs.set("source_type", params.source_type);
     if (params?.status) qs.set("status", params.status);
     const q = qs.toString();
-    return request<QualityActionItem[]>(`/api/quality/action-items${q ? `?${q}` : ""}`);
+    return request<QualityActionItem[]>(`/quality/action-items${q ? `?${q}` : ""}`);
   },
 
   createActionItem: (data: { source_type: string; source_id: string; description?: string; assigned_to: string; due_date: string }) =>
-    request<QualityActionItem>("/api/quality/action-items", {
+    request<QualityActionItem>("/quality/action-items", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   listAccreditationStandards: (params?: { body?: string }) =>
-    request<QualityAccreditationStandard[]>(`/api/quality/standards${params?.body ? `?body=${encodeURIComponent(params.body)}` : ""}`),
+    request<QualityAccreditationStandard[]>(`/quality/standards${params?.body ? `?body=${encodeURIComponent(params.body)}` : ""}`),
 
   createAccreditationStandard: (data: CreateAccreditationStandardRequest) =>
-    request<QualityAccreditationStandard>("/api/quality/standards", {
+    request<QualityAccreditationStandard>("/quality/standards", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   listAccreditationCompliance: (params?: { standard_id?: string }) =>
-    request<QualityAccreditationCompliance[]>(`/api/quality/compliance${params?.standard_id ? `?standard_id=${encodeURIComponent(params.standard_id)}` : ""}`),
+    request<QualityAccreditationCompliance[]>(`/quality/compliance${params?.standard_id ? `?standard_id=${encodeURIComponent(params.standard_id)}` : ""}`),
 
   updateAccreditationCompliance: (data: UpdateComplianceRequest) =>
-    request<QualityAccreditationCompliance>("/api/quality/compliance", {
+    request<QualityAccreditationCompliance>("/quality/compliance", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5293,37 +5382,37 @@ export const api = {
     if (params?.status) qs.set("status", params.status);
     if (params?.department_id) qs.set("department_id", params.department_id);
     const q = qs.toString();
-    return request<QualityAudit[]>(`/api/quality/audits${q ? `?${q}` : ""}`);
+    return request<QualityAudit[]>(`/quality/audits${q ? `?${q}` : ""}`);
   },
 
   getQualityAudit: (id: string) =>
-    request<QualityAudit>(`/api/quality/audits/${id}`),
+    request<QualityAudit>(`/quality/audits/${id}`),
 
   createQualityAudit: (data: CreateQualityAuditRequest) =>
-    request<QualityAudit>("/api/quality/audits", {
+    request<QualityAudit>("/quality/audits", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateQualityAudit: (id: string, data: Record<string, unknown>) =>
-    request<QualityAudit>(`/api/quality/audits/${id}`, {
+    request<QualityAudit>(`/quality/audits/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
 
   calculateIndicator: (id: string) =>
-    request<Record<string, unknown>>(`/api/quality/indicators/${id}/calculate`, {
+    request<Record<string, unknown>>(`/quality/indicators/${id}/calculate`, {
       method: "POST",
     }),
   listPendingAcks: (documentId: string) =>
-    request<PendingAckUser[]>(`/api/quality/documents/${documentId}/pending-acks`),
+    request<PendingAckUser[]>(`/quality/documents/${documentId}/pending-acks`),
   autoScheduleMeetings: (committeeId: string, data: AutoScheduleRequest) =>
-    request<Record<string, unknown>>(`/api/quality/committees/${committeeId}/auto-schedule`, {
+    request<Record<string, unknown>>(`/quality/committees/${committeeId}/auto-schedule`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
   compileEvidence: (body: string) =>
-    request<EvidenceCompilation>(`/api/quality/accreditation/${body}/evidence`),
+    request<EvidenceCompilation>(`/quality/accreditation/${body}/evidence`),
 
   // ── Infection Control - Surveillance ──────────────────
   listSurveillanceEvents: (params?: { hai_type?: string; infection_status?: string }) => {
@@ -5331,11 +5420,11 @@ export const api = {
     if (params?.hai_type) qs.set("hai_type", params.hai_type);
     if (params?.infection_status) qs.set("infection_status", params.infection_status);
     const q = qs.toString();
-    return request<InfectionSurveillanceEvent[]>(`/api/infection-control/surveillance${q ? `?${q}` : ""}`);
+    return request<InfectionSurveillanceEvent[]>(`/infection-control/surveillance${q ? `?${q}` : ""}`);
   },
 
   createSurveillanceEvent: (data: CreateSurveillanceEventRequest) =>
-    request<InfectionSurveillanceEvent>("/api/infection-control/surveillance", {
+    request<InfectionSurveillanceEvent>("/infection-control/surveillance", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5345,11 +5434,11 @@ export const api = {
     if (params?.location_id) qs.set("location_id", params.location_id);
     if (params?.record_date) qs.set("record_date", params.record_date);
     const q = qs.toString();
-    return request<InfectionDeviceDay[]>(`/api/infection-control/device-days${q ? `?${q}` : ""}`);
+    return request<InfectionDeviceDay[]>(`/infection-control/device-days${q ? `?${q}` : ""}`);
   },
 
   recordDeviceDays: (data: RecordDeviceDaysRequest) =>
-    request<InfectionDeviceDay>("/api/infection-control/device-days", {
+    request<InfectionDeviceDay>("/infection-control/device-days", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5359,17 +5448,17 @@ export const api = {
     const qs = new URLSearchParams();
     if (params?.request_status) qs.set("request_status", params.request_status);
     const q = qs.toString();
-    return request<AntibioticStewardshipRequest[]>(`/api/infection-control/stewardship${q ? `?${q}` : ""}`);
+    return request<AntibioticStewardshipRequest[]>(`/infection-control/stewardship${q ? `?${q}` : ""}`);
   },
 
   createStewardshipRequest: (data: CreateStewardshipRequest) =>
-    request<AntibioticStewardshipRequest>("/api/infection-control/stewardship", {
+    request<AntibioticStewardshipRequest>("/infection-control/stewardship", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   reviewStewardshipRequest: (id: string, data: ReviewStewardshipRequest) =>
-    request<AntibioticStewardshipRequest>(`/api/infection-control/stewardship/${id}`, {
+    request<AntibioticStewardshipRequest>(`/infection-control/stewardship/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
@@ -5379,11 +5468,11 @@ export const api = {
     if (params?.department_id) qs.set("department_id", params.department_id);
     if (params?.record_month) qs.set("record_month", params.record_month);
     const q = qs.toString();
-    return request<AntibioticConsumptionRecord[]>(`/api/infection-control/consumption${q ? `?${q}` : ""}`);
+    return request<AntibioticConsumptionRecord[]>(`/infection-control/consumption${q ? `?${q}` : ""}`);
   },
 
   recordConsumption: (data: Record<string, unknown>) =>
-    request<AntibioticConsumptionRecord>("/api/infection-control/consumption", {
+    request<AntibioticConsumptionRecord>("/infection-control/consumption", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5394,11 +5483,11 @@ export const api = {
     if (params?.department_id) qs.set("department_id", params.department_id);
     if (params?.waste_category) qs.set("waste_category", params.waste_category);
     const q = qs.toString();
-    return request<BiowasteRecord[]>(`/api/infection-control/biowaste${q ? `?${q}` : ""}`);
+    return request<BiowasteRecord[]>(`/infection-control/biowaste${q ? `?${q}` : ""}`);
   },
 
   createBiowasteRecord: (data: CreateBiowasteRecordRequest) =>
-    request<BiowasteRecord>("/api/infection-control/biowaste", {
+    request<BiowasteRecord>("/infection-control/biowaste", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5407,11 +5496,11 @@ export const api = {
     const qs = new URLSearchParams();
     if (params?.department_id) qs.set("department_id", params.department_id);
     const q = qs.toString();
-    return request<NeedleStickIncident[]>(`/api/infection-control/needle-stick${q ? `?${q}` : ""}`);
+    return request<NeedleStickIncident[]>(`/infection-control/needle-stick${q ? `?${q}` : ""}`);
   },
 
   createNeedleStickIncident: (data: CreateNeedleStickIncidentRequest) =>
-    request<NeedleStickIncident>("/api/infection-control/needle-stick", {
+    request<NeedleStickIncident>("/infection-control/needle-stick", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5421,11 +5510,11 @@ export const api = {
     const qs = new URLSearchParams();
     if (params?.department_id) qs.set("department_id", params.department_id);
     const q = qs.toString();
-    return request<HandHygieneAudit[]>(`/api/infection-control/hygiene-audits${q ? `?${q}` : ""}`);
+    return request<HandHygieneAudit[]>(`/infection-control/hygiene-audits${q ? `?${q}` : ""}`);
   },
 
   createHygieneAudit: (data: CreateHygieneAuditRequest) =>
-    request<HandHygieneAudit>("/api/infection-control/hygiene-audits", {
+    request<HandHygieneAudit>("/infection-control/hygiene-audits", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5435,11 +5524,11 @@ export const api = {
     if (params?.department_id) qs.set("department_id", params.department_id);
     if (params?.culture_type) qs.set("culture_type", params.culture_type);
     const q = qs.toString();
-    return request<CultureSurveillance[]>(`/api/infection-control/cultures${q ? `?${q}` : ""}`);
+    return request<CultureSurveillance[]>(`/infection-control/cultures${q ? `?${q}` : ""}`);
   },
 
   createCultureSurveillance: (data: CreateCultureSurveillanceRequest) =>
-    request<CultureSurveillance>("/api/infection-control/cultures", {
+    request<CultureSurveillance>("/infection-control/cultures", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5449,26 +5538,26 @@ export const api = {
     const qs = new URLSearchParams();
     if (params?.outbreak_status) qs.set("outbreak_status", params.outbreak_status);
     const q = qs.toString();
-    return request<OutbreakEvent[]>(`/api/infection-control/outbreaks${q ? `?${q}` : ""}`);
+    return request<OutbreakEvent[]>(`/infection-control/outbreaks${q ? `?${q}` : ""}`);
   },
 
   createOutbreak: (data: CreateOutbreakRequest) =>
-    request<OutbreakEvent>("/api/infection-control/outbreaks", {
+    request<OutbreakEvent>("/infection-control/outbreaks", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateOutbreak: (id: string, data: UpdateOutbreakRequest) =>
-    request<OutbreakEvent>(`/api/infection-control/outbreaks/${id}`, {
+    request<OutbreakEvent>(`/infection-control/outbreaks/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
 
   listOutbreakContacts: (id: string) =>
-    request<OutbreakContact[]>(`/api/infection-control/outbreaks/${id}/contacts`),
+    request<OutbreakContact[]>(`/infection-control/outbreaks/${id}/contacts`),
 
   addOutbreakContact: (id: string, data: CreateOutbreakContactRequest) =>
-    request<OutbreakContact>(`/api/infection-control/outbreaks/${id}/contacts`, {
+    request<OutbreakContact>(`/infection-control/outbreaks/${id}/contacts`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5477,16 +5566,16 @@ export const api = {
 
   // Designations
   listDesignations: () =>
-    request<Designation[]>("/api/hr/designations"),
+    request<Designation[]>("/hr/designations"),
 
   createDesignation: (data: CreateDesignationRequest) =>
-    request<Designation>("/api/hr/designations", {
+    request<Designation>("/hr/designations", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateDesignation: (id: string, data: UpdateDesignationRequest) =>
-    request<Designation>(`/api/hr/designations/${id}`, {
+    request<Designation>(`/hr/designations/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
@@ -5499,52 +5588,52 @@ export const api = {
     if (params?.status) qs.set("status", params.status);
     if (params?.employment_type) qs.set("employment_type", params.employment_type);
     const q = qs.toString();
-    return request<Employee[]>(`/api/hr/employees${q ? `?${q}` : ""}`);
+    return request<Employee[]>(`/hr/employees${q ? `?${q}` : ""}`);
   },
 
   getEmployee: (id: string) =>
-    request<Employee>(`/api/hr/employees/${id}`),
+    request<Employee>(`/hr/employees/${id}`),
 
   createEmployee: (data: CreateEmployeeRequest) =>
-    request<Employee>("/api/hr/employees", {
+    request<Employee>("/hr/employees", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateEmployee: (id: string, data: UpdateEmployeeRequest) =>
-    request<Employee>(`/api/hr/employees/${id}`, {
+    request<Employee>(`/hr/employees/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   // Credentials
   listCredentials: (employeeId: string) =>
-    request<EmployeeCredential[]>(`/api/hr/employees/${employeeId}/credentials`),
+    request<EmployeeCredential[]>(`/hr/employees/${employeeId}/credentials`),
 
   createCredential: (employeeId: string, data: CreateCredentialRequest) =>
-    request<EmployeeCredential>(`/api/hr/employees/${employeeId}/credentials`, {
+    request<EmployeeCredential>(`/hr/employees/${employeeId}/credentials`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateCredential: (employeeId: string, credentialId: string, data: UpdateCredentialRequest) =>
-    request<EmployeeCredential>(`/api/hr/employees/${employeeId}/credentials/${credentialId}`, {
+    request<EmployeeCredential>(`/hr/employees/${employeeId}/credentials/${credentialId}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   // Shifts
   listShifts: () =>
-    request<ShiftDefinition[]>("/api/hr/shifts"),
+    request<ShiftDefinition[]>("/hr/shifts"),
 
   createShift: (data: CreateShiftRequest) =>
-    request<ShiftDefinition>("/api/hr/shifts", {
+    request<ShiftDefinition>("/hr/shifts", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateShift: (id: string, data: UpdateShiftRequest) =>
-    request<ShiftDefinition>(`/api/hr/shifts/${id}`, {
+    request<ShiftDefinition>(`/hr/shifts/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
@@ -5556,17 +5645,17 @@ export const api = {
     if (params?.date_from) qs.set("date_from", params.date_from);
     if (params?.date_to) qs.set("date_to", params.date_to);
     const q = qs.toString();
-    return request<DutyRoster[]>(`/api/hr/rosters${q ? `?${q}` : ""}`);
+    return request<DutyRoster[]>(`/hr/rosters${q ? `?${q}` : ""}`);
   },
 
   createRoster: (data: CreateRosterRequest) =>
-    request<DutyRoster>("/api/hr/rosters", {
+    request<DutyRoster>("/hr/rosters", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   approveSwap: (id: string) =>
-    request<DutyRoster>(`/api/hr/rosters/${id}/approve-swap`, {
+    request<DutyRoster>(`/hr/rosters/${id}/approve-swap`, {
       method: "PUT",
     }),
 
@@ -5578,18 +5667,18 @@ export const api = {
     if (params?.date_to) qs.set("date_to", params.date_to);
     if (params?.employee_id) qs.set("employee_id", params.employee_id);
     const q = qs.toString();
-    return request<AttendanceRecord[]>(`/api/hr/attendance${q ? `?${q}` : ""}`);
+    return request<AttendanceRecord[]>(`/hr/attendance${q ? `?${q}` : ""}`);
   },
 
   createAttendance: (data: CreateAttendanceRequest) =>
-    request<AttendanceRecord>("/api/hr/attendance", {
+    request<AttendanceRecord>("/hr/attendance", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Leave Balances
   listLeaveBalances: (employeeId: string) =>
-    request<LeaveBalance[]>(`/api/hr/employees/${employeeId}/leave-balances`),
+    request<LeaveBalance[]>(`/hr/employees/${employeeId}/leave-balances`),
 
   // Leave Requests
   listLeaveRequests: (params?: { employee_id?: string; status?: string }) => {
@@ -5597,23 +5686,23 @@ export const api = {
     if (params?.employee_id) qs.set("employee_id", params.employee_id);
     if (params?.status) qs.set("status", params.status);
     const q = qs.toString();
-    return request<LeaveRequest[]>(`/api/hr/leaves${q ? `?${q}` : ""}`);
+    return request<LeaveRequest[]>(`/hr/leaves${q ? `?${q}` : ""}`);
   },
 
   createLeaveRequest: (data: CreateLeaveRequestInput) =>
-    request<LeaveRequest>("/api/hr/leaves", {
+    request<LeaveRequest>("/hr/leaves", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   leaveAction: (id: string, data: LeaveActionRequest) =>
-    request<LeaveRequest>(`/api/hr/leaves/${id}/action`, {
+    request<LeaveRequest>(`/hr/leaves/${id}/action`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   cancelLeave: (id: string) =>
-    request<LeaveRequest>(`/api/hr/leaves/${id}/cancel`, {
+    request<LeaveRequest>(`/hr/leaves/${id}/cancel`, {
       method: "PUT",
     }),
 
@@ -5623,51 +5712,51 @@ export const api = {
     if (params?.department_id) qs.set("department_id", params.department_id);
     if (params?.schedule_date) qs.set("schedule_date", params.schedule_date);
     const q = qs.toString();
-    return request<OnCallSchedule[]>(`/api/hr/on-call${q ? `?${q}` : ""}`);
+    return request<OnCallSchedule[]>(`/hr/on-call${q ? `?${q}` : ""}`);
   },
 
   createOnCall: (data: CreateOnCallRequest) =>
-    request<OnCallSchedule>("/api/hr/on-call", {
+    request<OnCallSchedule>("/hr/on-call", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Training Programs
   listTrainingPrograms: () =>
-    request<TrainingProgram[]>("/api/hr/training-programs"),
+    request<TrainingProgram[]>("/hr/training-programs"),
 
   createTrainingProgram: (data: CreateTrainingProgramRequest) =>
-    request<TrainingProgram>("/api/hr/training-programs", {
+    request<TrainingProgram>("/hr/training-programs", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Training Records
   listTrainingRecords: (employeeId: string) =>
-    request<TrainingRecord[]>(`/api/hr/employees/${employeeId}/training-records`),
+    request<TrainingRecord[]>(`/hr/employees/${employeeId}/training-records`),
 
   createTrainingRecord: (data: CreateTrainingRecordRequest) =>
-    request<TrainingRecord>("/api/hr/training-records", {
+    request<TrainingRecord>("/hr/training-records", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Appraisals
   listAppraisals: (employeeId: string) =>
-    request<Appraisal[]>(`/api/hr/employees/${employeeId}/appraisals`),
+    request<Appraisal[]>(`/hr/employees/${employeeId}/appraisals`),
 
   createAppraisal: (data: CreateAppraisalRequest) =>
-    request<Appraisal>("/api/hr/appraisals", {
+    request<Appraisal>("/hr/appraisals", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Statutory Records
   listStatutoryRecords: (employeeId: string) =>
-    request<StatutoryRecord[]>(`/api/hr/employees/${employeeId}/statutory-records`),
+    request<StatutoryRecord[]>(`/hr/employees/${employeeId}/statutory-records`),
 
   createStatutoryRecord: (data: CreateStatutoryRecordRequest) =>
-    request<StatutoryRecord>("/api/hr/statutory-records", {
+    request<StatutoryRecord>("/hr/statutory-records", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5676,16 +5765,16 @@ export const api = {
 
   // Cleaning Schedules
   listCleaningSchedules: (areaType?: string) =>
-    request<CleaningSchedule[]>(`/api/housekeeping/schedules${areaType ? `?area_type=${areaType}` : ""}`),
+    request<CleaningSchedule[]>(`/housekeeping/schedules${areaType ? `?area_type=${areaType}` : ""}`),
 
   createCleaningSchedule: (data: CreateCleaningScheduleRequest) =>
-    request<CleaningSchedule>("/api/housekeeping/schedules", {
+    request<CleaningSchedule>("/housekeeping/schedules", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateCleaningSchedule: (id: string, data: UpdateCleaningScheduleRequest) =>
-    request<CleaningSchedule>(`/api/housekeeping/schedules/${id}`, {
+    request<CleaningSchedule>(`/housekeeping/schedules/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
@@ -5697,23 +5786,23 @@ export const api = {
     if (params?.status) qs.set("status", params.status);
     if (params?.area_type) qs.set("area_type", params.area_type);
     const q = qs.toString();
-    return request<CleaningTask[]>(`/api/housekeeping/tasks${q ? `?${q}` : ""}`);
+    return request<CleaningTask[]>(`/housekeeping/tasks${q ? `?${q}` : ""}`);
   },
 
   createCleaningTask: (data: CreateCleaningTaskRequest) =>
-    request<CleaningTask>("/api/housekeeping/tasks", {
+    request<CleaningTask>("/housekeeping/tasks", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateCleaningTaskStatus: (id: string, data: UpdateTaskStatusRequest) =>
-    request<CleaningTask>(`/api/housekeeping/tasks/${id}/status`, {
+    request<CleaningTask>(`/housekeeping/tasks/${id}/status`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   verifyCleaningTask: (id: string) =>
-    request<CleaningTask>(`/api/housekeeping/tasks/${id}/verify`, {
+    request<CleaningTask>(`/housekeeping/tasks/${id}/verify`, {
       method: "PUT",
     }),
 
@@ -5723,41 +5812,41 @@ export const api = {
     if (params?.from_date) qs.set("from_date", params.from_date);
     if (params?.to_date) qs.set("to_date", params.to_date);
     const q = qs.toString();
-    return request<RoomTurnaround[]>(`/api/housekeeping/turnarounds${q ? `?${q}` : ""}`);
+    return request<RoomTurnaround[]>(`/housekeeping/turnarounds${q ? `?${q}` : ""}`);
   },
 
   createTurnaround: (data: CreateTurnaroundRequest) =>
-    request<RoomTurnaround>("/api/housekeeping/turnarounds", {
+    request<RoomTurnaround>("/housekeeping/turnarounds", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   completeTurnaround: (id: string) =>
-    request<RoomTurnaround>(`/api/housekeeping/turnarounds/${id}/complete`, {
+    request<RoomTurnaround>(`/housekeeping/turnarounds/${id}/complete`, {
       method: "PUT",
     }),
 
   // Pest Control
   listPestControlSchedules: () =>
-    request<PestControlSchedule[]>("/api/housekeeping/pest-control"),
+    request<PestControlSchedule[]>("/housekeeping/pest-control"),
 
   createPestControlSchedule: (data: CreatePestControlScheduleRequest) =>
-    request<PestControlSchedule>("/api/housekeeping/pest-control", {
+    request<PestControlSchedule>("/housekeeping/pest-control", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updatePestControlSchedule: (id: string, data: UpdatePestControlScheduleRequest) =>
-    request<PestControlSchedule>(`/api/housekeeping/pest-control/${id}`, {
+    request<PestControlSchedule>(`/housekeeping/pest-control/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   listPestControlLogs: () =>
-    request<PestControlLog[]>("/api/housekeeping/pest-control-logs"),
+    request<PestControlLog[]>("/housekeeping/pest-control-logs"),
 
   createPestControlLog: (data: CreatePestControlLogRequest) =>
-    request<PestControlLog>("/api/housekeeping/pest-control-logs", {
+    request<PestControlLog>("/housekeeping/pest-control-logs", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5768,72 +5857,72 @@ export const api = {
     if (params?.status) qs.set("status", params.status);
     if (params?.item_type) qs.set("item_type", params.item_type);
     const q = qs.toString();
-    return request<LinenItem[]>(`/api/housekeeping/linen${q ? `?${q}` : ""}`);
+    return request<LinenItem[]>(`/housekeeping/linen${q ? `?${q}` : ""}`);
   },
 
   createLinenItem: (data: CreateLinenItemRequest) =>
-    request<LinenItem>("/api/housekeeping/linen", {
+    request<LinenItem>("/housekeeping/linen", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateLinenItem: (id: string, data: UpdateLinenItemRequest) =>
-    request<LinenItem>(`/api/housekeeping/linen/${id}`, {
+    request<LinenItem>(`/housekeeping/linen/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   // Linen Movements
   listLinenMovements: () =>
-    request<LinenMovement[]>("/api/housekeeping/linen-movements"),
+    request<LinenMovement[]>("/housekeeping/linen-movements"),
 
   createLinenMovement: (data: CreateLinenMovementRequest) =>
-    request<LinenMovement>("/api/housekeeping/linen-movements", {
+    request<LinenMovement>("/housekeeping/linen-movements", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Laundry Batches
   listLaundryBatches: () =>
-    request<LaundryBatch[]>("/api/housekeeping/laundry-batches"),
+    request<LaundryBatch[]>("/housekeeping/laundry-batches"),
 
   createLaundryBatch: (data: CreateLaundryBatchRequest) =>
-    request<LaundryBatch>("/api/housekeeping/laundry-batches", {
+    request<LaundryBatch>("/housekeeping/laundry-batches", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   completeLaundryBatch: (id: string) =>
-    request<LaundryBatch>(`/api/housekeeping/laundry-batches/${id}/complete`, {
+    request<LaundryBatch>(`/housekeeping/laundry-batches/${id}/complete`, {
       method: "PUT",
     }),
 
   // Par Levels
   listParLevels: () =>
-    request<LinenParLevel[]>("/api/housekeeping/par-levels"),
+    request<LinenParLevel[]>("/housekeeping/par-levels"),
 
   upsertParLevel: (data: UpsertParLevelRequest) =>
-    request<LinenParLevel>("/api/housekeeping/par-levels", {
+    request<LinenParLevel>("/housekeeping/par-levels", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Linen Condemnations
   listLinenCondemnations: () =>
-    request<LinenCondemnation[]>("/api/housekeeping/condemnations"),
+    request<LinenCondemnation[]>("/housekeeping/condemnations"),
 
   createLinenCondemnation: (data: CreateLinenCondemnationRequest) =>
-    request<LinenCondemnation>("/api/housekeeping/condemnations", {
+    request<LinenCondemnation>("/housekeeping/condemnations", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   getBmwSchedule: (params?: { ward_id?: string }) => {
     const qs = params?.ward_id ? `?ward_id=${params.ward_id}` : "";
-    return request<BmwScheduleEntry[]>(`/api/housekeeping/bmw/schedule${qs}`);
+    return request<BmwScheduleEntry[]>(`/housekeeping/bmw/schedule${qs}`);
   },
   createSharpReplacement: (data: SharpReplacementRequest) =>
-    request<Record<string, unknown>>("/api/housekeeping/bmw/sharp-replacement", {
+    request<Record<string, unknown>>("/housekeeping/bmw/sharp-replacement", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5844,10 +5933,10 @@ export const api = {
 
   // Visiting Hours
   listVisitingHours: () =>
-    request<VisitingHours[]>("/api/front-office/visiting-hours"),
+    request<VisitingHours[]>("/front-office/visiting-hours"),
 
   upsertVisitingHours: (data: UpsertVisitingHoursRequest) =>
-    request<VisitingHours>("/api/front-office/visiting-hours", {
+    request<VisitingHours>("/front-office/visiting-hours", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5859,7 +5948,7 @@ export const api = {
     ),
 
   createVisitor: (data: CreateVisitorRequest) =>
-    request<VisitorRegistration>("/api/front-office/visitors", {
+    request<VisitorRegistration>("/front-office/visitors", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5871,13 +5960,13 @@ export const api = {
     ),
 
   createVisitorPass: (data: CreateVisitorPassRequest) =>
-    request<VisitorPass>("/api/front-office/passes", {
+    request<VisitorPass>("/front-office/passes", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   revokeVisitorPass: (id: string, data: RevokePassRequest) =>
-    request<VisitorPass>(`/api/front-office/passes/${id}/revoke`, {
+    request<VisitorPass>(`/front-office/passes/${id}/revoke`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
@@ -5889,31 +5978,31 @@ export const api = {
     ),
 
   checkInVisitor: (passId: string) =>
-    request<VisitorLog>(`/api/front-office/visitor-logs/${passId}/check-in`, {
+    request<VisitorLog>(`/front-office/visitor-logs/${passId}/check-in`, {
       method: "POST",
     }),
 
   checkOutVisitor: (passId: string) =>
-    request<VisitorLog>(`/api/front-office/visitor-logs/${passId}/check-out`, {
+    request<VisitorLog>(`/front-office/visitor-logs/${passId}/check-out`, {
       method: "PUT",
     }),
 
   // Queue Priority Rules
   listQueuePriorityRules: () =>
-    request<QueuePriorityRule[]>("/api/front-office/queue-priority"),
+    request<QueuePriorityRule[]>("/front-office/queue-priority"),
 
   upsertQueuePriorityRule: (data: UpsertQueuePriorityRequest) =>
-    request<QueuePriorityRule>("/api/front-office/queue-priority", {
+    request<QueuePriorityRule>("/front-office/queue-priority", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Queue Display Config
   listQueueDisplayConfig: () =>
-    request<QueueDisplayConfig[]>("/api/front-office/display-config"),
+    request<QueueDisplayConfig[]>("/front-office/display-config"),
 
   upsertQueueDisplayConfig: (data: UpsertDisplayConfigRequest) =>
-    request<QueueDisplayConfig>("/api/front-office/display-config", {
+    request<QueueDisplayConfig>("/front-office/display-config", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -5925,13 +6014,13 @@ export const api = {
     ),
 
   createEnquiry: (data: CreateEnquiryRequest) =>
-    request<FrontOfficeEnquiryLog>("/api/front-office/enquiries", {
+    request<FrontOfficeEnquiryLog>("/front-office/enquiries", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   resolveEnquiry: (id: string) =>
-    request<FrontOfficeEnquiryLog>(`/api/front-office/enquiries/${id}/resolve`, {
+    request<FrontOfficeEnquiryLog>(`/front-office/enquiries/${id}/resolve`, {
       method: "PUT",
     }),
 
@@ -5952,16 +6041,16 @@ export const api = {
     if (params?.department_id) sp.set("department_id", params.department_id);
     if (params?.risk_category) sp.set("risk_category", params.risk_category);
     const qs = sp.toString();
-    return request<BmeEquipment[]>(`/api/bme/equipment${qs ? `?${qs}` : ""}`);
+    return request<BmeEquipment[]>(`/bme/equipment${qs ? `?${qs}` : ""}`);
   },
   getBmeEquipment: (id: string) =>
-    request<BmeEquipment>(`/api/bme/equipment/${id}`),
+    request<BmeEquipment>(`/bme/equipment/${id}`),
   createBmeEquipment: (body: CreateBmeEquipmentRequest) =>
-    request<BmeEquipment>("/api/bme/equipment", {
+    request<BmeEquipment>("/bme/equipment", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateBmeEquipment: (id: string, body: UpdateBmeEquipmentRequest) =>
-    request<BmeEquipment>(`/api/bme/equipment/${id}`, {
+    request<BmeEquipment>(`/bme/equipment/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -5971,14 +6060,14 @@ export const api = {
     if (params?.equipment_id) sp.set("equipment_id", params.equipment_id);
     if (params?.is_active !== undefined) sp.set("is_active", String(params.is_active));
     const qs = sp.toString();
-    return request<BmePmSchedule[]>(`/api/bme/pm-schedules${qs ? `?${qs}` : ""}`);
+    return request<BmePmSchedule[]>(`/bme/pm-schedules${qs ? `?${qs}` : ""}`);
   },
   createBmePmSchedule: (body: CreateBmePmScheduleRequest) =>
-    request<BmePmSchedule>("/api/bme/pm-schedules", {
+    request<BmePmSchedule>("/bme/pm-schedules", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateBmePmSchedule: (id: string, body: UpdateBmePmScheduleRequest) =>
-    request<BmePmSchedule>(`/api/bme/pm-schedules/${id}`, {
+    request<BmePmSchedule>(`/bme/pm-schedules/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -5989,16 +6078,16 @@ export const api = {
     if (params?.status) sp.set("status", params.status);
     if (params?.order_type) sp.set("order_type", params.order_type);
     const qs = sp.toString();
-    return request<BmeWorkOrder[]>(`/api/bme/work-orders${qs ? `?${qs}` : ""}`);
+    return request<BmeWorkOrder[]>(`/bme/work-orders${qs ? `?${qs}` : ""}`);
   },
   getBmeWorkOrder: (id: string) =>
-    request<BmeWorkOrder>(`/api/bme/work-orders/${id}`),
+    request<BmeWorkOrder>(`/bme/work-orders/${id}`),
   createBmeWorkOrder: (body: CreateBmeWorkOrderRequest) =>
-    request<BmeWorkOrder>("/api/bme/work-orders", {
+    request<BmeWorkOrder>("/bme/work-orders", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateBmeWorkOrderStatus: (id: string, body: UpdateBmeWorkOrderStatusRequest) =>
-    request<BmeWorkOrder>(`/api/bme/work-orders/${id}/status`, {
+    request<BmeWorkOrder>(`/bme/work-orders/${id}/status`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6008,14 +6097,14 @@ export const api = {
     if (params?.equipment_id) sp.set("equipment_id", params.equipment_id);
     if (params?.calibration_status) sp.set("calibration_status", params.calibration_status);
     const qs = sp.toString();
-    return request<BmeCalibration[]>(`/api/bme/calibrations${qs ? `?${qs}` : ""}`);
+    return request<BmeCalibration[]>(`/bme/calibrations${qs ? `?${qs}` : ""}`);
   },
   createBmeCalibration: (body: CreateBmeCalibrationRequest) =>
-    request<BmeCalibration>("/api/bme/calibrations", {
+    request<BmeCalibration>("/bme/calibrations", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateBmeCalibration: (id: string, body: UpdateBmeCalibrationRequest) =>
-    request<BmeCalibration>(`/api/bme/calibrations/${id}`, {
+    request<BmeCalibration>(`/bme/calibrations/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6026,14 +6115,14 @@ export const api = {
     if (params?.contract_type) sp.set("contract_type", params.contract_type);
     if (params?.is_active !== undefined) sp.set("is_active", String(params.is_active));
     const qs = sp.toString();
-    return request<BmeContract[]>(`/api/bme/contracts${qs ? `?${qs}` : ""}`);
+    return request<BmeContract[]>(`/bme/contracts${qs ? `?${qs}` : ""}`);
   },
   createBmeContract: (body: CreateBmeContractRequest) =>
-    request<BmeContract>("/api/bme/contracts", {
+    request<BmeContract>("/bme/contracts", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateBmeContract: (id: string, body: UpdateBmeContractRequest) =>
-    request<BmeContract>(`/api/bme/contracts/${id}`, {
+    request<BmeContract>(`/bme/contracts/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6044,14 +6133,14 @@ export const api = {
     if (params?.status) sp.set("status", params.status);
     if (params?.priority) sp.set("priority", params.priority);
     const qs = sp.toString();
-    return request<BmeBreakdown[]>(`/api/bme/breakdowns${qs ? `?${qs}` : ""}`);
+    return request<BmeBreakdown[]>(`/bme/breakdowns${qs ? `?${qs}` : ""}`);
   },
   createBmeBreakdown: (body: CreateBmeBreakdownRequest) =>
-    request<BmeBreakdown>("/api/bme/breakdowns", {
+    request<BmeBreakdown>("/bme/breakdowns", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateBmeBreakdownStatus: (id: string, body: UpdateBmeBreakdownStatusRequest) =>
-    request<BmeBreakdown>(`/api/bme/breakdowns/${id}/status`, {
+    request<BmeBreakdown>(`/bme/breakdowns/${id}/status`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6061,16 +6150,16 @@ export const api = {
       `/api/bme/vendor-evaluations${params?.vendor_id ? `?vendor_id=${params.vendor_id}` : ""}`,
     ),
   createBmeVendorEvaluation: (body: CreateBmeVendorEvaluationRequest) =>
-    request<BmeVendorEvaluation>("/api/bme/vendor-evaluations", {
+    request<BmeVendorEvaluation>("/bme/vendor-evaluations", {
       method: "POST", body: JSON.stringify(body),
     }),
 
   // Stats
-  getBmeStats: () => request<BmeStatsResponse>("/api/bme/stats"),
+  getBmeStats: () => request<BmeStatsResponse>("/bme/stats"),
   getBmeMtbfAnalytics: () =>
-    request<BmeMtbfRow[]>("/api/bme/analytics/mtbf"),
+    request<BmeMtbfRow[]>("/bme/analytics/mtbf"),
   getBmeUptimeAnalytics: () =>
-    request<BmeUptimeRow[]>("/api/bme/analytics/uptime"),
+    request<BmeUptimeRow[]>("/bme/analytics/uptime"),
 
   // ── Facilities Management ─────────────────────────────────
 
@@ -6081,22 +6170,22 @@ export const api = {
     if (params?.source_type) sp.set("source_type", params.source_type);
     if (params?.location_id) sp.set("location_id", params.location_id);
     const qs = sp.toString();
-    return request<FmsGasReading[]>(`/api/facilities/gas-readings${qs ? `?${qs}` : ""}`);
+    return request<FmsGasReading[]>(`/facilities/gas-readings${qs ? `?${qs}` : ""}`);
   },
   createFmsGasReading: (body: CreateFmsGasReadingRequest) =>
-    request<FmsGasReading>("/api/facilities/gas-readings", {
+    request<FmsGasReading>("/facilities/gas-readings", {
       method: "POST", body: JSON.stringify(body),
     }),
 
   // Gas Compliance
   listFmsGasCompliance: () =>
-    request<FmsGasCompliance[]>("/api/facilities/gas-compliance"),
+    request<FmsGasCompliance[]>("/facilities/gas-compliance"),
   createFmsGasCompliance: (body: CreateFmsGasComplianceRequest) =>
-    request<FmsGasCompliance>("/api/facilities/gas-compliance", {
+    request<FmsGasCompliance>("/facilities/gas-compliance", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateFmsGasCompliance: (id: string, body: UpdateFmsGasComplianceRequest) =>
-    request<FmsGasCompliance>(`/api/facilities/gas-compliance/${id}`, {
+    request<FmsGasCompliance>(`/facilities/gas-compliance/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6107,14 +6196,14 @@ export const api = {
     if (params?.location_id) sp.set("location_id", params.location_id);
     if (params?.is_active !== undefined) sp.set("is_active", String(params.is_active));
     const qs = sp.toString();
-    return request<FmsFireEquipment[]>(`/api/facilities/fire-equipment${qs ? `?${qs}` : ""}`);
+    return request<FmsFireEquipment[]>(`/facilities/fire-equipment${qs ? `?${qs}` : ""}`);
   },
   createFmsFireEquipment: (body: CreateFmsFireEquipmentRequest) =>
-    request<FmsFireEquipment>("/api/facilities/fire-equipment", {
+    request<FmsFireEquipment>("/facilities/fire-equipment", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateFmsFireEquipment: (id: string, body: UpdateFmsFireEquipmentRequest) =>
-    request<FmsFireEquipment>(`/api/facilities/fire-equipment/${id}`, {
+    request<FmsFireEquipment>(`/facilities/fire-equipment/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6124,27 +6213,27 @@ export const api = {
       `/api/facilities/fire-inspections${params?.equipment_id ? `?equipment_id=${params.equipment_id}` : ""}`,
     ),
   createFmsFireInspection: (body: CreateFmsFireInspectionRequest) =>
-    request<FmsFireInspection>("/api/facilities/fire-inspections", {
+    request<FmsFireInspection>("/facilities/fire-inspections", {
       method: "POST", body: JSON.stringify(body),
     }),
 
   // Fire Drills
   listFmsFireDrills: () =>
-    request<FmsFireDrill[]>("/api/facilities/fire-drills"),
+    request<FmsFireDrill[]>("/facilities/fire-drills"),
   createFmsFireDrill: (body: CreateFmsFireDrillRequest) =>
-    request<FmsFireDrill>("/api/facilities/fire-drills", {
+    request<FmsFireDrill>("/facilities/fire-drills", {
       method: "POST", body: JSON.stringify(body),
     }),
 
   // Fire NOC
   listFmsFireNoc: () =>
-    request<FmsFireNoc[]>("/api/facilities/fire-noc"),
+    request<FmsFireNoc[]>("/facilities/fire-noc"),
   createFmsFireNoc: (body: CreateFmsFireNocRequest) =>
-    request<FmsFireNoc>("/api/facilities/fire-noc", {
+    request<FmsFireNoc>("/facilities/fire-noc", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateFmsFireNoc: (id: string, body: UpdateFmsFireNocRequest) =>
-    request<FmsFireNoc>(`/api/facilities/fire-noc/${id}`, {
+    request<FmsFireNoc>(`/facilities/fire-noc/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6154,22 +6243,22 @@ export const api = {
     if (params?.source_type) sp.set("source_type", params.source_type);
     if (params?.test_type) sp.set("test_type", params.test_type);
     const qs = sp.toString();
-    return request<FmsWaterTest[]>(`/api/facilities/water-tests${qs ? `?${qs}` : ""}`);
+    return request<FmsWaterTest[]>(`/facilities/water-tests${qs ? `?${qs}` : ""}`);
   },
   createFmsWaterTest: (body: CreateFmsWaterTestRequest) =>
-    request<FmsWaterTest>("/api/facilities/water-tests", {
+    request<FmsWaterTest>("/facilities/water-tests", {
       method: "POST", body: JSON.stringify(body),
     }),
 
   // Water Schedules
   listFmsWaterSchedules: () =>
-    request<FmsWaterSchedule[]>("/api/facilities/water-schedules"),
+    request<FmsWaterSchedule[]>("/facilities/water-schedules"),
   createFmsWaterSchedule: (body: CreateFmsWaterScheduleRequest) =>
-    request<FmsWaterSchedule>("/api/facilities/water-schedules", {
+    request<FmsWaterSchedule>("/facilities/water-schedules", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateFmsWaterSchedule: (id: string, body: UpdateFmsWaterScheduleRequest) =>
-    request<FmsWaterSchedule>(`/api/facilities/water-schedules/${id}`, {
+    request<FmsWaterSchedule>(`/facilities/water-schedules/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6179,10 +6268,10 @@ export const api = {
     if (params?.source_type) sp.set("source_type", params.source_type);
     if (params?.location_id) sp.set("location_id", params.location_id);
     const qs = sp.toString();
-    return request<FmsEnergyReading[]>(`/api/facilities/energy-readings${qs ? `?${qs}` : ""}`);
+    return request<FmsEnergyReading[]>(`/facilities/energy-readings${qs ? `?${qs}` : ""}`);
   },
   createFmsEnergyReading: (body: CreateFmsEnergyReadingRequest) =>
-    request<FmsEnergyReading>("/api/facilities/energy-readings", {
+    request<FmsEnergyReading>("/facilities/energy-readings", {
       method: "POST", body: JSON.stringify(body),
     }),
 
@@ -6194,33 +6283,33 @@ export const api = {
     if (params?.department_id) sp.set("department_id", params.department_id);
     if (params?.category) sp.set("category", params.category);
     const qs = sp.toString();
-    return request<FmsWorkOrder[]>(`/api/facilities/work-orders${qs ? `?${qs}` : ""}`);
+    return request<FmsWorkOrder[]>(`/facilities/work-orders${qs ? `?${qs}` : ""}`);
   },
   getFmsWorkOrder: (id: string) =>
-    request<FmsWorkOrder>(`/api/facilities/work-orders/${id}`),
+    request<FmsWorkOrder>(`/facilities/work-orders/${id}`),
   createFmsWorkOrder: (body: CreateFmsWorkOrderRequest) =>
-    request<FmsWorkOrder>("/api/facilities/work-orders", {
+    request<FmsWorkOrder>("/facilities/work-orders", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateFmsWorkOrderStatus: (id: string, body: UpdateFmsWorkOrderStatusRequest) =>
-    request<FmsWorkOrder>(`/api/facilities/work-orders/${id}/status`, {
+    request<FmsWorkOrder>(`/facilities/work-orders/${id}/status`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
   // Stats
-  getFmsStats: () => request<FmsStatsResponse>("/api/facilities/stats"),
+  getFmsStats: () => request<FmsStatsResponse>("/facilities/stats"),
 
   // ── Security Department ─────────────────────────────────
 
   // Zones
   listSecurityZones: () =>
-    request<SecurityZone[]>("/api/security/zones"),
+    request<SecurityZone[]>("/security/zones"),
   createSecurityZone: (body: CreateSecurityZoneRequest) =>
-    request<SecurityZone>("/api/security/zones", {
+    request<SecurityZone>("/security/zones", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateSecurityZone: (id: string, body: UpdateSecurityZoneRequest) =>
-    request<SecurityZone>(`/api/security/zones/${id}`, {
+    request<SecurityZone>(`/security/zones/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6233,10 +6322,10 @@ export const api = {
     if (params?.from) sp.set("from", params.from);
     if (params?.to) sp.set("to", params.to);
     const qs = sp.toString();
-    return request<SecurityAccessLog[]>(`/api/security/access-logs${qs ? `?${qs}` : ""}`);
+    return request<SecurityAccessLog[]>(`/security/access-logs${qs ? `?${qs}` : ""}`);
   },
   createSecurityAccessLog: (body: CreateSecurityAccessLogRequest) =>
-    request<SecurityAccessLog>("/api/security/access-logs", {
+    request<SecurityAccessLog>("/security/access-logs", {
       method: "POST", body: JSON.stringify(body),
     }),
 
@@ -6246,18 +6335,18 @@ export const api = {
     if (params?.employee_id) sp.set("employee_id", params.employee_id);
     if (params?.is_active != null) sp.set("is_active", String(params.is_active));
     const qs = sp.toString();
-    return request<SecurityAccessCard[]>(`/api/security/cards${qs ? `?${qs}` : ""}`);
+    return request<SecurityAccessCard[]>(`/security/cards${qs ? `?${qs}` : ""}`);
   },
   createSecurityAccessCard: (body: CreateSecurityAccessCardRequest) =>
-    request<SecurityAccessCard>("/api/security/cards", {
+    request<SecurityAccessCard>("/security/cards", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateSecurityAccessCard: (id: string, body: UpdateSecurityAccessCardRequest) =>
-    request<SecurityAccessCard>(`/api/security/cards/${id}`, {
+    request<SecurityAccessCard>(`/security/cards/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
   deactivateSecurityAccessCard: (id: string, reason?: string) =>
-    request<SecurityAccessCard>(`/api/security/cards/${id}/deactivate`, {
+    request<SecurityAccessCard>(`/security/cards/${id}/deactivate`, {
       method: "PUT", body: JSON.stringify({ reason }),
     }),
 
@@ -6267,14 +6356,14 @@ export const api = {
     if (params?.zone_id) sp.set("zone_id", params.zone_id);
     if (params?.is_active != null) sp.set("is_active", String(params.is_active));
     const qs = sp.toString();
-    return request<SecurityCamera[]>(`/api/security/cameras${qs ? `?${qs}` : ""}`);
+    return request<SecurityCamera[]>(`/security/cameras${qs ? `?${qs}` : ""}`);
   },
   createSecurityCamera: (body: CreateSecurityCameraRequest) =>
-    request<SecurityCamera>("/api/security/cameras", {
+    request<SecurityCamera>("/security/cameras", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateSecurityCamera: (id: string, body: UpdateSecurityCameraRequest) =>
-    request<SecurityCamera>(`/api/security/cameras/${id}`, {
+    request<SecurityCamera>(`/security/cameras/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6285,16 +6374,16 @@ export const api = {
     if (params?.status) sp.set("status", params.status);
     if (params?.category) sp.set("category", params.category);
     const qs = sp.toString();
-    return request<SecurityIncident[]>(`/api/security/incidents${qs ? `?${qs}` : ""}`);
+    return request<SecurityIncident[]>(`/security/incidents${qs ? `?${qs}` : ""}`);
   },
   getSecurityIncident: (id: string) =>
-    request<SecurityIncident>(`/api/security/incidents/${id}`),
+    request<SecurityIncident>(`/security/incidents/${id}`),
   createSecurityIncident: (body: CreateSecurityIncidentRequest) =>
-    request<SecurityIncident>("/api/security/incidents", {
+    request<SecurityIncident>("/security/incidents", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateSecurityIncident: (id: string, body: UpdateSecurityIncidentRequest) =>
-    request<SecurityIncident>(`/api/security/incidents/${id}`, {
+    request<SecurityIncident>(`/security/incidents/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6305,14 +6394,14 @@ export const api = {
     if (params?.tag_type) sp.set("tag_type", params.tag_type);
     if (params?.alert_status) sp.set("alert_status", params.alert_status);
     const qs = sp.toString();
-    return request<SecurityPatientTag[]>(`/api/security/patient-tags${qs ? `?${qs}` : ""}`);
+    return request<SecurityPatientTag[]>(`/security/patient-tags${qs ? `?${qs}` : ""}`);
   },
   createSecurityPatientTag: (body: CreateSecurityPatientTagRequest) =>
-    request<SecurityPatientTag>("/api/security/patient-tags", {
+    request<SecurityPatientTag>("/security/patient-tags", {
       method: "POST", body: JSON.stringify(body),
     }),
   deactivateSecurityPatientTag: (id: string) =>
-    request<SecurityPatientTag>(`/api/security/patient-tags/${id}/deactivate`, {
+    request<SecurityPatientTag>(`/security/patient-tags/${id}/deactivate`, {
       method: "PUT",
     }),
 
@@ -6322,20 +6411,20 @@ export const api = {
     if (params?.tag_id) sp.set("tag_id", params.tag_id);
     if (params?.is_resolved != null) sp.set("is_resolved", String(params.is_resolved));
     const qs = sp.toString();
-    return request<SecurityTagAlert[]>(`/api/security/tag-alerts${qs ? `?${qs}` : ""}`);
+    return request<SecurityTagAlert[]>(`/security/tag-alerts${qs ? `?${qs}` : ""}`);
   },
   resolveSecurityTagAlert: (id: string, body: ResolveSecurityTagAlertRequest) =>
-    request<SecurityTagAlert>(`/api/security/tag-alerts/${id}/resolve`, {
+    request<SecurityTagAlert>(`/security/tag-alerts/${id}/resolve`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
   // Code Debriefs
   listSecurityCodeDebriefs: () =>
-    request<SecurityCodeDebrief[]>("/api/security/debriefs"),
+    request<SecurityCodeDebrief[]>("/security/debriefs"),
   getSecurityCodeDebrief: (id: string) =>
-    request<SecurityCodeDebrief>(`/api/security/debriefs/${id}`),
+    request<SecurityCodeDebrief>(`/security/debriefs/${id}`),
   createSecurityCodeDebrief: (body: CreateSecurityCodeDebriefRequest) =>
-    request<SecurityCodeDebrief>("/api/security/debriefs", {
+    request<SecurityCodeDebrief>("/security/debriefs", {
       method: "POST", body: JSON.stringify(body),
     }),
 
@@ -6348,28 +6437,28 @@ export const api = {
     if (params?.patient_id) sp.set("patient_id", params.patient_id);
     if (params?.record_type) sp.set("record_type", params.record_type);
     const qs = sp.toString();
-    return request<MrdMedicalRecord[]>(`/api/mrd/records${qs ? `?${qs}` : ""}`);
+    return request<MrdMedicalRecord[]>(`/mrd/records${qs ? `?${qs}` : ""}`);
   },
   createMrdRecord: (body: CreateMrdRecordRequest) =>
-    request<MrdMedicalRecord>("/api/mrd/records", {
+    request<MrdMedicalRecord>("/mrd/records", {
       method: "POST", body: JSON.stringify(body),
     }),
   getMrdRecord: (id: string) =>
-    request<MrdMedicalRecord>(`/api/mrd/records/${id}`),
+    request<MrdMedicalRecord>(`/mrd/records/${id}`),
   updateMrdRecord: (id: string, body: UpdateMrdRecordRequest) =>
-    request<MrdMedicalRecord>(`/api/mrd/records/${id}`, {
+    request<MrdMedicalRecord>(`/mrd/records/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
   // Record Movements
   listMrdMovements: (recordId: string) =>
-    request<MrdRecordMovement[]>(`/api/mrd/records/${recordId}/movements`),
+    request<MrdRecordMovement[]>(`/mrd/records/${recordId}/movements`),
   issueMrdRecord: (recordId: string, body: IssueMrdRecordRequest) =>
-    request<MrdRecordMovement>(`/api/mrd/records/${recordId}/issue`, {
+    request<MrdRecordMovement>(`/mrd/records/${recordId}/issue`, {
       method: "POST", body: JSON.stringify(body),
     }),
   returnMrdRecord: (recordId: string, movementId: string) =>
-    request<MrdRecordMovement>(`/api/mrd/records/${recordId}/movements/${movementId}/return`, {
+    request<MrdRecordMovement>(`/mrd/records/${recordId}/movements/${movementId}/return`, {
       method: "POST",
     }),
 
@@ -6379,14 +6468,14 @@ export const api = {
     if (params?.from_date) sp.set("from_date", params.from_date);
     if (params?.to_date) sp.set("to_date", params.to_date);
     const qs = sp.toString();
-    return request<MrdBirthRegister[]>(`/api/mrd/births${qs ? `?${qs}` : ""}`);
+    return request<MrdBirthRegister[]>(`/mrd/births${qs ? `?${qs}` : ""}`);
   },
   createMrdBirth: (body: CreateMrdBirthRequest) =>
-    request<MrdBirthRegister>("/api/mrd/births", {
+    request<MrdBirthRegister>("/mrd/births", {
       method: "POST", body: JSON.stringify(body),
     }),
   getMrdBirth: (id: string) =>
-    request<MrdBirthRegister>(`/api/mrd/births/${id}`),
+    request<MrdBirthRegister>(`/mrd/births/${id}`),
 
   // Death Register
   listMrdDeaths: (params?: { from_date?: string; to_date?: string }) => {
@@ -6394,24 +6483,24 @@ export const api = {
     if (params?.from_date) sp.set("from_date", params.from_date);
     if (params?.to_date) sp.set("to_date", params.to_date);
     const qs = sp.toString();
-    return request<MrdDeathRegister[]>(`/api/mrd/deaths${qs ? `?${qs}` : ""}`);
+    return request<MrdDeathRegister[]>(`/mrd/deaths${qs ? `?${qs}` : ""}`);
   },
   createMrdDeath: (body: CreateMrdDeathRequest) =>
-    request<MrdDeathRegister>("/api/mrd/deaths", {
+    request<MrdDeathRegister>("/mrd/deaths", {
       method: "POST", body: JSON.stringify(body),
     }),
   getMrdDeath: (id: string) =>
-    request<MrdDeathRegister>(`/api/mrd/deaths/${id}`),
+    request<MrdDeathRegister>(`/mrd/deaths/${id}`),
 
   // Retention Policies
   listMrdRetentionPolicies: () =>
-    request<MrdRetentionPolicy[]>("/api/mrd/retention-policies"),
+    request<MrdRetentionPolicy[]>("/mrd/retention-policies"),
   createMrdRetentionPolicy: (body: CreateMrdRetentionPolicyRequest) =>
-    request<MrdRetentionPolicy>("/api/mrd/retention-policies", {
+    request<MrdRetentionPolicy>("/mrd/retention-policies", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateMrdRetentionPolicy: (id: string, body: UpdateMrdRetentionPolicyRequest) =>
-    request<MrdRetentionPolicy>(`/api/mrd/retention-policies/${id}`, {
+    request<MrdRetentionPolicy>(`/mrd/retention-policies/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
 
@@ -6421,14 +6510,14 @@ export const api = {
     if (params?.from_date) sp.set("from_date", params.from_date);
     if (params?.to_date) sp.set("to_date", params.to_date);
     const qs = sp.toString();
-    return request<MrdMorbidityMortalityResponse>(`/api/mrd/stats/morbidity-mortality${qs ? `?${qs}` : ""}`);
+    return request<MrdMorbidityMortalityResponse>(`/mrd/stats/morbidity-mortality${qs ? `?${qs}` : ""}`);
   },
   getMrdAdmissionDischarge: (params?: { from_date?: string; to_date?: string }) => {
     const sp = new URLSearchParams();
     if (params?.from_date) sp.set("from_date", params.from_date);
     if (params?.to_date) sp.set("to_date", params.to_date);
     const qs = sp.toString();
-    return request<MrdAdmissionDischargeSummary>(`/api/mrd/stats/admission-discharge${qs ? `?${qs}` : ""}`);
+    return request<MrdAdmissionDischargeSummary>(`/mrd/stats/admission-discharge${qs ? `?${qs}` : ""}`);
   },
 
     // ── Specialty Clinical: Cath Lab ────────────────────────────
@@ -6924,6 +7013,22 @@ export const api = {
       request<DocumentFormReviewSchedule>(`/documents/review-schedule/${id}`, {
         method: "PUT",
         body: JSON.stringify({}),
+      }),
+
+    // Printers & Print Jobs
+    listPrinters: () =>
+      request<unknown[]>("/documents/printers"),
+    createPrinter: (data: Record<string, unknown>) =>
+      request<unknown>("/documents/printers", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    listPrintJobs: () =>
+      request<unknown[]>("/documents/print-jobs"),
+    updatePrintJob: (id: string, data: Record<string, unknown>) =>
+      request<unknown>(`/documents/print-jobs/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
       }),
 
     // ── Regulatory & Compliance ──────────────────────────────
@@ -8228,7 +8333,7 @@ export const api = {
     if (params?.from) sp.set("from", params.from);
     if (params?.to) sp.set("to", params.to);
     const qs = sp.toString();
-    return request<ScheduleAnalytics>(`/scheduling/analytics${qs ? `?${qs}` : ""}`);
+    return request<ScheduleAnalytics>(`/scheduling/analytics/overview${qs ? `?${qs}` : ""}`);
   },
 
   createRecurringAppointment: (data: CreateRecurringRequest) =>
@@ -8321,10 +8426,10 @@ export const api = {
   // ══════════════════════════════════════════════════════════
 
   campAnalytics: () =>
-    request<CampAnalytics>("/camps/analytics"),
+    request<CampAnalytics>("/camp/analytics"),
 
   campReport: (campId: string) =>
-    request<CampReport>(`/camps/${campId}/report`),
+    request<CampReport>(`/camp/camps/${campId}/report`),
 
   // ══════════════════════════════════════════════════════════
   //  Batch 2 — Facilities (extended)
@@ -8362,4 +8467,251 @@ export const api = {
 
   trainingCompliance: () =>
     request<TrainingComplianceRow[]>("/hr/training/compliance"),
+
+  // ══════════════════════════════════════════════════════════
+  //  Command Center
+  // ══════════════════════════════════════════════════════════
+
+  // Patient Flow
+  getPatientFlow: () =>
+    request<PatientFlowSnapshot>("/command-center/patient-flow"),
+
+  getHourlyFlow: () =>
+    request<HourlyFlowRow[]>("/command-center/patient-flow/hourly"),
+
+  getBottlenecks: () =>
+    request<BottleneckRow[]>("/command-center/bottlenecks"),
+
+  // Department Load
+  getDepartmentLoad: () =>
+    request<DepartmentLoadRow[]>("/command-center/department-load"),
+
+  getActiveAlerts: () =>
+    request<DepartmentAlertRow[]>("/command-center/alerts"),
+
+  acknowledgeDeptAlert: (id: string) =>
+    request<DepartmentAlertRow>(`/command-center/alerts/${id}/acknowledge`, { method: "POST" }),
+
+  listAlertThresholds: () =>
+    request<AlertThresholdRow[]>("/command-center/alert-thresholds"),
+
+  createAlertThreshold: (data: CreateAlertThresholdRequest) =>
+    request<AlertThresholdRow>("/command-center/alert-thresholds", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  updateAlertThreshold: (id: string, data: UpdateAlertThresholdRequest) =>
+    request<AlertThresholdRow>(`/command-center/alert-thresholds/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  // Discharge Coordinator
+  listPendingDischarges: () =>
+    request<PendingDischargeRow[]>("/command-center/pending-discharges"),
+
+  getDischargeBlockers: (admissionId: string) =>
+    request<Record<string, unknown>>(`/command-center/discharge-blockers/${admissionId}`),
+
+  // Environmental Services
+  getBedTurnaround: () =>
+    request<BedTurnaroundRow[]>("/command-center/bed-turnaround"),
+
+  getTurnaroundStats: () =>
+    request<TurnaroundStatsRow[]>("/command-center/bed-turnaround/stats"),
+
+  // Transport
+  listTransportRequests: () =>
+    request<TransportRequestRow[]>("/command-center/transport"),
+
+  createTransportRequest: (data: CreateTransportRequest) =>
+    request<TransportRequestRow>("/command-center/transport", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  updateTransportRequest: (id: string, data: UpdateTransportRequest) =>
+    request<TransportRequestRow>(`/command-center/transport/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  assignTransport: (id: string, data: AssignTransportRequest) =>
+    request<TransportRequestRow>(`/command-center/transport/${id}/assign`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  completeTransport: (id: string) =>
+    request<TransportRequestRow>(`/command-center/transport/${id}/complete`, {
+      method: "PUT",
+    }),
+
+  // KPIs
+  getKpis: () =>
+    request<KpiTile[]>("/command-center/kpis"),
+
+  getKpiDetail: (code: string) =>
+    request<Record<string, unknown>>(`/command-center/kpis/${code}`),
+
+  // ══════════════════════════════════════════════════════════
+  //  Audit Trail
+  // ══════════════════════════════════════════════════════════
+
+  listAuditLog: (params?: AuditLogQuery) => {
+    const sp = new URLSearchParams();
+    if (params?.module) sp.set("module", params.module);
+    if (params?.entity_type) sp.set("entity_type", params.entity_type);
+    if (params?.entity_id) sp.set("entity_id", params.entity_id);
+    if (params?.user_id) sp.set("user_id", params.user_id);
+    if (params?.action) sp.set("action", params.action);
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    if (params?.page) sp.set("page", String(params.page));
+    if (params?.per_page) sp.set("per_page", String(params.per_page));
+    const qs = sp.toString();
+    return request<AuditLogSummary[]>(`/audit/log${qs ? `?${qs}` : ""}`);
+  },
+
+  getAuditEntry: (id: string) =>
+    request<AuditLogEntry>(`/audit/log/${id}`),
+
+  getEntityAuditTrail: (entityType: string, entityId: string) =>
+    request<AuditLogEntry[]>(`/audit/log/entity/${entityType}/${entityId}`),
+
+  getAuditStats: () =>
+    request<AuditStats>("/audit/stats"),
+
+  listAccessLog: (params?: AccessLogQuery) => {
+    const sp = new URLSearchParams();
+    if (params?.patient_id) sp.set("patient_id", params.patient_id);
+    if (params?.user_id) sp.set("user_id", params.user_id);
+    if (params?.entity_type) sp.set("entity_type", params.entity_type);
+    if (params?.module) sp.set("module", params.module);
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    if (params?.page) sp.set("page", String(params.page));
+    if (params?.per_page) sp.set("per_page", String(params.per_page));
+    const qs = sp.toString();
+    return request<AccessLogEntry[]>(`/audit/access-log${qs ? `?${qs}` : ""}`);
+  },
+
+  logAccess: (data: LogAccessRequest) =>
+    request<{ ok: boolean }>("/audit/access-log", { method: "POST", body: JSON.stringify(data) }),
+
+  getPatientAccessLog: (patientId: string) =>
+    request<AccessLogEntry[]>(`/audit/access-log/patient/${patientId}`),
+
+  listAuditModules: () =>
+    request<string[]>("/audit/modules"),
+
+  listAuditEntityTypes: () =>
+    request<string[]>("/audit/entity-types"),
+
+  exportAuditLog: (params?: AuditLogQuery) => {
+    const sp = new URLSearchParams();
+    if (params?.module) sp.set("module", params.module);
+    if (params?.entity_type) sp.set("entity_type", params.entity_type);
+    if (params?.entity_id) sp.set("entity_id", params.entity_id);
+    if (params?.user_id) sp.set("user_id", params.user_id);
+    if (params?.action) sp.set("action", params.action);
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<string>(`/audit/export${qs ? `?${qs}` : ""}`);
+  },
+
+  getUserActivity: (userId: string) =>
+    request<AuditLogSummary[]>(`/audit/user/${userId}/activity`),
+
+  getEntityTimeline: (entityType: string, entityId: string) =>
+    request<AuditLogEntry[]>(`/audit/timeline/${entityType}/${entityId}`),
+
+  // ══════════════════════════════════════════════════════════
+  //  Analytics & Dashboards
+  // ══════════════════════════════════════════════════════════
+
+  getDeptRevenue: (params?: { from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<DeptRevenueRow[]>(`/analytics/revenue/department${qs ? `?${qs}` : ""}`);
+  },
+
+  getDoctorRevenue: (params?: { from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<AnalyticsDoctorRevenueRow[]>(`/analytics/revenue/doctor${qs ? `?${qs}` : ""}`);
+  },
+
+  getIpdCensus: (params?: { from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<IpdCensusRow[]>(`/analytics/ipd/census${qs ? `?${qs}` : ""}`);
+  },
+
+  getLabTat: (params?: { from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<LabTatRow[]>(`/analytics/lab/tat${qs ? `?${qs}` : ""}`);
+  },
+
+  getPharmacySales: (params?: { from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<PharmacySalesRow[]>(`/analytics/pharmacy/sales${qs ? `?${qs}` : ""}`);
+  },
+
+  getOtUtilization: (params?: { from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<OtUtilizationRow[]>(`/analytics/ot/utilization${qs ? `?${qs}` : ""}`);
+  },
+
+  getErVolume: (params?: { from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<ErVolumeRow[]>(`/analytics/er/volume${qs ? `?${qs}` : ""}`);
+  },
+
+  getClinicalIndicators: (params?: { from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<ClinicalIndicatorRow[]>(`/analytics/clinical/indicators${qs ? `?${qs}` : ""}`);
+  },
+
+  getOpdFootfall: (params?: { from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.from) sp.set("from", params.from);
+    if (params?.to) sp.set("to", params.to);
+    const qs = sp.toString();
+    return request<OpdFootfallRow[]>(`/analytics/opd/footfall${qs ? `?${qs}` : ""}`);
+  },
+
+  getBedOccupancy: () =>
+    request<BedOccupancyRow[]>("/analytics/bed/occupancy"),
+
+  exportAnalytics: (params: { report: string; from?: string; to?: string }) => {
+    const sp = new URLSearchParams();
+    sp.set("report", params.report);
+    if (params.from) sp.set("from", params.from);
+    if (params.to) sp.set("to", params.to);
+    return request<string>(`/analytics/export?${sp.toString()}`);
+  },
 };

@@ -43,6 +43,7 @@ const HousekeepingPage = lazy(() => import("./pages/housekeeping").then((m) => (
 const HrPage = lazy(() => import("./pages/hr").then((m) => ({ default: m.HrPage })));
 const BmePage = lazy(() => import("./pages/bme").then((m) => ({ default: m.BmePage })));
 const CampPage = lazy(() => import("./pages/camp").then((m) => ({ default: m.CampPage })));
+const CommandCenterPage = lazy(() => import("./pages/command-center").then((m) => ({ default: m.CommandCenterPage })));
 const ConsentPage = lazy(() => import("./pages/consent").then((m) => ({ default: m.ConsentPage })));
 const FacilitiesPage = lazy(() => import("./pages/facilities").then((m) => ({ default: m.FacilitiesPage })));
 const InfectionControlPage = lazy(() => import("./pages/infection-control").then((m) => ({ default: m.InfectionControlPage })));
@@ -74,6 +75,8 @@ const IntegrationHubPage = lazy(() => import("./pages/admin/integration-hub").th
 const IntegrationBuilderPage = lazy(() => import("./pages/admin/integration-builder").then((m) => ({ default: m.IntegrationBuilderPage })));
 const ScreenBuilderPage = lazy(() => import("./pages/admin/screen-builder").then((m) => ({ default: m.ScreenBuilderPage })));
 const DoctorSchedulesPage = lazy(() => import("./pages/admin/doctor-schedules").then((m) => ({ default: m.DoctorSchedulesPage })));
+const AnalyticsPage = lazy(() => import("./pages/analytics").then((m) => ({ default: m.AnalyticsPage })));
+const AuditPage = lazy(() => import("./pages/audit").then((m) => ({ default: m.AuditPage })));
 const DocumentsPage = lazy(() => import("./pages/documents").then((m) => ({ default: m.DocumentsPage })));
 const DynamicScreenPage = lazy(() => import("./components/ScreenRenderer/DynamicScreenPage").then((m) => ({ default: m.DynamicScreenPage })));
 
@@ -121,12 +124,15 @@ export function App() {
             <Route path="hr" element={<HrPage />} />
             <Route path="bme" element={<BmePage />} />
             <Route path="camp" element={<CampPage />} />
+            <Route path="command-center" element={<CommandCenterPage />} />
             <Route path="facilities" element={<FacilitiesPage />} />
             <Route path="consent" element={<ConsentPage />} />
             <Route path="infection-control" element={<InfectionControlPage />} />
             <Route path="mrd" element={<MrdPage />} />
             <Route path="security" element={<SecurityPage />} />
             <Route path="insurance" element={<InsurancePage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="audit" element={<AuditPage />} />
             <Route path="regulatory" element={<RegulatoryPage />} />
             <Route path="order-sets" element={<OrderSetsPage />} />
             <Route path="chronic-care" element={<ChronicCarePage />} />

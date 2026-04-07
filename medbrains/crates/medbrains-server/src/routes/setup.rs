@@ -806,6 +806,31 @@ pub async fn list_users(
     Ok(Json(rows))
 }
 
+/// GET /api/setup/doctors — returns only users with role = 'doctor' and is_active = true
+pub async fn list_doctors(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+) -> Result<Json<Vec<SetupUserRow>>, AppError> {
+    require_permission(&claims, permissions::admin::users::LIST)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+
+    let rows = sqlx::query_as::<_, SetupUserRow>(
+        "SELECT id, tenant_id, username, email, full_name, role::text, \
+         specialization, medical_registration_number, qualification, \
+         consultation_fee, department_ids, is_active, access_matrix \
+         FROM users WHERE tenant_id = $1 AND role = 'doctor' AND is_active = true \
+         ORDER BY full_name",
+    )
+    .bind(claims.tenant_id)
+    .fetch_all(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
+
+    Ok(Json(rows))
+}
+
 #[derive(Debug, Deserialize)]
 pub struct CreateUserRequest {
     pub username: String,

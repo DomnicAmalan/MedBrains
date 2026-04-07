@@ -639,6 +639,22 @@ export const PERMISSIONS: PermissionDef[] = [
   { code: "retrospective.list", label: "View Approval Queue", description: "View retrospective entry approval queue", module: "retrospective" },
   { code: "retrospective.approve", label: "Approve/Reject Entries", description: "Approve or reject retrospective entries", module: "retrospective" },
   { code: "retrospective.audit", label: "View Retrospective Audit", description: "View audit trail for retrospective entries", module: "retrospective" },
+
+  // Audit Trail
+  { code: "audit.log.view", label: "View Audit Log", description: "View centralized audit trail entries", module: "audit" },
+  { code: "audit.log.export", label: "Export Audit Log", description: "Export audit trail data as CSV", module: "audit" },
+  { code: "audit.access.view", label: "View Access Log", description: "View patient/record access log", module: "audit" },
+
+  // Analytics
+  { code: "analytics.view", label: "View Analytics", description: "Access hospital analytics and dashboards", module: "analytics" },
+  { code: "analytics.export", label: "Export Analytics", description: "Export analytics reports as CSV", module: "analytics" },
+
+  // Command Center
+  { code: "command_center.view", label: "View Command Center", description: "Access the hospital command center dashboard", module: "command_center" },
+  { code: "command_center.alerts.manage", label: "Manage Alerts & Thresholds", description: "Configure alert thresholds and acknowledge alerts", module: "command_center" },
+  { code: "command_center.transport.list", label: "View Transport Requests", description: "View patient transport requests", module: "command_center" },
+  { code: "command_center.transport.manage", label: "Manage Transport Requests", description: "Create, assign, and complete transport requests", module: "command_center" },
+  { code: "command_center.discharge.view", label: "View Discharge Coordinator", description: "View pending discharges and blockers", module: "command_center" },
 ];
 
 // ── Set of all valid codes (for validation) ──────────────
@@ -1340,6 +1356,28 @@ export const P = {
     LIST: "retrospective.list" as const,
     APPROVE: "retrospective.approve" as const,
     AUDIT: "retrospective.audit" as const,
+  },
+  AUDIT: {
+    LOG_VIEW: "audit.log.view" as const,
+    LOG_EXPORT: "audit.log.export" as const,
+    ACCESS_VIEW: "audit.access.view" as const,
+  },
+  ANALYTICS: {
+    VIEW: "analytics.view" as const,
+    EXPORT: "analytics.export" as const,
+  },
+  COMMAND_CENTER: {
+    VIEW: "command_center.view" as const,
+    ALERTS: {
+      MANAGE: "command_center.alerts.manage" as const,
+    },
+    TRANSPORT: {
+      LIST: "command_center.transport.list" as const,
+      MANAGE: "command_center.transport.manage" as const,
+    },
+    DISCHARGE: {
+      VIEW: "command_center.discharge.view" as const,
+    },
   },
 } as const;
 

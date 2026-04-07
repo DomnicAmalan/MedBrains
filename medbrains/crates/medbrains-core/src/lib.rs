@@ -16,12 +16,14 @@
 //! - [`workflow`] — Workflow templates and step definitions
 //! - [`audit`] — Audit log entry types with SHA-256 chain
 
+pub mod analytics;
 pub mod appointment;
 pub mod audit;
 pub mod bme;
 pub mod case_mgmt;
 pub mod blood_bank;
 pub mod camp;
+pub mod command_center;
 pub mod consent;
 pub mod auth;
 pub mod billing;

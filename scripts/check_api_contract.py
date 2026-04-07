@@ -135,13 +135,32 @@ def extract_frontend_endpoints() -> list[tuple[str, str, int, str]]:
     lines = source.split('\n')
     endpoints = []
 
-    # Find all request<...>( calls by scanning the full source
-    # Pattern: request<...>( followed by " or `
-    pattern = re.compile(r'request<[^>]*>\(\s*(["`])')
+    # Find all request<...>( calls by scanning the full source.
+    # We find 'request<' then balance angle brackets to handle nested generics
+    # like Record<string, unknown> or Array<Foo & { bar: string }>.
+    req_start_pattern = re.compile(r'request<')
 
-    for m in pattern.finditer(source):
-        quote = m.group(1)
-        path_start = m.end()
+    for m in req_start_pattern.finditer(source):
+        # Balance angle brackets starting after 'request<'
+        pos = m.end()
+        angle_depth = 1
+        while pos < len(source) and angle_depth > 0:
+            ch = source[pos]
+            if ch == '<':
+                angle_depth += 1
+            elif ch == '>':
+                angle_depth -= 1
+            pos += 1
+        if angle_depth != 0:
+            continue
+        # pos is now right after the closing '>' of request<TYPE>
+        # Skip whitespace and expect '('
+        rest = source[pos:pos + 20]
+        paren_match = re.match(r'\s*\(\s*(["`])', rest)
+        if not paren_match:
+            continue
+        quote = paren_match.group(1)
+        path_start = pos + paren_match.end()
 
         # Determine line number
         line_no = source[:m.start()].count('\n') + 1

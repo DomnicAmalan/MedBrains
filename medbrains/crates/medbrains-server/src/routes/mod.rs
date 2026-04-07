@@ -1,12 +1,15 @@
 pub mod admin;
 pub mod admin_forms;
+pub mod analytics;
 pub mod appointments;
+pub mod audit;
 pub mod auth;
 pub mod billing;
 pub mod blood_bank;
 pub mod bme;
 pub mod camp;
 pub mod care_view;
+pub mod command_center;
 pub mod case_mgmt;
 pub mod chronic_care;
 pub mod cds;
@@ -194,6 +197,10 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/api/setup/users",
             get(setup::list_users).post(setup::create_user),
+        )
+        .route(
+            "/api/setup/doctors",
+            get(setup::list_doctors),
         )
         .route(
             "/api/setup/users/{id}",
@@ -1716,6 +1723,18 @@ pub fn build_router(state: AppState) -> Router {
             "/api/pharmacy/analytics/utilization",
             get(pharmacy::drug_utilization_review),
         )
+        .route(
+            "/api/pharmacy/interactions/check",
+            post(pharmacy::check_drug_interactions),
+        )
+        .route(
+            "/api/pharmacy/prescriptions/{id}/audit",
+            get(pharmacy::prescription_audit),
+        )
+        .route(
+            "/api/pharmacy/formulary/check",
+            post(pharmacy::formulary_check),
+        )
         // ── Indent / Store ─────────────────────────────────
         .route(
             "/api/indent/requisitions",
@@ -2574,6 +2593,14 @@ pub fn build_router(state: AppState) -> Router {
             "/api/ipd/admissions/{id}/consents",
             get(ipd::get_admission_consents),
         )
+        .route(
+            "/api/ipd/admissions/{id}/transfer",
+            post(ipd::bed_transfer),
+        )
+        .route(
+            "/api/ipd/discharges/expected",
+            get(ipd::expected_discharges),
+        )
         // ── Operation Theatre ──────────────────────────────
         .route(
             "/api/ot/rooms",
@@ -2958,6 +2985,14 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/api/front-office/queue-stats",
             get(front_office::get_queue_stats),
+        )
+        .route(
+            "/api/front-office/analytics",
+            get(front_office::visitor_analytics),
+        )
+        .route(
+            "/api/front-office/queue/metrics",
+            get(front_office::queue_metrics),
         )
         // ── Housekeeping ─────────────────────────────────────
         .route(
@@ -3373,6 +3408,89 @@ pub fn build_router(state: AppState) -> Router {
             "/api/camp/camps/{id}/stats",
             get(camp::camp_stats),
         )
+        .route(
+            "/api/camp/analytics",
+            get(camp::camp_analytics),
+        )
+        .route(
+            "/api/camp/camps/{id}/report",
+            get(camp::camp_report),
+        )
+        // ── Command Center ───────────────────────────────────
+        .route(
+            "/api/command-center/patient-flow",
+            get(command_center::patient_flow_snapshot),
+        )
+        .route(
+            "/api/command-center/patient-flow/hourly",
+            get(command_center::hourly_flow),
+        )
+        .route(
+            "/api/command-center/bottlenecks",
+            get(command_center::detect_bottlenecks),
+        )
+        .route(
+            "/api/command-center/department-load",
+            get(command_center::department_load),
+        )
+        .route(
+            "/api/command-center/alerts",
+            get(command_center::active_alerts),
+        )
+        .route(
+            "/api/command-center/alerts/{id}/acknowledge",
+            post(command_center::acknowledge_alert),
+        )
+        .route(
+            "/api/command-center/alert-thresholds",
+            get(command_center::list_thresholds)
+                .post(command_center::create_threshold),
+        )
+        .route(
+            "/api/command-center/alert-thresholds/{id}",
+            put(command_center::update_threshold),
+        )
+        .route(
+            "/api/command-center/pending-discharges",
+            get(command_center::list_pending_discharges),
+        )
+        .route(
+            "/api/command-center/discharge-blockers/{id}",
+            get(command_center::get_discharge_blockers),
+        )
+        .route(
+            "/api/command-center/bed-turnaround",
+            get(command_center::bed_turnaround_status),
+        )
+        .route(
+            "/api/command-center/bed-turnaround/stats",
+            get(command_center::turnaround_stats),
+        )
+        .route(
+            "/api/command-center/transport",
+            get(command_center::list_transport_requests)
+                .post(command_center::create_transport_request),
+        )
+        .route(
+            "/api/command-center/transport/{id}",
+            put(command_center::update_transport_request),
+        )
+        .route(
+            "/api/command-center/transport/{id}/assign",
+            put(command_center::assign_transport),
+        )
+        .route(
+            "/api/command-center/transport/{id}/complete",
+            put(command_center::complete_transport),
+        )
+        .route(
+            "/api/command-center/kpis",
+            get(command_center::all_kpis),
+        )
+        .route(
+            "/api/command-center/kpis/{code}",
+            get(command_center::kpi_detail),
+        )
         // ── Facilities Management ──────────────────────────────
         .route(
             "/api/facilities/gas-readings",
@@ -3451,6 +3569,14 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/api/facilities/stats",
             get(facilities::get_fms_stats),
+        )
+        .route(
+            "/api/facilities/pm/schedule",
+            post(facilities::schedule_pm),
+        )
+        .route(
+            "/api/facilities/energy/analytics",
+            get(facilities::energy_analytics),
         )
         // ── Security Department ──────────────────────────────────
         .route(
@@ -4315,6 +4441,96 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/api/retrospective/audit/{source_table}/{source_id}",
             get(retrospective::retro_audit_trail),
+        )
+        // ── Clinical & Operational Analytics ────────────────────
+        .route(
+            "/api/analytics/revenue/department",
+            get(analytics::dept_revenue),
+        )
+        .route(
+            "/api/analytics/revenue/doctor",
+            get(analytics::doctor_revenue),
+        )
+        .route(
+            "/api/analytics/ipd/census",
+            get(analytics::ipd_census),
+        )
+        .route(
+            "/api/analytics/lab/tat",
+            get(analytics::lab_tat),
+        )
+        .route(
+            "/api/analytics/pharmacy/sales",
+            get(analytics::pharmacy_sales),
+        )
+        .route(
+            "/api/analytics/ot/utilization",
+            get(analytics::ot_utilization),
+        )
+        .route(
+            "/api/analytics/er/volume",
+            get(analytics::er_volume),
+        )
+        .route(
+            "/api/analytics/clinical/indicators",
+            get(analytics::clinical_indicators),
+        )
+        .route(
+            "/api/analytics/opd/footfall",
+            get(analytics::opd_footfall),
+        )
+        .route(
+            "/api/analytics/bed/occupancy",
+            get(analytics::bed_occupancy),
+        )
+        .route(
+            "/api/analytics/export",
+            get(analytics::export_csv),
+        )
+        // ── Audit Trail ────────────────────────────────────────
+        .route(
+            "/api/audit/log",
+            get(audit::list_audit_log),
+        )
+        .route(
+            "/api/audit/log/{id}",
+            get(audit::get_audit_entry),
+        )
+        .route(
+            "/api/audit/log/entity/{entity_type}/{entity_id}",
+            get(audit::entity_audit_trail),
+        )
+        .route(
+            "/api/audit/stats",
+            get(audit::audit_stats),
+        )
+        .route(
+            "/api/audit/access-log",
+            get(audit::list_access_log).post(audit::log_access),
+        )
+        .route(
+            "/api/audit/access-log/patient/{id}",
+            get(audit::patient_access_log),
+        )
+        .route(
+            "/api/audit/modules",
+            get(audit::list_modules),
+        )
+        .route(
+            "/api/audit/entity-types",
+            get(audit::list_entity_types),
+        )
+        .route(
+            "/api/audit/export",
+            get(audit::export_audit_log),
+        )
+        .route(
+            "/api/audit/user/{id}/activity",
+            get(audit::user_activity),
+        )
+        .route(
+            "/api/audit/timeline/{entity_type}/{entity_id}",
+            get(audit::entity_timeline),
         )
         .layer(from_fn_with_state(state.clone(), ip_restrict_middleware))
         .layer(from_fn(csrf_middleware))

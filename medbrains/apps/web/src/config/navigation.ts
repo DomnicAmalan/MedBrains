@@ -51,6 +51,7 @@ import {
   IconUserSearch,
   IconCalendarStats,
   IconHistory,
+  IconFileAnalytics,
 } from "@tabler/icons-react";
 import { createElement } from "react";
 
@@ -124,6 +125,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; stroke?: num
   IconUserSearch,
   IconCalendarStats,
   IconHistory,
+  IconFileAnalytics,
 };
 
 export function resolveIcon(name: string, size = 20, stroke = 1.5): ReactNode {
@@ -189,6 +191,7 @@ export const NAV_GROUPS: NavGroupConfig[] = [
       { i18nKey: "hr", path: "/hr", icon: "IconIdBadge2", requiredPermission: "hr.employees.list" },
       { i18nKey: "bme", path: "/bme", icon: "IconDeviceDesktopAnalytics", requiredPermission: "bme.equipment.list" },
       { i18nKey: "camp", path: "/camp", icon: "IconFirstAidKit", requiredPermission: "camp.list" },
+      { i18nKey: "commandCenter", path: "/command-center", icon: "IconLayoutDashboard", requiredPermission: "command_center.view" },
       { i18nKey: "facilities", path: "/facilities", icon: "IconBuildingFactory2", requiredPermission: "facilities.gas.list" },
       { i18nKey: "mrd", path: "/mrd", icon: "IconFileCertificate", requiredPermission: "mrd.records.list" },
       { i18nKey: "security", path: "/security", icon: "IconShieldLock", requiredPermission: "security.access.list" },
@@ -205,6 +208,8 @@ export const NAV_GROUPS: NavGroupConfig[] = [
       { i18nKey: "infectionControl", path: "/infection-control", icon: "IconShieldCheck", requiredPermission: "infection_control.surveillance.list" },
       { i18nKey: "consent", path: "/consent", icon: "IconSignature", requiredPermission: "consent.templates.list" },
       { i18nKey: "regulatory", path: "/regulatory", icon: "IconScale", requiredPermission: "regulatory.dashboard.view" },
+      { i18nKey: "analytics", path: "/analytics", icon: "IconChartBar", requiredPermission: "analytics.view" },
+      { i18nKey: "audit", path: "/audit", icon: "IconFileAnalytics", requiredPermission: "audit.log.view" },
     ],
   },
   {

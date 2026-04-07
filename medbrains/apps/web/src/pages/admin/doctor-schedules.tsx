@@ -359,10 +359,10 @@ export function DoctorSchedulesPage() {
   const [editSchedule, setEditSchedule] = useState<DoctorSchedule | null>(null);
   const [exceptionModal, setExceptionModal] = useState(false);
 
-  // Load doctors and departments
+  // Load doctors (server-side filtered to role=doctor, is_active=true)
   const { data: users, isLoading: usersLoading } = useQuery({
-    queryKey: ["setup-users"],
-    queryFn: () => api.listSetupUsers(),
+    queryKey: ["doctors"],
+    queryFn: () => api.listDoctors(),
   });
 
   const { data: departments } = useQuery({
@@ -372,10 +372,9 @@ export function DoctorSchedulesPage() {
 
   const doctors = useMemo(() => {
     if (!users) return [];
-    return users.filter(
-      (u: SetupUser) =>
-        (u.role === "doctor" || u.role === "super_admin") &&
-        u.full_name.toLowerCase().includes(search.toLowerCase()),
+    if (!search) return users;
+    return users.filter((u: SetupUser) =>
+      u.full_name.toLowerCase().includes(search.toLowerCase()),
     );
   }, [users, search]);
 

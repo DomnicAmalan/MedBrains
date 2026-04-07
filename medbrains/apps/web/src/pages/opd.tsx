@@ -3629,9 +3629,9 @@ function GroupAppointmentModal({ patientId }: { patientId: string }) {
     { doctorId: "", departmentId: "", date: "", slotStart: "", slotEnd: "", notes: "" },
   ]);
 
-  const { data: allUsers = [] } = useQuery({
-    queryKey: ["setup-users"],
-    queryFn: () => api.listSetupUsers(),
+  const { data: allDoctors = [] } = useQuery({
+    queryKey: ["doctors"],
+    queryFn: () => api.listDoctors(),
     staleTime: 600_000,
     enabled: opened,
   });
@@ -3644,10 +3644,8 @@ function GroupAppointmentModal({ patientId }: { patientId: string }) {
 
   const doctorOptions = useMemo(
     () =>
-      allUsers
-        .filter((u) => u.role === "doctor" && u.is_active)
-        .map((u) => ({ value: u.id, label: `${u.full_name}${u.specialization ? ` (${u.specialization})` : ""}` })),
-    [allUsers],
+      allDoctors.map((u) => ({ value: u.id, label: `${u.full_name}${u.specialization ? ` (${u.specialization})` : ""}` })),
+    [allDoctors],
   );
 
   const groupDeptOptions = useMemo(

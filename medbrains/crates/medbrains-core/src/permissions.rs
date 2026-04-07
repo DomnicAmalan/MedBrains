@@ -1395,3 +1395,31 @@ pub mod retrospective {
     pub const APPROVE: &str = "retrospective.approve";
     pub const AUDIT: &str = "retrospective.audit";
 }
+
+pub mod audit {
+    pub const VIEW: &str = "audit.log.view";
+    pub const EXPORT: &str = "audit.log.export";
+    pub const ACCESS_VIEW: &str = "audit.access.view";
+}
+
+pub mod analytics {
+    pub const VIEW: &str = "analytics.view";
+    pub const EXPORT: &str = "analytics.export";
+}
+
+pub mod command_center {
+    pub const VIEW: &str = "command_center.view";
+
+    pub mod alerts {
+        pub const MANAGE: &str = "command_center.alerts.manage";
+    }
+
+    pub mod transport {
+        pub const LIST: &str = "command_center.transport.list";
+        pub const MANAGE: &str = "command_center.transport.manage";
+    }
+
+    pub mod discharge {
+        pub const VIEW: &str = "command_center.discharge.view";
+    }
+}

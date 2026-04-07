@@ -576,7 +576,7 @@ function PreopTab({ bookingId }: { bookingId: string }) {
   const [updateForm, setUpdateForm] = useState<Partial<UpdatePreopAssessmentRequest>>({});
   const updateMutation = useMutation({
     mutationFn: (d: UpdatePreopAssessmentRequest) =>
-      api.updatePreopAssessment(bookingId, assessment?.id ?? "", d),
+      api.updatePreopAssessment(bookingId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-preop", bookingId] });
       notifications.show({ title: "Updated", message: "Assessment updated", color: "green" });
@@ -1007,7 +1007,7 @@ function PostopTab({ bookingId }: { bookingId: string }) {
 
   const updateMutation = useMutation({
     mutationFn: (d: UpdatePostopRecordRequest) =>
-      api.updatePostopRecord(bookingId, (data as OtPostopRecord).id, d),
+      api.updatePostopRecord(bookingId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-postop", bookingId] });
       notifications.show({ title: "Updated", message: "Post-op record updated", color: "green" });

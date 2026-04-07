@@ -18,7 +18,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { spotlight } from "@mantine/spotlight";
-import { useAuthStore, useModuleRegistryStore, usePermissionStore } from "@medbrains/stores";
+import { useAuthStore, usePermissionStore } from "@medbrains/stores";
 import { api } from "@medbrains/api";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import {
@@ -32,10 +32,8 @@ import {
   IconSearch,
   IconSettings,
   IconUser,
-  IconAppWindow,
 } from "@tabler/icons-react";
-import { Suspense, useCallback, useMemo, useRef, useState } from "react";
-import { useEffectOnce } from "react-use";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { NAV_GROUPS, resolveIcon, buildPathLabels, type NavItemConfig } from "../config/navigation";
@@ -53,35 +51,19 @@ interface ResolvedNavItem {
 
 const RAIL_WIDTH = 56;
 const EXPANDED_WIDTH = 240;
-const HOVER_EXPAND_DELAY = 300;
 
 export function AppLayout() {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure();
-  const [expanded, setExpanded] = useState(false);
-  const [pinned, setPinned] = useState(false);
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const location = useLocation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const hasPermission = usePermissionStore((s) => s.hasPermission);
-  const loadRegistry = useModuleRegistryStore((s) => s.loadRegistry);
-  const registryLoaded = useModuleRegistryStore((s) => s.isLoaded);
-  const screensByModule = useModuleRegistryStore((s) => s.screensByModule);
-  const getScreenRoute = useModuleRegistryStore((s) => s.getScreenRoute);
-
   const { t } = useTranslation("nav");
 
-  // Load module registry on mount
-  useEffectOnce(() => {
-    loadRegistry(
-      () => api.listModules(),
-      (code) => api.listModuleScreens(code),
-    );
-  });
-
-  const isExpanded = pinned || expanded;
+  const isExpanded = sidebarOpen;
   const navbarWidth = isExpanded ? EXPANDED_WIDTH : RAIL_WIDTH;
 
   const handleLogout = async () => {
@@ -99,23 +81,8 @@ export function AppLayout() {
     closeMobile();
   }, [navigate, closeMobile]);
 
-  const handleMouseEnter = useCallback(() => {
-    if (pinned) return;
-    hoverTimer.current = setTimeout(() => setExpanded(true), HOVER_EXPAND_DELAY);
-  }, [pinned]);
-
-  const handleMouseLeave = useCallback(() => {
-    if (pinned) return;
-    if (hoverTimer.current) {
-      clearTimeout(hoverTimer.current);
-      hoverTimer.current = null;
-    }
-    setExpanded(false);
-  }, [pinned]);
-
-  const togglePinned = useCallback(() => {
-    setPinned((p) => {
-      if (!p) setExpanded(true);
+  const toggleSidebar = useCallback(() => {
+    setSidebarOpen((p) => {
       return !p;
     });
   }, []);
@@ -131,49 +98,13 @@ export function AppLayout() {
     children: cfg.children?.map((c) => resolveItem(c, true)),
   }), [t]);
 
-  // Merge dynamic screens from module registry into navigation
-  const mergedNavGroups = useMemo(() => {
-    const staticGroups = NAV_GROUPS.map((group) => ({
+  // Build nav groups from static config
+  const navGroups = useMemo(() =>
+    NAV_GROUPS.map((group) => ({
       key: group.key,
       items: group.items.map((item) => resolveItem(item)),
-    }));
-
-    if (!registryLoaded) return staticGroups;
-
-    // Collect all paths already present in the static nav
-    const staticPaths = new Set<string>();
-    for (const group of staticGroups) {
-      for (const item of group.items) {
-        staticPaths.add(item.path);
-        if (item.children) {
-          for (const child of item.children) staticPaths.add(child.path);
-        }
-      }
-    }
-
-    const dynamicItems: ResolvedNavItem[] = [];
-
-    for (const screens of Object.values(screensByModule)) {
-      for (const screen of screens) {
-        const route = getScreenRoute(screen);
-        if (route.includes(":")) continue;
-        if (staticPaths.has(route)) continue;
-        dynamicItems.push({
-          label: screen.name,
-          path: route,
-          icon: <IconAppWindow size={20} stroke={1.5} />,
-          requiredPermission: screen.permission_code ?? undefined,
-        });
-      }
-    }
-
-    if (dynamicItems.length === 0) return staticGroups;
-
-    return [
-      ...staticGroups,
-      { key: "dynamic", items: dynamicItems },
-    ];
-  }, [resolveItem, registryLoaded, screensByModule, getScreenRoute]);
+    })),
+  [resolveItem]);
 
   // Breadcrumbs
   const pathLabelMap = useMemo(() => buildPathLabels(NAV_GROUPS, t), [t]);
@@ -251,7 +182,7 @@ export function AppLayout() {
 
   // ── Render sidebar content ──
   const renderSidebar = () => {
-    const groups = mergedNavGroups
+    const groups = navGroups
       .map((group) => ({
         ...group,
         items: group.items.filter(filterItem),
@@ -395,8 +326,6 @@ export function AppLayout() {
       {/* ── Sidebar ── */}
       <AppShell.Navbar
         p={isExpanded ? 8 : 0}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         className={isExpanded ? classes.navbarExpanded : classes.navbarRail}
       >
         <AppShell.Section grow component={ScrollArea} className={classes.navContent}>
@@ -409,13 +338,13 @@ export function AppLayout() {
           {/* Collapse / Expand toggle */}
           <Box visibleFrom="sm" className={classes.footerAction}>
             {isExpanded ? (
-              <UnstyledButton className={classes.expandedItem} onClick={togglePinned} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 8 }}>
+              <UnstyledButton className={classes.expandedItem} onClick={toggleSidebar} style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 8 }}>
                 <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} />
-                <Text size="xs" c="var(--mb-text-muted)">{pinned ? t("unpin") : t("collapse")}</Text>
+                <Text size="xs" c="var(--mb-text-muted)">{t("collapse")}</Text>
               </UnstyledButton>
             ) : (
               <Tooltip label={t("expand")} position="right" withArrow>
-                <UnstyledButton className={classes.railItem} onClick={togglePinned}>
+                <UnstyledButton className={classes.railItem} onClick={toggleSidebar}>
                   <IconLayoutSidebarLeftExpand size={20} stroke={1.5} />
                 </UnstyledButton>
               </Tooltip>

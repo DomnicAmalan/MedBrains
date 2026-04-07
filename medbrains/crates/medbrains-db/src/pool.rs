@@ -69,6 +69,28 @@ pub async fn set_full_context(
     Ok(())
 }
 
+/// Set the user context for audit triggers within a transaction.
+/// Sets `app.user_id` and optionally `app.ip_address` so the
+/// `audit_trigger_func()` can attribute changes to the right user.
+pub async fn set_user_context(
+    tx: &mut Transaction<'_, Postgres>,
+    user_id: &uuid::Uuid,
+    ip_address: Option<&str>,
+) -> Result<(), DbError> {
+    sqlx::query("SELECT set_config('app.user_id', $1::text, true)")
+        .bind(user_id.to_string())
+        .execute(&mut **tx)
+        .await?;
+
+    if let Some(ip) = ip_address {
+        sqlx::query("SELECT set_config('app.ip_address', $1::text, true)")
+            .bind(ip)
+            .execute(&mut **tx)
+            .await?;
+    }
+    Ok(())
+}
+
 /// Simple health check — runs `SELECT 1`.
 pub async fn health_check(pool: &PgPool) -> Result<bool, DbError> {
     let row: (i32,) = sqlx::query_as("SELECT 1").fetch_one(pool).await?;
