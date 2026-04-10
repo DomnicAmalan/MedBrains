@@ -6,16 +6,16 @@ import classes from "./screen-builder.module.scss";
 
 const TRIGGER_COLORS: Record<string, string> = {
   screen_load: "teal",
-  screen_exit: "gray",
-  form_submit: "green",
+  screen_exit: "slate",
+  form_submit: "success",
   form_validate: "orange",
-  form_save_draft: "yellow",
-  field_change: "blue",
-  row_select: "indigo",
+  form_save_draft: "warning",
+  field_change: "primary",
+  row_select: "primary",
   row_action: "violet",
-  interval: "cyan",
-  step_enter: "grape",
-  step_leave: "pink",
+  interval: "info",
+  step_enter: "violet",
+  step_leave: "danger",
 };
 
 export function SidecarCard({ sidecar, isLocked }: { sidecar: SidecarNode; isLocked: boolean }) {
@@ -24,7 +24,7 @@ export function SidecarCard({ sidecar, isLocked }: { sidecar: SidecarNode; isLoc
   const removeSidecar = useScreenBuilderStore((s) => s.removeSidecar);
   const isSelected = selectedItemId === sidecar.clientId;
 
-  const color = TRIGGER_COLORS[sidecar.trigger_event] ?? "gray";
+  const color = TRIGGER_COLORS[sidecar.trigger_event] ?? "slate";
 
   return (
     <div
@@ -50,7 +50,7 @@ export function SidecarCard({ sidecar, isLocked }: { sidecar: SidecarNode; isLoc
           <Tooltip label="Delete">
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               size="xs"
               onClick={(e) => {
                 e.stopPropagation();

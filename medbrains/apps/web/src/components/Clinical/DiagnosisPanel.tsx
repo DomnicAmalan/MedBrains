@@ -43,17 +43,17 @@ const CERTAINTY_OPTIONS: { value: DiagnosisCertainty; label: string }[] = [
 ];
 
 const SEVERITY_COLORS: Record<string, string> = {
-  mild: "green",
-  moderate: "yellow",
+  mild: "success",
+  moderate: "warning",
   severe: "orange",
-  critical: "red",
+  critical: "danger",
 };
 
 const CERTAINTY_COLORS: Record<string, string> = {
-  confirmed: "blue",
+  confirmed: "primary",
   probable: "teal",
-  suspected: "yellow",
-  ruled_out: "gray",
+  suspected: "warning",
+  ruled_out: "slate",
 };
 
 export function DiagnosisPanel({
@@ -202,7 +202,7 @@ export function DiagnosisPanel({
           </Group>
           <Group gap="xs" align="flex-end">
             {icdCode && (
-              <Badge size="sm" variant="light" color="blue">ICD: {icdCode}</Badge>
+              <Badge size="sm" variant="light" color="primary">ICD: {icdCode}</Badge>
             )}
             {snomedCode && (
               <Badge size="sm" variant="light" color="violet">SNOMED: {snomedCode}</Badge>
@@ -270,18 +270,18 @@ export function DiagnosisPanel({
               </Group>
               <Group gap={6} mt={4}>
                 {d.icd_code && (
-                  <Badge size="xs" variant="outline" color="gray">{d.icd_code}</Badge>
+                  <Badge size="xs" variant="outline" color="slate">{d.icd_code}</Badge>
                 )}
                 {d.snomed_code && (
                   <Badge size="xs" variant="outline" color="violet">{d.snomed_code}</Badge>
                 )}
                 {d.severity && (
-                  <Badge size="xs" variant="light" color={SEVERITY_COLORS[d.severity] ?? "gray"}>
+                  <Badge size="xs" variant="light" color={SEVERITY_COLORS[d.severity] ?? "slate"}>
                     {d.severity}
                   </Badge>
                 )}
                 {d.certainty && (
-                  <Badge size="xs" variant="dot" color={CERTAINTY_COLORS[d.certainty] ?? "gray"}>
+                  <Badge size="xs" variant="dot" color={CERTAINTY_COLORS[d.certainty] ?? "slate"}>
                     {d.certainty}
                   </Badge>
                 )}
@@ -290,7 +290,7 @@ export function DiagnosisPanel({
             {canUpdate && (
               <ActionIcon
                 variant="subtle"
-                color="red"
+                color="danger"
                 size="sm"
                 onClick={() => onDelete(d.id)}
               >

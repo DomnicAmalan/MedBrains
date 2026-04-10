@@ -97,14 +97,14 @@ const COLOR_OPTIONS = [
   { value: "teal", label: "Teal", hex: "#12b886" },
   { value: "orange", label: "Orange", hex: "#fd7e14" },
   { value: "violet", label: "Violet", hex: "#7950f2" },
-  { value: "red", label: "Red", hex: "#fa5252" },
-  { value: "pink", label: "Pink", hex: "#e64980" },
-  { value: "green", label: "Green", hex: "#40c057" },
-  { value: "cyan", label: "Cyan", hex: "#15aabf" },
-  { value: "yellow", label: "Yellow", hex: "#fab005" },
-  { value: "indigo", label: "Indigo", hex: "#4c6ef5" },
-  { value: "grape", label: "Grape", hex: "#be4bdb" },
-  { value: "gray", label: "Gray", hex: "#868e96" },
+  { value: "danger", label: "Red", hex: "#fa5252" },
+  { value: "danger", label: "Pink", hex: "#e64980" },
+  { value: "success", label: "Green", hex: "#40c057" },
+  { value: "info", label: "Cyan", hex: "#15aabf" },
+  { value: "warning", label: "Yellow", hex: "#fab005" },
+  { value: "primary", label: "Indigo", hex: "#4c6ef5" },
+  { value: "violet", label: "Grape", hex: "#be4bdb" },
+  { value: "slate", label: "Gray", hex: "#868e96" },
 ];
 
 // ── Icon picker categories ───────────────────────────────
@@ -150,7 +150,7 @@ export function WidgetPropertyPanel() {
   if (!widget) {
     return (
       <Stack gap="sm" h="100%" justify="center" align="center" py="xl">
-        <ThemeIcon variant="light" color="gray" size={48} radius="xl">
+        <ThemeIcon variant="light" color="slate" size={48} radius="xl">
           <IconSettings size={24} />
         </ThemeIcon>
         <Text size="sm" fw={500} c="dimmed">
@@ -175,7 +175,7 @@ export function WidgetPropertyPanel() {
             {widget.icon && (
               <ThemeIcon
                 variant="light"
-                color={widget.color ?? "gray"}
+                color={widget.color ?? "slate"}
                 size={24}
                 radius="md"
               >
@@ -198,7 +198,7 @@ export function WidgetPropertyPanel() {
             </Tooltip>
             <Tooltip label="Delete widget">
               <ActionIcon
-                color="red"
+                color="danger"
                 variant="subtle"
                 size="sm"
                 onClick={() => removeWidget(widget.clientId)}
@@ -483,7 +483,7 @@ export function WidgetPropertyPanel() {
         <Divider my="xs" />
 
         <Button
-          color="red"
+          color="danger"
           variant="light"
           size="xs"
           leftSection={<IconTrash size={14} />}
@@ -987,12 +987,12 @@ function DataScopeSection({
         </Badge>
       )}
       {scope === "all" && (
-        <Badge size="xs" variant="light" color="gray">
+        <Badge size="xs" variant="light" color="slate">
           Hospital-wide (no department filter)
         </Badge>
       )}
       {scope === "custom" && (filters.department_ids?.length ?? 0) > 0 && (
-        <Badge size="xs" variant="light" color="blue">
+        <Badge size="xs" variant="light" color="primary">
           {filters.department_ids?.length} department(s) selected
         </Badge>
       )}

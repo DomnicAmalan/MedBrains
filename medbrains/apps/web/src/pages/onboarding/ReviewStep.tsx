@@ -124,7 +124,7 @@ export function ReviewStep({ onBack }: Props) {
       {warnings.length > 0 && (
         <Alert
           variant="light"
-          color="yellow"
+          color="warning"
           title="Setup Recommendations"
           icon={<IconAlertTriangle size={20} />}
         >
@@ -302,7 +302,7 @@ export function ReviewStep({ onBack }: Props) {
       )}
 
       {setupMutation.isError && (
-        <Alert color="red" variant="light">
+        <Alert color="danger" variant="light">
           {setupMutation.error.message}
         </Alert>
       )}

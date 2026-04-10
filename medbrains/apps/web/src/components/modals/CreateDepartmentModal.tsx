@@ -48,7 +48,7 @@ export function CreateDepartmentModal({
       notifications.show({
         title: "Department created",
         message: "Department has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-departments"] });
@@ -62,7 +62,7 @@ export function CreateDepartmentModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -72,7 +72,7 @@ export function CreateDepartmentModal({
       notifications.show({
         title: "Missing fields",
         message: "Code and Name are required",
-        color: "red",
+        color: "danger",
       });
       return;
     }

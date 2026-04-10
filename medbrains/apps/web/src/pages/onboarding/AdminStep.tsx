@@ -114,7 +114,7 @@ export function AdminStep({ onNext, onBack, draftRef }: Props) {
   const password = form.watch("admin_password");
   const strength = getPasswordStrength(password);
   const strengthColor =
-    strength < 40 ? "red" : strength < 70 ? "yellow" : "green";
+    strength < 40 ? "danger" : strength < 70 ? "warning" : "success";
 
   // If already authenticated (init was successful), just navigate forward
   const handleSubmit = form.handleSubmit((data) => {
@@ -269,7 +269,7 @@ export function AdminStep({ onNext, onBack, draftRef }: Props) {
 
         {initMutation.isError &&
           !Object.keys(form.formState.errors).length && (
-            <Alert color="red" variant="light">
+            <Alert color="danger" variant="light">
               {initMutation.error.message}
             </Alert>
           )}

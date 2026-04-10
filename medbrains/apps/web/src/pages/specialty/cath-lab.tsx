@@ -95,7 +95,7 @@ export function CathLabPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cath-procedures"] });
       procHandlers.close();
-      notifications.show({ title: "Created", message: "Procedure created", color: "green" });
+      notifications.show({ title: "Created", message: "Procedure created", color: "success" });
     },
   });
 
@@ -103,7 +103,7 @@ export function CathLabPage() {
   const procCols: Column<CathProcedure>[] = [
     { key: "procedure_type", label: "Type", render: (r) => <Badge>{r.procedure_type.replace(/_/g, " ")}</Badge> },
     { key: "patient_id", label: "Patient", render: (r) => <Text size="sm">{r.patient_id.slice(0, 8)}</Text> },
-    { key: "is_stemi", label: "STEMI", render: (r) => r.is_stemi ? <Badge color="red">STEMI</Badge> : <Text size="sm">No</Text> },
+    { key: "is_stemi", label: "STEMI", render: (r) => r.is_stemi ? <Badge color="danger">STEMI</Badge> : <Text size="sm">No</Text> },
     { key: "door_to_balloon", label: "D2B (min)", render: (r) => <Text size="sm">{r.door_to_balloon_minutes ?? "—"}</Text> },
     { key: "fluoroscopy", label: "Fluoro (s)", render: (r) => <Text size="sm">{r.fluoroscopy_time_seconds ?? "—"}</Text> },
     { key: "contrast", label: "Contrast (ml)", render: (r) => <Text size="sm">{r.contrast_volume_ml ?? "—"}</Text> },
@@ -130,7 +130,7 @@ export function CathLabPage() {
     { key: "manufacturer", label: "Manufacturer", render: (r) => <Text size="sm">{r.manufacturer ?? "—"}</Text> },
     { key: "lot_number", label: "Lot #", render: (r) => <Text size="sm">{r.lot_number ?? "—"}</Text> },
     { key: "consignment", label: "Consignment", render: (r) => r.is_consignment ? <Badge color="orange">Yes</Badge> : <Text size="sm">No</Text> },
-    { key: "billed", label: "Billed", render: (r) => r.billed ? <Badge color="green">Yes</Badge> : <Badge color="gray">No</Badge> },
+    { key: "billed", label: "Billed", render: (r) => r.billed ? <Badge color="success">Yes</Badge> : <Badge color="slate">No</Badge> },
   ];
 
   const stemiCols: Column<CathStemiTimeline>[] = [
@@ -143,7 +143,7 @@ export function CathLabPage() {
     { key: "monitored_at", label: "Time", render: (r) => <Text size="sm">{new Date(r.monitored_at).toLocaleString()}</Text> },
     { key: "sheath", label: "Sheath", render: (r) => <Text size="sm">{r.sheath_status ?? "—"}</Text> },
     { key: "access_site", label: "Access Site", render: (r) => <Text size="sm">{r.access_site_status ?? "—"}</Text> },
-    { key: "ambulation", label: "Ambulation", render: (r) => r.ambulation_started ? <Badge color="green">Started</Badge> : <Badge color="gray">Pending</Badge> },
+    { key: "ambulation", label: "Ambulation", render: (r) => r.ambulation_started ? <Badge color="success">Started</Badge> : <Badge color="slate">Pending</Badge> },
   ];
 
   return (

@@ -170,8 +170,8 @@ export function WidgetCard({
                   dataScope === "auto"
                     ? "teal"
                     : dataScope === "all"
-                      ? "gray"
-                      : "blue"
+                      ? "slate"
+                      : "primary"
                 }
                 leftSection={<IconFilter size={8} />}
                 style={{ cursor: "help" }}
@@ -218,7 +218,7 @@ export function WidgetCard({
             <Skeleton height={20} width="70%" />
           </div>
         ) : isError ? (
-          <Text size="xs" c="red" ta="center" py="md">
+          <Text size="xs" c="danger" ta="center" py="md">
             Failed to load data
           </Text>
         ) : (

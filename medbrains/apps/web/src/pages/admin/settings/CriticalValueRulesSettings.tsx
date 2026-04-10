@@ -41,11 +41,11 @@ export function CriticalValueRulesSettings() {
     mutationFn: (data: CreateCriticalValueRuleRequest) => api.createCriticalValueRule(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["critical-value-rules"] });
-      notifications.show({ title: "Created", message: "Critical value rule added", color: "green" });
+      notifications.show({ title: "Created", message: "Critical value rule added", color: "success" });
       handleClose();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create rule", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create rule", color: "danger" });
     },
   });
 
@@ -53,7 +53,7 @@ export function CriticalValueRulesSettings() {
     mutationFn: (id: string) => api.deleteCriticalValueRule(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["critical-value-rules"] });
-      notifications.show({ title: "Deleted", message: "Rule removed", color: "yellow" });
+      notifications.show({ title: "Deleted", message: "Rule removed", color: "warning" });
     },
   });
 
@@ -117,7 +117,7 @@ export function CriticalValueRulesSettings() {
               <Table.Td><Text size="xs" lineClamp={1}>{r.alert_message}</Text></Table.Td>
               {canManage && (
                 <Table.Td>
-                  <ActionIcon variant="subtle" color="red" size="sm" onClick={() => deleteMutation.mutate(r.id)}>
+                  <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => deleteMutation.mutate(r.id)}>
                     <IconTrash size={14} />
                   </ActionIcon>
                 </Table.Td>

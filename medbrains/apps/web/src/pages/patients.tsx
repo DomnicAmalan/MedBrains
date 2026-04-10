@@ -90,25 +90,25 @@ const PER_PAGE = 20;
 // #region Helpers
 
 const genderColors: Record<string, string> = {
-  male: "blue",
-  female: "red",
+  male: "primary",
+  female: "danger",
   other: "violet",
-  unknown: "gray",
+  unknown: "slate",
 };
 
 const categoryColors: Record<string, string> = {
-  general: "gray",
+  general: "slate",
   private: "teal",
-  insurance: "indigo",
+  insurance: "primary",
   pmjay: "orange",
-  cghs: "cyan",
-  staff: "green",
-  vip: "yellow",
-  mlc: "red",
+  cghs: "info",
+  staff: "success",
+  vip: "warning",
+  mlc: "danger",
   esi: "lime",
-  corporate: "grape",
-  free: "blue",
-  charity: "pink",
+  corporate: "violet",
+  free: "primary",
+  charity: "danger",
   research_subject: "violet",
   staff_dependent: "green.3",
 };
@@ -137,17 +137,17 @@ const registrationTypeLabels: Record<string, string> = {
 };
 
 const severityColors: Record<string, string> = {
-  mild: "green",
-  moderate: "yellow",
+  mild: "success",
+  moderate: "warning",
   severe: "orange",
-  life_threatening: "red",
+  life_threatening: "danger",
 };
 
 const consentStatusColors: Record<string, string> = {
-  granted: "green",
-  denied: "red",
-  withdrawn: "gray",
-  pending: "yellow",
+  granted: "success",
+  denied: "danger",
+  withdrawn: "slate",
+  pending: "warning",
 };
 
 function formatDate(date: string | null | undefined): string {
@@ -392,7 +392,7 @@ function OverviewTab({ patient, onEdit, canUpdate }: { patient: Patient; onEdit:
             fit="cover"
           />
         ) : (
-          <Avatar size={80} radius="md" color="blue">
+          <Avatar size={80} radius="md" color="primary">
             {patient.first_name[0]}{patient.last_name[0]}
           </Avatar>
         )}
@@ -404,16 +404,16 @@ function OverviewTab({ patient, onEdit, canUpdate }: { patient: Patient; onEdit:
           )}
           <Group gap="xs" mt={4}>
             <Badge size="lg" variant="light">{patient.uhid}</Badge>
-            <Badge color={patient.is_active ? "green" : "red"} variant="light">
+            <Badge color={patient.is_active ? "success" : "danger"} variant="light">
               {patient.is_active ? "Active" : "Inactive"}
             </Badge>
             {patient.is_vip && (
-              <Badge color="yellow" variant="light" leftSection={<IconStarFilled size={12} />}>
+              <Badge color="warning" variant="light" leftSection={<IconStarFilled size={12} />}>
                 VIP
               </Badge>
             )}
             {patient.is_medico_legal && (
-              <Badge color="red" variant="light" leftSection={<IconAlertTriangle size={12} />}>
+              <Badge color="danger" variant="light" leftSection={<IconAlertTriangle size={12} />}>
                 MLC{patient.mlc_number ? ` #${patient.mlc_number}` : ""}
               </Badge>
             )}
@@ -511,24 +511,24 @@ function IdentifiersTab({ patient, canUpdate }: { patient: Patient; canUpdate: b
     mutationFn: (data: CreatePatientIdentifierRequest) =>
       api.createPatientIdentifier(patient.id, data),
     onSuccess: () => {
-      notifications.show({ title: "Identifier added", message: "ID document recorded", color: "green" });
+      notifications.show({ title: "Identifier added", message: "ID document recorded", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["patients", patient.id, "identifiers"] });
       closeModal();
       resetForm();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.deletePatientIdentifier(patient.id, id),
     onSuccess: () => {
-      notifications.show({ title: "Deleted", message: "Identifier removed", color: "green" });
+      notifications.show({ title: "Deleted", message: "Identifier removed", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["patients", patient.id, "identifiers"] });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -599,13 +599,13 @@ function IdentifiersTab({ patient, canUpdate }: { patient: Patient; canUpdate: b
                   <Text size="sm">{identifier.id_number}</Text>
                 </Table.Td>
                 <Table.Td>
-                  <Badge color={identifier.is_verified ? "green" : "red"} variant="light" size="sm">
+                  <Badge color={identifier.is_verified ? "success" : "danger"} variant="light" size="sm">
                     {identifier.is_verified ? "Verified" : "Unverified"}
                   </Badge>
                 </Table.Td>
                 <Table.Td>
                   {identifier.is_primary && (
-                    <ThemeIcon variant="light" color="yellow" size="sm">
+                    <ThemeIcon variant="light" color="warning" size="sm">
                       <IconStarFilled size={12} />
                     </ThemeIcon>
                   )}
@@ -617,7 +617,7 @@ function IdentifiersTab({ patient, canUpdate }: { patient: Patient; canUpdate: b
                   <Table.Td>
                     <ActionIcon
                       variant="subtle"
-                      color="red"
+                      color="danger"
                       size="sm"
                       onClick={() => deleteMutation.mutate(identifier.id)}
                       loading={deleteMutation.isPending}
@@ -696,24 +696,24 @@ function AddressesTab({ patient, canUpdate }: { patient: Patient; canUpdate: boo
     mutationFn: (data: CreatePatientAddressRequest) =>
       api.createPatientAddress(patient.id, data),
     onSuccess: () => {
-      notifications.show({ title: "Address added", message: "Address recorded", color: "green" });
+      notifications.show({ title: "Address added", message: "Address recorded", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["patients", patient.id, "addresses"] });
       closeModal();
       resetForm();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.deletePatientAddress(patient.id, id),
     onSuccess: () => {
-      notifications.show({ title: "Deleted", message: "Address removed", color: "green" });
+      notifications.show({ title: "Deleted", message: "Address removed", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["patients", patient.id, "addresses"] });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -770,7 +770,7 @@ function AddressesTab({ patient, canUpdate }: { patient: Patient; canUpdate: boo
                 <Group gap="xs">
                   <Badge variant="light" size="sm">{addr.address_type.replace(/_/g, " ")}</Badge>
                   {addr.is_primary && (
-                    <Badge color="yellow" variant="light" size="sm" leftSection={<IconStarFilled size={10} />}>
+                    <Badge color="warning" variant="light" size="sm" leftSection={<IconStarFilled size={10} />}>
                       Primary
                     </Badge>
                   )}
@@ -778,7 +778,7 @@ function AddressesTab({ patient, canUpdate }: { patient: Patient; canUpdate: boo
                 {canUpdate && (
                   <ActionIcon
                     variant="subtle"
-                    color="red"
+                    color="danger"
                     size="sm"
                     onClick={() => deleteMutation.mutate(addr.id)}
                     loading={deleteMutation.isPending}
@@ -788,7 +788,7 @@ function AddressesTab({ patient, canUpdate }: { patient: Patient; canUpdate: boo
                 )}
               </Group>
               <Group gap={4} align="flex-start">
-                <ThemeIcon variant="light" color="gray" size="sm" mt={2}>
+                <ThemeIcon variant="light" color="slate" size="sm" mt={2}>
                   <IconMapPin size={12} />
                 </ThemeIcon>
                 <Box>
@@ -888,24 +888,24 @@ function ContactsTab({ patient, canUpdate }: { patient: Patient; canUpdate: bool
     mutationFn: (data: CreatePatientContactRequest) =>
       api.createPatientContact(patient.id, data),
     onSuccess: () => {
-      notifications.show({ title: "Contact added", message: "Contact person recorded", color: "green" });
+      notifications.show({ title: "Contact added", message: "Contact person recorded", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["patients", patient.id, "contacts"] });
       closeModal();
       resetForm();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.deletePatientContact(patient.id, id),
     onSuccess: () => {
-      notifications.show({ title: "Deleted", message: "Contact removed", color: "green" });
+      notifications.show({ title: "Deleted", message: "Contact removed", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["patients", patient.id, "contacts"] });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -967,19 +967,19 @@ function ContactsTab({ patient, canUpdate }: { patient: Patient; canUpdate: bool
                 </Table.Td>
                 <Table.Td>
                   {contact.is_emergency_contact && (
-                    <Badge color="red" variant="light" size="sm">Emergency</Badge>
+                    <Badge color="danger" variant="light" size="sm">Emergency</Badge>
                   )}
                 </Table.Td>
                 <Table.Td>
                   {contact.is_next_of_kin && (
-                    <Badge color="blue" variant="light" size="sm">Next of Kin</Badge>
+                    <Badge color="primary" variant="light" size="sm">Next of Kin</Badge>
                   )}
                 </Table.Td>
                 {canUpdate && (
                   <Table.Td>
                     <ActionIcon
                       variant="subtle"
-                      color="red"
+                      color="danger"
                       size="sm"
                       onClick={() => deleteMutation.mutate(contact.id)}
                       loading={deleteMutation.isPending}
@@ -1060,24 +1060,24 @@ function AllergiesTab({ patient, canUpdate }: { patient: Patient; canUpdate: boo
     mutationFn: (data: CreatePatientAllergyRequest) =>
       api.createPatientAllergy(patient.id, data),
     onSuccess: () => {
-      notifications.show({ title: "Allergy added", message: "Allergy recorded", color: "green" });
+      notifications.show({ title: "Allergy added", message: "Allergy recorded", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["patients", patient.id, "allergies"] });
       closeModal();
       resetForm();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.deletePatientAllergy(patient.id, id),
     onSuccess: () => {
-      notifications.show({ title: "Deleted", message: "Allergy removed", color: "green" });
+      notifications.show({ title: "Deleted", message: "Allergy removed", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["patients", patient.id, "allergies"] });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -1118,7 +1118,7 @@ function AllergiesTab({ patient, canUpdate }: { patient: Patient; canUpdate: boo
   return (
     <Box>
       {patient.no_known_allergies === true && (
-        <Badge color="green" variant="light" size="lg" mb="md">
+        <Badge color="success" variant="light" size="lg" mb="md">
           <Group gap={4}>
             <IconCheck size={14} />
             NKDA - No Known Drug Allergies
@@ -1159,7 +1159,7 @@ function AllergiesTab({ patient, canUpdate }: { patient: Patient; canUpdate: boo
                 <Table.Td>
                   {allergy.severity ? (
                     <Badge
-                      color={severityColors[allergy.severity] ?? "gray"}
+                      color={severityColors[allergy.severity] ?? "slate"}
                       variant="light"
                       size="sm"
                     >
@@ -1174,7 +1174,7 @@ function AllergiesTab({ patient, canUpdate }: { patient: Patient; canUpdate: boo
                   <Table.Td>
                     <ActionIcon
                       variant="subtle"
-                      color="red"
+                      color="danger"
                       size="sm"
                       onClick={() => deleteMutation.mutate(allergy.id)}
                       loading={deleteMutation.isPending}
@@ -1252,13 +1252,13 @@ function ConsentsTab({ patient, canUpdate }: { patient: Patient; canUpdate: bool
     mutationFn: (data: CreatePatientConsentRequest) =>
       api.createPatientConsent(patient.id, data),
     onSuccess: () => {
-      notifications.show({ title: "Consent recorded", message: "Consent status saved", color: "green" });
+      notifications.show({ title: "Consent recorded", message: "Consent status saved", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["patients", patient.id, "consents"] });
       closeModal();
       resetForm();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -1341,7 +1341,7 @@ function ConsentsTab({ patient, canUpdate }: { patient: Patient; canUpdate: bool
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={consentStatusColors[consent.consent_status] ?? "gray"}
+                    color={consentStatusColors[consent.consent_status] ?? "slate"}
                     variant="light"
                     size="sm"
                   >
@@ -1351,7 +1351,7 @@ function ConsentsTab({ patient, canUpdate }: { patient: Patient; canUpdate: bool
                 <Table.Td><Text size="sm">{consent.consented_by}</Text></Table.Td>
                 <Table.Td><Text size="sm">{formatDate(consent.consent_date)}</Text></Table.Td>
                 <Table.Td>
-                  <Badge variant="light" size="sm" color="gray">
+                  <Badge variant="light" size="sm" color="slate">
                     {consent.capture_mode.replace(/_/g, " ")}
                   </Badge>
                 </Table.Td>
@@ -1457,7 +1457,7 @@ function FamilyLinksTab({
       notifications.show({
         title: "Linked",
         message: "Family member linked",
-        color: "green",
+        color: "success",
       });
       handleClose();
     },
@@ -1551,7 +1551,7 @@ function FamilyLinksTab({
                   <Table.Td>
                     <ActionIcon
                       variant="light"
-                      color="red"
+                      color="danger"
                       size="sm"
                       onClick={() => deleteMutation.mutate(l.id)}
                     >
@@ -1614,7 +1614,7 @@ function FamilyLinksTab({
             </Table>
           )}
           {selectedRelated && (
-            <Alert color="blue">
+            <Alert color="primary">
               Selected: {selectedRelated.uhid} — {selectedRelated.first_name}{" "}
               {selectedRelated.last_name}
             </Alert>
@@ -1689,7 +1689,7 @@ function DocumentsTab({
       notifications.show({
         title: "Uploaded",
         message: "Document added",
-        color: "green",
+        color: "success",
       });
       handleClose();
     },
@@ -1774,7 +1774,7 @@ function DocumentsTab({
                   <Table.Td>
                     <ActionIcon
                       variant="light"
-                      color="red"
+                      color="danger"
                       size="sm"
                       onClick={() => deleteMutation.mutate(d.id)}
                     >
@@ -1855,7 +1855,7 @@ function PhotoUpdateButton({
       notifications.show({
         title: "Photo updated",
         message: "Patient photo has been updated",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -1905,7 +1905,7 @@ function PatientEditForm({
       notifications.show({
         title: "Patient updated",
         message: `${patient.uhid} has been updated`,
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       onSaved();
@@ -1914,7 +1914,7 @@ function PatientEditForm({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -1982,7 +1982,7 @@ export function PatientsPage() {
       notifications.show({
         title: "Patient registered",
         message: `UHID: ${patient.uhid}`,
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["patients"] });
       setDrawerOpen(false);
@@ -1991,7 +1991,7 @@ export function PatientsPage() {
       notifications.show({
         title: "Registration failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -2058,14 +2058,14 @@ export function PatientsPage() {
           <Text size="sm">{buildFullName(row)}</Text>
           {row.is_vip && (
             <Tooltip label="VIP Patient">
-              <ThemeIcon variant="light" color="yellow" size="xs">
+              <ThemeIcon variant="light" color="warning" size="xs">
                 <IconStarFilled size={10} />
               </ThemeIcon>
             </Tooltip>
           )}
           {row.is_medico_legal && (
             <Tooltip label={`MLC${row.mlc_number ? ` #${row.mlc_number}` : ""}`}>
-              <ThemeIcon variant="light" color="red" size="xs">
+              <ThemeIcon variant="light" color="danger" size="xs">
                 <IconAlertTriangle size={10} />
               </ThemeIcon>
             </Tooltip>
@@ -2082,7 +2082,7 @@ export function PatientsPage() {
       key: "gender",
       label: "Gender",
       render: (row: Patient) => (
-        <StatusDot color={genderColors[row.gender] ?? "gray"} label={row.gender} size="sm" />
+        <StatusDot color={genderColors[row.gender] ?? "slate"} label={row.gender} size="sm" />
       ),
     },
     {
@@ -2090,7 +2090,7 @@ export function PatientsPage() {
       label: "Blood Group",
       render: (row: Patient) =>
         row.blood_group && row.blood_group !== "unknown" ? (
-          <StatusDot color="red" label={bloodGroupLabels[row.blood_group] ?? row.blood_group} size="sm" />
+          <StatusDot color="danger" label={bloodGroupLabels[row.blood_group] ?? row.blood_group} size="sm" />
         ) : (
           <Text size="sm" c="dimmed">-</Text>
         ),
@@ -2099,14 +2099,14 @@ export function PatientsPage() {
       key: "category",
       label: "Category",
       render: (row: Patient) => (
-        <StatusDot color={categoryColors[row.category] ?? "gray"} label={row.category.replace(/_/g, " ")} size="sm" />
+        <StatusDot color={categoryColors[row.category] ?? "slate"} label={row.category.replace(/_/g, " ")} size="sm" />
       ),
     },
     {
       key: "registration_type",
       label: "Reg. Type",
       render: (row: Patient) => (
-        <StatusDot color="gray" label={registrationTypeLabels[row.registration_type] ?? row.registration_type} size="sm" />
+        <StatusDot color="slate" label={registrationTypeLabels[row.registration_type] ?? row.registration_type} size="sm" />
       ),
     },
     {
@@ -2117,7 +2117,7 @@ export function PatientsPage() {
           <Tooltip label="Quick view">
             <ActionIcon
               variant="subtle"
-              color="blue"
+              color="primary"
               onClick={() => openDetail(row)}
             >
               <IconEye size={16} />
@@ -2316,7 +2316,7 @@ export function PatientsPage() {
                 <Table.Td><Text size="sm">{m.patient.first_name} {m.patient.last_name}</Text></Table.Td>
                 <Table.Td><Text size="sm">{m.patient.phone ?? "—"}</Text></Table.Td>
                 <Table.Td>
-                  <Badge size="sm" color={m.score >= 0.8 ? "red" : "orange"}>
+                  <Badge size="sm" color={m.score >= 0.8 ? "danger" : "orange"}>
                     {Math.round(m.score * 100)}%
                   </Badge>
                 </Table.Td>

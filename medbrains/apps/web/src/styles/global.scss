@@ -388,14 +388,14 @@ h3, .mantine-Title-root[data-order="3"] { letter-spacing: -0.015em; }
 // ═══════════════════════════════════════════════════════════════
 
 .gradient-accent {
-  background: linear-gradient(135deg, #f97316 0%, #ec4899 35%, #8b5cf6 70%, #6366f1 100%);
+  background: linear-gradient(135deg, #14b8a6 0%, #0ea5e9 40%, #2563eb 100%);
   color: white;
   border: none;
-  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    box-shadow: 0 6px 24px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 6px 24px rgba(37, 99, 235, 0.4);
     transform: translateY(-1px);
   }
 }
@@ -403,10 +403,9 @@ h3, .mantine-Title-root[data-order="3"] { letter-spacing: -0.015em; }
 .gradient-accent-soft {
   background: linear-gradient(
     135deg,
-    rgba(249, 115, 22, 0.1) 0%,
-    rgba(236, 72, 153, 0.1) 35%,
-    rgba(139, 92, 246, 0.1) 70%,
-    rgba(99, 102, 241, 0.1) 100%
+    rgba(20, 184, 166, 0.1) 0%,
+    rgba(14, 165, 233, 0.1) 40%,
+    rgba(37, 99, 235, 0.1) 100%
   );
 }
 

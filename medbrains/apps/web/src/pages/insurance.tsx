@@ -55,37 +55,37 @@ import { useRequirePermission } from "../hooks/useRequirePermission";
 // ── Color maps ─────────────────────────────────────────
 
 const verificationColors: Record<string, string> = {
-  pending: "yellow",
-  active: "green",
-  inactive: "gray",
+  pending: "warning",
+  active: "success",
+  inactive: "slate",
   unknown: "orange",
-  error: "red",
+  error: "danger",
 };
 
 const paStatusColors: Record<string, string> = {
-  draft: "gray",
-  pending_info: "yellow",
-  submitted: "blue",
-  in_review: "indigo",
-  approved: "green",
+  draft: "slate",
+  pending_info: "warning",
+  submitted: "primary",
+  in_review: "primary",
+  approved: "success",
   partially_approved: "lime",
-  denied: "red",
+  denied: "danger",
   expired: "orange",
   cancelled: "dimmed",
 };
 
 const urgencyColors: Record<string, string> = {
-  standard: "blue",
-  urgent: "red",
+  standard: "primary",
+  urgent: "danger",
   retrospective: "orange",
 };
 
 const appealStatusColors: Record<string, string> = {
-  draft: "gray",
-  submitted: "blue",
-  in_review: "yellow",
-  upheld: "red",
-  overturned: "green",
+  draft: "slate",
+  submitted: "primary",
+  in_review: "warning",
+  upheld: "danger",
+  overturned: "success",
   withdrawn: "dimmed",
 };
 
@@ -157,10 +157,10 @@ function VerificationTab() {
     mutationFn: (d: RunVerificationRequest) => api.runVerification(d),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["insurance-verifications"] });
-      notifications.show({ title: "Verification", message: "Verification completed", color: "green" });
+      notifications.show({ title: "Verification", message: "Verification completed", color: "success" });
       close();
     },
-    onError: () => notifications.show({ title: "Error", message: "Verification failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Verification failed", color: "danger" }),
   });
 
   const detail = data.find((v) => v.id === detailId);
@@ -209,7 +209,7 @@ function VerificationTab() {
             key: "status",
             label: "Status",
             render: (r: InsuranceVerification) => (
-              <Badge color={verificationColors[r.status] ?? "gray"}>{r.status}</Badge>
+              <Badge color={verificationColors[r.status] ?? "slate"}>{r.status}</Badge>
             ),
           },
           {
@@ -290,7 +290,7 @@ function VerificationTab() {
         {detail && (
           <Stack gap="sm">
             <Group>
-              <Badge size="lg" color={verificationColors[detail.status] ?? "gray"}>
+              <Badge size="lg" color={verificationColors[detail.status] ?? "slate"}>
                 {detail.status}
               </Badge>
               {detail.scheme_type && <Badge variant="outline">{detail.scheme_type}</Badge>}
@@ -345,8 +345,8 @@ function VerificationTab() {
             {detail.error_message && (
               <Paper p="sm" bg="red.0">
                 <Group gap="xs">
-                  <IconAlertTriangle size={16} color="red" />
-                  <Text size="sm" c="red">{detail.error_code}: {detail.error_message}</Text>
+                  <IconAlertTriangle size={16} color="danger" />
+                  <Text size="sm" c="danger">{detail.error_code}: {detail.error_message}</Text>
                 </Group>
               </Paper>
             )}
@@ -398,10 +398,10 @@ function PriorAuthTab() {
     mutationFn: (d: CreatePriorAuthRequestBody) => api.createPriorAuth(d),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["insurance-prior-auths"] });
-      notifications.show({ title: "Prior Auth", message: "Created successfully", color: "green" });
+      notifications.show({ title: "Prior Auth", message: "Created successfully", color: "success" });
       close();
     },
-    onError: () => notifications.show({ title: "Error", message: "Creation failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Creation failed", color: "danger" }),
   });
 
   const submitMut = useMutation({
@@ -409,9 +409,9 @@ function PriorAuthTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["insurance-prior-auths"] });
       qc.invalidateQueries({ queryKey: ["insurance-prior-auth-detail"] });
-      notifications.show({ title: "Prior Auth", message: "Submitted successfully", color: "green" });
+      notifications.show({ title: "Prior Auth", message: "Submitted successfully", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Submit failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Submit failed", color: "danger" }),
   });
 
   const cancelMut = useMutation({
@@ -419,7 +419,7 @@ function PriorAuthTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["insurance-prior-auths"] });
       qc.invalidateQueries({ queryKey: ["insurance-prior-auth-detail"] });
-      notifications.show({ title: "Prior Auth", message: "Cancelled", color: "yellow" });
+      notifications.show({ title: "Prior Auth", message: "Cancelled", color: "warning" });
     },
   });
 
@@ -432,19 +432,19 @@ function PriorAuthTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["insurance-prior-auths"] });
       qc.invalidateQueries({ queryKey: ["insurance-prior-auth-detail"] });
-      notifications.show({ title: "Prior Auth", message: "Response recorded", color: "green" });
+      notifications.show({ title: "Prior Auth", message: "Response recorded", color: "success" });
       setRespondId(null);
     },
-    onError: () => notifications.show({ title: "Error", message: "Response failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Response failed", color: "danger" }),
   });
 
   const tatColor = (pa: PriorAuthRequestRow) => {
     if (!pa.submitted_at || !pa.expected_tat_hours) return "gray";
     const elapsed = (Date.now() - new Date(pa.submitted_at).getTime()) / 3_600_000;
     const ratio = elapsed / pa.expected_tat_hours;
-    if (ratio > 1) return "red";
-    if (ratio > 0.75) return "yellow";
-    return "green";
+    if (ratio > 1) return "danger";
+    if (ratio > 0.75) return "warning";
+    return "success";
   };
 
   const detail: PriorAuthDetail | undefined = detailQuery.data;
@@ -501,14 +501,14 @@ function PriorAuthTab() {
             key: "status",
             label: "Status",
             render: (r: PriorAuthRequestRow) => (
-              <Badge color={paStatusColors[r.status] ?? "gray"}>{r.status.replace(/_/g, " ")}</Badge>
+              <Badge color={paStatusColors[r.status] ?? "slate"}>{r.status.replace(/_/g, " ")}</Badge>
             ),
           },
           {
             key: "urgency",
             label: "Urgency",
             render: (r: PriorAuthRequestRow) => (
-              <Badge variant="outline" color={urgencyColors[r.urgency] ?? "blue"}>{r.urgency}</Badge>
+              <Badge variant="outline" color={urgencyColors[r.urgency] ?? "primary"}>{r.urgency}</Badge>
             ),
           },
           {
@@ -524,7 +524,7 @@ function PriorAuthTab() {
             key: "escalated",
             label: "Escalated",
             render: (r: PriorAuthRequestRow) =>
-              r.escalated ? <Badge color="red" size="sm">Yes</Badge> : <Text size="sm">—</Text>,
+              r.escalated ? <Badge color="danger" size="sm">Yes</Badge> : <Text size="sm">—</Text>,
           },
           {
             key: "actions",
@@ -537,7 +537,7 @@ function PriorAuthTab() {
                 {canSubmit && (r.status === "draft" || r.status === "pending_info") && (
                   <ActionIcon
                     variant="subtle"
-                    color="blue"
+                    color="primary"
                     onClick={() => submitMut.mutate(r.id)}
                     loading={submitMut.isPending}
                   >
@@ -614,10 +614,10 @@ function PriorAuthTab() {
           <Stack gap="md">
             <Group>
               <Title order={4}>{detail.prior_auth.pa_number}</Title>
-              <Badge color={paStatusColors[detail.prior_auth.status] ?? "gray"} size="lg">
+              <Badge color={paStatusColors[detail.prior_auth.status] ?? "slate"} size="lg">
                 {detail.prior_auth.status.replace(/_/g, " ")}
               </Badge>
-              <Badge variant="outline" color={urgencyColors[detail.prior_auth.urgency] ?? "blue"}>
+              <Badge variant="outline" color={urgencyColors[detail.prior_auth.urgency] ?? "primary"}>
                 {detail.prior_auth.urgency}
               </Badge>
             </Group>
@@ -644,13 +644,13 @@ function PriorAuthTab() {
               {detail.prior_auth.approved_amount != null && (
                 <Grid.Col span={6}>
                   <Text size="xs" c="dimmed">Approved Amount</Text>
-                  <Text size="sm" c="green" fw={500}>₹{detail.prior_auth.approved_amount}</Text>
+                  <Text size="sm" c="success" fw={500}>₹{detail.prior_auth.approved_amount}</Text>
                 </Grid.Col>
               )}
               {detail.prior_auth.denial_reason && (
                 <Grid.Col span={12}>
                   <Paper p="sm" bg="red.0">
-                    <Text size="sm" c="red" fw={500}>
+                    <Text size="sm" c="danger" fw={500}>
                       Denial: {detail.prior_auth.denial_code} — {detail.prior_auth.denial_reason}
                     </Text>
                   </Paper>
@@ -663,7 +663,7 @@ function PriorAuthTab() {
             <Stack gap="xs">
               {detail.status_log.map((log) => (
                 <Group key={log.id} gap="sm">
-                  <Badge size="xs" color={paStatusColors[log.to_status] ?? "gray"}>
+                  <Badge size="xs" color={paStatusColors[log.to_status] ?? "slate"}>
                     {log.to_status.replace(/_/g, " ")}
                   </Badge>
                   <Text size="xs" c="dimmed">{new Date(log.created_at).toLocaleString()}</Text>
@@ -689,7 +689,7 @@ function PriorAuthTab() {
               {canUpdate && detail.prior_auth.status === "submitted" && (
                 <Button
                   variant="filled"
-                  color="green"
+                  color="success"
                   onClick={() => setRespondId(detail.prior_auth.id)}
                 >
                   Record Response
@@ -699,7 +699,7 @@ function PriorAuthTab() {
                 (detail.prior_auth.status === "draft" || detail.prior_auth.status === "pending_info") && (
                   <Button
                     variant="filled"
-                    color="blue"
+                    color="primary"
                     leftSection={<IconSend size={16} />}
                     loading={submitMut.isPending}
                     onClick={() => submitMut.mutate(detail.prior_auth.id)}
@@ -712,7 +712,7 @@ function PriorAuthTab() {
                 detail.prior_auth.status !== "expired" && (
                   <Button
                     variant="outline"
-                    color="red"
+                    color="danger"
                     loading={cancelMut.isPending}
                     onClick={() => cancelMut.mutate(detail.prior_auth.id)}
                   >
@@ -829,19 +829,19 @@ function AppealsTab() {
     mutationFn: (d: CreateAppealRequest) => api.createAppeal(d),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["insurance-appeals"] });
-      notifications.show({ title: "Appeal", message: "Created successfully", color: "green" });
+      notifications.show({ title: "Appeal", message: "Created successfully", color: "success" });
       close();
     },
-    onError: () => notifications.show({ title: "Error", message: "Creation failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Creation failed", color: "danger" }),
   });
 
   const updateMut = useMutation({
     mutationFn: (d: { id: string; body: UpdateAppealRequest }) => api.updateAppeal(d.id, d.body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["insurance-appeals"] });
-      notifications.show({ title: "Appeal", message: "Updated", color: "green" });
+      notifications.show({ title: "Appeal", message: "Updated", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Update failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Update failed", color: "danger" }),
   });
 
   return (
@@ -893,14 +893,14 @@ function AppealsTab() {
             key: "status",
             label: "Status",
             render: (r: PriorAuthAppeal) => (
-              <Badge color={appealStatusColors[r.status] ?? "gray"}>{r.status.replace(/_/g, " ")}</Badge>
+              <Badge color={appealStatusColors[r.status] ?? "slate"}>{r.status.replace(/_/g, " ")}</Badge>
             ),
           },
           {
             key: "deadline",
             label: "Deadline",
             render: (r: PriorAuthAppeal) => (
-              <Text size="sm" c={r.deadline && new Date(r.deadline) < new Date() ? "red" : undefined}>
+              <Text size="sm" c={r.deadline && new Date(r.deadline) < new Date() ? "danger" : undefined}>
                 {r.deadline ?? "—"}
               </Text>
             ),
@@ -920,7 +920,7 @@ function AppealsTab() {
                 {r.status === "draft" && (
                   <ActionIcon
                     variant="subtle"
-                    color="blue"
+                    color="primary"
                     onClick={() => updateMut.mutate({ id: r.id, body: { status: "submitted" } })}
                   >
                     <IconSend size={16} />
@@ -993,10 +993,10 @@ function RulesTab() {
     mutationFn: (d: CreatePaRuleRequest) => api.createPaRule(d),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["insurance-rules"] });
-      notifications.show({ title: "PA Rule", message: "Created", color: "green" });
+      notifications.show({ title: "PA Rule", message: "Created", color: "success" });
       close();
     },
-    onError: () => notifications.show({ title: "Error", message: "Creation failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Creation failed", color: "danger" }),
   });
 
   const toggleMut = useMutation({
@@ -1074,7 +1074,7 @@ function RulesTab() {
                   }
                 />
               ) : (
-                <Badge color={r.is_active ? "green" : "gray"}>{r.is_active ? "Yes" : "No"}</Badge>
+                <Badge color={r.is_active ? "success" : "slate"}>{r.is_active ? "Yes" : "No"}</Badge>
               ),
           },
         ]}
@@ -1180,7 +1180,7 @@ function DashboardTab() {
           <Paper p="md" withBorder>
             <Text size="xs" c="dimmed">Total Verifications</Text>
             <Title order={3}>{d.total_verifications}</Title>
-            <Text size="xs" c="green">{d.active_verifications} active</Text>
+            <Text size="xs" c="success">{d.active_verifications} active</Text>
           </Paper>
         </Grid.Col>
         <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
@@ -1194,7 +1194,7 @@ function DashboardTab() {
           <Paper p="md" withBorder>
             <Text size="xs" c="dimmed">Denial Rate</Text>
             <Title order={3}>{d.denial_rate_percent.toFixed(1)}%</Title>
-            <Progress value={d.denial_rate_percent} color="red" size="sm" mt="xs" />
+            <Progress value={d.denial_rate_percent} color="danger" size="sm" mt="xs" />
           </Paper>
         </Grid.Col>
         <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
@@ -1211,15 +1211,15 @@ function DashboardTab() {
         <Title order={5} mb="sm">PA Status Breakdown</Title>
         <Group gap="lg">
           <Group gap="xs">
-            <Badge color="green" variant="dot" />
+            <Badge color="success" variant="dot" />
             <Text size="sm">Approved: {d.approved_prior_auths} ({approvalRate.toFixed(1)}%)</Text>
           </Group>
           <Group gap="xs">
-            <Badge color="red" variant="dot" />
+            <Badge color="danger" variant="dot" />
             <Text size="sm">Denied: {d.denied_prior_auths}</Text>
           </Group>
           <Group gap="xs">
-            <Badge color="blue" variant="dot" />
+            <Badge color="primary" variant="dot" />
             <Text size="sm">Pending: {d.pending_prior_auths}</Text>
           </Group>
         </Group>
@@ -1228,15 +1228,15 @@ function DashboardTab() {
             <>
               <Progress.Section
                 value={(d.approved_prior_auths / d.total_prior_auths) * 100}
-                color="green"
+                color="success"
               />
               <Progress.Section
                 value={(d.denied_prior_auths / d.total_prior_auths) * 100}
-                color="red"
+                color="danger"
               />
               <Progress.Section
                 value={(d.pending_prior_auths / d.total_prior_auths) * 100}
-                color="blue"
+                color="primary"
               />
             </>
           )}

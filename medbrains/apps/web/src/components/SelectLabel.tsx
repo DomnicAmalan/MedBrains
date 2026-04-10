@@ -19,7 +19,7 @@ export function SelectLabel({
       {onCreate && (
         <Text
           size="xs"
-          c="blue"
+          c="primary"
           style={{ cursor: "pointer" }}
           onClick={onCreate}
         >

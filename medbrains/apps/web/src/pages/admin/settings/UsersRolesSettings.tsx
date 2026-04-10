@@ -49,17 +49,17 @@ const BUILT_IN_ROLES = [
 ];
 
 const ROLE_COLORS: Record<string, string> = {
-  super_admin: "red",
+  super_admin: "danger",
   hospital_admin: "violet",
-  doctor: "blue",
+  doctor: "primary",
   nurse: "teal",
-  receptionist: "green",
+  receptionist: "success",
   lab_technician: "orange",
-  pharmacist: "cyan",
-  billing_clerk: "yellow",
-  housekeeping_staff: "gray",
-  facilities_manager: "indigo",
-  audit_officer: "pink",
+  pharmacist: "info",
+  billing_clerk: "warning",
+  housekeeping_staff: "slate",
+  facilities_manager: "primary",
+  audit_officer: "danger",
 };
 
 // ── User Create/Edit Modal ────────────────────────────────
@@ -202,7 +202,7 @@ function UserModal({
       notifications.show({
         title: "User created",
         message: "User has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-users"] });
@@ -212,7 +212,7 @@ function UserModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -234,7 +234,7 @@ function UserModal({
       notifications.show({
         title: "User updated",
         message: "User has been updated successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-users"] });
@@ -245,7 +245,7 @@ function UserModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -255,7 +255,7 @@ function UserModal({
       notifications.show({
         title: "Missing role",
         message: "Please select a role for the user",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -284,7 +284,7 @@ function UserModal({
         notifications.show({
           title: "Missing password",
           message: "Please enter a password for the new user",
-          color: "red",
+          color: "danger",
         });
         return;
       }
@@ -476,7 +476,7 @@ function DeleteUserModal({
       notifications.show({
         title: "User deleted",
         message: `User "${user!.full_name}" has been deleted`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-users"] });
@@ -486,7 +486,7 @@ function DeleteUserModal({
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -506,7 +506,7 @@ function DeleteUserModal({
             Cancel
           </Button>
           <Button
-            color="red"
+            color="danger"
             onClick={() => deleteMutation.mutate()}
             loading={deleteMutation.isPending}
           >
@@ -579,7 +579,7 @@ function UsersTab() {
         <Badge
           size="sm"
           variant="light"
-          color={ROLE_COLORS[row.role] ?? "gray"}
+          color={ROLE_COLORS[row.role] ?? "slate"}
         >
           {row.role.replace(/_/g, " ")}
         </Badge>
@@ -608,7 +608,7 @@ function UsersTab() {
         <Badge
           size="sm"
           variant="light"
-          color={row.is_active ? "green" : "red"}
+          color={row.is_active ? "success" : "danger"}
         >
           {row.is_active ? "Active" : "Inactive"}
         </Badge>
@@ -621,14 +621,14 @@ function UsersTab() {
         <Group gap={4}>
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color="primary"
             onClick={() => openEdit(row)}
           >
             <IconPencil size={16} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => openDelete(row)}
           >
             <IconTrash size={16} />
@@ -712,7 +712,7 @@ function RoleModal({
       notifications.show({
         title: "Role created",
         message: "Custom role has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-roles"] });
@@ -722,7 +722,7 @@ function RoleModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -734,7 +734,7 @@ function RoleModal({
       notifications.show({
         title: "Role updated",
         message: "Custom role has been updated successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-roles"] });
@@ -744,7 +744,7 @@ function RoleModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -830,7 +830,7 @@ function DeleteRoleModal({
       notifications.show({
         title: "Role deleted",
         message: `Role "${role!.name}" has been deleted`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-roles"] });
@@ -840,7 +840,7 @@ function DeleteRoleModal({
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -860,7 +860,7 @@ function DeleteRoleModal({
             Cancel
           </Button>
           <Button
-            color="red"
+            color="danger"
             onClick={() => deleteMutation.mutate()}
             loading={deleteMutation.isPending}
           >
@@ -931,7 +931,7 @@ function RolesTab() {
       label: "System",
       render: (row: CustomRole) =>
         row.is_system ? (
-          <Badge size="sm" variant="light" color="blue">
+          <Badge size="sm" variant="light" color="primary">
             System
           </Badge>
         ) : null,
@@ -943,7 +943,7 @@ function RolesTab() {
         <Badge
           size="sm"
           variant="light"
-          color={row.is_active ? "green" : "red"}
+          color={row.is_active ? "success" : "danger"}
         >
           {row.is_active ? "Active" : "Inactive"}
         </Badge>
@@ -957,14 +957,14 @@ function RolesTab() {
           <Group gap={4}>
             <ActionIcon
               variant="subtle"
-              color="blue"
+              color="primary"
               onClick={() => openEdit(row)}
             >
               <IconPencil size={16} />
             </ActionIcon>
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               onClick={() => openDelete(row)}
             >
               <IconTrash size={16} />

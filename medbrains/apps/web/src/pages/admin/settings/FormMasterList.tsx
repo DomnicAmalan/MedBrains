@@ -45,8 +45,8 @@ import { DataTable } from "../../../components";
 import { VersionHistoryDrawer } from "../../../components/FormBuilder/VersionHistoryDrawer";
 
 const statusColors: Record<string, string> = {
-  draft: "gray",
-  active: "green",
+  draft: "slate",
+  active: "success",
   deprecated: "orange",
 };
 
@@ -112,13 +112,13 @@ function FormDetailDrawer({
             </Box>
             <Group gap="xs">
               <Badge
-                color={statusColors[detail.status] ?? "gray"}
+                color={statusColors[detail.status] ?? "slate"}
                 variant="light"
                 size="lg"
               >
                 {detail.status}
               </Badge>
-              <Badge variant="light" color="blue">
+              <Badge variant="light" color="primary">
                 v{detail.version}
               </Badge>
               <Tooltip label="Design in Form Builder">
@@ -209,7 +209,7 @@ function FormDetailDrawer({
                                 <Badge
                                   size="xs"
                                   variant="light"
-                                  color="blue"
+                                  color="primary"
                                 >
                                   {f.data_type}
                                 </Badge>
@@ -300,7 +300,7 @@ function FormEditModal({
       notifications.show({
         title: "Form created",
         message: "New form has been created",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-forms"] });
       onClose();
@@ -309,7 +309,7 @@ function FormEditModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -321,7 +321,7 @@ function FormEditModal({
       notifications.show({
         title: "Form updated",
         message: "Form has been updated",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-forms"] });
       queryClient.invalidateQueries({
@@ -333,7 +333,7 @@ function FormEditModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -347,7 +347,7 @@ function FormEditModal({
         notifications.show({
           title: "Invalid JSON",
           message: "Config must be valid JSON",
-          color: "red",
+          color: "danger",
         });
         return;
       }
@@ -450,7 +450,7 @@ export function FormMasterList() {
       notifications.show({
         title: "Form published",
         message: "Form is now active and locked.",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-forms"] });
       setPublishForm(null);
@@ -460,7 +460,7 @@ export function FormMasterList() {
       notifications.show({
         title: "Publish failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -471,7 +471,7 @@ export function FormMasterList() {
       notifications.show({
         title: "New version created",
         message: "Form is now a draft. You can edit it.",
-        color: "blue",
+        color: "primary",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-forms"] });
       setNewVersionForm(null);
@@ -480,7 +480,7 @@ export function FormMasterList() {
       notifications.show({
         title: "Failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -537,7 +537,7 @@ export function FormMasterList() {
       label: "Status",
       render: (row: FormMaster) => (
         <Badge
-          color={statusColors[row.status] ?? "gray"}
+          color={statusColors[row.status] ?? "slate"}
           variant="light"
           size="sm"
         >
@@ -554,7 +554,7 @@ export function FormMasterList() {
             <Tooltip label="Publish">
               <ActionIcon
                 variant="subtle"
-                color="green"
+                color="success"
                 onClick={() => setPublishForm(row)}
               >
                 <IconUpload size={16} />
@@ -565,7 +565,7 @@ export function FormMasterList() {
             <Tooltip label="New Version">
               <ActionIcon
                 variant="subtle"
-                color="blue"
+                color="primary"
                 onClick={() => setNewVersionForm(row)}
               >
                 <IconGitBranch size={16} />
@@ -575,7 +575,7 @@ export function FormMasterList() {
           <Tooltip label="History">
             <ActionIcon
               variant="subtle"
-              color="gray"
+              color="slate"
               onClick={() => openHistory(row)}
             >
               <IconHistory size={16} />
@@ -584,7 +584,7 @@ export function FormMasterList() {
           <Tooltip label="View details">
             <ActionIcon
               variant="subtle"
-              color="blue"
+              color="primary"
               onClick={() => openDetail(row)}
             >
               <IconEye size={16} />
@@ -667,7 +667,7 @@ export function FormMasterList() {
               Cancel
             </Button>
             <Button
-              color="green"
+              color="success"
               leftSection={<IconUpload size={14} />}
               loading={publishMutation.isPending}
               onClick={() => {
@@ -704,7 +704,7 @@ export function FormMasterList() {
               Cancel
             </Button>
             <Button
-              color="blue"
+              color="primary"
               leftSection={<IconGitBranch size={14} />}
               loading={newVersionMutation.isPending}
               onClick={() => {

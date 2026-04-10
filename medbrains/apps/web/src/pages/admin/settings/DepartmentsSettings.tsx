@@ -39,11 +39,11 @@ const DEPARTMENT_TYPE_OPTIONS = [
 ];
 
 const TYPE_COLORS: Record<string, string> = {
-  clinical: "blue",
-  pre_clinical: "cyan",
+  clinical: "primary",
+  pre_clinical: "info",
   para_clinical: "teal",
   administrative: "orange",
-  support: "gray",
+  support: "slate",
   academic: "violet",
 };
 
@@ -197,7 +197,7 @@ function DepartmentModal({
       notifications.show({
         title: "Department created",
         message: "Department has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-departments"] });
@@ -207,7 +207,7 @@ function DepartmentModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -219,7 +219,7 @@ function DepartmentModal({
       notifications.show({
         title: "Department updated",
         message: "Department has been updated successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-departments"] });
@@ -229,7 +229,7 @@ function DepartmentModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -239,7 +239,7 @@ function DepartmentModal({
       notifications.show({
         title: "Missing fields",
         message: "Code and Name are required",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -339,7 +339,7 @@ function DepartmentModal({
                 )}
               </Group>
               {!isOff && (
-                <Grid gutter="xs">
+                <Grid gap="xs">
                   <Grid.Col span={3}>
                     <TextInput
                       size="xs"
@@ -441,7 +441,7 @@ function DeleteConfirmModal({
           <Button variant="light" onClick={onClose}>
             Cancel
           </Button>
-          <Button color="red" onClick={onConfirm} loading={isDeleting}>
+          <Button color="danger" onClick={onConfirm} loading={isDeleting}>
             Delete
           </Button>
         </Group>
@@ -469,7 +469,7 @@ export function DepartmentsSettings() {
       notifications.show({
         title: "Department deleted",
         message: "Department has been deleted successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-departments"] });
@@ -479,7 +479,7 @@ export function DepartmentsSettings() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -529,7 +529,7 @@ export function DepartmentsSettings() {
         <Badge
           size="sm"
           variant="light"
-          color={TYPE_COLORS[dept.department_type] ?? "gray"}
+          color={TYPE_COLORS[dept.department_type] ?? "slate"}
         >
           {dept.department_type.replace(/_/g, " ")}
         </Badge>
@@ -545,11 +545,11 @@ export function DepartmentsSettings() {
       </Table.Td>
       <Table.Td>
         {dept.is_active ? (
-          <Badge size="sm" variant="light" color="green">
+          <Badge size="sm" variant="light" color="success">
             Active
           </Badge>
         ) : (
-          <Badge size="sm" variant="light" color="red">
+          <Badge size="sm" variant="light" color="danger">
             Inactive
           </Badge>
         )}
@@ -558,14 +558,14 @@ export function DepartmentsSettings() {
         <Group gap={4}>
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color="primary"
             onClick={() => openEdit(dept)}
           >
             <IconPencil size={16} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => openDelete(dept)}
           >
             <IconTrash size={16} />

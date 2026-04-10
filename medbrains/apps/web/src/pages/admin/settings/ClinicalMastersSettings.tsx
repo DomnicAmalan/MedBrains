@@ -92,7 +92,7 @@ function MasterItemModal({
       notifications.show({
         title: `${masterType} created`,
         message: `New ${masterType.toLowerCase()} has been added.`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: [queryKey] });
@@ -102,7 +102,7 @@ function MasterItemModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -114,7 +114,7 @@ function MasterItemModal({
       notifications.show({
         title: `${masterType} updated`,
         message: `${masterType} has been updated.`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: [queryKey] });
@@ -124,7 +124,7 @@ function MasterItemModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -134,7 +134,7 @@ function MasterItemModal({
       notifications.show({
         title: "Validation error",
         message: "Code and Name are required.",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -236,7 +236,7 @@ function MasterTable({
       notifications.show({
         title: `${masterType} deleted`,
         message: `${masterType} has been removed.`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: [queryKey] });
@@ -246,7 +246,7 @@ function MasterTable({
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -273,7 +273,7 @@ function MasterTable({
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load:{" "}
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
@@ -324,7 +324,7 @@ function MasterTable({
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={item.is_active ? "green" : "red"}
+                    color={item.is_active ? "success" : "danger"}
                     variant="light"
                     size="sm"
                   >
@@ -333,7 +333,7 @@ function MasterTable({
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={item.tenant_id ? "blue" : "gray"}
+                    color={item.tenant_id ? "primary" : "slate"}
                     variant="light"
                     size="sm"
                   >
@@ -347,7 +347,7 @@ function MasterTable({
                         {canUpdate && (
                           <ActionIcon
                             variant="subtle"
-                            color="blue"
+                            color="primary"
                             onClick={() => openEdit(item)}
                           >
                             <IconPencil size={16} />
@@ -356,7 +356,7 @@ function MasterTable({
                         {canDelete && (
                           <ActionIcon
                             variant="subtle"
-                            color="red"
+                            color="danger"
                             onClick={() => setDeleteTarget(item)}
                           >
                             <IconTrash size={16} />
@@ -413,7 +413,7 @@ function MasterTable({
               Cancel
             </Button>
             <Button
-              color="red"
+              color="danger"
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               loading={deleteMutation.isPending}
             >
@@ -435,8 +435,8 @@ const PROVIDER_TYPE_OPTIONS = [
 ];
 
 const PROVIDER_TYPE_COLORS: Record<string, string> = {
-  private: "blue",
-  government: "green",
+  private: "primary",
+  government: "success",
   tpa: "violet",
 };
 
@@ -507,7 +507,7 @@ function InsuranceProviderModal({
       notifications.show({
         title: "Provider created",
         message: "New insurance provider has been added.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-insurance-providers"] });
@@ -517,7 +517,7 @@ function InsuranceProviderModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -536,7 +536,7 @@ function InsuranceProviderModal({
       notifications.show({
         title: "Provider updated",
         message: "Insurance provider has been updated.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-insurance-providers"] });
@@ -546,7 +546,7 @@ function InsuranceProviderModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -556,7 +556,7 @@ function InsuranceProviderModal({
       notifications.show({
         title: "Validation error",
         message: "Code and Name are required.",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -654,7 +654,7 @@ function InsuranceProvidersTable() {
       notifications.show({
         title: "Provider deleted",
         message: "Insurance provider has been removed.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-insurance-providers"] });
@@ -664,7 +664,7 @@ function InsuranceProvidersTable() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -681,7 +681,7 @@ function InsuranceProvidersTable() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load:{" "}
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
@@ -733,7 +733,7 @@ function InsuranceProvidersTable() {
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={PROVIDER_TYPE_COLORS[provider.provider_type] ?? "gray"}
+                    color={PROVIDER_TYPE_COLORS[provider.provider_type] ?? "slate"}
                     variant="light"
                     size="sm"
                   >
@@ -752,7 +752,7 @@ function InsuranceProvidersTable() {
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={provider.is_active ? "green" : "red"}
+                    color={provider.is_active ? "success" : "danger"}
                     variant="light"
                     size="sm"
                   >
@@ -765,7 +765,7 @@ function InsuranceProvidersTable() {
                       {canUpdate && (
                         <ActionIcon
                           variant="subtle"
-                          color="blue"
+                          color="primary"
                           onClick={() => {
                             setEditingItem(provider);
                             setModalOpen(true);
@@ -777,7 +777,7 @@ function InsuranceProvidersTable() {
                       {canDelete && (
                         <ActionIcon
                           variant="subtle"
-                          color="red"
+                          color="danger"
                           onClick={() => setDeleteTarget(provider)}
                         >
                           <IconTrash size={16} />
@@ -825,7 +825,7 @@ function InsuranceProvidersTable() {
               Cancel
             </Button>
             <Button
-              color="red"
+              color="danger"
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               loading={deleteMutation.isPending}
             >

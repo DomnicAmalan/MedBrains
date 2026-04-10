@@ -112,7 +112,7 @@ function DraggableFieldBadge({ field }: { field: AvailableField }) {
       ref={setNodeRef}
       size="xs"
       variant="outline"
-      color="blue"
+      color="primary"
       style={{
         cursor: "grab",
         opacity: isDragging ? 0.4 : 1,
@@ -562,7 +562,7 @@ export function FieldMappingEditor({ nodeId }: FieldMappingEditorProps) {
     }
     // Available field badge
     return (
-      <Badge size="sm" variant="filled" color="blue">
+      <Badge size="sm" variant="filled" color="primary">
         field
       </Badge>
     );
@@ -592,13 +592,13 @@ export function FieldMappingEditor({ nodeId }: FieldMappingEditorProps) {
               <Text size="xs" fw={700} tt="uppercase" c="dimmed">
                 Available Fields
               </Text>
-              <Badge size="xs" variant="light" color="gray">
+              <Badge size="xs" variant="light" color="slate">
                 {availableFields.length}
               </Badge>
             </Group>
           </UnstyledButton>
 
-          <Collapse in={availableOpen}>
+          <Collapse expanded={availableOpen}>
             <Box
               mt={4}
               p="xs"
@@ -633,7 +633,7 @@ export function FieldMappingEditor({ nodeId }: FieldMappingEditorProps) {
               <Text size="xs" fw={700} tt="uppercase" c="dimmed" style={{ fontSize: 10 }}>
                 Field Mappings
               </Text>
-              <Badge size="xs" variant="light" color="gray">
+              <Badge size="xs" variant="light" color="slate">
                 {mappings.length}
               </Badge>
             </Group>
@@ -644,7 +644,7 @@ export function FieldMappingEditor({ nodeId }: FieldMappingEditorProps) {
         {/* Visual Mapper button */}
         <Button
           variant="light"
-          color="grape"
+          color="violet"
           size="xs"
           fullWidth
           leftSection={<IconExternalLink size={14} />}

@@ -19,10 +19,10 @@ import { api } from "@medbrains/api";
 import type { FieldChange, SectionChange } from "@medbrains/types";
 
 const changeColors: Record<string, string> = {
-  added: "green",
-  removed: "red",
-  modified: "yellow",
-  moved: "blue",
+  added: "success",
+  removed: "danger",
+  modified: "warning",
+  moved: "primary",
 };
 
 const changeIcons: Record<string, typeof IconPlus> = {
@@ -41,7 +41,7 @@ function FieldChangeRow({ fc }: { fc: FieldChange }) {
           <ThemeIcon
             size="xs"
             variant="light"
-            color={changeColors[fc.change_type] ?? "gray"}
+            color={changeColors[fc.change_type] ?? "slate"}
           >
             <Icon size={10} />
           </ThemeIcon>
@@ -56,7 +56,7 @@ function FieldChangeRow({ fc }: { fc: FieldChange }) {
       <Table.Td>
         <Badge
           size="xs"
-          color={changeColors[fc.change_type] ?? "gray"}
+          color={changeColors[fc.change_type] ?? "slate"}
           variant="light"
         >
           {fc.change_type}
@@ -79,16 +79,16 @@ function SectionChangeBlock({ sc }: { sc: SectionChange }) {
     <Box
       p="sm"
       style={{
-        border: `1px solid var(--mantine-color-${changeColors[sc.change_type] ?? "gray"}-3)`,
+        border: `1px solid var(--mantine-color-${changeColors[sc.change_type] ?? "slate"}-3)`,
         borderRadius: "var(--mantine-radius-sm)",
-        borderLeft: `4px solid var(--mantine-color-${changeColors[sc.change_type] ?? "gray"}-5)`,
+        borderLeft: `4px solid var(--mantine-color-${changeColors[sc.change_type] ?? "slate"}-5)`,
       }}
     >
       <Group gap="xs" mb="xs">
         <ThemeIcon
           size="sm"
           variant="light"
-          color={changeColors[sc.change_type] ?? "gray"}
+          color={changeColors[sc.change_type] ?? "slate"}
         >
           <Icon size={12} />
         </ThemeIcon>
@@ -100,7 +100,7 @@ function SectionChangeBlock({ sc }: { sc: SectionChange }) {
         </Text>
         <Badge
           size="xs"
-          color={changeColors[sc.change_type] ?? "gray"}
+          color={changeColors[sc.change_type] ?? "slate"}
           variant="light"
         >
           {sc.change_type}
@@ -157,11 +157,11 @@ export function VersionDiffView({ formId, v1, v2, opened, onClose }: Props) {
     >
       <Stack gap="md">
         <Group>
-          <Badge variant="filled" color="blue">
+          <Badge variant="filled" color="primary">
             v{v1 === 0 ? "current" : v1}
           </Badge>
           <IconArrowRight size={16} />
-          <Badge variant="filled" color="blue">
+          <Badge variant="filled" color="primary">
             v{v2 === 0 ? "current" : v2}
           </Badge>
         </Group>
@@ -172,32 +172,32 @@ export function VersionDiffView({ formId, v1, v2, opened, onClose }: Props) {
           <>
             <Group gap="xs">
               {diff.summary.sections_added > 0 && (
-                <Badge color="green" variant="light">
+                <Badge color="success" variant="light">
                   +{diff.summary.sections_added} sections
                 </Badge>
               )}
               {diff.summary.sections_removed > 0 && (
-                <Badge color="red" variant="light">
+                <Badge color="danger" variant="light">
                   -{diff.summary.sections_removed} sections
                 </Badge>
               )}
               {diff.summary.sections_modified > 0 && (
-                <Badge color="yellow" variant="light">
+                <Badge color="warning" variant="light">
                   ~{diff.summary.sections_modified} sections modified
                 </Badge>
               )}
               {diff.summary.fields_added > 0 && (
-                <Badge color="green" variant="light">
+                <Badge color="success" variant="light">
                   +{diff.summary.fields_added} fields
                 </Badge>
               )}
               {diff.summary.fields_removed > 0 && (
-                <Badge color="red" variant="light">
+                <Badge color="danger" variant="light">
                   -{diff.summary.fields_removed} fields
                 </Badge>
               )}
               {diff.summary.fields_modified > 0 && (
-                <Badge color="yellow" variant="light">
+                <Badge color="warning" variant="light">
                   ~{diff.summary.fields_modified} fields modified
                 </Badge>
               )}

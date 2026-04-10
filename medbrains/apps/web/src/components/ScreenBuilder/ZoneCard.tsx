@@ -11,16 +11,16 @@ import { useScreenBuilderStore } from "@medbrains/stores";
 import classes from "./screen-builder.module.scss";
 
 const ZONE_TYPE_COLORS: Record<string, string> = {
-  form: "blue",
+  form: "primary",
   data_table: "violet",
   filter_bar: "orange",
-  detail_header: "cyan",
-  tabs: "indigo",
-  stepper: "grape",
+  detail_header: "info",
+  tabs: "primary",
+  stepper: "violet",
   calendar: "teal",
   kanban: "lime",
-  widget_grid: "pink",
-  info_panel: "gray",
+  widget_grid: "danger",
+  info_panel: "slate",
 };
 
 export function ZoneCard({ zone, isLocked }: { zone: ZoneNode; isLocked: boolean }) {
@@ -48,7 +48,7 @@ export function ZoneCard({ zone, isLocked }: { zone: ZoneNode; isLocked: boolean
     transition,
   };
 
-  const color = ZONE_TYPE_COLORS[zone.type] ?? "gray";
+  const color = ZONE_TYPE_COLORS[zone.type] ?? "slate";
 
   return (
     <div
@@ -93,7 +93,7 @@ export function ZoneCard({ zone, isLocked }: { zone: ZoneNode; isLocked: boolean
           <Tooltip label="Delete">
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               size="xs"
               onClick={(e) => {
                 e.stopPropagation();

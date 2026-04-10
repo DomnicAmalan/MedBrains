@@ -89,47 +89,47 @@ import { ClinicalEventProvider, useClinicalEmit, DataTable, PageHeader, StatusDo
 import { useRequirePermission } from "../hooks/useRequirePermission";
 
 const statusColors: Record<string, string> = {
-  ordered: "blue",
-  sample_collected: "cyan",
-  processing: "yellow",
+  ordered: "primary",
+  sample_collected: "info",
+  processing: "warning",
   completed: "orange",
-  verified: "green",
-  cancelled: "red",
+  verified: "success",
+  cancelled: "danger",
 };
 
 const priorityColors: Record<string, string> = {
-  routine: "gray",
+  routine: "slate",
   urgent: "orange",
-  stat: "red",
+  stat: "danger",
 };
 
 const flagColors: Record<string, string> = {
-  normal: "green",
-  low: "blue",
+  normal: "success",
+  low: "primary",
   high: "orange",
-  critical_low: "red",
-  critical_high: "red",
-  abnormal: "yellow",
+  critical_low: "danger",
+  critical_high: "danger",
+  abnormal: "warning",
 };
 
 const qcStatusColors: Record<string, string> = {
-  accepted: "green",
-  rejected: "red",
-  warning: "yellow",
+  accepted: "success",
+  rejected: "danger",
+  warning: "warning",
 };
 
 const outsourceStatusColors: Record<string, string> = {
-  pending_send: "gray",
-  sent: "blue",
-  result_received: "green",
-  cancelled: "red",
+  pending_send: "slate",
+  sent: "primary",
+  result_received: "success",
+  cancelled: "danger",
 };
 
 const phlebotomyStatusColors: Record<string, string> = {
-  waiting: "yellow",
-  in_progress: "blue",
-  completed: "green",
-  skipped: "gray",
+  waiting: "warning",
+  in_progress: "primary",
+  completed: "success",
+  skipped: "slate",
 };
 
 export function LabPage() {
@@ -185,21 +185,21 @@ function LabPageInner() {
       key: "priority",
       label: "Priority",
       render: (row: LabOrder) => (
-        <StatusDot color={priorityColors[row.priority] ?? "gray"} label={row.priority} />
+        <StatusDot color={priorityColors[row.priority] ?? "slate"} label={row.priority} />
       ),
     },
     {
       key: "status",
       label: "Status",
       render: (row: LabOrder) => (
-        <StatusDot color={statusColors[row.status] ?? "gray"} label={row.status.replace(/_/g, " ")} />
+        <StatusDot color={statusColors[row.status] ?? "slate"} label={row.status.replace(/_/g, " ")} />
       ),
     },
     {
       key: "report_status",
       label: "Report",
       render: (row: LabOrder) => row.report_status ? (
-        <Badge size="xs" variant="light" color={row.is_report_locked ? "red" : "blue"}>
+        <Badge size="xs" variant="light" color={row.is_report_locked ? "danger" : "primary"}>
           {row.report_status}{row.is_report_locked ? " (locked)" : ""}
         </Badge>
       ) : <Text size="sm" c="dimmed">—</Text>,
@@ -251,7 +251,7 @@ function LabPageInner() {
 
       {unacknowledgedAlerts.length > 0 && (
         <Alert
-          color="red"
+          color="danger"
           icon={<IconAlertTriangle size={18} />}
           title={`${unacknowledgedAlerts.length} unacknowledged critical alert(s)`}
           mb="md"
@@ -259,12 +259,12 @@ function LabPageInner() {
         >
           <Group gap="xs" wrap="wrap">
             {unacknowledgedAlerts.slice(0, 5).map((a: LabCriticalAlert) => (
-              <Badge key={a.id} color="red" variant="filled" size="sm">
+              <Badge key={a.id} color="danger" variant="filled" size="sm">
                 {a.parameter_name}: {a.value} ({a.flag.replace(/_/g, " ")})
               </Badge>
             ))}
             {unacknowledgedAlerts.length > 5 && (
-              <Text size="xs" c="red" fw={500}>+{unacknowledgedAlerts.length - 5} more</Text>
+              <Text size="xs" c="danger" fw={500}>+{unacknowledgedAlerts.length - 5} more</Text>
             )}
           </Group>
         </Alert>
@@ -448,7 +448,7 @@ function CreateLabOrderDrawer({ opened, onClose }: { opened: boolean; onClose: (
     mutationFn: (data: CreateLabOrderRequest) => api.createLabOrder(data),
     onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["lab-orders"] });
-      notifications.show({ title: "Order created", message: "Lab order placed", color: "green" });
+      notifications.show({ title: "Order created", message: "Lab order placed", color: "success" });
       emit("lab.order_created", { patient_id: variables.patient_id, test_id: variables.test_id, priority: variables.priority });
       onClose();
       setPatientId("");
@@ -458,7 +458,7 @@ function CreateLabOrderDrawer({ opened, onClose }: { opened: boolean; onClose: (
       setClinicalNotes("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create order", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create order", color: "danger" });
     },
   });
 
@@ -596,7 +596,7 @@ function LabOrderDetail({ orderId, canCreateResult, canVerify, canAmend }: {
     mutationFn: (testId: string) => api.addOnLabTest(orderId, { test_id: testId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lab-orders"] });
-      notifications.show({ title: "Add-on test created", message: "Linked order created", color: "green" });
+      notifications.show({ title: "Add-on test created", message: "Linked order created", color: "success" });
     },
   });
 
@@ -608,11 +608,11 @@ function LabOrderDetail({ orderId, canCreateResult, canVerify, canAmend }: {
       notifications.show({
         title: result.auto_validated ? "Auto-validated" : "Validation skipped",
         message: result.message,
-        color: result.auto_validated ? "green" : "yellow",
+        color: result.auto_validated ? "success" : "warning",
       });
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Auto-validation failed", color: "red" });
+      notifications.show({ title: "Error", message: "Auto-validation failed", color: "danger" });
     },
   });
 
@@ -633,27 +633,27 @@ function LabOrderDetail({ orderId, canCreateResult, canVerify, canAmend }: {
     <Stack>
       <Group justify="space-between">
         <Text fw={700}>Order: {order.id.slice(0, 8)}...</Text>
-        <Badge color={statusColors[order.status] ?? "gray"} variant="light" size="lg">
+        <Badge color={statusColors[order.status] ?? "slate"} variant="light" size="lg">
           {order.status.replace(/_/g, " ")}
         </Badge>
       </Group>
       <Group>
-        <Badge color={priorityColors[order.priority] ?? "gray"} variant="dot">
+        <Badge color={priorityColors[order.priority] ?? "slate"} variant="dot">
           Priority: {order.priority}
         </Badge>
         {order.report_status && (
-          <Badge color={order.is_report_locked ? "red" : "blue"} variant="light" size="sm">
+          <Badge color={order.is_report_locked ? "danger" : "primary"} variant="light" size="sm">
             Report: {order.report_status}{order.is_report_locked ? " (locked)" : ""}
           </Badge>
         )}
         {order.is_outsourced && (
-          <Badge color="grape" variant="light" size="sm">Outsourced</Badge>
+          <Badge color="violet" variant="light" size="sm">Outsourced</Badge>
         )}
         {order.parent_order_id && (
-          <Badge color="indigo" variant="light" size="sm">Add-on</Badge>
+          <Badge color="primary" variant="light" size="sm">Add-on</Badge>
         )}
         {crossmatchData && crossmatchData.crossmatch_requests.length > 0 && (
-          <Badge color="pink" variant="light" size="sm" leftSection={<IconDroplet size={12} />}>
+          <Badge color="danger" variant="light" size="sm" leftSection={<IconDroplet size={12} />}>
             Crossmatch ({crossmatchData.crossmatch_requests.length})
           </Badge>
         )}
@@ -661,11 +661,11 @@ function LabOrderDetail({ orderId, canCreateResult, canVerify, canAmend }: {
 
       {/* Critical alerts banner */}
       {orderAlerts.length > 0 && (
-        <Alert color="red" icon={<IconAlertTriangle size={16} />} title="Critical Values">
+        <Alert color="danger" icon={<IconAlertTriangle size={16} />} title="Critical Values">
           {orderAlerts.map((a: LabCriticalAlert) => (
             <Group key={a.id} justify="space-between" mb={4}>
               <Text size="sm" fw={500}>{a.parameter_name}: {a.value} ({a.flag.replace(/_/g, " ")})</Text>
-              <Button size="xs" color="red" variant="light" onClick={() => acknowledgeMutation.mutate(a.id)}>
+              <Button size="xs" color="danger" variant="light" onClick={() => acknowledgeMutation.mutate(a.id)}>
                 Acknowledge
               </Button>
             </Group>
@@ -674,7 +674,7 @@ function LabOrderDetail({ orderId, canCreateResult, canVerify, canAmend }: {
       )}
 
       {order.rejection_reason && (
-        <Badge color="red" variant="light" size="lg">Rejected: {order.rejection_reason}</Badge>
+        <Badge color="danger" variant="light" size="lg">Rejected: {order.rejection_reason}</Badge>
       )}
 
       {/* Status transition buttons */}
@@ -690,12 +690,12 @@ function LabOrderDetail({ orderId, canCreateResult, canVerify, canAmend }: {
             <Button size="xs" color="orange" onClick={() => completeMutation.mutate()}>Complete</Button>
           )}
           {order.status === "ordered" && (
-            <Button size="xs" color="red" variant="light" onClick={() => cancelMutation.mutate()}>Cancel</Button>
+            <Button size="xs" color="danger" variant="light" onClick={() => cancelMutation.mutate()}>Cancel</Button>
           )}
           {(order.status === "ordered" || order.status === "sample_collected") && (
             <Group gap="xs">
               <TextInput size="xs" placeholder="Rejection reason" value={rejectionReason} onChange={(e) => setRejectionReason(e.currentTarget.value)} w={200} />
-              <Button size="xs" color="red" disabled={!rejectionReason} onClick={() => rejectMutation.mutate(rejectionReason)} loading={rejectMutation.isPending}>
+              <Button size="xs" color="danger" disabled={!rejectionReason} onClick={() => rejectMutation.mutate(rejectionReason)} loading={rejectMutation.isPending}>
                 Reject Sample
               </Button>
             </Group>
@@ -703,15 +703,15 @@ function LabOrderDetail({ orderId, canCreateResult, canVerify, canAmend }: {
         </Group>
       )}
       {canVerify && order.status === "completed" && (
-        <Button size="xs" color="green" onClick={() => verifyMutation.mutate()}>Verify Results</Button>
+        <Button size="xs" color="success" onClick={() => verifyMutation.mutate()}>Verify Results</Button>
       )}
 
       {/* Report status controls */}
       {canVerify && (order.status === "completed" || order.status === "verified") && !order.is_report_locked && (
         <Group>
           <Button size="xs" variant="light" onClick={() => reportStatusMutation.mutate("preliminary")}>Set Preliminary</Button>
-          <Button size="xs" variant="light" color="green" onClick={() => reportStatusMutation.mutate("final")}>Set Final</Button>
-          <Button size="xs" variant="light" color="red" leftSection={<IconLock size={14} />} onClick={() => lockReportMutation.mutate()}>Lock Report</Button>
+          <Button size="xs" variant="light" color="success" onClick={() => reportStatusMutation.mutate("final")}>Set Final</Button>
+          <Button size="xs" variant="light" color="danger" leftSection={<IconLock size={14} />} onClick={() => lockReportMutation.mutate()}>Lock Report</Button>
         </Group>
       )}
 
@@ -738,14 +738,14 @@ function LabOrderDetail({ orderId, canCreateResult, canVerify, canAmend }: {
               <Table.Td>{r.normal_range ?? "—"}</Table.Td>
               <Table.Td>
                 {r.flag ? (
-                  <Badge color={flagColors[r.flag] ?? "gray"} variant="light" size="sm">
+                  <Badge color={flagColors[r.flag] ?? "slate"} variant="light" size="sm">
                     {r.flag.replace(/_/g, " ")}
                   </Badge>
                 ) : "—"}
               </Table.Td>
               <Table.Td>
                 {r.is_delta_flagged ? (
-                  <Badge color="red" variant="light" size="sm">
+                  <Badge color="danger" variant="light" size="sm">
                     Δ {r.delta_percent ? `${Number(r.delta_percent).toFixed(1)}%` : "flagged"}
                   </Badge>
                 ) : r.delta_percent ? (
@@ -791,7 +791,7 @@ function LabOrderDetail({ orderId, canCreateResult, canVerify, canAmend }: {
             <Button size="xs" disabled={!amendData.reason} onClick={() => amendMutation.mutate({ result_id: amendData.resultId, amended_value: amendData.value, reason: amendData.reason })} loading={amendMutation.isPending}>
               Save Amendment
             </Button>
-            <Button size="xs" variant="light" color="gray" onClick={() => setAmendData(null)}>Cancel</Button>
+            <Button size="xs" variant="light" color="slate" onClick={() => setAmendData(null)}>Cancel</Button>
           </Group>
         </Stack>
       )}
@@ -854,7 +854,7 @@ function AddOnTestSection({ onAddOn, isPending }: { onAddOn: (testId: string) =>
   return (
     <Group mt="sm">
       <TextInput size="xs" placeholder="Test ID for add-on" value={testId} onChange={(e) => setTestId(e.currentTarget.value)} w={250} />
-      <Button size="xs" variant="light" color="indigo" disabled={!testId} loading={isPending} onClick={() => { onAddOn(testId); setTestId(""); }}>
+      <Button size="xs" variant="light" color="primary" disabled={!testId} loading={isPending} onClick={() => { onAddOn(testId); setTestId(""); }}>
         Add-on Test
       </Button>
     </Group>
@@ -898,7 +898,7 @@ function LabCatalogTab({ canCreate }: { canCreate: boolean }) {
         </Text>
       ),
     },
-    { key: "is_active", label: "Active", render: (row: LabTestCatalog) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_active", label: "Active", render: (row: LabTestCatalog) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
   ];
 
   return (
@@ -986,10 +986,10 @@ function LabPanelsTab({ canCreate }: { canCreate: boolean }) {
     { key: "name", label: "Name", render: (row: LabTestPanel) => <Text size="sm">{row.name}</Text> },
     { key: "description", label: "Description", render: (row: LabTestPanel) => <Text size="sm">{row.description ?? "—"}</Text> },
     { key: "price", label: "Price", render: (row: LabTestPanel) => <Text size="sm">₹{row.price}</Text> },
-    { key: "is_active", label: "Active", render: (row: LabTestPanel) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_active", label: "Active", render: (row: LabTestPanel) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
     {
       key: "actions", label: "Actions", render: (row: LabTestPanel) => (
-        <ActionIcon color="red" variant="subtle" onClick={() => deleteMutation.mutate(row.id)}>
+        <ActionIcon color="danger" variant="subtle" onClick={() => deleteMutation.mutate(row.id)}>
           <IconX size={14} />
         </ActionIcon>
       ),
@@ -1067,12 +1067,12 @@ function PhlebotomyTab() {
     { key: "order_id", label: "Order", render: (row: LabPhlebotomyQueueItem) => <Text size="sm">{row.order_id.slice(0, 8)}...</Text> },
     {
       key: "priority", label: "Priority", render: (row: LabPhlebotomyQueueItem) => (
-        <StatusDot color={priorityColors[row.priority] ?? "gray"} label={row.priority} />
+        <StatusDot color={priorityColors[row.priority] ?? "slate"} label={row.priority} />
       ),
     },
     {
       key: "status", label: "Status", render: (row: LabPhlebotomyQueueItem) => (
-        <Badge color={phlebotomyStatusColors[row.status] ?? "gray"} variant="light" size="sm">
+        <Badge color={phlebotomyStatusColors[row.status] ?? "slate"} variant="light" size="sm">
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -1087,12 +1087,12 @@ function PhlebotomyTab() {
             </Button>
           )}
           {row.status === "in_progress" && (
-            <Button size="xs" variant="light" color="green" onClick={() => statusMutation.mutate({ id: row.id, status: "completed" })}>
+            <Button size="xs" variant="light" color="success" onClick={() => statusMutation.mutate({ id: row.id, status: "completed" })}>
               Complete
             </Button>
           )}
           {(row.status === "waiting" || row.status === "in_progress") && (
-            <Button size="xs" variant="light" color="gray" onClick={() => statusMutation.mutate({ id: row.id, status: "skipped" })}>
+            <Button size="xs" variant="light" color="slate" onClick={() => statusMutation.mutate({ id: row.id, status: "skipped" })}>
               Skip
             </Button>
           )}
@@ -1170,11 +1170,11 @@ function ReagentLotsSection() {
       key: "expiry_date", label: "Expiry", render: (row: LabReagentLot) => {
         if (!row.expiry_date) return <Text size="sm">—</Text>;
         const isExpired = new Date(row.expiry_date) < new Date();
-        return <Badge color={isExpired ? "red" : "green"} variant="light" size="sm">{row.expiry_date}</Badge>;
+        return <Badge color={isExpired ? "danger" : "success"} variant="light" size="sm">{row.expiry_date}</Badge>;
       },
     },
     { key: "quantity", label: "Qty", render: (row: LabReagentLot) => <Text size="sm">{row.quantity ? `${row.quantity} ${row.quantity_unit ?? ""}` : "—"}</Text> },
-    { key: "is_active", label: "Active", render: (row: LabReagentLot) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_active", label: "Active", render: (row: LabReagentLot) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
   ];
 
   return (
@@ -1240,13 +1240,13 @@ function QcResultsSection() {
     { key: "sd_index", label: "SD Index", render: (row: LabQcResult) => <Text size="sm" fw={row.sd_index && Math.abs(Number(row.sd_index)) > 2 ? 700 : 400}>{row.sd_index ?? "—"}</Text> },
     {
       key: "status", label: "Status", render: (row: LabQcResult) => (
-        <Badge color={qcStatusColors[row.status] ?? "gray"} variant="light" size="sm">{row.status}</Badge>
+        <Badge color={qcStatusColors[row.status] ?? "slate"} variant="light" size="sm">{row.status}</Badge>
       ),
     },
     {
       key: "westgard", label: "Westgard", render: (row: LabQcResult) => (
         row.westgard_violations?.length ? (
-          <Badge color="red" variant="light" size="sm">{row.westgard_violations.join(", ")}</Badge>
+          <Badge color="danger" variant="light" size="sm">{row.westgard_violations.join(", ")}</Badge>
         ) : <Text size="sm" c="dimmed">OK</Text>
       ),
     },
@@ -1324,10 +1324,10 @@ function LeveyJenningsChart({
     const points = lotResults.map((r) => {
       const observed = Number(r.observed_value);
       const sdIdx = targetSd !== 0 ? Math.abs((observed - targetMean) / targetSd) : 0;
-      let pointColor = "green";
-      if (sdIdx > 3) pointColor = "red";
+      let pointColor = "success";
+      if (sdIdx > 3) pointColor = "danger";
       else if (sdIdx > 2) pointColor = "orange";
-      else if (sdIdx > 1) pointColor = "yellow";
+      else if (sdIdx > 1) pointColor = "warning";
       return {
         date: r.run_date ?? "",
         observed,
@@ -1368,15 +1368,15 @@ function LeveyJenningsChart({
       {selectedLotId && hasData && (
         <Stack gap="xs">
           <Group gap="lg">
-            <Badge variant="light" color="blue">Mean: {mean.toFixed(2)}</Badge>
-            <Badge variant="light" color="green">SD: {sd.toFixed(2)}</Badge>
-            <Badge variant="light" color="gray">{chartData.length} points</Badge>
+            <Badge variant="light" color="primary">Mean: {mean.toFixed(2)}</Badge>
+            <Badge variant="light" color="success">SD: {sd.toFixed(2)}</Badge>
+            <Badge variant="light" color="slate">{chartData.length} points</Badge>
           </Group>
           <Group gap="xs">
-            <Badge size="xs" color="green" variant="dot">Within 1SD</Badge>
-            <Badge size="xs" color="yellow" variant="dot">1-2 SD</Badge>
+            <Badge size="xs" color="success" variant="dot">Within 1SD</Badge>
+            <Badge size="xs" color="warning" variant="dot">1-2 SD</Badge>
             <Badge size="xs" color="orange" variant="dot">2-3 SD</Badge>
-            <Badge size="xs" color="red" variant="dot">Beyond 3SD</Badge>
+            <Badge size="xs" color="danger" variant="dot">Beyond 3SD</Badge>
           </Group>
           <LineChart
             h={350}
@@ -1421,7 +1421,7 @@ function CalibrationsSection() {
     { key: "calibrator_lot", label: "Calibrator Lot", render: (row: LabCalibration) => <Text size="sm">{row.calibrator_lot ?? "—"}</Text> },
     { key: "calibration_date", label: "Date", render: (row: LabCalibration) => <Text size="sm">{row.calibration_date ?? "—"}</Text> },
     { key: "next_calibration_date", label: "Next", render: (row: LabCalibration) => <Text size="sm">{row.next_calibration_date ?? "—"}</Text> },
-    { key: "is_passed", label: "Passed", render: (row: LabCalibration) => row.is_passed ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_passed", label: "Passed", render: (row: LabCalibration) => row.is_passed ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
   ];
 
   return (
@@ -1485,7 +1485,7 @@ function OutsourcedTab() {
     { key: "external_lab_name", label: "External Lab", render: (row: LabOutsourcedOrder) => <Text fw={500}>{row.external_lab_name}</Text> },
     {
       key: "status", label: "Status", render: (row: LabOutsourcedOrder) => (
-        <Badge color={outsourceStatusColors[row.status] ?? "gray"} variant="light" size="sm">
+        <Badge color={outsourceStatusColors[row.status] ?? "slate"} variant="light" size="sm">
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -1502,7 +1502,7 @@ function OutsourcedTab() {
             </Button>
           )}
           {row.status === "sent" && (
-            <Button size="xs" variant="light" color="green" onClick={() => updateMutation.mutate({ id: row.id, status: "result_received" })}>
+            <Button size="xs" variant="light" color="success" onClick={() => updateMutation.mutate({ id: row.id, status: "result_received" })}>
               Result Received
             </Button>
           )}
@@ -1543,20 +1543,20 @@ function OutsourcedTab() {
 // ══════════════════════════════════════════════════════════
 
 const homeCollectionStatusColors: Record<string, string> = {
-  scheduled: "blue",
-  assigned: "cyan",
+  scheduled: "primary",
+  assigned: "info",
   in_transit: "orange",
-  arrived: "yellow",
-  collected: "green",
+  arrived: "warning",
+  collected: "success",
   returned_to_lab: "teal",
-  cancelled: "red",
+  cancelled: "danger",
 };
 
 const archiveStatusColors: Record<string, string> = {
-  stored: "blue",
-  retrieved: "green",
-  discarded: "gray",
-  expired: "red",
+  stored: "primary",
+  retrieved: "success",
+  discarded: "slate",
+  expired: "danger",
 };
 
 function SampleManagementTab() {
@@ -1610,7 +1610,7 @@ function HomeCollectionsSection() {
     { key: "city", label: "City", render: (row: LabHomeCollection) => <Text size="sm">{row.city ?? "—"}</Text> },
     {
       key: "status", label: "Status", render: (row: LabHomeCollection) => (
-        <Badge color={homeCollectionStatusColors[row.status] ?? "gray"} variant="light" size="sm">
+        <Badge color={homeCollectionStatusColors[row.status] ?? "slate"} variant="light" size="sm">
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -1623,7 +1623,7 @@ function HomeCollectionsSection() {
       {stats.length > 0 && (
         <Group gap="md" mb="xs">
           {stats.map((s: HomeCollectionStatsRow) => (
-            <Badge key={s.status} color={homeCollectionStatusColors[s.status] ?? "gray"} variant="light">
+            <Badge key={s.status} color={homeCollectionStatusColors[s.status] ?? "slate"} variant="light">
               {s.status.replace(/_/g, " ")}: {s.count}
             </Badge>
           ))}
@@ -1681,7 +1681,7 @@ function CollectionCentersSection() {
     { key: "center_type", label: "Type", render: (row: LabCollectionCenter) => <Badge variant="light" size="sm">{row.center_type}</Badge> },
     { key: "city", label: "City", render: (row: LabCollectionCenter) => <Text size="sm">{row.city ?? "—"}</Text> },
     { key: "contact_person", label: "Contact", render: (row: LabCollectionCenter) => <Text size="sm">{row.contact_person ?? "—"}</Text> },
-    { key: "is_active", label: "Active", render: (row: LabCollectionCenter) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_active", label: "Active", render: (row: LabCollectionCenter) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
   ];
 
   return (
@@ -1742,7 +1742,7 @@ function SampleArchiveSection() {
     { key: "storage_location", label: "Location", render: (row: LabSampleArchive) => <Text size="sm">{row.storage_location ?? "—"}</Text> },
     {
       key: "status", label: "Status", render: (row: LabSampleArchive) => (
-        <Badge color={archiveStatusColors[row.status] ?? "gray"} variant="light" size="sm">{row.status}</Badge>
+        <Badge color={archiveStatusColors[row.status] ?? "slate"} variant="light" size="sm">{row.status}</Badge>
       ),
     },
     { key: "stored_at", label: "Stored", render: (row: LabSampleArchive) => <Text size="sm">{row.stored_at ? new Date(row.stored_at).toLocaleDateString() : "—"}</Text> },
@@ -1780,10 +1780,10 @@ function SampleArchiveSection() {
 // ══════════════════════════════════════════════════════════
 
 const eqasColors: Record<string, string> = {
-  acceptable: "green",
-  marginal: "yellow",
-  unacceptable: "red",
-  pending: "gray",
+  acceptable: "success",
+  marginal: "warning",
+  unacceptable: "danger",
+  pending: "slate",
 };
 
 function EqasSection() {
@@ -1814,7 +1814,7 @@ function EqasSection() {
     { key: "reported_value", label: "Reported", render: (row: LabEqasResult) => <Text size="sm">{row.reported_value ?? "—"}</Text> },
     {
       key: "evaluation", label: "Evaluation", render: (row: LabEqasResult) => (
-        <Badge color={eqasColors[row.evaluation] ?? "gray"} variant="light" size="sm">{row.evaluation}</Badge>
+        <Badge color={eqasColors[row.evaluation] ?? "slate"} variant="light" size="sm">{row.evaluation}</Badge>
       ),
     },
     { key: "z_score", label: "Z-Score", render: (row: LabEqasResult) => <Text size="sm">{row.z_score ?? "—"}</Text> },
@@ -1882,7 +1882,7 @@ function ProficiencyTestingSection() {
     { key: "range", label: "Range", render: (row: LabProficiencyTest) => <Text size="sm">{row.acceptable_range_low != null && row.acceptable_range_high != null ? `${row.acceptable_range_low}–${row.acceptable_range_high}` : "—"}</Text> },
     {
       key: "is_acceptable", label: "Result", render: (row: LabProficiencyTest) => row.is_acceptable != null ? (
-        <Badge color={row.is_acceptable ? "green" : "red"} variant="light" size="sm">{row.is_acceptable ? "Pass" : "Fail"}</Badge>
+        <Badge color={row.is_acceptable ? "success" : "danger"} variant="light" size="sm">{row.is_acceptable ? "Pass" : "Fail"}</Badge>
       ) : <Text size="sm" c="dimmed">Pending</Text>,
     },
   ];
@@ -1944,7 +1944,7 @@ function NablDocumentsSection() {
     { key: "version", label: "Version", render: (row: LabNablDocument) => <Badge variant="light" size="sm">{row.version ?? "—"}</Badge> },
     { key: "effective_date", label: "Effective", render: (row: LabNablDocument) => <Text size="sm">{row.effective_date ?? "—"}</Text> },
     { key: "review_date", label: "Review", render: (row: LabNablDocument) => <Text size="sm">{row.review_date ?? "—"}</Text> },
-    { key: "is_current", label: "Current", render: (row: LabNablDocument) => row.is_current ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_current", label: "Current", render: (row: LabNablDocument) => row.is_current ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
   ];
 
   return (
@@ -1990,15 +1990,15 @@ function ReagentConsumptionSection() {
       key: "below_reorder", label: "Status", render: (row: ReagentConsumptionRow) => {
         if (row.reorder_level == null || row.quantity == null) return <Text size="sm" c="dimmed">—</Text>;
         return row.quantity <= row.reorder_level
-          ? <Badge color="red" variant="light" size="sm">Below Reorder</Badge>
-          : <Badge color="green" variant="light" size="sm">OK</Badge>;
+          ? <Badge color="danger" variant="light" size="sm">Below Reorder</Badge>
+          : <Badge color="success" variant="light" size="sm">OK</Badge>;
       },
     },
     {
       key: "expiry_date", label: "Expiry", render: (row: ReagentConsumptionRow) => {
         if (!row.expiry_date) return <Text size="sm">—</Text>;
         const isExpired = new Date(row.expiry_date) < new Date();
-        return <Badge color={isExpired ? "red" : "green"} variant="light" size="sm">{row.expiry_date}</Badge>;
+        return <Badge color={isExpired ? "danger" : "success"} variant="light" size="sm">{row.expiry_date}</Badge>;
       },
     },
   ];
@@ -2033,7 +2033,7 @@ function TatAnalyticsSection() {
     },
     {
       key: "p95_tat", label: "P95 TAT (hrs)", render: (row: LabTatAnalyticsRow) => (
-        <Text size="sm" c={row.p95_tat_minutes != null && row.p95_tat_minutes > 1440 ? "red" : undefined}>
+        <Text size="sm" c={row.p95_tat_minutes != null && row.p95_tat_minutes > 1440 ? "danger" : undefined}>
           {row.p95_tat_minutes != null ? (row.p95_tat_minutes / 60).toFixed(1) : "---"}
         </Text>
       ),
@@ -2041,7 +2041,7 @@ function TatAnalyticsSection() {
     {
       key: "within_sla", label: "Within SLA", render: (row: LabTatAnalyticsRow) => {
         const rate = row.total_orders > 0 ? ((row.within_sla / row.total_orders) * 100).toFixed(1) : "0.0";
-        const color = Number(rate) >= 90 ? "green" : Number(rate) >= 70 ? "yellow" : "red";
+        const color = Number(rate) >= 90 ? "success" : Number(rate) >= 70 ? "warning" : "danger";
         return <Badge color={color} variant="light" size="sm">{rate}% ({row.within_sla}/{row.total_orders})</Badge>;
       },
     },
@@ -2099,7 +2099,7 @@ function HistopathSection() {
       queryClient.invalidateQueries({ queryKey: ["lab-histopath"] });
       setShowForm(false);
       setForm({});
-      notifications.show({ title: "Report created", message: "Histopathology report saved", color: "green" });
+      notifications.show({ title: "Report created", message: "Histopathology report saved", color: "success" });
     },
   });
 
@@ -2166,7 +2166,7 @@ function CytologySection() {
       queryClient.invalidateQueries({ queryKey: ["lab-cytology"] });
       setShowForm(false);
       setForm({});
-      notifications.show({ title: "Report created", message: "Cytology report saved", color: "green" });
+      notifications.show({ title: "Report created", message: "Cytology report saved", color: "success" });
     },
   });
 
@@ -2248,7 +2248,7 @@ function MolecularSection() {
       queryClient.invalidateQueries({ queryKey: ["lab-molecular"] });
       setShowForm(false);
       setForm({});
-      notifications.show({ title: "Report created", message: "Molecular report saved", color: "green" });
+      notifications.show({ title: "Report created", message: "Molecular report saved", color: "success" });
     },
   });
 
@@ -2346,7 +2346,7 @@ function B2bClientsSection() {
     { key: "contact_person", label: "Contact", render: (row: LabB2bClient) => <Text size="sm">{row.contact_person ?? "—"}</Text> },
     { key: "credit_limit", label: "Credit Limit", render: (row: LabB2bClient) => <Text size="sm">{row.credit_limit != null ? `₹${row.credit_limit}` : "—"}</Text> },
     { key: "payment_terms_days", label: "Terms", render: (row: LabB2bClient) => <Text size="sm">{row.payment_terms_days} days</Text> },
-    { key: "is_active", label: "Active", render: (row: LabB2bClient) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_active", label: "Active", render: (row: LabB2bClient) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
   ];
 
   return (

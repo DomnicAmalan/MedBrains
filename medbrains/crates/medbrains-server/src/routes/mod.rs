@@ -1,5 +1,7 @@
 pub mod admin;
 pub mod admin_forms;
+pub mod ambulance;
+pub mod bedside_portal;
 pub mod analytics;
 pub mod appointments;
 pub mod audit;
@@ -10,6 +12,7 @@ pub mod bme;
 pub mod camp;
 pub mod care_view;
 pub mod command_center;
+pub mod communications;
 pub mod case_mgmt;
 pub mod chronic_care;
 pub mod cds;
@@ -40,6 +43,9 @@ pub mod onboarding;
 pub mod opd;
 pub mod order_sets;
 pub mod patients;
+pub mod print_data;
+pub mod print_data_billing;
+pub mod print_data_clinical;
 pub mod pharmacy;
 pub mod procurement;
 pub mod quality;
@@ -768,6 +774,10 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/api/opd/encounters/{id}/prescriptions",
             get(opd::list_prescriptions).post(opd::create_prescription),
+        )
+        .route(
+            "/api/opd/prescriptions/{id}",
+            get(opd::get_prescription),
         )
         .route(
             "/api/opd/prescription-templates",
@@ -2768,6 +2778,51 @@ pub fn build_router(state: AppState) -> Router {
             "/api/blood-bank/hemovigilance",
             get(blood_bank::get_hemovigilance_report),
         )
+        // ── Blood Bank Phase 2 ────────────────────────────
+        .route(
+            "/api/blood-bank/recruitment",
+            get(blood_bank::list_campaigns).post(blood_bank::create_campaign),
+        )
+        .route(
+            "/api/blood-bank/recruitment/{id}",
+            put(blood_bank::update_campaign),
+        )
+        .route(
+            "/api/blood-bank/cold-chain/devices",
+            get(blood_bank::list_devices).post(blood_bank::create_device),
+        )
+        .route(
+            "/api/blood-bank/cold-chain/readings",
+            get(blood_bank::list_readings).post(blood_bank::add_reading),
+        )
+        .route(
+            "/api/blood-bank/returns",
+            post(blood_bank::create_return),
+        )
+        .route(
+            "/api/blood-bank/returns/{id}",
+            put(blood_bank::inspect_return),
+        )
+        .route(
+            "/api/blood-bank/msbos",
+            get(blood_bank::list_msbos).post(blood_bank::create_msbos),
+        )
+        .route(
+            "/api/blood-bank/lookback",
+            get(blood_bank::list_lookback).post(blood_bank::create_lookback),
+        )
+        .route(
+            "/api/blood-bank/lookback/{id}",
+            put(blood_bank::update_lookback),
+        )
+        .route(
+            "/api/blood-bank/billing",
+            get(blood_bank::list_billing).post(blood_bank::create_billing),
+        )
+        .route(
+            "/api/blood-bank/sbtc-report",
+            get(blood_bank::get_sbtc_report),
+        )
         // ── CSSD ──────────────────────────────────────────
         .route(
             "/api/cssd/instruments",
@@ -3415,6 +3470,173 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/api/camp/camps/{id}/report",
             get(camp::camp_report),
+        )
+        // ── Ambulance Fleet Management ────────────────────────
+        .route(
+            "/api/ambulance/fleet",
+            get(ambulance::list_ambulances).post(ambulance::create_ambulance),
+        )
+        .route(
+            "/api/ambulance/fleet/{id}",
+            get(ambulance::get_ambulance).put(ambulance::update_ambulance),
+        )
+        .route(
+            "/api/ambulance/fleet/{id}/location",
+            put(ambulance::update_ambulance_location),
+        )
+        .route(
+            "/api/ambulance/drivers",
+            get(ambulance::list_drivers).post(ambulance::create_driver),
+        )
+        .route(
+            "/api/ambulance/drivers/{id}",
+            put(ambulance::update_driver),
+        )
+        .route(
+            "/api/ambulance/trips",
+            get(ambulance::list_trips).post(ambulance::create_trip),
+        )
+        .route(
+            "/api/ambulance/trips/{id}",
+            get(ambulance::get_trip).put(ambulance::update_trip),
+        )
+        .route(
+            "/api/ambulance/trips/{id}/status",
+            put(ambulance::update_trip_status),
+        )
+        .route(
+            "/api/ambulance/trips/{trip_id}/logs",
+            get(ambulance::list_trip_logs).post(ambulance::add_trip_log),
+        )
+        .route(
+            "/api/ambulance/maintenance",
+            get(ambulance::list_maintenance).post(ambulance::create_maintenance),
+        )
+        .route(
+            "/api/ambulance/maintenance/{id}",
+            put(ambulance::update_maintenance),
+        )
+        // ── Bedside Portal ────────────────────────────────────
+        .route(
+            "/api/bedside/sessions",
+            get(bedside_portal::list_sessions).post(bedside_portal::create_session),
+        )
+        .route(
+            "/api/bedside/sessions/{id}/end",
+            put(bedside_portal::end_session),
+        )
+        .route(
+            "/api/bedside/{admission_id}/schedule",
+            get(bedside_portal::get_daily_schedule),
+        )
+        .route(
+            "/api/bedside/{admission_id}/medications",
+            get(bedside_portal::get_medications),
+        )
+        .route(
+            "/api/bedside/{admission_id}/vitals",
+            get(bedside_portal::get_vitals),
+        )
+        .route(
+            "/api/bedside/{admission_id}/lab-results",
+            get(bedside_portal::get_lab_results),
+        )
+        .route(
+            "/api/bedside/{admission_id}/diet-order",
+            get(bedside_portal::get_diet_order),
+        )
+        .route(
+            "/api/bedside/{admission_id}/nurse-request",
+            post(bedside_portal::create_nurse_request),
+        )
+        .route(
+            "/api/bedside/{admission_id}/nurse-requests",
+            get(bedside_portal::list_nurse_requests),
+        )
+        .route(
+            "/api/bedside/nurse-requests/{id}/status",
+            put(bedside_portal::update_request_status),
+        )
+        .route(
+            "/api/bedside/videos",
+            get(bedside_portal::list_videos).post(bedside_portal::create_video),
+        )
+        .route(
+            "/api/bedside/videos/{id}",
+            put(bedside_portal::update_video),
+        )
+        .route(
+            "/api/bedside/{admission_id}/video-view",
+            post(bedside_portal::record_video_view),
+        )
+        .route(
+            "/api/bedside/{admission_id}/feedback",
+            post(bedside_portal::submit_feedback).get(bedside_portal::list_feedback),
+        )
+        // ── Communication Hub ─────────────────────────────────
+        .route(
+            "/api/communications/templates",
+            get(communications::list_templates).post(communications::create_template),
+        )
+        .route(
+            "/api/communications/templates/{id}",
+            put(communications::update_template),
+        )
+        .route(
+            "/api/communications/messages",
+            get(communications::list_messages).post(communications::create_message),
+        )
+        .route(
+            "/api/communications/messages/{id}",
+            get(communications::get_message),
+        )
+        .route(
+            "/api/communications/messages/{id}/status",
+            put(communications::update_message_status),
+        )
+        .route(
+            "/api/communications/clinical",
+            get(communications::list_clinical_messages).post(communications::create_clinical_message),
+        )
+        .route(
+            "/api/communications/clinical/{id}",
+            get(communications::get_clinical_message),
+        )
+        .route(
+            "/api/communications/clinical/{id}/acknowledge",
+            put(communications::acknowledge_clinical_message),
+        )
+        .route(
+            "/api/communications/alerts",
+            get(communications::list_critical_alerts).post(communications::create_critical_alert),
+        )
+        .route(
+            "/api/communications/alerts/{id}/acknowledge",
+            put(communications::acknowledge_alert),
+        )
+        .route(
+            "/api/communications/alerts/{id}/resolve",
+            put(communications::resolve_alert),
+        )
+        .route(
+            "/api/communications/complaints",
+            get(communications::list_complaints).post(communications::create_complaint),
+        )
+        .route(
+            "/api/communications/complaints/{id}",
+            put(communications::update_complaint),
+        )
+        .route(
+            "/api/communications/complaints/{id}/resolve",
+            put(communications::resolve_complaint),
+        )
+        .route(
+            "/api/communications/feedback",
+            get(communications::list_feedback).post(communications::create_feedback),
+        )
+        .route(
+            "/api/communications/feedback/stats",
+            get(communications::get_feedback_stats),
         )
         // ── Command Center ───────────────────────────────────
         .route(
@@ -4486,6 +4708,60 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/api/analytics/export",
             get(analytics::export_csv),
+        )
+        // ── Print Data (clinical) ─────────────────────────────
+        .route(
+            "/api/print-data/prescription/{encounter_id}",
+            get(print_data::get_prescription_print_data),
+        )
+        .route(
+            "/api/print-data/lab-report/{order_id}",
+            get(print_data::get_lab_report_print_data),
+        )
+        .route(
+            "/api/print-data/radiology-report/{order_id}",
+            get(print_data::get_radiology_report_print_data),
+        )
+        .route(
+            "/api/print-data/patient-card/{patient_id}",
+            get(print_data::get_patient_card_print_data),
+        )
+        .route(
+            "/api/print-data/wristband/{admission_id}",
+            get(print_data_clinical::get_wristband_print_data),
+        )
+        .route(
+            "/api/print-data/appointment-slip/{appointment_id}",
+            get(print_data_clinical::get_appointment_slip_print_data),
+        )
+        .route(
+            "/api/print-data/death-certificate/{admission_id}",
+            get(print_data_clinical::get_death_certificate_print_data),
+        )
+        .route(
+            "/api/print-data/discharge/{admission_id}",
+            get(print_data_clinical::get_discharge_print_data),
+        )
+        // ── Print Data (billing) ──────────────────────────────
+        .route(
+            "/api/print-data/receipt/{payment_id}",
+            get(print_data_billing::get_receipt_print_data),
+        )
+        .route(
+            "/api/print-data/estimate/{invoice_id}",
+            get(print_data_billing::get_estimate_print_data),
+        )
+        .route(
+            "/api/print-data/credit-note/{id}",
+            get(print_data_billing::get_credit_note_print_data),
+        )
+        .route(
+            "/api/print-data/tds-certificate/{id}",
+            get(print_data_billing::get_tds_certificate_print_data),
+        )
+        .route(
+            "/api/print-data/gst-invoice/{invoice_id}",
+            get(print_data_billing::get_gst_invoice_print_data),
         )
         // ── Audit Trail ────────────────────────────────────────
         .route(

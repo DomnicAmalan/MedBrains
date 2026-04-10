@@ -5,17 +5,17 @@ import { getConfigSummary, getDescriptor } from "../operationRegistry";
 import type { MappingOperationType } from "@medbrains/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  string: "blue",
+  string: "primary",
   array: "teal",
   number: "orange",
-  date: "grape",
-  conversion: "pink",
+  date: "violet",
+  conversion: "danger",
 };
 
 export function OperationNode({ data, selected }: NodeProps) {
   const nodeData = data as unknown as OperationNodeData;
   const desc = getDescriptor(nodeData.operation as MappingOperationType);
-  const color = CATEGORY_COLORS[desc?.category ?? nodeData.category] ?? "gray";
+  const color = CATEGORY_COLORS[desc?.category ?? nodeData.category] ?? "slate";
   const summary = getConfigSummary(
     nodeData.operation as MappingOperationType,
     nodeData.config,

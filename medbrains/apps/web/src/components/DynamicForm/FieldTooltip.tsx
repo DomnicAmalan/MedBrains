@@ -9,10 +9,10 @@ interface FieldTooltipProps {
 }
 
 const LEVEL_COLORS: Record<RequirementLevel, string> = {
-  mandatory: "red",
-  conditional: "yellow",
-  recommended: "blue",
-  optional: "gray",
+  mandatory: "danger",
+  conditional: "warning",
+  recommended: "primary",
+  optional: "slate",
 };
 
 export function FieldTooltip({ description, uiHint, clauses }: FieldTooltipProps) {
@@ -57,7 +57,7 @@ export function FieldTooltip({ description, uiHint, clauses }: FieldTooltipProps
       position="top-end"
       events={{ hover: true, focus: true, touch: true }}
     >
-      <ActionIcon variant="subtle" size="xs" color="gray">
+      <ActionIcon variant="subtle" size="xs" color="slate">
         <IconInfoCircle size={14} />
       </ActionIcon>
     </Tooltip>

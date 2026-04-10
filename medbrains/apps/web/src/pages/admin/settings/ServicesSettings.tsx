@@ -35,12 +35,12 @@ const SERVICE_TYPE_OPTIONS = [
 ];
 
 const SERVICE_TYPE_COLORS: Record<string, string> = {
-  consultation: "blue",
+  consultation: "primary",
   procedure: "violet",
   investigation: "orange",
   nursing: "teal",
-  diet: "green",
-  other: "gray",
+  diet: "success",
+  other: "slate",
 };
 
 type ServiceFormState = {
@@ -120,7 +120,7 @@ function ServiceModal({
       notifications.show({
         title: "Service created",
         message: "New service has been added successfully.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-services"] });
@@ -130,7 +130,7 @@ function ServiceModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -148,7 +148,7 @@ function ServiceModal({
       notifications.show({
         title: "Service updated",
         message: "Service has been updated successfully.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-services"] });
@@ -158,7 +158,7 @@ function ServiceModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -168,7 +168,7 @@ function ServiceModal({
       notifications.show({
         title: "Validation error",
         message: "Code and Name are required.",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -294,7 +294,7 @@ export function ServicesSettings() {
       notifications.show({
         title: "Service deleted",
         message: "Service has been removed successfully.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-services"] });
@@ -304,7 +304,7 @@ export function ServicesSettings() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -337,7 +337,7 @@ export function ServicesSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load services:{" "}
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
@@ -386,7 +386,7 @@ export function ServicesSettings() {
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={SERVICE_TYPE_COLORS[service.service_type] ?? "gray"}
+                    color={SERVICE_TYPE_COLORS[service.service_type] ?? "slate"}
                     variant="light"
                     size="sm"
                   >
@@ -407,7 +407,7 @@ export function ServicesSettings() {
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={service.is_active ? "green" : "red"}
+                    color={service.is_active ? "success" : "danger"}
                     variant="light"
                     size="sm"
                   >
@@ -418,14 +418,14 @@ export function ServicesSettings() {
                   <Group gap="xs" wrap="nowrap">
                     <ActionIcon
                       variant="subtle"
-                      color="blue"
+                      color="primary"
                       onClick={() => openEdit(service)}
                     >
                       <IconPencil size={16} />
                     </ActionIcon>
                     <ActionIcon
                       variant="subtle"
-                      color="red"
+                      color="danger"
                       onClick={() => setDeleteTarget(service)}
                     >
                       <IconTrash size={16} />
@@ -471,7 +471,7 @@ export function ServicesSettings() {
               Cancel
             </Button>
             <Button
-              color="red"
+              color="danger"
               onClick={confirmDelete}
               loading={deleteMutation.isPending}
             >

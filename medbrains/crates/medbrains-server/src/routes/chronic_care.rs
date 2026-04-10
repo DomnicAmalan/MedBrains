@@ -542,7 +542,7 @@ pub async fn list_enrollments(
 
     let rows = sqlx::query_as::<_, ChronicEnrollmentRow>(
         "SELECT ce.id, ce.patient_id, ce.program_id, \
-         p.full_name AS patient_name, p.uhid, \
+         (p.first_name || ' ' || p.last_name) AS patient_name, p.uhid, \
          cp.name AS program_name, cp.program_type::text AS program_type, \
          ce.enrollment_date, ce.expected_end_date, ce.actual_end_date, \
          ce.status::text AS status, ce.status_reason, \
@@ -555,7 +555,7 @@ pub async fn list_enrollments(
          WHERE ($1::text IS NULL OR cp.program_type::text = $1) \
          AND ($2::text IS NULL OR ce.status::text = $2) \
          AND ($3::uuid IS NULL OR ce.primary_doctor_id = $3) \
-         AND ($4::text IS NULL OR p.full_name ILIKE '%' || $4 || '%' OR p.uhid ILIKE '%' || $4 || '%') \
+         AND ($4::text IS NULL OR (p.first_name || ' ' || p.last_name) ILIKE '%' || $4 || '%' OR p.uhid ILIKE '%' || $4 || '%') \
          ORDER BY ce.created_at DESC LIMIT 200",
     )
     .bind(&params.program_type)
@@ -581,7 +581,7 @@ pub async fn patient_enrollments(
 
     let rows = sqlx::query_as::<_, ChronicEnrollmentRow>(
         "SELECT ce.id, ce.patient_id, ce.program_id, \
-         p.full_name AS patient_name, p.uhid, \
+         (p.first_name || ' ' || p.last_name) AS patient_name, p.uhid, \
          cp.name AS program_name, cp.program_type::text AS program_type, \
          ce.enrollment_date, ce.expected_end_date, ce.actual_end_date, \
          ce.status::text AS status, ce.status_reason, \

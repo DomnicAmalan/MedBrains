@@ -92,13 +92,13 @@ export function PreviewPanel({ mappings, sampleData }: PreviewPanelProps) {
               </Text>
             )}
           </Group>
-          <Badge size="xs" variant="light" color="gray">
+          <Badge size="xs" variant="light" color="slate">
             {collapsed ? "expand" : "collapse"}
           </Badge>
         </Group>
       </UnstyledButton>
 
-      <Collapse in={!collapsed}>
+      <Collapse expanded={!collapsed}>
         <Box px="md" pb="sm" style={{ maxHeight: 200, overflow: "auto" }}>
           {!hasSampleData ? (
             <Text size="xs" c="dimmed" ta="center" py="md">
@@ -151,7 +151,7 @@ export function PreviewPanel({ mappings, sampleData }: PreviewPanelProps) {
                                 key={step.stepId}
                                 size="xs"
                                 variant="light"
-                                color={step.error ? "red" : "blue"}
+                                color={step.error ? "danger" : "primary"}
                               >
                                 {step.operation}
                               </Badge>
@@ -172,7 +172,7 @@ export function PreviewPanel({ mappings, sampleData }: PreviewPanelProps) {
                         <Badge
                           size="xs"
                           variant="light"
-                          color={result.error ? "red" : "green"}
+                          color={result.error ? "danger" : "success"}
                         >
                           {result.error ? "error" : "ok"}
                         </Badge>

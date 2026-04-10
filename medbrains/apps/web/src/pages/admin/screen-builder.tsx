@@ -229,7 +229,7 @@ function ScreenListPanel({ onSelect }: { onSelect: (id: string) => void }) {
               <Table.Td>
                 <Badge
                   size="sm"
-                  color={s.status === "active" ? "green" : s.status === "draft" ? "yellow" : "gray"}
+                  color={s.status === "active" ? "success" : s.status === "draft" ? "warning" : "slate"}
                 >
                   {s.status}
                 </Badge>
@@ -262,12 +262,12 @@ function CreateScreenModal({ opened, onClose }: { opened: boolean; onClose: () =
       notifications.show({
         title: "Screen created",
         message: `Screen "${form.name}" created as draft.`,
-        color: "green",
+        color: "success",
       });
       onClose();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create screen.", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create screen.", color: "danger" });
     },
   });
 
@@ -368,7 +368,7 @@ function ScreenVersionHistoryDrawer({
                 <Table.Td>
                   v{v.version}
                   {v.version === currentVersion && (
-                    <Badge size="xs" ml={4} variant="light" color="blue">current</Badge>
+                    <Badge size="xs" ml={4} variant="light" color="primary">current</Badge>
                   )}
                 </Table.Td>
                 <Table.Td>{v.name}</Table.Td>
@@ -538,13 +538,13 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
       notifications.show({
         title: "Screen saved",
         message: `${state.screen.name} has been saved`,
-        color: "green",
+        color: "success",
       });
     } catch (err) {
       notifications.show({
         title: "Save failed",
         message: err instanceof Error ? err.message : "Unknown error",
-        color: "red",
+        color: "danger",
       });
     } finally {
       setSaving(false);
@@ -559,7 +559,7 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
       notifications.show({
         title: "Screen published",
         message: "Screen is now active and locked.",
-        color: "green",
+        color: "success",
       });
       hasLoadedRef.current = null;
       queryClient.invalidateQueries({ queryKey: ["admin-screen", screenId] });
@@ -569,7 +569,7 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
       setPublishSummary("");
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Publish failed", message: err.message, color: "red" });
+      notifications.show({ title: "Publish failed", message: err.message, color: "danger" });
     },
   });
 
@@ -579,7 +579,7 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
       notifications.show({
         title: "New version created",
         message: "Screen is now a draft. You can edit it.",
-        color: "blue",
+        color: "primary",
       });
       hasLoadedRef.current = null;
       queryClient.invalidateQueries({ queryKey: ["admin-screen", screenId] });
@@ -587,7 +587,7 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
       queryClient.invalidateQueries({ queryKey: ["admin-screens"] });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -709,7 +709,7 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
             disabled={isLocked}
           />
           {isDirty && (
-            <Badge size="xs" variant="dot" color="yellow">
+            <Badge size="xs" variant="dot" color="warning">
               Unsaved
             </Badge>
           )}
@@ -767,7 +767,7 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
           {isLocked ? (
             <Button
               size="compact-sm"
-              color="blue"
+              color="primary"
               leftSection={<IconGitBranch size={14} />}
               onClick={() => newVersionMutation.mutate()}
               loading={newVersionMutation.isPending}
@@ -787,7 +787,7 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
               </Button>
               <Button
                 size="compact-sm"
-                color="green"
+                color="success"
                 leftSection={<IconUpload size={14} />}
                 onClick={publishModalHandlers.open}
                 disabled={isDirty}
@@ -866,7 +866,7 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
       {/* Status Bar */}
       <div className={classes.statusBar}>
         <div className={classes.statusItem}>
-          <Badge size="xs" variant="light" color={screen.status === "draft" ? "yellow" : "green"}>
+          <Badge size="xs" variant="light" color={screen.status === "draft" ? "warning" : "success"}>
             v{screen.version} {screen.status.toUpperCase()}
           </Badge>
           {isLocked && <IconLock size={12} color="var(--mantine-color-green-6)" style={{ marginLeft: 4 }} />}
@@ -909,7 +909,7 @@ function ScreenBuilderEditor({ screenId, onBack }: { screenId: string; onBack: (
           <Group justify="flex-end">
             <Button variant="light" onClick={publishModalHandlers.close}>Cancel</Button>
             <Button
-              color="green"
+              color="success"
               leftSection={<IconUpload size={14} />}
               loading={publishMutation.isPending}
               onClick={() => publishMutation.mutate()}

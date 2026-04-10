@@ -15,7 +15,7 @@ import { DataTable, PageHeader } from "../../components";
 import { useRequirePermission } from "../../hooks/useRequirePermission";
 import type { Column } from "../../components/DataTable";
 
-const RISK_COLORS: Record<string, string> = { low: "green", moderate: "yellow", high: "orange", very_high: "red" };
+const RISK_COLORS: Record<string, string> = { low: "success", moderate: "warning", high: "orange", very_high: "danger" };
 const RISK_CATEGORIES: { value: AncRiskCategory; label: string }[] = [
   { value: "low", label: "Low" }, { value: "moderate", label: "Moderate" },
   { value: "high", label: "High" }, { value: "very_high", label: "Very High" },
@@ -41,7 +41,7 @@ export function MaternityPage() {
 
   const createReg = useMutation({
     mutationFn: (data: CreateMaternityRegistrationRequest) => api.createMaternityRegistration(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["maternity-regs"] }); regHandlers.close(); notifications.show({ title: "Created", message: "Maternity registration created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["maternity-regs"] }); regHandlers.close(); notifications.show({ title: "Created", message: "Maternity registration created", color: "success" }); },
   });
 
   const regCols: Column<MaternityRegistration>[] = [
@@ -49,8 +49,8 @@ export function MaternityPage() {
     { key: "patient_id", label: "Patient", render: (r) => <Text size="sm">{r.patient_id.slice(0, 8)}</Text> },
     { key: "edd", label: "EDD", render: (r) => <Text size="sm">{r.edd_date ? new Date(r.edd_date).toLocaleDateString() : "—"}</Text> },
     { key: "gravida", label: "G/P/A/L", render: (r) => <Text size="sm">{r.gravida}/{r.para}/{r.abortion}/{r.living}</Text> },
-    { key: "risk", label: "Risk", render: (r) => <Badge color={RISK_COLORS[r.risk_category] ?? "gray"}>{r.risk_category.replace(/_/g, " ")}</Badge> },
-    { key: "high_risk", label: "High Risk", render: (r) => r.is_high_risk ? <Badge color="red">HIGH RISK</Badge> : <Text size="sm">No</Text> },
+    { key: "risk", label: "Risk", render: (r) => <Badge color={RISK_COLORS[r.risk_category] ?? "slate"}>{r.risk_category.replace(/_/g, " ")}</Badge> },
+    { key: "high_risk", label: "High Risk", render: (r) => r.is_high_risk ? <Badge color="danger">HIGH RISK</Badge> : <Text size="sm">No</Text> },
     { key: "blood", label: "Blood Group", render: (r) => <Text size="sm">{r.blood_group ?? "—"}</Text> },
     {
       key: "actions", label: "", render: (r) => (
@@ -68,7 +68,7 @@ export function MaternityPage() {
     { key: "bp", label: "BP", render: (r) => <Text size="sm">{r.bp_systolic && r.bp_diastolic ? `${r.bp_systolic}/${r.bp_diastolic}` : "—"}</Text> },
     { key: "fhr", label: "FHR", render: (r) => <Text size="sm">{r.fetal_heart_rate ?? "—"}</Text> },
     { key: "hb", label: "Hb", render: (r) => <Text size="sm">{r.hemoglobin ?? "—"}</Text> },
-    { key: "pcpndt", label: "PCPNDT Form F", render: (r) => r.pcpndt_form_f_filed ? <Badge color="green">Filed</Badge> : <Badge color="gray">No</Badge> },
+    { key: "pcpndt", label: "PCPNDT Form F", render: (r) => r.pcpndt_form_f_filed ? <Badge color="success">Filed</Badge> : <Badge color="slate">No</Badge> },
     { key: "date", label: "Date", render: (r) => <Text size="sm">{new Date(r.created_at).toLocaleDateString()}</Text> },
   ];
 
@@ -94,7 +94,7 @@ export function MaternityPage() {
     { key: "weight", label: "Weight (g)", render: (r) => <Text size="sm">{r.weight_gm}</Text> },
     { key: "apgar1", label: "Apgar 1m", render: (r) => <Text size="sm">{r.apgar_1min ?? "—"}</Text> },
     { key: "apgar5", label: "Apgar 5m", render: (r) => <Text size="sm">{r.apgar_5min ?? "—"}</Text> },
-    { key: "nicu", label: "NICU", render: (r) => r.nicu_admission_needed ? <Badge color="red">Yes</Badge> : <Text size="sm">No</Text> },
+    { key: "nicu", label: "NICU", render: (r) => r.nicu_admission_needed ? <Badge color="danger">Yes</Badge> : <Text size="sm">No</Text> },
     { key: "cert", label: "Birth Cert #", render: (r) => <Text size="sm">{r.birth_certificate_number ?? "—"}</Text> },
   ];
 

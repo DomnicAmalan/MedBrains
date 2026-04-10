@@ -31,7 +31,7 @@ export function WelcomeStep({ onNext }: Props) {
         </Text>
       </div>
 
-      <Alert variant="light" color="blue" title="Before you begin">
+      <Alert variant="light" color="primary" title="Before you begin">
         Make sure you have the following information ready:
       </Alert>
 

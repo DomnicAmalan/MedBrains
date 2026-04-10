@@ -4806,7 +4806,7 @@ pub async fn expected_discharges(
 
     let rows = sqlx::query_as::<_, ExpectedDischargeRow>(
         "SELECT a.id AS admission_id, a.patient_id, \
-         p.full_name AS patient_name, p.uhid, \
+         (p.first_name || ' ' || p.last_name) AS patient_name, p.uhid, \
          a.bed_id, a.department_id, a.attending_doctor_id, \
          a.admitted_at, a.expected_discharge_date, \
          (a.expected_discharge_date - CURRENT_DATE)::int AS days_until_discharge \

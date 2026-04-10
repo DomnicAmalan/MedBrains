@@ -35,7 +35,7 @@ export function ActionCard({ action, isLocked }: { action: ActionNode; isLocked:
           <Tooltip label="Delete">
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               size="xs"
               onClick={(e) => {
                 e.stopPropagation();

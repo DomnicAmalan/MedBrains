@@ -20,11 +20,11 @@ interface StepConfigPopoverProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  string: "blue",
+  string: "primary",
   array: "teal",
   number: "orange",
-  date: "grape",
-  conversion: "pink",
+  date: "violet",
+  conversion: "danger",
 };
 
 export function StepConfigPopover({
@@ -35,7 +35,7 @@ export function StepConfigPopover({
 }: StepConfigPopoverProps) {
   const [opened, setOpened] = useState(false);
   const descriptor = getDescriptor(step.operation);
-  const categoryColor = CATEGORY_COLORS[descriptor?.category ?? ""] ?? "gray";
+  const categoryColor = CATEGORY_COLORS[descriptor?.category ?? ""] ?? "slate";
 
   return (
     <Popover
@@ -64,7 +64,7 @@ export function StepConfigPopover({
             </Group>
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               size="xs"
               onClick={() => {
                 onDelete();

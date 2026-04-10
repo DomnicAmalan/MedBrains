@@ -77,7 +77,7 @@ export function SequencesSettings() {
       notifications.show({
         title: "Sequence created",
         message: `Sequence "${form.seq_type}" has been added.`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       closeModal();
@@ -86,7 +86,7 @@ export function SequencesSettings() {
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -101,7 +101,7 @@ export function SequencesSettings() {
       notifications.show({
         title: "Sequence updated",
         message: `Sequence "${form.seq_type}" has been updated.`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       closeModal();
@@ -110,7 +110,7 @@ export function SequencesSettings() {
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -124,7 +124,7 @@ export function SequencesSettings() {
       notifications.show({
         title: "Sequence deleted",
         message: `Sequence "${seqType}" has been removed.`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -132,7 +132,7 @@ export function SequencesSettings() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -208,7 +208,7 @@ export function SequencesSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load sequences: {error instanceof Error ? error.message : "Unknown error"}
         </Text>
       </Stack>
@@ -265,7 +265,7 @@ export function SequencesSettings() {
                 <Table.Td>{row.pad_width}</Table.Td>
                 <Table.Td>{row.current_val}</Table.Td>
                 <Table.Td>
-                  <Text size="sm" ff="monospace" c="blue">
+                  <Text size="sm" ff="monospace" c="primary">
                     {formatPreview(row.prefix, row.pad_width, row.current_val)}
                   </Text>
                 </Table.Td>
@@ -273,7 +273,7 @@ export function SequencesSettings() {
                   <Group gap="xs" wrap="nowrap">
                     <ActionIcon
                       variant="subtle"
-                      color="blue"
+                      color="primary"
                       onClick={() => openEditModal(row)}
                       title="Edit sequence"
                     >
@@ -281,7 +281,7 @@ export function SequencesSettings() {
                     </ActionIcon>
                     <ActionIcon
                       variant="subtle"
-                      color="red"
+                      color="danger"
                       onClick={() => handleDelete(row.seq_type)}
                       loading={deleteMutation.isPending}
                       title="Delete sequence"
@@ -333,7 +333,7 @@ export function SequencesSettings() {
 
           {form.prefix && (
             <Text size="sm" c="dimmed">
-              Preview: <Text span ff="monospace" c="blue">{formatPreview(form.prefix, form.pad_width, 1)}</Text>
+              Preview: <Text span ff="monospace" c="primary">{formatPreview(form.prefix, form.pad_width, 1)}</Text>
             </Text>
           )}
 

@@ -105,7 +105,7 @@ export function NodePropertyPanel() {
     return (
       <Box p="md">
         <Group gap="xs" mb="md">
-          <ThemeIcon variant="light" color="gray" size="sm">
+          <ThemeIcon variant="light" color="slate" size="sm">
             <IconSettings size={14} />
           </ThemeIcon>
           <Text size="xs" fw={700} tt="uppercase" c="dimmed">
@@ -154,7 +154,7 @@ export function NodePropertyPanel() {
   return (
     <Box p="md">
       <Group gap="xs" mb="md">
-        <ThemeIcon variant="light" color="gray" size="sm">
+        <ThemeIcon variant="light" color="slate" size="sm">
           <IconSettings size={14} />
         </ThemeIcon>
         <Text size="xs" fw={700} tt="uppercase" c="dimmed">
@@ -175,7 +175,7 @@ export function NodePropertyPanel() {
         <Group gap="sm" mb={6}>
           <ThemeIcon
             variant="light"
-            color={String(selectedNode.data.color ?? "gray")}
+            color={String(selectedNode.data.color ?? "slate")}
             size="md"
             radius="md"
           >
@@ -186,7 +186,7 @@ export function NodePropertyPanel() {
               {NODE_TYPE_LABELS[nodeType] ?? nodeType}
             </Text>
             {Boolean(selectedNode.data.templateCode) && (
-              <Badge size="xs" variant="outline" color="gray">
+              <Badge size="xs" variant="outline" color="slate">
                 {String(selectedNode.data.templateCode)}
               </Badge>
             )}
@@ -342,7 +342,7 @@ export function NodePropertyPanel() {
 
         <Button
           variant="light"
-          color="red"
+          color="danger"
           size="xs"
           fullWidth
           leftSection={<IconTrash size={14} />}

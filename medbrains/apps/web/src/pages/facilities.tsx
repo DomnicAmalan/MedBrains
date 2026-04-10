@@ -143,20 +143,20 @@ const WO_STATUSES = [
 
 function priorityColor(p: string) {
   switch (p) {
-    case "critical": return "red";
+    case "critical": return "danger";
     case "high": return "orange";
-    case "medium": return "blue";
+    case "medium": return "primary";
     default: return "gray";
   }
 }
 
 function woStatusColor(s: string) {
   switch (s) {
-    case "open": return "blue";
+    case "open": return "primary";
     case "assigned": return "cyan";
-    case "in_progress": return "yellow";
+    case "in_progress": return "warning";
     case "on_hold": return "orange";
-    case "completed": return "green";
+    case "completed": return "success";
     case "cancelled": return "gray";
     default: return "gray";
   }
@@ -223,7 +223,7 @@ function MgpsTab() {
     { key: "pressure_bar", label: "Pressure (bar)", render: (r) => <Text size="sm">{r.pressure_bar ?? "—"}</Text> },
     { key: "flow_lpm", label: "Flow (LPM)", render: (r) => <Text size="sm">{r.flow_lpm ?? "—"}</Text> },
     { key: "tank_level_percent", label: "Tank %", render: (r) => <Text size="sm">{r.tank_level_percent ?? "—"}</Text> },
-    { key: "is_alarm", label: "Alarm", render: (r) => r.is_alarm ? <Badge color="red">ALARM</Badge> : <Badge color="green">OK</Badge> },
+    { key: "is_alarm", label: "Alarm", render: (r) => r.is_alarm ? <Badge color="danger">ALARM</Badge> : <Badge color="success">OK</Badge> },
     { key: "reading_at", label: "Time", render: (r) => <Text size="sm">{new Date(r.reading_at).toLocaleString()}</Text> },
   ];
 
@@ -232,7 +232,7 @@ function MgpsTab() {
     { key: "peso_license_number", label: "PESO License", render: (r) => <Text size="sm">{r.peso_license_number ?? "—"}</Text> },
     { key: "peso_valid_to", label: "PESO Valid To", render: (r) => <Text size="sm">{r.peso_valid_to ?? "—"}</Text> },
     { key: "drug_license_number", label: "Drug License", render: (r) => <Text size="sm">{r.drug_license_number ?? "—"}</Text> },
-    { key: "compliance_status", label: "Status", render: (r) => <Badge color={r.compliance_status === "compliant" ? "green" : "red"}>{r.compliance_status ?? "—"}</Badge> },
+    { key: "compliance_status", label: "Status", render: (r) => <Badge color={r.compliance_status === "compliant" ? "success" : "danger"}>{r.compliance_status ?? "—"}</Badge> },
   ];
 
   return (
@@ -310,31 +310,31 @@ function FireSafetyTab() {
     { key: "name", label: "Name", render: (r) => <Text size="sm" fw={500}>{r.name}</Text> },
     { key: "equipment_type", label: "Type", render: (r) => <Badge variant="light">{r.equipment_type.replace(/_/g, " ")}</Badge> },
     { key: "serial_number", label: "Serial", render: (r) => <Text size="sm">{r.serial_number ?? "—"}</Text> },
-    { key: "expiry_date", label: "Expiry", render: (r) => <Text size="sm" c={r.expiry_date && new Date(r.expiry_date) < new Date() ? "red" : undefined}>{r.expiry_date ?? "—"}</Text> },
-    { key: "is_active", label: "Active", render: (r) => <Badge color={r.is_active ? "green" : "gray"}>{r.is_active ? "Yes" : "No"}</Badge> },
+    { key: "expiry_date", label: "Expiry", render: (r) => <Text size="sm" c={r.expiry_date && new Date(r.expiry_date) < new Date() ? "danger" : undefined}>{r.expiry_date ?? "—"}</Text> },
+    { key: "is_active", label: "Active", render: (r) => <Badge color={r.is_active ? "success" : "slate"}>{r.is_active ? "Yes" : "No"}</Badge> },
   ];
 
   const inspCols: Column<FmsFireInspection>[] = [
     { key: "inspection_date", label: "Date", render: (r) => <Text size="sm">{r.inspection_date}</Text> },
-    { key: "is_functional", label: "Functional", render: (r) => <Badge color={r.is_functional ? "green" : "red"}>{r.is_functional ? "OK" : "Failed"}</Badge> },
+    { key: "is_functional", label: "Functional", render: (r) => <Badge color={r.is_functional ? "success" : "danger"}>{r.is_functional ? "OK" : "Failed"}</Badge> },
     { key: "findings", label: "Findings", render: (r) => <Text size="sm" lineClamp={1}>{r.findings ?? "—"}</Text> },
     { key: "next_inspection_date", label: "Next Due", render: (r) => <Text size="sm">{r.next_inspection_date ?? "—"}</Text> },
   ];
 
   const drillCols: Column<FmsFireDrill>[] = [
-    { key: "drill_type", label: "Type", render: (r) => <Badge variant="light" color="red">{r.drill_type.replace(/_/g, " ")}</Badge> },
+    { key: "drill_type", label: "Type", render: (r) => <Badge variant="light" color="danger">{r.drill_type.replace(/_/g, " ")}</Badge> },
     { key: "drill_date", label: "Date", render: (r) => <Text size="sm">{r.drill_date}</Text> },
     { key: "duration_minutes", label: "Duration (min)", render: (r) => <Text size="sm">{r.duration_minutes ?? "—"}</Text> },
     { key: "participants_count", label: "Participants", render: (r) => <Text size="sm">{r.participants_count ?? "—"}</Text> },
     { key: "evacuation_time_seconds", label: "Evac Time (s)", render: (r) => <Text size="sm">{r.evacuation_time_seconds ?? "—"}</Text> },
-    { key: "next_drill_due", label: "Next Due", render: (r) => <Text size="sm" c={r.next_drill_due && new Date(r.next_drill_due) < new Date() ? "red" : undefined}>{r.next_drill_due ?? "—"}</Text> },
+    { key: "next_drill_due", label: "Next Due", render: (r) => <Text size="sm" c={r.next_drill_due && new Date(r.next_drill_due) < new Date() ? "danger" : undefined}>{r.next_drill_due ?? "—"}</Text> },
   ];
 
   const nocCols: Column<FmsFireNoc>[] = [
     { key: "noc_number", label: "NOC Number", render: (r) => <Text size="sm" fw={500}>{r.noc_number}</Text> },
     { key: "issuing_authority", label: "Authority", render: (r) => <Text size="sm">{r.issuing_authority ?? "—"}</Text> },
-    { key: "valid_to", label: "Valid To", render: (r) => <Text size="sm" c={r.valid_to && new Date(r.valid_to) < new Date() ? "red" : undefined}>{r.valid_to ?? "—"}</Text> },
-    { key: "is_active", label: "Active", render: (r) => <Badge color={r.is_active ? "green" : "gray"}>{r.is_active ? "Yes" : "No"}</Badge> },
+    { key: "valid_to", label: "Valid To", render: (r) => <Text size="sm" c={r.valid_to && new Date(r.valid_to) < new Date() ? "danger" : undefined}>{r.valid_to ?? "—"}</Text> },
+    { key: "is_active", label: "Active", render: (r) => <Badge color={r.is_active ? "success" : "slate"}>{r.is_active ? "Yes" : "No"}</Badge> },
   ];
 
   return (
@@ -350,7 +350,7 @@ function FireSafetyTab() {
 
       <Group justify="space-between" mt="lg">
         <Text fw={600} size="lg">Mock Drills</Text>
-        {canManage && <Button leftSection={<IconPlus size={16} />} onClick={openDrill} variant="light" color="red">Record Drill</Button>}
+        {canManage && <Button leftSection={<IconPlus size={16} />} onClick={openDrill} variant="light" color="danger">Record Drill</Button>}
       </Group>
       <DataTable columns={drillCols} data={drills.data ?? []} loading={drills.isLoading} rowKey={(r) => r.id} />
 
@@ -417,7 +417,7 @@ function WaterQualityTab() {
     { key: "test_type", label: "Test", render: (r) => <Text size="sm">{r.test_type}</Text> },
     { key: "parameter_name", label: "Parameter", render: (r) => <Text size="sm">{r.parameter_name}</Text> },
     { key: "result_value", label: "Result", render: (r) => <Text size="sm">{r.result_value ?? "—"} {r.unit ?? ""}</Text> },
-    { key: "is_within_limits", label: "Status", render: (r) => r.is_within_limits === null || r.is_within_limits === undefined ? <Badge color="gray">Pending</Badge> : r.is_within_limits ? <Badge color="green">Pass</Badge> : <Badge color="red">Fail</Badge> },
+    { key: "is_within_limits", label: "Status", render: (r) => r.is_within_limits === null || r.is_within_limits === undefined ? <Badge color="slate">Pending</Badge> : r.is_within_limits ? <Badge color="success">Pass</Badge> : <Badge color="danger">Fail</Badge> },
     { key: "sample_date", label: "Sampled", render: (r) => <Text size="sm">{r.sample_date}</Text> },
   ];
 
@@ -425,8 +425,8 @@ function WaterQualityTab() {
     { key: "schedule_type", label: "Type", render: (r) => <Text size="sm" fw={500}>{r.schedule_type}</Text> },
     { key: "frequency", label: "Frequency", render: (r) => <Text size="sm">{r.frequency}</Text> },
     { key: "last_completed_date", label: "Last Done", render: (r) => <Text size="sm">{r.last_completed_date ?? "—"}</Text> },
-    { key: "next_due_date", label: "Next Due", render: (r) => <Text size="sm" c={r.next_due_date && new Date(r.next_due_date) < new Date() ? "red" : undefined}>{r.next_due_date ?? "—"}</Text> },
-    { key: "is_active", label: "Active", render: (r) => <Badge color={r.is_active ? "green" : "gray"}>{r.is_active ? "Yes" : "No"}</Badge> },
+    { key: "next_due_date", label: "Next Due", render: (r) => <Text size="sm" c={r.next_due_date && new Date(r.next_due_date) < new Date() ? "danger" : undefined}>{r.next_due_date ?? "—"}</Text> },
+    { key: "is_active", label: "Active", render: (r) => <Badge color={r.is_active ? "success" : "slate"}>{r.is_active ? "Yes" : "No"}</Badge> },
   ];
 
   return (
@@ -497,7 +497,7 @@ function EnergyTab() {
     { key: "load_percent", label: "Load %", render: (r) => <Text size="sm">{r.load_percent ?? "—"}</Text> },
     { key: "fuel_level_percent", label: "Fuel %", render: (r) => <Text size="sm">{r.fuel_level_percent ?? "—"}</Text> },
     { key: "battery_health_percent", label: "Battery %", render: (r) => <Text size="sm">{r.battery_health_percent ?? "—"}</Text> },
-    { key: "is_alarm", label: "Alarm", render: (r) => r.is_alarm ? <Badge color="red">ALARM</Badge> : <Badge color="green">OK</Badge> },
+    { key: "is_alarm", label: "Alarm", render: (r) => r.is_alarm ? <Badge color="danger">ALARM</Badge> : <Badge color="success">OK</Badge> },
     { key: "reading_at", label: "Time", render: (r) => <Text size="sm">{new Date(r.reading_at).toLocaleString()}</Text> },
   ];
 
@@ -581,8 +581,8 @@ function EnergyAnalyticsView() {
                     data={bySourceChart}
                     dataKey="source"
                     series={[
-                      { name: "kWh", color: "yellow" },
-                      { name: "cost", color: "blue" },
+                      { name: "kWh", color: "warning" },
+                      { name: "cost", color: "primary" },
                     ]}
                   />
                 ) : (
@@ -602,7 +602,7 @@ function EnergyAnalyticsView() {
                     dataKey="month"
                     series={[
                       { name: "kWh", color: "orange" },
-                      { name: "cost", color: "green" },
+                      { name: "cost", color: "success" },
                     ]}
                   />
                 ) : (

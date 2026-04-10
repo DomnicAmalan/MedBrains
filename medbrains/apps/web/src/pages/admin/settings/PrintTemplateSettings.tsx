@@ -122,7 +122,7 @@ export function PrintTemplateSettings() {
       notifications.show({
         title: "Template saved",
         message: `${TEMPLATE_TYPES.find((t) => t.value === selectedType)?.label ?? selectedType} template has been updated.`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -130,7 +130,7 @@ export function PrintTemplateSettings() {
       notifications.show({
         title: "Save failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -164,7 +164,7 @@ export function PrintTemplateSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load print templates: {error instanceof Error ? error.message : "Unknown error"}
         </Text>
       </Stack>
@@ -186,7 +186,7 @@ export function PrintTemplateSettings() {
 
       <Divider />
 
-      <Grid gutter="xl">
+      <Grid gap="xl">
         {/* Left: Form Fields */}
         <Grid.Col span={{ base: 12, md: 7 }}>
           <Stack gap="md">
@@ -268,7 +268,7 @@ export function PrintTemplateSettings() {
             <Divider mt="sm" />
 
             <Text fw={600} size="lg">Margins (mm)</Text>
-            <Grid gutter="sm">
+            <Grid gap="sm">
               <Grid.Col span={3}>
                 <NumberInput label="Top" min={0} max={50} value={form.margin_top ?? 20} onChange={(v) => updateField("margin_top", v === "" ? 20 : Number(v))} />
               </Grid.Col>

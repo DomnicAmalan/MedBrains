@@ -224,9 +224,9 @@ function InlineActionConfig({ sidecar }: { sidecar: SidecarNode }) {
 
 const STATUS_COLORS: Record<string, string> = {
   active: "teal",
-  draft: "gray",
-  paused: "yellow",
-  archived: "red",
+  draft: "slate",
+  paused: "warning",
+  archived: "danger",
 };
 
 function PipelinePreview({ pipelineId }: { pipelineId: string }) {
@@ -243,7 +243,7 @@ function PipelinePreview({ pipelineId }: { pipelineId: string }) {
       <Text size="xs" fw={500} style={{ flex: 1 }} lineClamp={1}>
         {pipeline.name}
       </Text>
-      <Badge size="xs" color={STATUS_COLORS[pipeline.status] ?? "gray"}>
+      <Badge size="xs" color={STATUS_COLORS[pipeline.status] ?? "slate"}>
         {pipeline.status}
       </Badge>
       <Anchor

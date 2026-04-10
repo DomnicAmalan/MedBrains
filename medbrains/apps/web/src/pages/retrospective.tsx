@@ -37,14 +37,14 @@ import { DataTable, type Column } from "../components/DataTable";
 // ── Status badge helpers ──
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "yellow",
-  approved: "green",
-  rejected: "red",
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
 };
 
 function StatusBadge({ status }: { status: string }) {
   return (
-    <Badge color={STATUS_COLORS[status] ?? "gray"} variant="light">
+    <Badge color={STATUS_COLORS[status] ?? "slate"} variant="light">
       {status}
     </Badge>
   );
@@ -132,7 +132,7 @@ function ApprovalQueueTab() {
           <Group gap="xs">
             <Button
               size="xs"
-              color="green"
+              color="success"
               leftSection={<IconCheck size={14} />}
               onClick={() => {
                 setReviewId(r.id);
@@ -143,7 +143,7 @@ function ApprovalQueueTab() {
             </Button>
             <Button
               size="xs"
-              color="red"
+              color="danger"
               variant="outline"
               leftSection={<IconX size={14} />}
               onClick={() => {
@@ -189,7 +189,7 @@ function ApprovalQueueTab() {
               Cancel
             </Button>
             <Button
-              color={reviewAction === "approve" ? "green" : "red"}
+              color={reviewAction === "approve" ? "success" : "danger"}
               onClick={handleConfirm}
               loading={approveMut.isPending || rejectMut.isPending}
             >

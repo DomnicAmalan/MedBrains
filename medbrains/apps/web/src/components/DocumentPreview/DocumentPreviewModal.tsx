@@ -83,14 +83,14 @@ export function DocumentPreviewModal({
       notifications.show({
         title: "Document Generated",
         message: `${doc.document_number} created`,
-        color: "green",
+        color: "success",
       });
     },
     onError: () => {
       notifications.show({
         title: "Generation Failed",
         message: "Could not generate document",
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -154,13 +154,13 @@ export function DocumentPreviewModal({
               <>
                 <Badge variant="light">{doc.document_number}</Badge>
                 <Badge
-                  color={doc.status === "voided" ? "red" : "green"}
+                  color={doc.status === "voided" ? "danger" : "success"}
                   variant="light"
                 >
                   {doc.status}
                 </Badge>
                 {doc.print_count > 0 && (
-                  <Badge color="gray" variant="light">
+                  <Badge color="slate" variant="light">
                     Printed {doc.print_count}x
                   </Badge>
                 )}
@@ -202,7 +202,7 @@ export function DocumentPreviewModal({
                 {canVoid && (
                   <ActionIcon
                     variant="light"
-                    color="red"
+                    color="danger"
                     title="Void Document"
                     onClick={() => voidMutation.mutate(doc.id)}
                     loading={voidMutation.isPending}

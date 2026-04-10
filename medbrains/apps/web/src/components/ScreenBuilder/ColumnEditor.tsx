@@ -80,7 +80,7 @@ export function ColumnEditor({
             style={{ flex: 1 }}
           />
           <Tooltip label="Remove">
-            <ActionIcon variant="subtle" color="red" size="xs" onClick={() => handleRemove(i)}>
+            <ActionIcon variant="subtle" color="danger" size="xs" onClick={() => handleRemove(i)}>
               <IconTrash size={14} />
             </ActionIcon>
           </Tooltip>

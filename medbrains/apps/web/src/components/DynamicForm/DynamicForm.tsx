@@ -73,7 +73,7 @@ export function DynamicForm({
 
   if (isError || !definition) {
     return (
-      <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red">
+      <Alert icon={<IconAlertCircle size={16} />} title="Error" color="danger">
         {error instanceof Error
           ? error.message
           : "Failed to load form definition"}

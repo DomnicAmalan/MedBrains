@@ -70,12 +70,16 @@ import type {
 } from "@medbrains/types";
 import { P } from "@medbrains/types";
 import { ClinicalEventProvider, useClinicalEmit, DataTable, PageHeader, StatusDot } from "../components";
+import { PharmacyDispensingView } from "../components/Pharmacy/PharmacyDispensingView";
+import { PharmacyLabel } from "../components/Pharmacy/PharmacyLabel";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { useRequirePermission } from "../hooks/useRequirePermission";
+import type { PrescriptionWithItems } from "@medbrains/types";
 
 const statusColors: Record<string, string> = {
-  ordered: "blue",
-  dispensed: "green",
-  cancelled: "red",
+  ordered: "primary",
+  dispensed: "success",
+  cancelled: "danger",
   returned: "orange",
 };
 
@@ -144,13 +148,13 @@ function PharmacyPageInner() {
         title="Pharmacy"
         subtitle="Drug inventory & dispensing"
         icon={<IconPill size={20} stroke={1.5} />}
-        color="green"
+        color="success"
         actions={
           <Group gap="xs">
             <Button size="xs" variant="light" color="orange" leftSection={<IconAlertTriangle size={14} />} onClick={openInteractionModal}>
               Drug Interactions
             </Button>
-            <Button size="xs" variant="light" color="cyan" leftSection={<IconShieldCheck size={14} />} onClick={openFormularyModal}>
+            <Button size="xs" variant="light" color="info" leftSection={<IconShieldCheck size={14} />} onClick={openFormularyModal}>
               Formulary Check
             </Button>
           </Group>
@@ -232,7 +236,7 @@ function PharmacyOrdersTab({ canDispense, canViewReturns }: { canDispense: boole
     mutationFn: (id: string) => api.dispenseOrder(id),
     onSuccess: (_result, id) => {
       queryClient.invalidateQueries({ queryKey: ["pharmacy-orders"] });
-      notifications.show({ title: "Dispensed", message: "Order dispensed successfully", color: "green" });
+      notifications.show({ title: "Dispensed", message: "Order dispensed successfully", color: "success" });
       emit("order.dispensed", { order_id: id });
     },
   });
@@ -255,7 +259,7 @@ function PharmacyOrdersTab({ canDispense, canViewReturns }: { canDispense: boole
       key: "dispensing_type",
       label: "Type",
       render: (row: PharmacyOrder) => (
-        <Badge size="xs" variant="light" color={row.dispensing_type === "otc" ? "teal" : row.dispensing_type === "emergency" ? "red" : "blue"}>
+        <Badge size="xs" variant="light" color={row.dispensing_type === "otc" ? "teal" : row.dispensing_type === "emergency" ? "danger" : "primary"}>
           {dispensingTypeLabels[row.dispensing_type] ?? row.dispensing_type}
         </Badge>
       ),
@@ -264,7 +268,7 @@ function PharmacyOrdersTab({ canDispense, canViewReturns }: { canDispense: boole
       key: "status",
       label: "Status",
       render: (row: PharmacyOrder) => (
-        <StatusDot color={statusColors[row.status] ?? "gray"} label={row.status} />
+        <StatusDot color={statusColors[row.status] ?? "slate"} label={row.status} />
       ),
     },
     {
@@ -285,12 +289,12 @@ function PharmacyOrdersTab({ canDispense, canViewReturns }: { canDispense: boole
           {canDispense && row.status === "ordered" && (
             <>
               <Tooltip label="Dispense">
-                <ActionIcon variant="subtle" color="green" onClick={() => dispenseMutation.mutate(row.id)}>
+                <ActionIcon variant="subtle" color="success" onClick={() => dispenseMutation.mutate(row.id)}>
                   <IconCheck size={16} />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="Cancel">
-                <ActionIcon variant="subtle" color="red" onClick={() => cancelMutation.mutate(row.id)}>
+                <ActionIcon variant="subtle" color="danger" onClick={() => cancelMutation.mutate(row.id)}>
                   <IconX size={16} />
                 </ActionIcon>
               </Tooltip>
@@ -363,7 +367,7 @@ function OtcSaleDrawer({ opened, onClose }: { opened: boolean; onClose: () => vo
       setItems([{ drug_name: "", quantity: 1, unit_price: 0 }]);
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to record OTC sale", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to record OTC sale", color: "danger" });
     },
   });
 
@@ -419,21 +423,21 @@ function CreatePharmacyOrderDrawer({ opened, onClose }: { opened: boolean; onClo
     mutationFn: (data: CreatePharmacyOrderRequest) => api.createPharmacyOrder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pharmacy-orders"] });
-      notifications.show({ title: "Order created", message: "Pharmacy order placed", color: "green" });
+      notifications.show({ title: "Order created", message: "Pharmacy order placed", color: "success" });
       onClose();
       setPatientId("");
       setNotes("");
       setItems([{ drug_name: "", quantity: 1, unit_price: 0 }]);
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create order", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create order", color: "danger" });
     },
   });
 
   return (
     <Drawer opened={opened} onClose={onClose} title="New Pharmacy Order" position="right" size="lg">
       <Stack>
-        <TextInput label="Patient ID" required value={patientId} onChange={(e) => setPatientId(e.currentTarget.value)} />
+        <PatientSearchSelect value={patientId} onChange={setPatientId} required />
         <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.currentTarget.value)} />
         <Text fw={600} size="sm">Items</Text>
         {items.map((item, idx) => (
@@ -474,21 +478,32 @@ function CreatePharmacyOrderDrawer({ opened, onClose }: { opened: boolean; onClo
 
 function PharmacyOrderDetail({ orderId, canViewReturns }: { orderId: string; canViewReturns: boolean }) {
   const [showAudit, setShowAudit] = useState(false);
+  const [showLabels, setShowLabels] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "schedule">("schedule");
   const { data } = useQuery({
     queryKey: ["pharmacy-order-detail", orderId],
     queryFn: () => api.getPharmacyOrder(orderId),
   });
 
-  if (!data) return <Text c="dimmed">Loading...</Text>;
+  // Fetch linked prescription for structured timing data
+  const detail = data as PharmacyOrderDetailResponse | undefined;
+  const prescriptionId = detail?.order.prescription_id;
+  const { data: rxData } = useQuery<PrescriptionWithItems>({
+    queryKey: ["prescription-detail", prescriptionId],
+    queryFn: () => api.getPrescription(prescriptionId as string),
+    enabled: !!prescriptionId,
+  });
 
-  const detail = data as PharmacyOrderDetailResponse;
+  if (!detail) return <Text c="dimmed">Loading...</Text>;
+
+  const hasRxItems = rxData && rxData.items.length > 0;
 
   return (
     <Stack>
       <Group justify="space-between">
         <Text fw={700}>Order: {detail.order.id.slice(0, 8)}...</Text>
         <Group gap="xs">
-          <Badge color={statusColors[detail.order.status] ?? "gray"} variant="light" size="lg">
+          <Badge color={statusColors[detail.order.status] ?? "slate"} variant="light" size="lg">
             {detail.order.status}
           </Badge>
           <Badge variant="outline" size="sm">
@@ -499,38 +514,62 @@ function PharmacyOrderDetail({ orderId, canViewReturns }: { orderId: string; can
       {detail.order.dispensed_at && (
         <Text size="xs" c="dimmed">Dispensed: {new Date(detail.order.dispensed_at).toLocaleString()}</Text>
       )}
-      <Table striped>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Drug</Table.Th>
-            <Table.Th>Qty</Table.Th>
-            <Table.Th>Unit Price</Table.Th>
-            <Table.Th>Total</Table.Th>
-            {canViewReturns && <Table.Th>Returned</Table.Th>}
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {detail.items.map((item) => (
-            <Table.Tr key={item.id}>
-              <Table.Td>{item.drug_name}</Table.Td>
-              <Table.Td>{item.quantity}</Table.Td>
-              <Table.Td>{"\u20B9"}{item.unit_price}</Table.Td>
-              <Table.Td>{"\u20B9"}{item.total_price}</Table.Td>
-              {canViewReturns && <Table.Td>{item.quantity_returned > 0 ? item.quantity_returned : "—"}</Table.Td>}
-            </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
 
-      <Button
-        variant="light"
-        size="xs"
-        leftSection={<IconClipboardList size={14} />}
-        onClick={() => setShowAudit(!showAudit)}
-      >
-        {showAudit ? "Hide" : "Show"} Prescription Audit Trail
-      </Button>
+      {/* View mode toggle — show schedule view when prescription data is available */}
+      {hasRxItems && (
+        <SegmentedControl
+          size="xs"
+          value={viewMode}
+          onChange={(v) => setViewMode(v as "table" | "schedule")}
+          data={[
+            { value: "schedule", label: "Medication Schedule" },
+            { value: "table", label: "Order Table" },
+          ]}
+        />
+      )}
+
+      {/* Schedule view — time-grouped with timing/food instructions */}
+      {viewMode === "schedule" && hasRxItems ? (
+        <PharmacyDispensingView items={rxData.items} />
+      ) : (
+        <Table striped>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Drug</Table.Th>
+              <Table.Th>Qty</Table.Th>
+              <Table.Th>Unit Price</Table.Th>
+              <Table.Th>Total</Table.Th>
+              {canViewReturns && <Table.Th>Returned</Table.Th>}
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {detail.items.map((item) => (
+              <Table.Tr key={item.id}>
+                <Table.Td>{item.drug_name}</Table.Td>
+                <Table.Td>{item.quantity}</Table.Td>
+                <Table.Td>{"\u20B9"}{item.unit_price}</Table.Td>
+                <Table.Td>{"\u20B9"}{item.total_price}</Table.Td>
+                {canViewReturns && <Table.Td>{item.quantity_returned > 0 ? item.quantity_returned : "—"}</Table.Td>}
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      )}
+
+      <Group gap="xs">
+        <Button variant="light" size="xs" leftSection={<IconClipboardList size={14} />} onClick={() => setShowAudit(!showAudit)}>
+          {showAudit ? "Hide" : "Show"} Prescription Audit Trail
+        </Button>
+        {hasRxItems && (
+          <Button variant="light" size="xs" color="teal" onClick={() => setShowLabels(!showLabels)}>
+            {showLabels ? "Hide" : "Print"} Medication Labels
+          </Button>
+        )}
+      </Group>
       {showAudit && <PrescriptionAuditTrail prescriptionId={orderId} />}
+      {showLabels && hasRxItems && (
+        <PharmacyLabel items={rxData.items} patientName={detail.order.patient_id.slice(0, 8)} uhid={detail.order.patient_id.slice(0, 8)} date={new Date().toLocaleDateString()} />
+      )}
     </Stack>
   );
 }
@@ -585,22 +624,16 @@ function DrugInteractionModal({ opened, onClose }: { opened: boolean; onClose: (
   });
 
   const severityColors: Record<string, string> = {
-    severe: "red",
+    severe: "danger",
     moderate: "orange",
-    mild: "yellow",
-    minor: "gray",
+    mild: "warning",
+    minor: "slate",
   };
 
   return (
     <Modal opened={opened} onClose={onClose} title="Drug Interaction Check" size="lg">
       <Stack>
-        <TextInput
-          label="Patient ID"
-          placeholder="Enter patient UUID"
-          value={patientId}
-          onChange={(e) => setPatientId(e.currentTarget.value)}
-          required
-        />
+        <PatientSearchSelect value={patientId} onChange={setPatientId} required />
         <TextInput
           label="Drug ID"
           placeholder="Enter drug catalog UUID to check"
@@ -620,9 +653,9 @@ function DrugInteractionModal({ opened, onClose }: { opened: boolean; onClose: (
           <Stack gap="xs">
             <Text fw={600} size="sm">Interactions Found:</Text>
             {(checkMutation.data as DrugInteractionResult[]).map((r, idx) => (
-              <Alert key={idx} color={severityColors[r.severity] ?? "gray"} variant="light" title={r.interacting_drug}>
+              <Alert key={idx} color={severityColors[r.severity] ?? "slate"} variant="light" title={r.interacting_drug}>
                 <Group gap="xs" mb={4}>
-                  <Badge color={severityColors[r.severity] ?? "gray"} size="sm">{r.severity}</Badge>
+                  <Badge color={severityColors[r.severity] ?? "slate"} size="sm">{r.severity}</Badge>
                   <Badge variant="outline" size="sm">{r.interaction_type}</Badge>
                 </Group>
                 <Text size="sm">{r.description}</Text>
@@ -632,7 +665,7 @@ function DrugInteractionModal({ opened, onClose }: { opened: boolean; onClose: (
         )}
 
         {checkMutation.data && (checkMutation.data as DrugInteractionResult[]).length === 0 && (
-          <Alert color="green" variant="light" title="No Interactions">
+          <Alert color="success" variant="light" title="No Interactions">
             <Text size="sm">No drug interactions found for this combination.</Text>
           </Alert>
         )}
@@ -675,7 +708,7 @@ function FormularyCheckModal({ opened, onClose }: { opened: boolean; onClose: ()
             <Stack gap="xs">
               <Group justify="space-between">
                 <Text fw={600}>{result.drug_name}</Text>
-                <Badge color={result.is_formulary ? "green" : "red"} variant="filled">
+                <Badge color={result.is_formulary ? "success" : "danger"} variant="filled">
                   {result.is_formulary ? "In Formulary" : "Not in Formulary"}
                 </Badge>
               </Group>
@@ -689,7 +722,7 @@ function FormularyCheckModal({ opened, onClose }: { opened: boolean; onClose: ()
                   <Text size="sm" fw={500}>Formulary Alternatives:</Text>
                   <Group gap={4}>
                     {result.alternative_drugs.map((alt, idx) => (
-                      <Badge key={idx} variant="light" color="blue" size="sm">{alt}</Badge>
+                      <Badge key={idx} variant="light" color="primary" size="sm">{alt}</Badge>
                     ))}
                   </Group>
                 </Stack>
@@ -738,7 +771,7 @@ function PharmacyCatalogTab({ canManage, compliance }: { canManage: boolean; com
     { key: "category", label: "Category", render: (row: PharmacyCatalog) => <Text size="sm">{row.category ?? "\u2014"}</Text> },
     { key: "base_price", label: "Price", render: (row: PharmacyCatalog) => <Text size="sm">{"\u20B9"}{row.base_price}</Text> },
     { key: "current_stock", label: "Stock", render: (row: PharmacyCatalog) => (
-      <Text size="sm" c={row.current_stock < row.reorder_level ? "red" : undefined} fw={row.current_stock < row.reorder_level ? 700 : undefined}>
+      <Text size="sm" c={row.current_stock < row.reorder_level ? "danger" : undefined} fw={row.current_stock < row.reorder_level ? 700 : undefined}>
         {row.current_stock}
         {row.current_stock < row.reorder_level && <IconAlertTriangle size={12} style={{ marginLeft: 4, verticalAlign: "middle" }} />}
       </Text>
@@ -749,27 +782,27 @@ function PharmacyCatalogTab({ canManage, compliance }: { canManage: boolean; com
       render: (row: PharmacyCatalog) => (
         <Group gap={2}>
           {compliance.show_schedule_badges && row.drug_schedule && (
-            <Badge size="xs" variant="light" color={row.drug_schedule === "X" || row.drug_schedule === "NDPS" ? "red" : row.drug_schedule === "H1" ? "orange" : "blue"}>
+            <Badge size="xs" variant="light" color={row.drug_schedule === "X" || row.drug_schedule === "NDPS" ? "danger" : row.drug_schedule === "H1" ? "orange" : "primary"}>
               Sch-{row.drug_schedule}
             </Badge>
           )}
           {compliance.show_controlled_warnings && row.is_controlled && (
-            <Badge size="xs" variant="filled" color="red">CTRL</Badge>
+            <Badge size="xs" variant="filled" color="danger">CTRL</Badge>
           )}
           {compliance.show_formulary_status && row.formulary_status !== "approved" && (
-            <Badge size="xs" variant="light" color={row.formulary_status === "restricted" ? "yellow" : "gray"}>
+            <Badge size="xs" variant="light" color={row.formulary_status === "restricted" ? "warning" : "slate"}>
               {row.formulary_status === "restricted" ? "Restricted" : "Non-Formulary"}
             </Badge>
           )}
           {compliance.show_aware_category && row.aware_category && (
-            <Badge size="xs" variant="light" color={row.aware_category === "reserve" ? "red" : row.aware_category === "watch" ? "orange" : "green"}>
+            <Badge size="xs" variant="light" color={row.aware_category === "reserve" ? "danger" : row.aware_category === "watch" ? "orange" : "success"}>
               AWaRe: {row.aware_category}
             </Badge>
           )}
         </Group>
       ),
     },
-    { key: "is_active", label: "Active", render: (row: PharmacyCatalog) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_active", label: "Active", render: (row: PharmacyCatalog) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
   ];
 
   return (
@@ -861,7 +894,7 @@ function StockTab({ canManage }: { canManage: boolean }) {
     onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["pharmacy-stock"] });
       queryClient.invalidateQueries({ queryKey: ["pharmacy-catalog"] });
-      notifications.show({ title: "Stock updated", message: "Transaction recorded", color: "green" });
+      notifications.show({ title: "Stock updated", message: "Transaction recorded", color: "success" });
       emit("stock.movement", { transaction_type: variables.transaction_type, quantity: variables.quantity });
       setShowForm(false);
       setForm({ transaction_type: "receipt" as StockTransactionType });
@@ -875,7 +908,7 @@ function StockTab({ canManage }: { canManage: boolean }) {
       key: "current_stock",
       label: "Current Stock",
       render: (row: PharmacyCatalog) => (
-        <Badge color={row.current_stock < row.reorder_level ? "red" : "green"} variant="light">
+        <Badge color={row.current_stock < row.reorder_level ? "danger" : "success"} variant="light">
           {row.current_stock}
         </Badge>
       ),
@@ -886,9 +919,9 @@ function StockTab({ canManage }: { canManage: boolean }) {
       label: "Status",
       render: (row: PharmacyCatalog) =>
         row.current_stock < row.reorder_level ? (
-          <Badge color="red" variant="filled" size="sm">Low Stock</Badge>
+          <Badge color="danger" variant="filled" size="sm">Low Stock</Badge>
         ) : (
-          <Badge color="green" variant="light" size="sm">OK</Badge>
+          <Badge color="success" variant="light" size="sm">OK</Badge>
         ),
     },
   ];
@@ -948,19 +981,19 @@ function NdpsRegisterTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pharmacy-ndps"] });
       queryClient.invalidateQueries({ queryKey: ["pharmacy-ndps-balance"] });
-      notifications.show({ title: "NDPS Entry", message: "Register entry recorded", color: "green" });
+      notifications.show({ title: "NDPS Entry", message: "Register entry recorded", color: "success" });
       setShowForm(false);
       setForm({ action: "receipt" });
     },
   });
 
   const actionColors: Record<string, string> = {
-    receipt: "green", dispensed: "blue", destroyed: "red", transferred: "orange", adjustment: "gray",
+    receipt: "success", dispensed: "primary", destroyed: "danger", transferred: "orange", adjustment: "slate",
   };
 
   const columns = [
     { key: "action", label: "Action", render: (row: NdpsRegisterEntry) => (
-      <Badge size="xs" color={actionColors[row.action] ?? "gray"}>{row.action}</Badge>
+      <Badge size="xs" color={actionColors[row.action] ?? "slate"}>{row.action}</Badge>
     )},
     { key: "quantity", label: "Qty", render: (row: NdpsRegisterEntry) => <Text size="sm">{row.quantity}</Text> },
     { key: "balance_after", label: "Balance", render: (row: NdpsRegisterEntry) => <Text size="sm" fw={700}>{row.balance_after}</Text> },
@@ -1043,11 +1076,11 @@ function BatchLedgerView() {
     { key: "batch_number", label: "Batch #", render: (row: PharmacyBatch) => <Text fw={500} size="sm">{row.batch_number}</Text> },
     { key: "expiry_date", label: "Expiry", render: (row: PharmacyBatch) => {
       const days = Math.ceil((new Date(row.expiry_date).getTime() - Date.now()) / 86400000);
-      return <Text size="sm" c={days < 30 ? "red" : days < 60 ? "orange" : undefined}>{row.expiry_date}</Text>;
+      return <Text size="sm" c={days < 30 ? "danger" : days < 60 ? "orange" : undefined}>{row.expiry_date}</Text>;
     }},
     { key: "quantity_received", label: "Received", render: (row: PharmacyBatch) => <Text size="sm">{row.quantity_received}</Text> },
     { key: "quantity_dispensed", label: "Dispensed", render: (row: PharmacyBatch) => <Text size="sm">{row.quantity_dispensed}</Text> },
-    { key: "quantity_on_hand", label: "On Hand", render: (row: PharmacyBatch) => <Badge size="sm" color={row.quantity_on_hand <= 0 ? "red" : "green"} variant="light">{row.quantity_on_hand}</Badge> },
+    { key: "quantity_on_hand", label: "On Hand", render: (row: PharmacyBatch) => <Badge size="sm" color={row.quantity_on_hand <= 0 ? "danger" : "success"} variant="light">{row.quantity_on_hand}</Badge> },
     { key: "store_location_id", label: "Location", render: (row: PharmacyBatch) => <Text size="sm">{row.store_location_id?.slice(0, 8) ?? "\u2014"}</Text> },
   ];
 
@@ -1064,13 +1097,13 @@ function NearExpiryView() {
     { key: "drug_name", label: "Drug", render: (row: NearExpiryRow) => <Text size="sm">{row.drug_name}</Text> },
     { key: "batch_number", label: "Batch #", render: (row: NearExpiryRow) => <Text size="sm">{row.batch_number}</Text> },
     { key: "expiry_date", label: "Expiry", render: (row: NearExpiryRow) => (
-      <Text size="sm" c={row.days_until_expiry < 30 ? "red" : row.days_until_expiry < 60 ? "orange" : "yellow"} fw={700}>
+      <Text size="sm" c={row.days_until_expiry < 30 ? "danger" : row.days_until_expiry < 60 ? "orange" : "warning"} fw={700}>
         {row.expiry_date}
       </Text>
     )},
     { key: "quantity_on_hand", label: "On Hand", render: (row: NearExpiryRow) => <Text size="sm">{row.quantity_on_hand}</Text> },
     { key: "days_until_expiry", label: "Days Left", render: (row: NearExpiryRow) => (
-      <Badge size="sm" color={row.days_until_expiry < 30 ? "red" : row.days_until_expiry < 60 ? "orange" : "yellow"}>
+      <Badge size="sm" color={row.days_until_expiry < 30 ? "danger" : row.days_until_expiry < 60 ? "orange" : "warning"}>
         {row.days_until_expiry}d
       </Badge>
     )},
@@ -1127,7 +1160,7 @@ function PharmacyLocationsView() {
 
   const columns = [
     { key: "store_location_id", label: "Location", render: (row: PharmacyStoreAssignment) => <Text size="sm">{row.store_location_id.slice(0, 8)}...</Text> },
-    { key: "is_central", label: "Central", render: (row: PharmacyStoreAssignment) => row.is_central ? <Badge color="blue" size="xs">Central</Badge> : <Text size="sm">Satellite</Text> },
+    { key: "is_central", label: "Central", render: (row: PharmacyStoreAssignment) => row.is_central ? <Badge color="primary" size="xs">Central</Badge> : <Text size="sm">Satellite</Text> },
     { key: "serves_departments", label: "Departments", render: (row: PharmacyStoreAssignment) => <Text size="sm">{row.serves_departments?.length ?? 0} depts</Text> },
     { key: "created_at", label: "Created", render: (row: PharmacyStoreAssignment) => <Text size="sm">{new Date(row.created_at).toLocaleDateString()}</Text> },
   ];
@@ -1148,24 +1181,24 @@ function TransfersView() {
     mutationFn: (id: string) => api.approvePharmacyTransfer(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pharmacy-transfers"] });
-      notifications.show({ title: "Transfer Approved", message: "Transfer request approved", color: "green" });
+      notifications.show({ title: "Transfer Approved", message: "Transfer request approved", color: "success" });
     },
   });
 
   const transferStatusColors: Record<string, string> = {
-    draft: "gray", approved: "blue", transferred: "green", cancelled: "red",
+    draft: "slate", approved: "primary", transferred: "success", cancelled: "danger",
   };
 
   const columns = [
     { key: "from_location_id", label: "From", render: (row: PharmacyTransferRequest) => <Text size="sm">{row.from_location_id.slice(0, 8)}...</Text> },
     { key: "to_location_id", label: "To", render: (row: PharmacyTransferRequest) => <Text size="sm">{row.to_location_id.slice(0, 8)}...</Text> },
-    { key: "status", label: "Status", render: (row: PharmacyTransferRequest) => <Badge size="xs" color={transferStatusColors[row.status] ?? "gray"}>{row.status}</Badge> },
+    { key: "status", label: "Status", render: (row: PharmacyTransferRequest) => <Badge size="xs" color={transferStatusColors[row.status] ?? "slate"}>{row.status}</Badge> },
     { key: "created_at", label: "Date", render: (row: PharmacyTransferRequest) => <Text size="sm">{new Date(row.created_at).toLocaleDateString()}</Text> },
     { key: "actions", label: "Actions", render: (row: PharmacyTransferRequest) => (
       <Group gap="xs">
         {canManage && row.status === "draft" && (
           <Tooltip label="Approve">
-            <ActionIcon variant="subtle" color="green" onClick={() => approveMutation.mutate(row.id)}>
+            <ActionIcon variant="subtle" color="success" onClick={() => approveMutation.mutate(row.id)}>
               <IconCheck size={16} />
             </ActionIcon>
           </Tooltip>
@@ -1224,14 +1257,14 @@ function AbcVedView() {
     queryFn: () => api.getPharmacyAbcVed(),
   });
 
-  const abcColors: Record<string, string> = { A: "red", B: "orange", C: "green" };
-  const vedColors: Record<string, string> = { V: "red", E: "orange", D: "green" };
+  const abcColors: Record<string, string> = { A: "danger", B: "orange", C: "success" };
+  const vedColors: Record<string, string> = { V: "danger", E: "orange", D: "success" };
 
   const columns = [
     { key: "drug_name", label: "Drug", render: (row: PharmacyAbcVedRow) => <Text size="sm">{row.drug_name}</Text> },
     { key: "annual_value", label: "Annual Value", render: (row: PharmacyAbcVedRow) => <Text size="sm">{"\u20B9"}{Number(row.annual_value).toLocaleString()}</Text> },
-    { key: "abc_class", label: "ABC", render: (row: PharmacyAbcVedRow) => <Badge size="xs" color={abcColors[row.abc_class] ?? "gray"}>{row.abc_class}</Badge> },
-    { key: "ved_class", label: "VED", render: (row: PharmacyAbcVedRow) => row.ved_class ? <Badge size="xs" color={vedColors[row.ved_class] ?? "gray"}>{row.ved_class}</Badge> : <Text size="sm">{"\u2014"}</Text> },
+    { key: "abc_class", label: "ABC", render: (row: PharmacyAbcVedRow) => <Badge size="xs" color={abcColors[row.abc_class] ?? "slate"}>{row.abc_class}</Badge> },
+    { key: "ved_class", label: "VED", render: (row: PharmacyAbcVedRow) => row.ved_class ? <Badge size="xs" color={vedColors[row.ved_class] ?? "slate"}>{row.ved_class}</Badge> : <Text size="sm">{"\u2014"}</Text> },
   ];
 
   return <DataTable columns={columns} data={rows} loading={isLoading} rowKey={(row) => row.drug_name} />;
@@ -1247,7 +1280,7 @@ function UtilizationView() {
     { key: "drug_name", label: "Drug", render: (row: DrugUtilizationRow) => <Text size="sm">{row.drug_name}</Text> },
     { key: "generic_name", label: "Generic", render: (row: DrugUtilizationRow) => <Text size="sm">{row.generic_name ?? "\u2014"}</Text> },
     { key: "aware_category", label: "AWaRe", render: (row: DrugUtilizationRow) => row.aware_category
-      ? <Badge size="xs" color={row.aware_category === "reserve" ? "red" : row.aware_category === "watch" ? "orange" : "green"}>{row.aware_category}</Badge>
+      ? <Badge size="xs" color={row.aware_category === "reserve" ? "danger" : row.aware_category === "watch" ? "orange" : "success"}>{row.aware_category}</Badge>
       : <Text size="sm">{"\u2014"}</Text>
     },
     { key: "total_dispensed", label: "Dispensed", render: (row: DrugUtilizationRow) => <Text size="sm" fw={700}>{row.total_dispensed}</Text> },

@@ -350,7 +350,7 @@ pub async fn list_waitlist(
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
     let mut sql = String::from(
-        "SELECT * FROM scheduling_waitlist_entries WHERE tenant_id = $1",
+        "SELECT * FROM scheduling_waitlist WHERE tenant_id = $1",
     );
     let mut param_idx = 2u32;
 
@@ -410,7 +410,7 @@ pub async fn create_waitlist_entry(
     let id = Uuid::new_v4();
 
     let row: SchedulingWaitlistEntry = sqlx::query_as(
-        "INSERT INTO scheduling_waitlist_entries \
+        "INSERT INTO scheduling_waitlist \
          (id, tenant_id, patient_id, doctor_id, department_id, \
           preferred_date_from, preferred_date_to, preferred_time_from, preferred_time_to, \
           priority, status, reason, created_by) \
@@ -448,7 +448,7 @@ pub async fn update_waitlist_entry(
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
     let row: SchedulingWaitlistEntry = sqlx::query_as(
-        "UPDATE scheduling_waitlist_entries SET \
+        "UPDATE scheduling_waitlist SET \
          doctor_id = COALESCE($3, doctor_id), \
          department_id = COALESCE($4, department_id), \
          preferred_date_from = COALESCE($5, preferred_date_from), \
@@ -490,7 +490,7 @@ pub async fn offer_slot(
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
     let row: SchedulingWaitlistEntry = sqlx::query_as(
-        "UPDATE scheduling_waitlist_entries SET \
+        "UPDATE scheduling_waitlist SET \
          status = 'offered', \
          offered_appointment_id = $3, \
          updated_at = NOW() \
@@ -520,7 +520,7 @@ pub async fn respond_to_offer(
 
     let row: SchedulingWaitlistEntry = if body.accept {
         sqlx::query_as(
-            "UPDATE scheduling_waitlist_entries SET \
+            "UPDATE scheduling_waitlist SET \
              status = 'booked', \
              updated_at = NOW() \
              WHERE id = $1 AND tenant_id = $2 \
@@ -532,7 +532,7 @@ pub async fn respond_to_offer(
         .await?
     } else {
         sqlx::query_as(
-            "UPDATE scheduling_waitlist_entries SET \
+            "UPDATE scheduling_waitlist SET \
              status = 'waiting', \
              offered_appointment_id = NULL, \
              updated_at = NOW() \
@@ -560,7 +560,7 @@ pub async fn auto_fill_slots(
 
     // Stub: count waiting entries that could be processed
     let (waiting_count,): (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM scheduling_waitlist_entries \
+        "SELECT COUNT(*) FROM scheduling_waitlist \
          WHERE tenant_id = $1 AND status = 'waiting'",
     )
     .bind(claims.tenant_id)
@@ -813,9 +813,9 @@ pub async fn noshow_rates(
            a.doctor_id, \
            a.department_id, \
            COUNT(*)::bigint AS total_appointments, \
-           COUNT(*) FILTER (WHERE a.status = 'noshow')::bigint AS noshow_count, \
+           COUNT(*) FILTER (WHERE a.status = 'no_show')::bigint AS noshow_count, \
            CASE WHEN COUNT(*) > 0 \
-                THEN (COUNT(*) FILTER (WHERE a.status = 'noshow'))::float8 / COUNT(*)::float8 \
+                THEN (COUNT(*) FILTER (WHERE a.status = 'no_show'))::float8 / COUNT(*)::float8 \
                 ELSE NULL END AS noshow_rate \
          FROM appointments a \
          WHERE a.tenant_id = $1",
@@ -889,7 +889,7 @@ pub async fn waitlist_stats(
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
     let (total_waiting,): (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM scheduling_waitlist_entries \
+        "SELECT COUNT(*) FROM scheduling_waitlist \
          WHERE tenant_id = $1 AND status = 'waiting'",
     )
     .bind(claims.tenant_id)
@@ -897,7 +897,7 @@ pub async fn waitlist_stats(
     .await?;
 
     let (total_offered,): (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM scheduling_waitlist_entries \
+        "SELECT COUNT(*) FROM scheduling_waitlist \
          WHERE tenant_id = $1 AND status = 'offered'",
     )
     .bind(claims.tenant_id)
@@ -905,7 +905,7 @@ pub async fn waitlist_stats(
     .await?;
 
     let (total_booked,): (i64,) = sqlx::query_as(
-        "SELECT COUNT(*) FROM scheduling_waitlist_entries \
+        "SELECT COUNT(*) FROM scheduling_waitlist \
          WHERE tenant_id = $1 AND status = 'booked'",
     )
     .bind(claims.tenant_id)
@@ -914,7 +914,7 @@ pub async fn waitlist_stats(
 
     let avg_wait: Option<(Option<f64>,)> = sqlx::query_as(
         "SELECT AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400.0)::float8 \
-         FROM scheduling_waitlist_entries \
+         FROM scheduling_waitlist \
          WHERE tenant_id = $1 AND status = 'booked'",
     )
     .bind(claims.tenant_id)
@@ -1014,7 +1014,7 @@ pub async fn promote_waitlist(
 
     // Find the first waiting entry matching doctor/department criteria
     let mut sql = String::from(
-        "SELECT * FROM scheduling_waitlist_entries \
+        "SELECT * FROM scheduling_waitlist \
          WHERE tenant_id = $1 AND status = 'waiting'",
     );
     let mut param_idx = 2u32;
@@ -1047,7 +1047,7 @@ pub async fn promote_waitlist(
 
     // Promote to scheduled
     let promoted: SchedulingWaitlistEntry = sqlx::query_as(
-        "UPDATE scheduling_waitlist_entries SET \
+        "UPDATE scheduling_waitlist SET \
          status = 'booked', \
          updated_at = NOW() \
          WHERE id = $1 AND tenant_id = $2 \

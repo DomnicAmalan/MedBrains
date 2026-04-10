@@ -186,7 +186,7 @@ export function SignatureCapture({
         <Group justify="space-between">
           <Button
             variant="subtle"
-            color="gray"
+            color="slate"
             leftSection={<IconEraser size={16} />}
             onClick={clearCanvas}
           >

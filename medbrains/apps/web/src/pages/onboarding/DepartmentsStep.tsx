@@ -237,7 +237,7 @@ export function DepartmentsStep({ onNext, onBack }: Props) {
             </div>
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               onClick={() => removeDepartment(dept.local_id)}
             >
               <IconTrash size={16} />
@@ -317,7 +317,7 @@ export function DepartmentsStep({ onNext, onBack }: Props) {
                           <Text size="sm" fw={500} tt="capitalize" mb={4}>
                             {day}
                           </Text>
-                          <Grid gutter="xs">
+                          <Grid gap="xs">
                             <Grid.Col span={3}>
                               <TextInput
                                 size="xs"

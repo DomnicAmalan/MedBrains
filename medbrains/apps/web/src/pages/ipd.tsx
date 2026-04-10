@@ -110,20 +110,20 @@ import { ClinicalEventProvider, useClinicalEmit, DataTable, PageHeader, StatusDo
 import { useRequirePermission } from "../hooks/useRequirePermission";
 
 const statusColors: Record<string, string> = {
-  admitted: "green",
-  transferred: "blue",
-  discharged: "gray",
-  absconded: "red",
+  admitted: "success",
+  transferred: "primary",
+  discharged: "slate",
+  absconded: "danger",
   deceased: "dark",
 };
 
 const bedStatusColors: Record<string, string> = {
-  vacant_clean: "green",
-  vacant_dirty: "yellow",
-  occupied: "blue",
+  vacant_clean: "success",
+  vacant_dirty: "warning",
+  occupied: "primary",
   reserved: "orange",
-  maintenance: "gray",
-  blocked: "red",
+  maintenance: "slate",
+  blocked: "danger",
 };
 
 export function IpdPage() {
@@ -147,7 +147,7 @@ function IpdPageInner() {
         title="IPD"
         subtitle="Inpatient department"
         icon={<IconBed size={20} stroke={1.5} />}
-        color="indigo"
+        color="primary"
       />
 
       <Tabs defaultValue="admissions">
@@ -228,7 +228,7 @@ function AdmissionsTab() {
       key: "status",
       label: "Status",
       render: (row: AdmissionRow) => (
-        <StatusDot color={statusColors[row.status] ?? "gray"} label={row.status} />
+        <StatusDot color={statusColors[row.status] ?? "slate"} label={row.status} />
       ),
     },
     {
@@ -320,7 +320,7 @@ function CreateAdmissionDrawer({ opened, onClose }: { opened: boolean; onClose: 
     mutationFn: (data: CreateAdmissionRequest) => api.createAdmission(data),
     onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admissions"] });
-      notifications.show({ title: "Admitted", message: "Patient admitted successfully", color: "green" });
+      notifications.show({ title: "Admitted", message: "Patient admitted successfully", color: "success" });
       emit("admission.created", { patient_id: variables.patient_id, department_id: variables.department_id });
       onClose();
       setPatientId("");
@@ -338,7 +338,7 @@ function CreateAdmissionDrawer({ opened, onClose }: { opened: boolean; onClose: 
       setWardId("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create admission", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create admission", color: "danger" });
     },
   });
 
@@ -442,11 +442,11 @@ function AdmissionDetail({
       <Group justify="space-between">
         <Group gap="xs">
           <Text fw={700}>Admission: {adm.id.slice(0, 8)}...</Text>
-          {adm.is_critical && <Badge color="red" variant="filled" size="sm">CRITICAL</Badge>}
+          {adm.is_critical && <Badge color="danger" variant="filled" size="sm">CRITICAL</Badge>}
           {adm.mlc_case_id && <Badge color="orange" variant="filled" size="sm">MLC</Badge>}
         </Group>
         <Group gap="xs">
-          <Badge color={statusColors[adm.status] ?? "gray"} variant="light" size="lg">
+          <Badge color={statusColors[adm.status] ?? "slate"} variant="light" size="lg">
             {adm.status}
           </Badge>
           <PrintAdmissionButton admissionId={admissionId} />
@@ -459,7 +459,7 @@ function AdmissionDetail({
           )}
           {canManageBeds && adm.status === "admitted" && (
             <Tooltip label="Transfer Bed">
-              <Button size="xs" variant="light" color="blue" leftSection={<IconArrowsTransferDown size={14} />} onClick={openBedTransfer}>
+              <Button size="xs" variant="light" color="primary" leftSection={<IconArrowsTransferDown size={14} />} onClick={openBedTransfer}>
                 Bed Transfer
               </Button>
             </Tooltip>
@@ -759,7 +759,7 @@ function AssessmentsTab({ admissionId }: { admissionId: string }) {
 
   const assessments = (data ?? []) as IpdClinicalAssessment[];
 
-  const riskColors: Record<string, string> = { low: "green", moderate: "yellow", high: "orange", critical: "red" };
+  const riskColors: Record<string, string> = { low: "success", moderate: "warning", high: "orange", critical: "danger" };
 
   return (
     <Stack>
@@ -811,7 +811,7 @@ function AssessmentsTab({ admissionId }: { admissionId: string }) {
               <Table.Td>{a.score_value ?? "—"}</Table.Td>
               <Table.Td>
                 {a.risk_level ? (
-                  <Badge color={riskColors[a.risk_level] ?? "gray"} size="sm">{a.risk_level}</Badge>
+                  <Badge color={riskColors[a.risk_level] ?? "slate"} size="sm">{a.risk_level}</Badge>
                 ) : "—"}
               </Table.Td>
               <Table.Td><Text size="xs">{new Date(a.assessed_at).toLocaleString()}</Text></Table.Td>
@@ -832,11 +832,11 @@ function MarTab({ admissionId }: { admissionId: string }) {
   });
 
   const marStatusColors: Record<string, string> = {
-    scheduled: "blue",
-    given: "green",
-    held: "yellow",
+    scheduled: "primary",
+    given: "success",
+    held: "warning",
     refused: "orange",
-    missed: "red",
+    missed: "danger",
     self_administered: "teal",
   };
 
@@ -863,7 +863,7 @@ function MarTab({ admissionId }: { admissionId: string }) {
                   <Text size="sm" fw={500}>{m.drug_name}</Text>
                   {m.is_high_alert && (
                     <Tooltip label="High-Alert Medication — requires double-check">
-                      <Badge color="red" size="xs" leftSection={<IconAlertTriangle size={10} />}>HIGH ALERT</Badge>
+                      <Badge color="danger" size="xs" leftSection={<IconAlertTriangle size={10} />}>HIGH ALERT</Badge>
                     </Tooltip>
                   )}
                 </Group>
@@ -872,16 +872,16 @@ function MarTab({ admissionId }: { admissionId: string }) {
               <Table.Td><Text size="sm">{m.route}</Text></Table.Td>
               <Table.Td><Text size="xs">{new Date(m.scheduled_at).toLocaleString()}</Text></Table.Td>
               <Table.Td>
-                <Badge color={marStatusColors[m.status] ?? "gray"} size="sm">{m.status}</Badge>
+                <Badge color={marStatusColors[m.status] ?? "slate"} size="sm">{m.status}</Badge>
                 {m.is_high_alert && m.status === "given" && !m.double_checked_by && (
                   <Badge color="orange" size="xs" ml={4}>Needs witness</Badge>
                 )}
               </Table.Td>
               <Table.Td>
                 {m.double_checked_by ? (
-                  <Badge color="green" size="xs" variant="light">Verified</Badge>
+                  <Badge color="success" size="xs" variant="light">Verified</Badge>
                 ) : m.is_high_alert ? (
-                  <Badge color="gray" size="xs" variant="light">Pending</Badge>
+                  <Badge color="slate" size="xs" variant="light">Pending</Badge>
                 ) : null}
               </Table.Td>
             </Table.Tr>
@@ -911,9 +911,9 @@ function IoChartTab({ admissionId }: { admissionId: string }) {
     <Stack>
       {balance && (
         <Group gap="lg">
-          <Badge color="blue" size="lg">Intake: {balance.total_intake_ml} ml</Badge>
+          <Badge color="primary" size="lg">Intake: {balance.total_intake_ml} ml</Badge>
           <Badge color="orange" size="lg">Output: {balance.total_output_ml} ml</Badge>
-          <Badge color={Number(balance.balance_ml) >= 0 ? "green" : "red"} size="lg">
+          <Badge color={Number(balance.balance_ml) >= 0 ? "success" : "danger"} size="lg">
             Balance: {balance.balance_ml} ml
           </Badge>
         </Group>
@@ -932,7 +932,7 @@ function IoChartTab({ admissionId }: { admissionId: string }) {
           {rows.map((r) => (
             <Table.Tr key={r.id}>
               <Table.Td>
-                <Badge color={r.is_intake ? "blue" : "orange"} size="sm">
+                <Badge color={r.is_intake ? "primary" : "orange"} size="sm">
                   {r.is_intake ? "Intake" : "Output"}
                 </Badge>
               </Table.Td>
@@ -985,7 +985,7 @@ function NursingTab({ admissionId }: { admissionId: string }) {
         <Stack key={cp.id} gap={4} p="xs" style={{ border: "1px solid var(--mantine-color-gray-3)", borderRadius: 8 }}>
           <Group justify="space-between">
             <Text size="sm" fw={500}>{cp.nursing_diagnosis}</Text>
-            <Badge size="xs" color={cp.status === "active" ? "green" : cp.status === "resolved" ? "gray" : "red"}>
+            <Badge size="xs" color={cp.status === "active" ? "success" : cp.status === "resolved" ? "slate" : "danger"}>
               {cp.status}
             </Badge>
           </Group>
@@ -1001,7 +1001,7 @@ function NursingTab({ admissionId }: { admissionId: string }) {
           <Group justify="space-between">
             <Badge size="xs">{h.shift} shift</Badge>
             <Text size="xs" c="dimmed">{h.handover_date}</Text>
-            {h.acknowledged_at && <Badge size="xs" color="green">Acknowledged</Badge>}
+            {h.acknowledged_at && <Badge size="xs" color="success">Acknowledged</Badge>}
           </Group>
           {h.situation && <Text size="xs"><b>S:</b> {h.situation}</Text>}
           {h.background && <Text size="xs"><b>B:</b> {h.background}</Text>}
@@ -1113,10 +1113,10 @@ function AttendersTab({ admissionId, canCreate }: { admissionId: string; canCrea
               <Table.Td><Text size="sm">{a.name}</Text></Table.Td>
               <Table.Td><Text size="sm">{a.relationship}</Text></Table.Td>
               <Table.Td><Text size="sm">{a.phone ?? "—"}</Text></Table.Td>
-              <Table.Td>{a.is_primary && <Badge size="xs" color="blue">Primary</Badge>}</Table.Td>
+              <Table.Td>{a.is_primary && <Badge size="xs" color="primary">Primary</Badge>}</Table.Td>
               <Table.Td>
                 {canCreate && (
-                  <ActionIcon variant="subtle" color="red" onClick={() => deleteMutation.mutate(a.id)}>
+                  <ActionIcon variant="subtle" color="danger" onClick={() => deleteMutation.mutate(a.id)}>
                     <IconTrash size={14} />
                   </ActionIcon>
                 )}
@@ -1175,7 +1175,7 @@ function DischargeSummaryTab({ admissionId, canCreate }: { admissionId: string; 
     mutationFn: () => api.finalizeDischargeSummary(admissionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-discharge-summary", admissionId] });
-      notifications.show({ title: "Finalized", message: "Discharge summary finalized", color: "green" });
+      notifications.show({ title: "Finalized", message: "Discharge summary finalized", color: "success" });
     },
   });
 
@@ -1183,7 +1183,7 @@ function DischargeSummaryTab({ admissionId, canCreate }: { admissionId: string; 
     return (
       <Stack>
         <Group justify="space-between">
-          <Badge size="lg" color={summary.status === "finalized" ? "green" : "yellow"}>
+          <Badge size="lg" color={summary.status === "finalized" ? "success" : "warning"}>
             {summary.status}
           </Badge>
           <Group>
@@ -1205,7 +1205,7 @@ function DischargeSummaryTab({ admissionId, canCreate }: { admissionId: string; 
               </Button>
             )}
             {summary.status === "draft" && canFinalize && (
-              <Button size="xs" color="green" onClick={() => finalizeMutation.mutate()} loading={finalizeMutation.isPending}>
+              <Button size="xs" color="success" onClick={() => finalizeMutation.mutate()} loading={finalizeMutation.isPending}>
                 Finalize
               </Button>
             )}
@@ -1286,7 +1286,7 @@ function TransferTab({ admissionId, canManage, status }: { admissionId: string; 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admission-detail", admissionId] });
       queryClient.invalidateQueries({ queryKey: ["admissions"] });
-      notifications.show({ title: "Transferred", message: "Bed transfer recorded", color: "green" });
+      notifications.show({ title: "Transferred", message: "Bed transfer recorded", color: "success" });
       emit("transfer.completed", { admission_id: admissionId, new_bed_id: bedId });
       setBedId("");
       setNotes("");
@@ -1336,7 +1336,7 @@ function DischargeTab({ admissionId, canDischarge, status }: { admissionId: stri
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admission-detail", admissionId] });
       queryClient.invalidateQueries({ queryKey: ["admissions"] });
-      notifications.show({ title: "Discharged", message: "Patient discharged", color: "green" });
+      notifications.show({ title: "Discharged", message: "Patient discharged", color: "success" });
       emit("discharge.completed", { admission_id: admissionId, discharge_type: dischargeType });
     },
   });
@@ -1356,7 +1356,7 @@ function DischargeTab({ admissionId, canDischarge, status }: { admissionId: stri
             <Group key={it.id} gap="xs">
               <Checkbox checked={it.status === "completed"} readOnly size="xs" />
               <Text size="sm">{it.item_label}</Text>
-              <Badge size="xs" color={it.status === "completed" ? "green" : it.status === "not_applicable" ? "gray" : "yellow"}>
+              <Badge size="xs" color={it.status === "completed" ? "success" : it.status === "not_applicable" ? "slate" : "warning"}>
                 {it.status}
               </Badge>
             </Group>
@@ -1380,7 +1380,7 @@ function DischargeTab({ admissionId, canDischarge, status }: { admissionId: stri
             onChange={(v) => setDischargeType(v ?? "normal")}
           />
           <Textarea label="Discharge Summary" value={summary} onChange={(e) => setSummary(e.currentTarget.value)} autosize minRows={3} />
-          <Button color="red" leftSection={<IconDoor size={16} />} onClick={() => dischargeMutation.mutate()} loading={dischargeMutation.isPending}>
+          <Button color="danger" leftSection={<IconDoor size={16} />} onClick={() => dischargeMutation.mutate()} loading={dischargeMutation.isPending}>
             Discharge Patient
           </Button>
         </>
@@ -1420,7 +1420,7 @@ function WardsTab() {
         <Text size="sm">{row.vacant_beds}/{row.total_beds} available</Text>
       ),
     },
-    { key: "is_active", label: "Active", render: (row: WardListRow) => <Badge size="xs" color={row.is_active ? "green" : "gray"}>{row.is_active ? "Yes" : "No"}</Badge> },
+    { key: "is_active", label: "Active", render: (row: WardListRow) => <Badge size="xs" color={row.is_active ? "success" : "slate"}>{row.is_active ? "Yes" : "No"}</Badge> },
     {
       key: "actions",
       label: "Actions",
@@ -1646,7 +1646,7 @@ function WardBedsPanel({ wardId, canManage }: { wardId: string; canManage: boole
             <Table.Tr key={b.mapping_id}>
               <Table.Td><Text size="sm">{b.bed_name}</Text></Table.Td>
               <Table.Td><Text size="sm">{b.bed_type_name ?? "—"}</Text></Table.Td>
-              <Table.Td><Badge size="xs" color={bedStatusColors[b.status] ?? "gray"}>{b.status}</Badge></Table.Td>
+              <Table.Td><Badge size="xs" color={bedStatusColors[b.status] ?? "slate"}>{b.status}</Badge></Table.Td>
               <Table.Td>
                 {b.patient_name ? (
                   <Stack gap={0}>
@@ -1658,7 +1658,7 @@ function WardBedsPanel({ wardId, canManage }: { wardId: string; canManage: boole
               {canManage && (
                 <Table.Td>
                   <Tooltip label="Remove from ward">
-                    <ActionIcon variant="subtle" color="red" onClick={() => removeMutation.mutate(b.mapping_id)} disabled={b.status === "occupied"}>
+                    <ActionIcon variant="subtle" color="danger" onClick={() => removeMutation.mutate(b.mapping_id)} disabled={b.status === "occupied"}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Tooltip>
@@ -1695,7 +1695,7 @@ function IpTypeConfigSection() {
       api.updateIpType(id, rest),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-ip-types"] });
-      notifications.show({ title: "Updated", message: "IP type configuration updated", color: "green" });
+      notifications.show({ title: "Updated", message: "IP type configuration updated", color: "success" });
       setEditingId(null);
     },
   });
@@ -1747,7 +1747,7 @@ function IpTypeConfigSection() {
                       {editingId === c.id ? (
                         <Checkbox size="xs" checked={editAutoBilling} onChange={(e) => setEditAutoBilling(e.currentTarget.checked)} />
                       ) : (
-                        <Badge size="xs" color={c.auto_billing_enabled ? "green" : "gray"}>{c.auto_billing_enabled ? "On" : "Off"}</Badge>
+                        <Badge size="xs" color={c.auto_billing_enabled ? "success" : "slate"}>{c.auto_billing_enabled ? "On" : "Off"}</Badge>
                       )}
                     </Table.Td>
                     <Table.Td>
@@ -1841,12 +1841,12 @@ function BedDashboardTab() {
     <Stack>
       <SimpleGrid cols={{ base: 2, sm: 4, md: 7 }}>
         <Card withBorder p="xs"><Text size="xs" c="dimmed">Total</Text><Text fw={700}>{totals.total}</Text></Card>
-        <Card withBorder p="xs"><Text size="xs" c="dimmed">Vacant (Clean)</Text><Text fw={700} c="green">{totals.vacant_clean}</Text></Card>
-        <Card withBorder p="xs"><Text size="xs" c="dimmed">Vacant (Dirty)</Text><Text fw={700} c="yellow">{totals.vacant_dirty}</Text></Card>
-        <Card withBorder p="xs"><Text size="xs" c="dimmed">Occupied</Text><Text fw={700} c="blue">{totals.occupied}</Text></Card>
+        <Card withBorder p="xs"><Text size="xs" c="dimmed">Vacant (Clean)</Text><Text fw={700} c="success">{totals.vacant_clean}</Text></Card>
+        <Card withBorder p="xs"><Text size="xs" c="dimmed">Vacant (Dirty)</Text><Text fw={700} c="warning">{totals.vacant_dirty}</Text></Card>
+        <Card withBorder p="xs"><Text size="xs" c="dimmed">Occupied</Text><Text fw={700} c="primary">{totals.occupied}</Text></Card>
         <Card withBorder p="xs"><Text size="xs" c="dimmed">Reserved</Text><Text fw={700} c="orange">{totals.reserved}</Text></Card>
-        <Card withBorder p="xs"><Text size="xs" c="dimmed">Maintenance</Text><Text fw={700} c="gray">{totals.maintenance}</Text></Card>
-        <Card withBorder p="xs"><Text size="xs" c="dimmed">Blocked</Text><Text fw={700} c="red">{totals.blocked}</Text></Card>
+        <Card withBorder p="xs"><Text size="xs" c="dimmed">Maintenance</Text><Text fw={700} c="slate">{totals.maintenance}</Text></Card>
+        <Card withBorder p="xs"><Text size="xs" c="dimmed">Blocked</Text><Text fw={700} c="danger">{totals.blocked}</Text></Card>
       </SimpleGrid>
 
       <Group>
@@ -1901,11 +1901,11 @@ function BedDashboardTab() {
               key={bed.bed_id}
               withBorder
               p="xs"
-              style={{ borderLeft: `4px solid var(--mantine-color-${bedStatusColors[bed.status] ?? "gray"}-5)` }}
+              style={{ borderLeft: `4px solid var(--mantine-color-${bedStatusColors[bed.status] ?? "slate"}-5)` }}
             >
               <Text size="sm" fw={600}>{bed.bed_name}</Text>
               <Text size="xs" c="dimmed">{bed.ward_name ?? "Unassigned"}</Text>
-              <Badge size="xs" color={bedStatusColors[bed.status] ?? "gray"} mt={4}>
+              <Badge size="xs" color={bedStatusColors[bed.status] ?? "slate"} mt={4}>
                 {bed.status.replace("_", " ")}
               </Badge>
               {bed.patient_name && (
@@ -2034,7 +2034,7 @@ function OccupancyReport({ from, to }: { from: string; to: string }) {
             <Text size="sm" fw={500}>{r.ward_name ?? "Unassigned"}</Text>
             <Text size="sm" fw={700}>{r.occupancy_pct.toFixed(1)}%</Text>
           </Group>
-          <Progress value={r.occupancy_pct} size="lg" color={r.occupancy_pct > 90 ? "red" : r.occupancy_pct > 70 ? "yellow" : "green"} />
+          <Progress value={r.occupancy_pct} size="lg" color={r.occupancy_pct > 90 ? "danger" : r.occupancy_pct > 70 ? "warning" : "success"} />
           <Text size="xs" c="dimmed" mt={4}>{r.occupied_bed_days} bed-days / {r.total_bed_days} total</Text>
         </Card>
       ))}
@@ -2158,7 +2158,7 @@ function ClinicalDocsTab({ admissionId }: { admissionId: string }) {
     mutationFn: (data: CreateClinicalDocRequest) => api.createClinicalDoc(admissionId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-clinical-docs", admissionId] });
-      notifications.show({ title: "Created", message: "Clinical documentation saved", color: "green" });
+      notifications.show({ title: "Created", message: "Clinical documentation saved", color: "success" });
       setShowForm(false);
       setDocType(null);
       setTitle("");
@@ -2170,7 +2170,7 @@ function ClinicalDocsTab({ admissionId }: { admissionId: string }) {
     mutationFn: (docId: string) => api.resolveClinicalDoc(admissionId, docId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-clinical-docs", admissionId] });
-      notifications.show({ title: "Resolved", message: "Documentation marked as resolved", color: "green" });
+      notifications.show({ title: "Resolved", message: "Documentation marked as resolved", color: "success" });
     },
   });
 
@@ -2178,7 +2178,7 @@ function ClinicalDocsTab({ admissionId }: { admissionId: string }) {
     mutationFn: (data: CreateRestraintCheckRequest) => api.createRestraintCheck(admissionId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-clinical-docs", admissionId] });
-      notifications.show({ title: "Recorded", message: "Restraint check logged", color: "green" });
+      notifications.show({ title: "Recorded", message: "Restraint check logged", color: "success" });
       setShowRestraintForm(null);
       setRestraintStatus(null);
       setRestraintNotes("");
@@ -2258,7 +2258,7 @@ function ClinicalDocsTab({ admissionId }: { admissionId: string }) {
                 <Text size="xs" fw={500} mb={4}>Chemotherapy Administration (CTCAE Grading)</Text>
                 <Text size="xs" c="dimmed">Protocol, cycle number, drug list, doses, infusion rates. Pre-medications administered.</Text>
                 <Text size="xs" c="dimmed">Vitals: baseline + q15min x4 + q30min. Adverse reactions (CTCAE grade 1-5), extravasation check.</Text>
-                <Badge size="xs" color="red" variant="light" mt={4}>Requires chemo certification verification</Badge>
+                <Badge size="xs" color="danger" variant="light" mt={4}>Requires chemo certification verification</Badge>
               </Card>
             )}
             <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.currentTarget.value)} />
@@ -2304,15 +2304,15 @@ function ClinicalDocsTab({ admissionId }: { admissionId: string }) {
                 <Table.Td><Text size="sm">{new Date(doc.recorded_at).toLocaleString()}</Text></Table.Td>
                 <Table.Td>
                   {doc.is_resolved ? (
-                    <Badge color="green" size="sm">Resolved</Badge>
+                    <Badge color="success" size="sm">Resolved</Badge>
                   ) : (
-                    <Badge color="yellow" size="sm">Active</Badge>
+                    <Badge color="warning" size="sm">Active</Badge>
                   )}
                 </Table.Td>
                 <Table.Td>
                   <Group gap="xs">
                     {!doc.is_resolved && canCreate && (
-                      <ActionIcon size="sm" variant="light" color="green" onClick={() => resolveMutation.mutate(doc.id)}>
+                      <ActionIcon size="sm" variant="light" color="success" onClick={() => resolveMutation.mutate(doc.id)}>
                         <IconCheck size={14} />
                       </ActionIcon>
                     )}
@@ -2381,7 +2381,7 @@ function ChecklistTab({ admissionId }: { admissionId: string }) {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-checklist", admissionId] });
-      notifications.show({ title: "Added", message: "Checklist item added", color: "green" });
+      notifications.show({ title: "Added", message: "Checklist item added", color: "success" });
       setNewLabel("");
       setNewCategory("");
     },
@@ -2485,7 +2485,7 @@ function TransferLogTab({ admissionId }: { admissionId: string }) {
     mutationFn: (data: CreateTransferRequest) => api.createTransfer(admissionId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-transfers", admissionId] });
-      notifications.show({ title: "Recorded", message: "Transfer logged", color: "green" });
+      notifications.show({ title: "Recorded", message: "Transfer logged", color: "success" });
       setShowForm(false);
       setTransferType(null);
       setReason("");
@@ -2579,7 +2579,7 @@ function DischargeTatTab({ admissionId }: { admissionId: string }) {
     mutationFn: () => api.initiateDischargeTat(admissionId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-discharge-tat", admissionId] });
-      notifications.show({ title: "Initiated", message: "Discharge TAT tracking started", color: "green" });
+      notifications.show({ title: "Initiated", message: "Discharge TAT tracking started", color: "success" });
     },
   });
 
@@ -2587,7 +2587,7 @@ function DischargeTatTab({ admissionId }: { admissionId: string }) {
     mutationFn: (data: Record<string, string>) => api.updateDischargeTat(admissionId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-discharge-tat", admissionId] });
-      notifications.show({ title: "Updated", message: "Discharge milestone recorded", color: "green" });
+      notifications.show({ title: "Updated", message: "Discharge milestone recorded", color: "success" });
     },
   });
 
@@ -2620,16 +2620,16 @@ function DischargeTatTab({ admissionId }: { admissionId: string }) {
     <Stack>
       <Text fw={500}>Discharge TAT Timeline</Text>
       {log.total_tat_minutes != null && (
-        <Badge size="lg" color="blue" variant="light">Total TAT: {log.total_tat_minutes} minutes</Badge>
+        <Badge size="lg" color="primary" variant="light">Total TAT: {log.total_tat_minutes} minutes</Badge>
       )}
       <Stack gap="xs">
         {milestones.map((m) => (
           <Group key={m.key} p="xs" style={{ border: "1px solid var(--mantine-color-gray-3)", borderRadius: 8 }} justify="space-between">
             <Group>
               {m.value ? (
-                <Badge color="green" size="sm" variant="dot">Done</Badge>
+                <Badge color="success" size="sm" variant="dot">Done</Badge>
               ) : (
-                <Badge color="gray" size="sm" variant="dot">Pending</Badge>
+                <Badge color="slate" size="sm" variant="dot">Pending</Badge>
               )}
               <Text size="sm">{m.label}</Text>
             </Group>
@@ -2693,11 +2693,11 @@ function InvestigationsTab({ admissionId }: { admissionId: string }) {
                       <Stack gap={2}>
                         {results.map((r) => (
                           <Group key={r.id} gap={4}>
-                            <Text size="xs" c={r.is_abnormal ? "red" : undefined} fw={r.is_abnormal ? 600 : undefined}>
+                            <Text size="xs" c={r.is_abnormal ? "danger" : undefined} fw={r.is_abnormal ? 600 : undefined}>
                               {r.parameter_name}: {r.value ?? "—"} {r.unit ?? ""}
                             </Text>
                             {r.reference_range && <Text size="xs" c="dimmed">({r.reference_range})</Text>}
-                            {r.is_abnormal && <Badge color="red" size="xs">Abnormal</Badge>}
+                            {r.is_abnormal && <Badge color="danger" size="xs">Abnormal</Badge>}
                           </Group>
                         ))}
                       </Stack>
@@ -2794,9 +2794,9 @@ function BillingTab({ admissionId }: { admissionId: string }) {
             <div><Text size="xs" c="dimmed">Deposit Required</Text><Text fw={500}>{cost.deposit_required}</Text></div>
           </SimpleGrid>
           <Group mt="xs">
-            <Badge size="lg" color="blue" variant="light">Room: {cost.room_total}</Badge>
+            <Badge size="lg" color="primary" variant="light">Room: {cost.room_total}</Badge>
             <Badge size="lg" color="teal" variant="light">Nursing: {cost.nursing_total}</Badge>
-            <Badge size="lg" color="indigo" variant="filled">Total Est.: {cost.total_estimated}</Badge>
+            <Badge size="lg" color="primary" variant="filled">Total Est.: {cost.total_estimated}</Badge>
           </Group>
         </Card>
       )}
@@ -2826,8 +2826,8 @@ function BillingTab({ admissionId }: { admissionId: string }) {
           )}
           <Group mt="sm">
             <Badge size="lg" variant="light">Charges: {billing.total_charges}</Badge>
-            <Badge size="lg" color="green" variant="light">Payments: {billing.total_payments}</Badge>
-            <Badge size="lg" color={billing.outstanding_balance > 0 ? "red" : "green"} variant="filled">
+            <Badge size="lg" color="success" variant="light">Payments: {billing.total_payments}</Badge>
+            <Badge size="lg" color={billing.outstanding_balance > 0 ? "danger" : "success"} variant="filled">
               Outstanding: {billing.outstanding_balance}
             </Badge>
           </Group>
@@ -2870,8 +2870,8 @@ function InsurancePaTab({ admissionId }: { admissionId: string }) {
   });
 
   const paStatusColors: Record<string, string> = {
-    draft: "gray", submitted: "blue", approved: "green",
-    partially_approved: "yellow", denied: "red", cancelled: "dark",
+    draft: "slate", submitted: "primary", approved: "success",
+    partially_approved: "warning", denied: "danger", cancelled: "dark",
     expired: "orange",
   };
 
@@ -2899,7 +2899,7 @@ function InsurancePaTab({ admissionId }: { admissionId: string }) {
                 <Table.Td><Text size="sm" fw={500}>{pa.pa_number}</Text></Table.Td>
                 <Table.Td><Text size="sm">{pa.service_type}</Text></Table.Td>
                 <Table.Td>
-                  <Badge color={paStatusColors[pa.status] ?? "gray"} size="sm">
+                  <Badge color={paStatusColors[pa.status] ?? "slate"} size="sm">
                     {pa.status}
                   </Badge>
                 </Table.Td>
@@ -2932,7 +2932,7 @@ function MlcTab({ admissionId, canCreate }: { admissionId: string; canCreate: bo
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-mlc", admissionId] });
       queryClient.invalidateQueries({ queryKey: ["admission-detail", admissionId] });
-      notifications.show({ title: "Linked", message: "MLC case linked to admission", color: "green" });
+      notifications.show({ title: "Linked", message: "MLC case linked to admission", color: "success" });
       setMlcIdInput("");
     },
   });
@@ -2997,8 +2997,8 @@ function DietTab({ admissionId }: { admissionId: string }) {
 
   const rows = (data ?? []) as DietOrder[];
   const dietTypeColors: Record<string, string> = {
-    regular: "blue", soft: "teal", liquid: "cyan", npo: "red",
-    diabetic: "orange", renal: "grape", cardiac: "pink", custom: "gray",
+    regular: "primary", soft: "teal", liquid: "info", npo: "danger",
+    diabetic: "orange", renal: "violet", cardiac: "danger", custom: "slate",
   };
 
   return (
@@ -3021,10 +3021,10 @@ function DietTab({ admissionId }: { admissionId: string }) {
             {rows.map((d) => (
               <Table.Tr key={d.id}>
                 <Table.Td>
-                  <Badge color={dietTypeColors[d.diet_type] ?? "gray"} size="sm">{d.diet_type}</Badge>
+                  <Badge color={dietTypeColors[d.diet_type] ?? "slate"} size="sm">{d.diet_type}</Badge>
                 </Table.Td>
                 <Table.Td><Badge variant="light" size="sm">{d.status}</Badge></Table.Td>
-                <Table.Td>{d.is_npo ? <Badge color="red" size="xs">NPO</Badge> : "—"}</Table.Td>
+                <Table.Td>{d.is_npo ? <Badge color="danger" size="xs">NPO</Badge> : "—"}</Table.Td>
                 <Table.Td><Text size="xs">{d.special_instructions ?? "—"}</Text></Table.Td>
                 <Table.Td><Text size="xs">{d.start_date}</Text></Table.Td>
               </Table.Tr>
@@ -3046,7 +3046,7 @@ function ConsentsTab({ admissionId }: { admissionId: string }) {
 
   const rows = (data ?? []) as ProcedureConsent[];
   const consentStatusColors: Record<string, string> = {
-    pending: "yellow", signed: "green", refused: "red", withdrawn: "orange", expired: "gray",
+    pending: "warning", signed: "success", refused: "danger", withdrawn: "orange", expired: "slate",
   };
 
   return (
@@ -3071,7 +3071,7 @@ function ConsentsTab({ admissionId }: { admissionId: string }) {
                 <Table.Td><Text size="sm" fw={500}>{c.procedure_name}</Text></Table.Td>
                 <Table.Td><Badge size="sm" variant="light">{c.consent_type}</Badge></Table.Td>
                 <Table.Td>
-                  <Badge color={consentStatusColors[c.status] ?? "gray"} size="sm">{c.status}</Badge>
+                  <Badge color={consentStatusColors[c.status] ?? "slate"} size="sm">{c.status}</Badge>
                 </Table.Td>
                 <Table.Td><Text size="xs">{c.signed_at ? new Date(c.signed_at).toLocaleDateString() : "—"}</Text></Table.Td>
                 <Table.Td><Text size="xs">{c.consented_by_name ?? "—"}</Text></Table.Td>
@@ -3153,7 +3153,7 @@ function BedTurnaroundView() {
     <Card withBorder p="sm">
       <Group justify="space-between" mb="xs">
         <Text fw={600}>Bed Turnaround Log</Text>
-        {avgTat > 0 && <Badge size="lg" color="blue" variant="light">Avg TAT: {avgTat} min</Badge>}
+        {avgTat > 0 && <Badge size="lg" color="primary" variant="light">Avg TAT: {avgTat} min</Badge>}
       </Group>
       {isLoading ? (
         <Text c="dimmed">Loading...</Text>
@@ -3177,9 +3177,9 @@ function BedTurnaroundView() {
                 <Table.Td><Text size="xs">{r.cleaning_completed_at ? new Date(r.cleaning_completed_at).toLocaleString() : "—"}</Text></Table.Td>
                 <Table.Td>
                   {r.turnaround_minutes != null ? (
-                    <Badge color={r.turnaround_minutes <= 60 ? "green" : "orange"} size="sm">{r.turnaround_minutes}</Badge>
+                    <Badge color={r.turnaround_minutes <= 60 ? "success" : "orange"} size="sm">{r.turnaround_minutes}</Badge>
                   ) : (
-                    <Badge color="yellow" size="sm">In progress</Badge>
+                    <Badge color="warning" size="sm">In progress</Badge>
                   )}
                 </Table.Td>
               </Table.Tr>
@@ -3215,12 +3215,12 @@ function RestraintChecksSummary({ admissionId, docId }: { admissionId: string; d
       <Badge size="xs" variant="light">{checks.length} checks</Badge>
       {lastCheck && (
         <Tooltip label={`Last: ${new Date(lastCheck.check_time).toLocaleString()} — ${lastCheck.status.replace(/_/g, " ")}`}>
-          <Badge size="xs" color={isOverdue ? "red" : "green"} variant="filled">
+          <Badge size="xs" color={isOverdue ? "danger" : "success"} variant="filled">
             {isOverdue ? "OVERDUE" : "OK"}
           </Badge>
         </Tooltip>
       )}
-      {!lastCheck && <Badge size="xs" color="red" variant="filled">No checks</Badge>}
+      {!lastCheck && <Badge size="xs" color="danger" variant="filled">No checks</Badge>}
     </Group>
   );
 }
@@ -3254,7 +3254,7 @@ function DeathSummaryTab({ admissionId, patientId, status }: { admissionId: stri
     mutationFn: (d: CreateDeathSummaryRequest) => api.createDeathSummary(admissionId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-death-summary", admissionId] });
-      notifications.show({ title: "Created", message: "Death summary recorded", color: "green" });
+      notifications.show({ title: "Created", message: "Death summary recorded", color: "success" });
       setShowForm(false);
     },
   });
@@ -3280,7 +3280,7 @@ function DeathSummaryTab({ admissionId, patientId, status }: { admissionId: stri
               <Text size="xs" c="dimmed">Flags</Text>
               <Group gap={4}>
                 {summary.autopsy_requested && <Badge size="xs" color="orange">Autopsy Requested</Badge>}
-                {summary.is_medico_legal && <Badge size="xs" color="red">Medico-Legal</Badge>}
+                {summary.is_medico_legal && <Badge size="xs" color="danger">Medico-Legal</Badge>}
               </Group>
             </div>
           </SimpleGrid>
@@ -3383,7 +3383,7 @@ function BirthRecordsTab({ admissionId, motherPatientId }: { admissionId: string
     mutationFn: (d: CreateBirthRecordRequest) => api.createBirthRecord(admissionId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ipd-birth-records", admissionId] });
-      notifications.show({ title: "Created", message: "Birth record saved", color: "green" });
+      notifications.show({ title: "Created", message: "Birth record saved", color: "success" });
       setShowForm(false);
       setDob(""); setTob(""); setGender(null); setWeightGrams(""); setLengthCm("");
       setHeadCirc(""); setApgar1(""); setApgar5(""); setDeliveryType(null);
@@ -3475,11 +3475,11 @@ function BirthRecordsTab({ admissionId, motherPatientId }: { admissionId: string
             {records.map((r: IpdBirthRecord) => (
               <Table.Tr key={r.id}>
                 <Table.Td><Text size="sm">{r.date_of_birth} {r.time_of_birth}</Text></Table.Td>
-                <Table.Td><Badge size="sm" color={r.gender === "male" ? "blue" : r.gender === "female" ? "pink" : "gray"}>{r.gender ?? "—"}</Badge></Table.Td>
+                <Table.Td><Badge size="sm" color={r.gender === "male" ? "primary" : r.gender === "female" ? "danger" : "slate"}>{r.gender ?? "—"}</Badge></Table.Td>
                 <Table.Td><Text size="sm">{r.weight_grams ?? "—"}</Text></Table.Td>
                 <Table.Td><Text size="sm">{r.delivery_type ?? "—"}</Text></Table.Td>
                 <Table.Td><Text size="sm">{r.apgar_1min != null ? `${r.apgar_1min}/${r.apgar_5min}` : "—"}</Text></Table.Td>
-                <Table.Td>{r.is_live_birth ? <Badge color="green" size="xs">Yes</Badge> : <Badge color="red" size="xs">No</Badge>}</Table.Td>
+                <Table.Td>{r.is_live_birth ? <Badge color="success" size="xs">Yes</Badge> : <Badge color="danger" size="xs">No</Badge>}</Table.Td>
                 <Table.Td><Text size="sm">{r.birth_certificate_number ?? "—"}</Text></Table.Td>
               </Table.Tr>
             ))}
@@ -3528,9 +3528,9 @@ function SurgeonCaseloadReport({ from, to }: { from: string; to: string }) {
                 <Table.Td><Text size="sm">{r.avg_duration_minutes != null ? Math.round(r.avg_duration_minutes) : "—"}</Text></Table.Td>
                 <Table.Td>
                   {r.complication_count > 0 ? (
-                    <Badge color="red" size="sm">{r.complication_count}</Badge>
+                    <Badge color="danger" size="sm">{r.complication_count}</Badge>
                   ) : (
-                    <Badge color="green" size="sm">0</Badge>
+                    <Badge color="success" size="sm">0</Badge>
                   )}
                 </Table.Td>
                 <Table.Td>
@@ -3564,10 +3564,10 @@ function GenerateDischargeSummaryModal({ admissionId, opened, onClose }: { admis
     mutationFn: () => api.generateDischargeSummary(admissionId),
     onSuccess: () => {
       refetch();
-      notifications.show({ title: "Generated", message: "Discharge summary generated", color: "green" });
+      notifications.show({ title: "Generated", message: "Discharge summary generated", color: "success" });
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to generate discharge summary", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to generate discharge summary", color: "danger" });
     },
   });
 
@@ -3610,7 +3610,7 @@ function GenerateDischargeSummaryModal({ admissionId, opened, onClose }: { admis
               <Stack gap={2}>
                 <Text fw={600}>Procedures:</Text>
                 {summary.procedures.map((p, i) => (
-                  <Badge key={i} variant="light" color="indigo" size="sm">{p}</Badge>
+                  <Badge key={i} variant="light" color="primary" size="sm">{p}</Badge>
                 ))}
               </Stack>
             )}
@@ -3618,7 +3618,7 @@ function GenerateDischargeSummaryModal({ admissionId, opened, onClose }: { admis
               <Stack gap={2}>
                 <Text fw={600}>Medications at Discharge:</Text>
                 {summary.medications.map((m, i) => (
-                  <Badge key={i} variant="light" color="green" size="sm">{m}</Badge>
+                  <Badge key={i} variant="light" color="success" size="sm">{m}</Badge>
                 ))}
               </Stack>
             )}
@@ -3657,14 +3657,14 @@ function BedTransferModal({ admissionId, opened, onClose }: { admissionId: strin
       queryClient.invalidateQueries({ queryKey: ["admission-detail", admissionId] });
       queryClient.invalidateQueries({ queryKey: ["admissions"] });
       queryClient.invalidateQueries({ queryKey: ["bed-dashboard"] });
-      notifications.show({ title: "Transferred", message: "Bed transfer completed", color: "green" });
+      notifications.show({ title: "Transferred", message: "Bed transfer completed", color: "success" });
       onClose();
       setToBedId("");
       setReason("");
       setNotes("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to transfer bed", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to transfer bed", color: "danger" });
     },
   });
 
@@ -3750,7 +3750,7 @@ function ExpectedDischargesTab() {
       key: "days_admitted",
       label: "Days Admitted",
       render: (row: ExpectedDischargeRow) => (
-        <Badge color={row.days_admitted > 14 ? "red" : row.days_admitted > 7 ? "orange" : "blue"} variant="light" size="sm">
+        <Badge color={row.days_admitted > 14 ? "danger" : row.days_admitted > 7 ? "orange" : "primary"} variant="light" size="sm">
           {row.days_admitted} days
         </Badge>
       ),
@@ -3816,9 +3816,9 @@ function AnesthesiaComplicationsReport({ from, to }: { from: string; to: string 
                 <Table.Td><Text size="sm">{r.procedure_name}</Text></Table.Td>
                 <Table.Td><Badge size="sm" variant="light">{r.anesthesia_type}</Badge></Table.Td>
                 <Table.Td>
-                  <Text size="sm" c="red" lineClamp={2}>{r.complications ?? "—"}</Text>
+                  <Text size="sm" c="danger" lineClamp={2}>{r.complications ?? "—"}</Text>
                   {r.adverse_events != null && typeof r.adverse_events === "object" ? (
-                    <Badge size="xs" color="red" variant="light" mt={2}>Has adverse events</Badge>
+                    <Badge size="xs" color="danger" variant="light" mt={2}>Has adverse events</Badge>
                   ) : null}
                 </Table.Td>
               </Table.Tr>

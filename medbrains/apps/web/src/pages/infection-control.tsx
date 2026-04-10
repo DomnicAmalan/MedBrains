@@ -22,6 +22,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
@@ -74,43 +75,43 @@ import { useRequirePermission } from "../hooks/useRequirePermission";
 // ── Color Maps ──────────────────────────────────────────
 
 const haiColors: Record<string, string> = {
-  clabsi: "red",
+  clabsi: "danger",
   cauti: "orange",
   vap: "violet",
-  ssi: "yellow",
-  cdiff: "pink",
-  mrsa: "grape",
-  other: "gray",
+  ssi: "warning",
+  cdiff: "danger",
+  mrsa: "violet",
+  other: "slate",
 };
 
 const infectionStatusColors: Record<string, string> = {
-  suspected: "yellow",
-  confirmed: "red",
-  ruled_out: "green",
+  suspected: "warning",
+  confirmed: "danger",
+  ruled_out: "success",
 };
 
 const requestStatusColors: Record<string, string> = {
-  pending: "yellow",
-  approved: "green",
-  denied: "red",
-  expired: "gray",
+  pending: "warning",
+  approved: "success",
+  denied: "danger",
+  expired: "slate",
 };
 
 const wasteColors: Record<string, string> = {
-  yellow: "yellow",
-  red: "red",
-  white_translucent: "gray",
-  blue: "blue",
+  yellow: "warning",
+  red: "danger",
+  white_translucent: "slate",
+  blue: "primary",
   cytotoxic: "violet",
   chemical: "orange",
-  radioactive: "grape",
+  radioactive: "violet",
 };
 
 const outbreakStatusColors: Record<string, string> = {
-  suspected: "yellow",
-  confirmed: "red",
+  suspected: "warning",
+  confirmed: "danger",
   contained: "teal",
-  closed: "green",
+  closed: "success",
 };
 
 // ── HAI Surveillance Tab ────────────────────────────────
@@ -153,14 +154,14 @@ function SurveillanceTab() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ic-surveillance"] });
-      notifications.show({ title: "Event recorded", message: "", color: "green" });
+      notifications.show({ title: "Event recorded", message: "", color: "success" });
       close();
     },
   });
 
   const columns = [
-    { key: "hai_type" as const, label: "HAI Type", render: (r: InfectionSurveillanceEvent) => <Badge color={haiColors[r.hai_type] ?? "gray"}>{r.hai_type.toUpperCase()}</Badge> },
-    { key: "infection_status" as const, label: "Status", render: (r: InfectionSurveillanceEvent) => <Badge color={infectionStatusColors[r.infection_status] ?? "gray"}>{r.infection_status.replace(/_/g, " ")}</Badge> },
+    { key: "hai_type" as const, label: "HAI Type", render: (r: InfectionSurveillanceEvent) => <Badge color={haiColors[r.hai_type] ?? "slate"}>{r.hai_type.toUpperCase()}</Badge> },
+    { key: "infection_status" as const, label: "Status", render: (r: InfectionSurveillanceEvent) => <Badge color={infectionStatusColors[r.infection_status] ?? "slate"}>{r.infection_status.replace(/_/g, " ")}</Badge> },
     { key: "organism" as const, label: "Organism", render: (r: InfectionSurveillanceEvent) => r.organism ?? "---" },
     { key: "device_type" as const, label: "Device", render: (r: InfectionSurveillanceEvent) => r.device_type ?? "---" },
     { key: "infection_date" as const, label: "Date", render: (r: InfectionSurveillanceEvent) => new Date(r.infection_date).toLocaleDateString() },
@@ -168,7 +169,7 @@ function SurveillanceTab() {
   ];
 
   const ssiColumns = [
-    { key: "infection_status" as const, label: "Status", render: (r: InfectionSurveillanceEvent) => <Badge color={infectionStatusColors[r.infection_status] ?? "gray"}>{r.infection_status.replace(/_/g, " ")}</Badge> },
+    { key: "infection_status" as const, label: "Status", render: (r: InfectionSurveillanceEvent) => <Badge color={infectionStatusColors[r.infection_status] ?? "slate"}>{r.infection_status.replace(/_/g, " ")}</Badge> },
     { key: "organism" as const, label: "Organism", render: (r: InfectionSurveillanceEvent) => r.organism ?? "---" },
     { key: "device_type" as const, label: "Procedure Type", render: (r: InfectionSurveillanceEvent) => r.device_type ?? "---" },
     { key: "infection_date" as const, label: "Infection Date", render: (r: InfectionSurveillanceEvent) => new Date(r.infection_date).toLocaleDateString() },
@@ -214,7 +215,7 @@ function SurveillanceTab() {
 
       <Drawer opened={opened} onClose={close} title="Report HAI Event" position="right" size="md">
         <Stack>
-          <TextInput label="Patient ID" required value={form.patient_id} onChange={(e) => setForm({ ...form, patient_id: e.currentTarget.value })} />
+          <PatientSearchSelect value={form.patient_id} onChange={(v) => setForm({ ...form, patient_id: v })} required />
           <Select label="HAI Type" required data={["clabsi", "cauti", "vap", "ssi", "cdiff", "mrsa", "other"]} value={form.hai_type} onChange={(v) => setForm({ ...form, hai_type: (v ?? "other") as HaiType })} />
           <TextInput label="Infection Date" type="date" required value={form.infection_date} onChange={(e) => setForm({ ...form, infection_date: e.currentTarget.value })} />
           <TextInput label="Organism" value={form.organism} onChange={(e) => setForm({ ...form, organism: e.currentTarget.value })} />
@@ -294,7 +295,7 @@ function StewardshipTab() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ic-stewardship"] });
-      notifications.show({ title: "Request created", message: "", color: "green" });
+      notifications.show({ title: "Request created", message: "", color: "success" });
       close();
     },
   });
@@ -304,7 +305,7 @@ function StewardshipTab() {
       api.reviewStewardshipRequest(id, { request_status: status as AntibioticRequestStatusType, review_notes: undefined }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ic-stewardship"] });
-      notifications.show({ title: "Request reviewed", message: "", color: "green" });
+      notifications.show({ title: "Request reviewed", message: "", color: "success" });
     },
   });
 
@@ -312,8 +313,8 @@ function StewardshipTab() {
     { key: "antibiotic_name" as const, label: "Antibiotic", render: (r: AntibioticStewardshipRequest) => <Text fw={500}>{r.antibiotic_name}</Text> },
     { key: "indication" as const, label: "Indication", render: (r: AntibioticStewardshipRequest) => r.indication },
     { key: "dose" as const, label: "Dose", render: (r: AntibioticStewardshipRequest) => r.dose ?? "---" },
-    { key: "request_status" as const, label: "Status", render: (r: AntibioticStewardshipRequest) => <Badge color={requestStatusColors[r.request_status] ?? "gray"}>{r.request_status}</Badge> },
-    { key: "culture_sent" as const, label: "Culture", render: (r: AntibioticStewardshipRequest) => r.culture_sent ? <Badge color="green" size="sm">Sent</Badge> : <Badge color="gray" size="sm">No</Badge> },
+    { key: "request_status" as const, label: "Status", render: (r: AntibioticStewardshipRequest) => <Badge color={requestStatusColors[r.request_status] ?? "slate"}>{r.request_status}</Badge> },
+    { key: "culture_sent" as const, label: "Culture", render: (r: AntibioticStewardshipRequest) => r.culture_sent ? <Badge color="success" size="sm">Sent</Badge> : <Badge color="slate" size="sm">No</Badge> },
     { key: "requested_at" as const, label: "Requested", render: (r: AntibioticStewardshipRequest) => new Date(r.requested_at).toLocaleDateString() },
     {
       key: "actions" as const,
@@ -321,8 +322,8 @@ function StewardshipTab() {
       render: (r: AntibioticStewardshipRequest) =>
         r.request_status === "pending" && canCreate ? (
           <Group gap="xs">
-            <Button size="compact-xs" variant="light" color="green" onClick={() => reviewMut.mutate({ id: r.id, status: "approved" })}>Approve</Button>
-            <Button size="compact-xs" variant="light" color="red" onClick={() => reviewMut.mutate({ id: r.id, status: "denied" })}>Deny</Button>
+            <Button size="compact-xs" variant="light" color="success" onClick={() => reviewMut.mutate({ id: r.id, status: "approved" })}>Approve</Button>
+            <Button size="compact-xs" variant="light" color="danger" onClick={() => reviewMut.mutate({ id: r.id, status: "denied" })}>Deny</Button>
           </Group>
         ) : null,
     },
@@ -376,10 +377,10 @@ function StewardshipTab() {
                         const sensPercent = Math.round((data.sensitive / data.total) * 100);
                         const interPercent = Math.round((data.intermediate / data.total) * 100);
                         const resPercent = Math.round((data.resistant / data.total) * 100);
-                        let color = "gray";
-                        if (sensPercent >= 70) color = "green";
-                        else if (sensPercent >= 40) color = "yellow";
-                        else color = "red";
+                        let color = "slate";
+                        if (sensPercent >= 70) color = "success";
+                        else if (sensPercent >= 40) color = "warning";
+                        else color = "danger";
                         return (
                           <Table.Td key={drug}>
                             <Badge color={color} size="sm" style={{ cursor: "help" }} title={`S:${sensPercent}% I:${interPercent}% R:${resPercent}% (n=${data.total})`}>
@@ -399,7 +400,7 @@ function StewardshipTab() {
 
       <Drawer opened={opened} onClose={close} title="Antibiotic Stewardship Request" position="right" size="md">
         <Stack>
-          <TextInput label="Patient ID" required value={form.patient_id} onChange={(e) => setForm({ ...form, patient_id: e.currentTarget.value })} />
+          <PatientSearchSelect value={form.patient_id} onChange={(v) => setForm({ ...form, patient_id: v })} required />
           <TextInput label="Antibiotic Name" required value={form.antibiotic_name} onChange={(e) => setForm({ ...form, antibiotic_name: e.currentTarget.value })} />
           <TextInput label="Dose" value={form.dose} onChange={(e) => setForm({ ...form, dose: e.currentTarget.value })} />
           <TextInput label="Route" value={form.route} onChange={(e) => setForm({ ...form, route: e.currentTarget.value })} />
@@ -466,13 +467,13 @@ function BiowasteTab() {
     mutationFn: (data: CreateBiowasteRecordRequest) => api.createBiowasteRecord(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ic-biowaste"] });
-      notifications.show({ title: "Record added", message: "", color: "green" });
+      notifications.show({ title: "Record added", message: "", color: "success" });
       close();
     },
   });
 
   const columns = [
-    { key: "waste_category" as const, label: "Category", render: (r: BiowasteRecord) => <Badge color={wasteColors[r.waste_category] ?? "gray"}>{r.waste_category.replace(/_/g, " ")}</Badge> },
+    { key: "waste_category" as const, label: "Category", render: (r: BiowasteRecord) => <Badge color={wasteColors[r.waste_category] ?? "slate"}>{r.waste_category.replace(/_/g, " ")}</Badge> },
     { key: "weight_kg" as const, label: "Weight (kg)", render: (r: BiowasteRecord) => String(r.weight_kg) },
     { key: "container_count" as const, label: "Containers", render: (r: BiowasteRecord) => String(r.container_count) },
     { key: "record_date" as const, label: "Date", render: (r: BiowasteRecord) => new Date(r.record_date).toLocaleDateString() },
@@ -524,7 +525,7 @@ function BiowasteTab() {
                 {Object.entries(monthlyReport).map(([cat, data]) => (
                   <Table.Tr key={cat}>
                     <Table.Td>
-                      <Badge color={wasteColors[cat] ?? "gray"}>{cat.replace(/_/g, " ")}</Badge>
+                      <Badge color={wasteColors[cat] ?? "slate"}>{cat.replace(/_/g, " ")}</Badge>
                     </Table.Td>
                     <Table.Td>{data.weight.toFixed(2)}</Table.Td>
                     <Table.Td>{data.containers}</Table.Td>
@@ -627,7 +628,7 @@ function HygieneTab() {
     mutationFn: (data: CreateHygieneAuditRequest) => api.createHygieneAudit(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ic-hygiene"] });
-      notifications.show({ title: "Audit recorded", message: "", color: "green" });
+      notifications.show({ title: "Audit recorded", message: "", color: "success" });
       close();
     },
   });
@@ -635,8 +636,8 @@ function HygieneTab() {
   const auditColumns = [
     { key: "audit_date" as const, label: "Date", render: (r: HandHygieneAudit) => new Date(r.audit_date).toLocaleDateString() },
     { key: "observations" as const, label: "Observations", render: (r: HandHygieneAudit) => String(r.observations) },
-    { key: "compliant" as const, label: "Compliant", render: (r: HandHygieneAudit) => <Badge color="green">{r.compliant}</Badge> },
-    { key: "non_compliant" as const, label: "Non-Compliant", render: (r: HandHygieneAudit) => <Badge color="red">{r.non_compliant}</Badge> },
+    { key: "compliant" as const, label: "Compliant", render: (r: HandHygieneAudit) => <Badge color="success">{r.compliant}</Badge> },
+    { key: "non_compliant" as const, label: "Non-Compliant", render: (r: HandHygieneAudit) => <Badge color="danger">{r.non_compliant}</Badge> },
     { key: "compliance_rate" as const, label: "Rate", render: (r: HandHygieneAudit) => r.compliance_rate != null ? `${Number(r.compliance_rate).toFixed(1)}%` : "---" },
     { key: "staff_category" as const, label: "Staff Category", render: (r: HandHygieneAudit) => r.staff_category ?? "---" },
     { key: "findings" as const, label: "Findings", render: (r: HandHygieneAudit) => r.findings ?? "---" },
@@ -647,7 +648,7 @@ function HygieneTab() {
     { key: "sample_site" as const, label: "Site", render: (r: CultureSurveillance) => r.sample_site },
     { key: "collection_date" as const, label: "Date", render: (r: CultureSurveillance) => new Date(r.collection_date).toLocaleDateString() },
     { key: "organism" as const, label: "Organism", render: (r: CultureSurveillance) => r.organism ?? "---" },
-    { key: "acceptable" as const, label: "Status", render: (r: CultureSurveillance) => r.acceptable == null ? <Badge color="gray">Pending</Badge> : r.acceptable ? <Badge color="green">Pass</Badge> : <Badge color="red">Fail</Badge> },
+    { key: "acceptable" as const, label: "Status", render: (r: CultureSurveillance) => r.acceptable == null ? <Badge color="slate">Pending</Badge> : r.acceptable ? <Badge color="success">Pass</Badge> : <Badge color="danger">Fail</Badge> },
     { key: "action_taken" as const, label: "Action", render: (r: CultureSurveillance) => r.action_taken ?? "---" },
   ];
 
@@ -737,13 +738,13 @@ function HygieneTab() {
             <Grid.Col span={3}>
               <Card withBorder p="md">
                 <Text size="sm" c="dimmed">Passed</Text>
-                <Text size="xl" fw={600} c="green">{envMonitoringSummary.totalPass}</Text>
+                <Text size="xl" fw={600} c="success">{envMonitoringSummary.totalPass}</Text>
               </Card>
             </Grid.Col>
             <Grid.Col span={3}>
               <Card withBorder p="md">
                 <Text size="sm" c="dimmed">Failed</Text>
-                <Text size="xl" fw={600} c="red">{envMonitoringSummary.totalFail}</Text>
+                <Text size="xl" fw={600} c="danger">{envMonitoringSummary.totalFail}</Text>
               </Card>
             </Grid.Col>
           </Grid>
@@ -810,7 +811,7 @@ function OutbreakTab() {
     mutationFn: (data: CreateOutbreakRequest) => api.createOutbreak(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ic-outbreaks"] });
-      notifications.show({ title: "Outbreak reported", message: "", color: "green" });
+      notifications.show({ title: "Outbreak reported", message: "", color: "success" });
       close();
     },
   });
@@ -819,7 +820,7 @@ function OutbreakTab() {
     mutationFn: ({ id, data }: { id: string; data: UpdateOutbreakRequest }) => api.updateOutbreak(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ic-outbreaks"] });
-      notifications.show({ title: "Outbreak updated", message: "", color: "green" });
+      notifications.show({ title: "Outbreak updated", message: "", color: "success" });
     },
   });
 
@@ -832,10 +833,10 @@ function OutbreakTab() {
   const columns = [
     { key: "outbreak_number" as const, label: "Number", render: (r: OutbreakEvent) => <Text fw={500}>{r.outbreak_number}</Text> },
     { key: "organism" as const, label: "Organism", render: (r: OutbreakEvent) => r.organism },
-    { key: "outbreak_status" as const, label: "Status", render: (r: OutbreakEvent) => <Badge color={outbreakStatusColors[r.outbreak_status] ?? "gray"}>{r.outbreak_status}</Badge> },
+    { key: "outbreak_status" as const, label: "Status", render: (r: OutbreakEvent) => <Badge color={outbreakStatusColors[r.outbreak_status] ?? "slate"}>{r.outbreak_status}</Badge> },
     { key: "total_cases" as const, label: "Cases", render: (r: OutbreakEvent) => String(r.total_cases) },
     { key: "detected_date" as const, label: "Detected", render: (r: OutbreakEvent) => new Date(r.detected_date).toLocaleDateString() },
-    { key: "hicc_notified" as const, label: "HICC", render: (r: OutbreakEvent) => r.hicc_notified ? <Badge color="green" size="sm">Notified</Badge> : <Badge color="gray" size="sm">No</Badge> },
+    { key: "hicc_notified" as const, label: "HICC", render: (r: OutbreakEvent) => r.hicc_notified ? <Badge color="success" size="sm">Notified</Badge> : <Badge color="slate" size="sm">No</Badge> },
     {
       key: "actions" as const,
       label: "Actions",
@@ -847,7 +848,7 @@ function OutbreakTab() {
             </ActionIcon>
           </Tooltip>
           {canUpdate && (statusTransitions[r.outbreak_status] ?? []).map((next) => (
-            <Button key={next} size="compact-xs" variant="light" color={outbreakStatusColors[next] ?? "gray"} onClick={() => updateMut.mutate({ id: r.id, data: { outbreak_status: next as OutbreakStatusType } })}>
+            <Button key={next} size="compact-xs" variant="light" color={outbreakStatusColors[next] ?? "slate"} onClick={() => updateMut.mutate({ id: r.id, data: { outbreak_status: next as OutbreakStatusType } })}>
               {next}
             </Button>
           ))}
@@ -883,7 +884,7 @@ function OutbreakTab() {
           <Stack>
             <Text fw={600}>{selected.organism}</Text>
             <Group>
-              <Badge color={outbreakStatusColors[selected.outbreak_status] ?? "gray"}>{selected.outbreak_status}</Badge>
+              <Badge color={outbreakStatusColors[selected.outbreak_status] ?? "slate"}>{selected.outbreak_status}</Badge>
               <Text size="sm">Cases: {selected.total_cases}</Text>
             </Group>
             {selected.description && <Text size="sm">{selected.description}</Text>}
@@ -920,7 +921,7 @@ function OutbreakTab() {
             {contacts.map((c: OutbreakContact) => (
               <Group key={c.id} p="xs" style={{ border: "1px solid var(--mantine-color-gray-3)", borderRadius: 8 }}>
                 <Text size="sm">{c.contact_type}</Text>
-                {c.quarantine_required && <Badge color="red" size="sm">Quarantine</Badge>}
+                {c.quarantine_required && <Badge color="danger" size="sm">Quarantine</Badge>}
                 {c.screening_result && <Text size="sm">Screen: {c.screening_result}</Text>}
               </Group>
             ))}
@@ -951,7 +952,7 @@ function SharpsSafetyTab() {
       key: "pep_initiated" as const,
       label: "PEP Status",
       render: (r: NeedleStickIncident) => (
-        <Badge color={r.pep_initiated ? "green" : "red"}>
+        <Badge color={r.pep_initiated ? "success" : "danger"}>
           {r.pep_initiated ? "Initiated" : "Not Initiated"}
         </Badge>
       )
@@ -1092,7 +1093,7 @@ function AnalyticsTab() {
     { key: "total_cases" as const, label: "Total Cases", render: (r: SurgicalProphylaxisRow) => String(r.total_cases) },
     { key: "timely_count" as const, label: "Timely", render: (r: SurgicalProphylaxisRow) => String(r.timely_count) },
     { key: "compliance_pct" as const, label: "Compliance %", render: (r: SurgicalProphylaxisRow) => (
-      <Badge color={r.compliance_pct >= 90 ? "green" : r.compliance_pct >= 70 ? "yellow" : "red"}>
+      <Badge color={r.compliance_pct >= 90 ? "success" : r.compliance_pct >= 70 ? "warning" : "danger"}>
         {r.compliance_pct.toFixed(1)}%
       </Badge>
     )},
@@ -1127,7 +1128,7 @@ function AnalyticsTab() {
               h={350}
               data={haiRates.map((r) => ({ infection_type: r.infection_type, rate: r.rate_per_1000 }))}
               dataKey="infection_type"
-              series={[{ name: "rate", label: "Rate / 1000", color: "red" }]}
+              series={[{ name: "rate", label: "Rate / 1000", color: "danger" }]}
               tickLine="y"
             />
           )}
@@ -1168,7 +1169,7 @@ function AnalyticsTab() {
                         const row = abMap[ab];
                         if (!row) return <Table.Td key={ab}>---</Table.Td>;
                         const pct = row.sensitivity_pct;
-                        const color = pct >= 70 ? "green" : pct >= 40 ? "yellow" : "red";
+                        const color = pct >= 70 ? "success" : pct >= 40 ? "warning" : "danger";
                         return (
                           <Table.Td key={ab}>
                             <Tooltip label={`S:${row.sensitive_count} I:${row.intermediate_count} R:${row.resistant_count} (n=${row.total_tests})`}>
@@ -1244,7 +1245,7 @@ function MeetingsTab() {
     mutationFn: (data: CreateIcMeetingRequest) => api.createIcMeeting(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ic-meetings"] });
-      notifications.show({ title: "Meeting created", message: "", color: "green" });
+      notifications.show({ title: "Meeting created", message: "", color: "success" });
       closeMeeting();
       setMeetingForm({ meeting_date: "", meeting_type: "regular" });
     },
@@ -1260,7 +1261,7 @@ function MeetingsTab() {
   const createExposureMut = useMutation({
     mutationFn: (data: CreateExposureRequest) => api.createIcExposure(data),
     onSuccess: () => {
-      notifications.show({ title: "Exposure recorded", message: "", color: "green" });
+      notifications.show({ title: "Exposure recorded", message: "", color: "success" });
       closeExposure();
       setExposureForm({ event_type: "", exposure_date: "", exposure_type: "", pep_initiated: false });
     },
@@ -1334,7 +1335,7 @@ function MeetingsTab() {
               <Grid.Col span={{ base: 6, md: 3 }}>
                 <Card withBorder p="md">
                   <Text size="sm" c="dimmed">HAI Count</Text>
-                  <Text size="xl" fw={600} c="red">{monthlyReport.hai_count}</Text>
+                  <Text size="xl" fw={600} c="danger">{monthlyReport.hai_count}</Text>
                   <Text size="xs" c="dimmed">Rate: {monthlyReport.hai_rate.toFixed(2)}/1000</Text>
                 </Card>
               </Grid.Col>
@@ -1404,7 +1405,7 @@ export function InfectionControlPage() {
         title="Infection Control"
         subtitle="HAI surveillance, antibiotic stewardship, bio-waste, hand hygiene, outbreak management, and sharps safety"
         icon={<IconShieldCheck size={20} stroke={1.5} />}
-        color="red"
+        color="danger"
       />
 
       <Tabs defaultValue="surveillance" mt="md">

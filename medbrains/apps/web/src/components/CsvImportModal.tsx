@@ -102,14 +102,14 @@ export function CsvImportModal({
         notifications.show({
           title: "Import successful",
           message: `Imported ${res.imported} records${res.skipped > 0 ? `, skipped ${res.skipped}` : ""}`,
-          color: "green",
+          color: "success",
         });
       }
     } catch {
       notifications.show({
         title: "Import failed",
         message: "An error occurred during import",
-        color: "red",
+        color: "danger",
       });
     } finally {
       setImporting(false);
@@ -132,12 +132,12 @@ export function CsvImportModal({
         </Text>
         <Group gap="xs">
           {requiredColumns.map((col) => (
-            <Badge key={col} size="sm" color="blue">
+            <Badge key={col} size="sm" color="primary">
               {col} (required)
             </Badge>
           ))}
           {optionalColumns.map((col) => (
-            <Badge key={col} size="sm" color="gray" variant="light">
+            <Badge key={col} size="sm" color="slate" variant="light">
               {col}
             </Badge>
           ))}
@@ -153,7 +153,7 @@ export function CsvImportModal({
         />
 
         {parseError && (
-          <Alert color="red" icon={<IconAlertCircle size={16} />}>
+          <Alert color="danger" icon={<IconAlertCircle size={16} />}>
             {parseError}
           </Alert>
         )}
@@ -197,7 +197,7 @@ export function CsvImportModal({
 
         {result && (
           <Alert
-            color={result.errors.length > 0 ? "yellow" : "green"}
+            color={result.errors.length > 0 ? "warning" : "success"}
             icon={<IconCheck size={16} />}
           >
             <Text fw={500}>

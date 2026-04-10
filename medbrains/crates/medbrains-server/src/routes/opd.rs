@@ -1029,6 +1029,35 @@ pub async fn list_prescriptions(
     Ok(Json(result))
 }
 
+pub async fn get_prescription(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<PrescriptionWithItems>, AppError> {
+    require_permission(&claims, permissions::opd::queue::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+
+    let rx = sqlx::query_as::<_, Prescription>(
+        "SELECT * FROM prescriptions WHERE id = $1 AND tenant_id = $2",
+    )
+    .bind(id)
+    .bind(claims.tenant_id)
+    .fetch_one(&mut *tx)
+    .await?;
+
+    let items = sqlx::query_as::<_, PrescriptionItem>(
+        "SELECT * FROM prescription_items WHERE prescription_id = $1 AND tenant_id = $2 ORDER BY created_at",
+    )
+    .bind(rx.id)
+    .bind(claims.tenant_id)
+    .fetch_all(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
+    Ok(Json(PrescriptionWithItems { prescription: rx, items }))
+}
+
 pub async fn create_prescription(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
@@ -2877,23 +2906,18 @@ pub async fn followup_compliance(
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
     let rows = sqlx::query_as::<_, FollowupComplianceRow>(
-        "SELECT e.patient_id, p.full_name AS patient_name, p.uhid, \
+        "SELECT e.patient_id, (p.first_name || ' ' || p.last_name) AS patient_name, p.uhid, \
          e.id AS encounter_id, e.department_id, e.doctor_id, \
-         e.follow_up_date, e.visit_date::date AS visit_date, \
-         (CURRENT_DATE - e.follow_up_date)::int AS days_overdue \
-         FROM encounters e \
-         JOIN patients p ON p.id = e.patient_id AND p.tenant_id = e.tenant_id \
-         WHERE e.tenant_id = $1 \
-           AND e.follow_up_date IS NOT NULL \
-           AND e.follow_up_date < CURRENT_DATE \
-           AND NOT EXISTS ( \
-             SELECT 1 FROM encounters e2 \
-             WHERE e2.patient_id = e.patient_id \
-               AND e2.tenant_id = e.tenant_id \
-               AND e2.department_id = e.department_id \
-               AND e2.visit_date > e.follow_up_date \
-           ) \
-         ORDER BY e.follow_up_date ASC \
+         a.appointment_date AS follow_up_date, e.encounter_date::date AS visit_date, \
+         (CURRENT_DATE - a.appointment_date)::int AS days_overdue \
+         FROM appointments a \
+         JOIN encounters e ON e.id = a.encounter_id \
+         JOIN patients p ON p.id = a.patient_id AND p.tenant_id = a.tenant_id \
+         WHERE a.tenant_id = $1 \
+           AND a.appointment_type = 'follow_up' \
+           AND a.status = 'no_show' \
+           AND a.appointment_date < CURRENT_DATE \
+         ORDER BY a.appointment_date ASC \
          LIMIT 500",
     )
     .bind(claims.tenant_id)

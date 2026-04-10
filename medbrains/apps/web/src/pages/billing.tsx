@@ -127,11 +127,11 @@ import { ClinicalEventProvider, useClinicalEmit, DataTable, PageHeader, StatusDo
 import { useRequirePermission } from "../hooks/useRequirePermission";
 
 const statusColors: Record<string, string> = {
-  draft: "gray",
-  issued: "blue",
-  partially_paid: "yellow",
-  paid: "green",
-  cancelled: "red",
+  draft: "slate",
+  issued: "primary",
+  partially_paid: "warning",
+  paid: "success",
+  cancelled: "danger",
   refunded: "orange",
 };
 
@@ -180,9 +180,9 @@ function BillingPageInner() {
     mutationFn: (id: string) => api.cloneInvoice(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      notifications.show({ title: "Cloned", message: "Invoice duplicated as draft", color: "green" });
+      notifications.show({ title: "Cloned", message: "Invoice duplicated as draft", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to clone invoice", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to clone invoice", color: "danger" }),
   });
 
   const columns = [
@@ -192,12 +192,12 @@ function BillingPageInner() {
       label: "Status",
       render: (row: Invoice) => (
         <Group gap={6}>
-          <StatusDot color={statusColors[row.status] ?? "gray"} label={row.status.replace(/_/g, " ")} />
-          {row.notes === "Auto-generated" && <Badge size="xs" color="blue" variant="light">Auto</Badge>}
+          <StatusDot color={statusColors[row.status] ?? "slate"} label={row.status.replace(/_/g, " ")} />
+          {row.notes === "Auto-generated" && <Badge size="xs" color="primary" variant="light">Auto</Badge>}
           {row.is_interim && <Badge size="xs" color="violet" variant="light">Interim</Badge>}
-          {row.corporate_id && <Badge size="xs" color="cyan" variant="light">Corporate</Badge>}
-          {row.is_er_deferred && <Badge size="xs" color="pink" variant="light">ER Deferred</Badge>}
-          {row.cloned_from_id && <Badge size="xs" color="grape" variant="light">Cloned</Badge>}
+          {row.corporate_id && <Badge size="xs" color="info" variant="light">Corporate</Badge>}
+          {row.is_er_deferred && <Badge size="xs" color="danger" variant="light">ER Deferred</Badge>}
+          {row.cloned_from_id && <Badge size="xs" color="violet" variant="light">Cloned</Badge>}
         </Group>
       ),
     },
@@ -208,7 +208,7 @@ function BillingPageInner() {
       label: "Balance",
       render: (row: Invoice) => {
         const balance = Number(row.total_amount) - Number(row.paid_amount);
-        return <Text size="sm" c={balance > 0 ? "red" : "green"}>₹{balance.toFixed(2)}</Text>;
+        return <Text size="sm" c={balance > 0 ? "danger" : "success"}>₹{balance.toFixed(2)}</Text>;
       },
     },
     {
@@ -234,7 +234,7 @@ function BillingPageInner() {
           </Tooltip>
           {canCreate && (
             <Tooltip label="Clone">
-              <ActionIcon variant="subtle" color="grape" onClick={() => cloneMutation.mutate(row.id)} loading={cloneMutation.isPending}>
+              <ActionIcon variant="subtle" color="violet" onClick={() => cloneMutation.mutate(row.id)} loading={cloneMutation.isPending}>
                 <IconCopy size={16} />
               </ActionIcon>
             </Tooltip>
@@ -257,7 +257,7 @@ function BillingPageInner() {
               <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>
                 New Invoice
               </Button>
-              <Button variant="light" color="red" leftSection={<IconAmbulance size={16} />} onClick={openErInvoice}>
+              <Button variant="light" color="danger" leftSection={<IconAmbulance size={16} />} onClick={openErInvoice}>
                 ER Fast Invoice
               </Button>
             </Group>
@@ -419,7 +419,7 @@ function CreateInvoiceDrawer({ opened, onClose }: { opened: boolean; onClose: ()
     mutationFn: (data: CreateInvoiceRequest) => api.createInvoice(data),
     onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      notifications.show({ title: "Invoice created", message: "Draft invoice created", color: "green" });
+      notifications.show({ title: "Invoice created", message: "Draft invoice created", color: "success" });
       emit("invoice.created", { patient_id: variables.patient_id });
       onClose();
       setPatientId("");
@@ -427,7 +427,7 @@ function CreateInvoiceDrawer({ opened, onClose }: { opened: boolean; onClose: ()
       setNotes("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create invoice", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create invoice", color: "danger" });
     },
   });
 
@@ -521,7 +521,7 @@ function InvoiceDetail({ invoiceId, canCreate, canPay }: { invoiceId: string; ca
   const receiptMutation = useMutation({
     mutationFn: (paymentId: string) => api.generateReceipt(invoiceId, paymentId),
     onSuccess: () => {
-      notifications.show({ title: "Receipt generated", message: "Receipt created successfully", color: "green" });
+      notifications.show({ title: "Receipt generated", message: "Receipt created successfully", color: "success" });
     },
   });
 
@@ -534,20 +534,20 @@ function InvoiceDetail({ invoiceId, canCreate, canPay }: { invoiceId: string; ca
     <Stack>
       <Group justify="space-between">
         <Text fw={700} size="lg">{inv.invoice_number}</Text>
-        <Badge color={statusColors[inv.status] ?? "gray"} variant="light" size="lg">
+        <Badge color={statusColors[inv.status] ?? "slate"} variant="light" size="lg">
           {inv.status.replace(/_/g, " ")}
         </Badge>
       </Group>
       <Group>
         <Text size="sm">Total: ₹{inv.total_amount}</Text>
         <Text size="sm">Paid: ₹{inv.paid_amount}</Text>
-        <Text size="sm" c="red">Balance: ₹{(Number(inv.total_amount) - Number(inv.paid_amount)).toFixed(2)}</Text>
+        <Text size="sm" c="danger">Balance: ₹{(Number(inv.total_amount) - Number(inv.paid_amount)).toFixed(2)}</Text>
       </Group>
       {(Number(inv.cgst_amount ?? 0) > 0 || Number(inv.sgst_amount ?? 0) > 0 || Number(inv.igst_amount ?? 0) > 0) && (
         <Group gap="xs">
           <Badge variant="light" color="teal" size="sm">CGST: ₹{inv.cgst_amount}</Badge>
           <Badge variant="light" color="teal" size="sm">SGST: ₹{inv.sgst_amount}</Badge>
-          <Badge variant="light" color="indigo" size="sm">IGST: ₹{inv.igst_amount}</Badge>
+          <Badge variant="light" color="primary" size="sm">IGST: ₹{inv.igst_amount}</Badge>
           {Number(inv.cess_amount ?? 0) > 0 && <Badge variant="light" color="orange" size="sm">Cess: ₹{inv.cess_amount}</Badge>}
         </Group>
       )}
@@ -564,8 +564,8 @@ function InvoiceDetail({ invoiceId, canCreate, canPay }: { invoiceId: string; ca
 
       {canCreate && inv.status === "draft" && (
         <Group>
-          <Button size="xs" color="blue" onClick={() => issueMutation.mutate()}>Issue Invoice</Button>
-          <Button size="xs" color="red" variant="light" onClick={() => cancelMutation.mutate()}>Cancel</Button>
+          <Button size="xs" color="primary" onClick={() => issueMutation.mutate()}>Issue Invoice</Button>
+          <Button size="xs" color="danger" variant="light" onClick={() => cancelMutation.mutate()}>Cancel</Button>
         </Group>
       )}
 
@@ -598,7 +598,7 @@ function InvoiceDetail({ invoiceId, canCreate, canPay }: { invoiceId: string; ca
               <Table.Td>₹{item.total_price}</Table.Td>
               {canCreate && inv.status === "draft" && (
                 <Table.Td>
-                  <ActionIcon variant="subtle" color="red" onClick={() => removeItemMutation.mutate(item.id)}>
+                  <ActionIcon variant="subtle" color="danger" onClick={() => removeItemMutation.mutate(item.id)}>
                     <IconTrash size={14} />
                   </ActionIcon>
                 </Table.Td>
@@ -725,7 +725,7 @@ function InvoiceDetail({ invoiceId, canCreate, canPay }: { invoiceId: string; ca
                 <Table.Td>{d.reason ?? "—"}</Table.Td>
                 {canCreate && (
                   <Table.Td>
-                    <ActionIcon variant="subtle" color="red" size="sm" onClick={() => removeDiscountMutation.mutate(d.id)}>
+                    <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => removeDiscountMutation.mutate(d.id)}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Table.Td>
@@ -807,13 +807,13 @@ function ChargeMasterTab({ canCreate }: { canCreate: boolean }) {
     { key: "base_price", label: "Price", render: (row: ChargeMaster) => <Text size="sm">₹{row.base_price}</Text> },
     { key: "hsn_sac_code", label: "HSN/SAC", render: (row: ChargeMaster) => <Text size="sm">{row.hsn_sac_code ?? "—"}</Text> },
     { key: "gst_category", label: "GST Cat.", render: (row: ChargeMaster) => <Text size="sm">{row.gst_category ?? "—"}</Text> },
-    { key: "is_active", label: "Active", render: (row: ChargeMaster) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_active", label: "Active", render: (row: ChargeMaster) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
     {
       key: "actions",
       label: "",
       render: (row: ChargeMaster) =>
         canCreate ? (
-          <ActionIcon variant="subtle" color="red" onClick={() => deleteMutation.mutate(row.id)}>
+          <ActionIcon variant="subtle" color="danger" onClick={() => deleteMutation.mutate(row.id)}>
             <IconTrash size={14} />
           </ActionIcon>
         ) : null,
@@ -899,7 +899,7 @@ function CopayBreakdown({ invoiceId }: { invoiceId: string }) {
           </Stack>
           <Stack gap={2}>
             <Text size="xs" c="dimmed">Insurance Coverage</Text>
-            <Text size="sm" fw={700} c="green">{"\u20B9"}{copay.insurance_coverage.toFixed(2)}</Text>
+            <Text size="sm" fw={700} c="success">{"\u20B9"}{copay.insurance_coverage.toFixed(2)}</Text>
           </Stack>
           <Stack gap={2}>
             <Text size="xs" c="dimmed">Co-pay</Text>
@@ -911,7 +911,7 @@ function CopayBreakdown({ invoiceId }: { invoiceId: string }) {
           </Stack>
           <Stack gap={2}>
             <Text size="xs" c="dimmed">Patient Responsibility</Text>
-            <Text size="sm" fw={700} c="red">{"\u20B9"}{copay.patient_responsibility.toFixed(2)}</Text>
+            <Text size="sm" fw={700} c="danger">{"\u20B9"}{copay.patient_responsibility.toFixed(2)}</Text>
           </Stack>
         </SimpleGrid>
       )}
@@ -930,20 +930,20 @@ function ErFastInvoiceModal({ opened, onClose }: { opened: boolean; onClose: () 
     mutationFn: (data: ErFastInvoiceRequest) => api.erFastInvoice(data),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      notifications.show({ title: "ER Invoice Created", message: `Invoice ${(result as Invoice).invoice_number} created`, color: "green" });
+      notifications.show({ title: "ER Invoice Created", message: `Invoice ${(result as Invoice).invoice_number} created`, color: "success" });
       emit("invoice.created", { invoice_id: (result as Invoice).id });
       onClose();
       setEmergencyVisitId("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create ER invoice", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create ER invoice", color: "danger" });
     },
   });
 
   return (
     <Drawer opened={opened} onClose={onClose} title="ER Fast Invoice" position="right" size="md">
       <Stack>
-        <Alert color="red" variant="light" title="Emergency Department Fast Billing">
+        <Alert color="danger" variant="light" title="Emergency Department Fast Billing">
           <Text size="sm">Creates an invoice with standard ER charges for the specified emergency visit. Additional charges can be added later.</Text>
         </Alert>
         <TextInput
@@ -954,7 +954,7 @@ function ErFastInvoiceModal({ opened, onClose }: { opened: boolean; onClose: () 
           required
         />
         <Button
-          color="red"
+          color="danger"
           onClick={() => createMutation.mutate({ emergency_visit_id: emergencyVisitId })}
           loading={createMutation.isPending}
           disabled={!emergencyVisitId.trim()}
@@ -1012,11 +1012,11 @@ function PackagesTab({ canCreate }: { canCreate: boolean }) {
     { key: "name", label: "Name", render: (row: BillingPackage) => <Text size="sm">{row.name}</Text> },
     { key: "total_price", label: "Price", render: (row: BillingPackage) => <Text size="sm">₹{row.total_price}</Text> },
     { key: "discount_percent", label: "Discount", render: (row: BillingPackage) => <Text size="sm">{row.discount_percent}%</Text> },
-    { key: "is_active", label: "Active", render: (row: BillingPackage) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_active", label: "Active", render: (row: BillingPackage) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
     {
       key: "actions", label: "",
       render: (row: BillingPackage) => canCreate ? (
-        <ActionIcon variant="subtle" color="red" onClick={() => deleteMutation.mutate(row.id)}>
+        <ActionIcon variant="subtle" color="danger" onClick={() => deleteMutation.mutate(row.id)}>
           <IconTrash size={14} />
         </ActionIcon>
       ) : null,
@@ -1102,12 +1102,12 @@ function RatePlansTab({ canCreate }: { canCreate: boolean }) {
   const columns = [
     { key: "name", label: "Name", render: (row: RatePlan) => <Text fw={500}>{row.name}</Text> },
     { key: "patient_category", label: "Category", render: (row: RatePlan) => <Text size="sm">{row.patient_category ?? "All"}</Text> },
-    { key: "is_default", label: "Default", render: (row: RatePlan) => row.is_default ? <Badge size="xs" color="blue">Default</Badge> : null },
-    { key: "is_active", label: "Active", render: (row: RatePlan) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_default", label: "Default", render: (row: RatePlan) => row.is_default ? <Badge size="xs" color="primary">Default</Badge> : null },
+    { key: "is_active", label: "Active", render: (row: RatePlan) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
     {
       key: "actions", label: "",
       render: (row: RatePlan) => canCreate ? (
-        <ActionIcon variant="subtle" color="red" onClick={() => deleteMutation.mutate(row.id)}>
+        <ActionIcon variant="subtle" color="danger" onClick={() => deleteMutation.mutate(row.id)}>
           <IconTrash size={14} />
         </ActionIcon>
       ) : null,
@@ -1232,7 +1232,7 @@ function RefundsCreditsTab({ canCreate, canWriteOff }: { canCreate: boolean; can
     {
       key: "status", label: "Status",
       render: (row: BadDebtWriteOff) => (
-        <Badge variant="light" color={row.status === "approved" ? "green" : row.status === "rejected" ? "red" : "yellow"}>
+        <Badge variant="light" color={row.status === "approved" ? "success" : row.status === "rejected" ? "danger" : "warning"}>
           {row.status}
         </Badge>
       ),
@@ -1241,8 +1241,8 @@ function RefundsCreditsTab({ canCreate, canWriteOff }: { canCreate: boolean; can
       key: "actions", label: "",
       render: (row: BadDebtWriteOff) => row.status === "pending" && canApproveWriteOff ? (
         <Group gap={4}>
-          <Tooltip label="Approve"><ActionIcon color="green" variant="light" size="sm" onClick={() => approveWriteOffMutation.mutate({ id: row.id, data: { approved: true } })}><IconCheck size={14} /></ActionIcon></Tooltip>
-          <Tooltip label="Reject"><ActionIcon color="red" variant="light" size="sm" onClick={() => approveWriteOffMutation.mutate({ id: row.id, data: { approved: false } })}><IconX size={14} /></ActionIcon></Tooltip>
+          <Tooltip label="Approve"><ActionIcon color="success" variant="light" size="sm" onClick={() => approveWriteOffMutation.mutate({ id: row.id, data: { approved: true } })}><IconCheck size={14} /></ActionIcon></Tooltip>
+          <Tooltip label="Reject"><ActionIcon color="danger" variant="light" size="sm" onClick={() => approveWriteOffMutation.mutate({ id: row.id, data: { approved: false } })}><IconX size={14} /></ActionIcon></Tooltip>
         </Group>
       ) : null,
     },
@@ -1260,7 +1260,7 @@ function RefundsCreditsTab({ canCreate, canWriteOff }: { canCreate: boolean; can
     { key: "credit_note_number", label: "CN #", render: (row: CreditNote) => <Text fw={500}>{row.credit_note_number}</Text> },
     { key: "amount", label: "Amount", render: (row: CreditNote) => <Text size="sm">₹{row.amount}</Text> },
     { key: "reason", label: "Reason", render: (row: CreditNote) => <Text size="sm">{row.reason}</Text> },
-    { key: "status", label: "Status", render: (row: CreditNote) => <Badge variant="light" color={row.status === "active" ? "green" : row.status === "used" ? "blue" : "red"}>{row.status}</Badge> },
+    { key: "status", label: "Status", render: (row: CreditNote) => <Badge variant="light" color={row.status === "active" ? "success" : row.status === "used" ? "primary" : "danger"}>{row.status}</Badge> },
     {
       key: "actions", label: "",
       render: (row: CreditNote) => row.status === "active" && canCreate ? (
@@ -1402,25 +1402,25 @@ function InsuranceClaimsTab({ canCreate, canWriteOff: _cwo }: { canCreate: boole
     { key: "scheme_type", label: "Scheme", render: (row: TpaRateCard) => <Badge variant="light">{row.scheme_type ?? "—"}</Badge> },
     { key: "valid_from", label: "Valid From", render: (row: TpaRateCard) => <Text size="sm">{row.valid_from ?? "—"}</Text> },
     { key: "valid_to", label: "Valid To", render: (row: TpaRateCard) => <Text size="sm">{row.valid_to ?? "—"}</Text> },
-    { key: "is_active", label: "Active", render: (row: TpaRateCard) => <Badge color={row.is_active ? "green" : "gray"}>{row.is_active ? "Yes" : "No"}</Badge> },
+    { key: "is_active", label: "Active", render: (row: TpaRateCard) => <Badge color={row.is_active ? "success" : "slate"}>{row.is_active ? "Yes" : "No"}</Badge> },
     {
       key: "actions", label: "",
       render: (row: TpaRateCard) => canCreate ? (
-        <Tooltip label="Delete"><ActionIcon color="red" variant="subtle" size="sm" onClick={() => deleteTpaMutation.mutate(row.id)}><IconTrash size={14} /></ActionIcon></Tooltip>
+        <Tooltip label="Delete"><ActionIcon color="danger" variant="subtle" size="sm" onClick={() => deleteTpaMutation.mutate(row.id)}><IconTrash size={14} /></ActionIcon></Tooltip>
       ) : null,
     },
   ];
 
   const claimStatusColors: Record<string, string> = {
-    initiated: "gray",
-    pre_auth_requested: "blue",
+    initiated: "slate",
+    pre_auth_requested: "primary",
     pre_auth_approved: "teal",
-    pre_auth_rejected: "red",
-    claim_submitted: "indigo",
-    claim_approved: "green",
-    claim_rejected: "red",
-    settled: "green",
-    partially_settled: "yellow",
+    pre_auth_rejected: "danger",
+    claim_submitted: "primary",
+    claim_approved: "success",
+    claim_rejected: "danger",
+    settled: "success",
+    partially_settled: "warning",
   };
 
   const columns = [
@@ -1429,7 +1429,7 @@ function InsuranceClaimsTab({ canCreate, canWriteOff: _cwo }: { canCreate: boole
     {
       key: "status", label: "Status",
       render: (row: InsuranceClaim) => (
-        <Badge variant="light" color={claimStatusColors[row.status] ?? "gray"}>
+        <Badge variant="light" color={claimStatusColors[row.status] ?? "slate"}>
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -1569,7 +1569,7 @@ function BillingSettingsTab() {
       queryClient.invalidateQueries({ queryKey: ["tenant-settings", "billing"] });
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to update setting", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to update setting", color: "danger" });
     },
   });
 
@@ -1654,9 +1654,9 @@ function BillingSettingsTab() {
 // ── Advances Tab ────────────────────────────────────────
 
 const advanceStatusColors: Record<string, string> = {
-  active: "green",
-  partially_used: "yellow",
-  fully_used: "blue",
+  active: "success",
+  partially_used: "warning",
+  fully_used: "primary",
   refunded: "orange",
 };
 
@@ -1681,33 +1681,33 @@ function AdvancesTab() {
     mutationFn: (data: CreateAdvanceRequest) => api.createAdvance(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["advances"] });
-      notifications.show({ title: "Advance created", message: "Patient advance recorded", color: "green" });
+      notifications.show({ title: "Advance created", message: "Patient advance recorded", color: "success" });
       setShowForm(false);
       setForm({ payment_mode: "cash", purpose: "general" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create advance", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create advance", color: "danger" }),
   });
 
   const adjustMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: AdjustAdvanceRequest }) => api.adjustAdvance(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["advances"] });
-      notifications.show({ title: "Adjusted", message: "Advance adjusted against invoice", color: "green" });
+      notifications.show({ title: "Adjusted", message: "Advance adjusted against invoice", color: "success" });
       setAdjustId(null);
       setAdjustForm({});
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to adjust advance", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to adjust advance", color: "danger" }),
   });
 
   const refundMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: RefundAdvanceRequest }) => api.refundAdvance(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["advances"] });
-      notifications.show({ title: "Refunded", message: "Advance refunded", color: "green" });
+      notifications.show({ title: "Refunded", message: "Advance refunded", color: "success" });
       setRefundId(null);
       setRefundForm({ mode: "cash" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to refund advance", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to refund advance", color: "danger" }),
   });
 
   const columns = [
@@ -1715,14 +1715,14 @@ function AdvancesTab() {
     { key: "amount", label: "Amount", render: (row: PatientAdvance) => <Text size="sm">₹{row.amount}</Text> },
     {
       key: "balance", label: "Balance",
-      render: (row: PatientAdvance) => <Text size="sm" c={Number(row.balance) > 0 ? "green" : "dimmed"}>₹{row.balance}</Text>,
+      render: (row: PatientAdvance) => <Text size="sm" c={Number(row.balance) > 0 ? "success" : "dimmed"}>₹{row.balance}</Text>,
     },
     { key: "purpose", label: "Purpose", render: (row: PatientAdvance) => <Badge variant="light">{row.purpose}</Badge> },
     { key: "payment_mode", label: "Mode", render: (row: PatientAdvance) => <Text size="sm">{row.payment_mode}</Text> },
     {
       key: "status", label: "Status",
       render: (row: PatientAdvance) => (
-        <Badge variant="light" color={advanceStatusColors[row.status] ?? "gray"}>
+        <Badge variant="light" color={advanceStatusColors[row.status] ?? "slate"}>
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -1848,11 +1848,11 @@ function CorporateTab() {
     mutationFn: (data: CreateCorporateRequest) => api.createCorporate(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["corporates"] });
-      notifications.show({ title: "Created", message: "Corporate client created", color: "green" });
+      notifications.show({ title: "Created", message: "Corporate client created", color: "success" });
       setShowForm(false);
       setForm({});
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create corporate client", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create corporate client", color: "danger" }),
   });
 
   const columns = [
@@ -1862,7 +1862,7 @@ function CorporateTab() {
     { key: "credit_limit", label: "Credit Limit", render: (row: CorporateClient) => <Text size="sm">₹{row.credit_limit}</Text> },
     { key: "credit_days", label: "Credit Days", render: (row: CorporateClient) => <Text size="sm">{row.credit_days}</Text> },
     { key: "discount", label: "Discount %", render: (row: CorporateClient) => <Text size="sm">{row.agreed_discount_percent}%</Text> },
-    { key: "is_active", label: "Active", render: (row: CorporateClient) => row.is_active ? <IconCheck size={14} color="green" /> : <IconX size={14} color="red" /> },
+    { key: "is_active", label: "Active", render: (row: CorporateClient) => row.is_active ? <IconCheck size={14} color="success" /> : <IconX size={14} color="danger" /> },
     {
       key: "actions", label: "",
       render: (row: CorporateClient) => (
@@ -1967,7 +1967,7 @@ function CorporateDetail({ corporateId, canUpdate }: { corporateId: string; canU
     <Stack>
       <Group justify="space-between">
         <Text fw={700} size="lg">{corporate.name}</Text>
-        <Badge size="lg" variant="light" color={corporate.is_active ? "green" : "red"}>
+        <Badge size="lg" variant="light" color={corporate.is_active ? "success" : "danger"}>
           {corporate.is_active ? "Active" : "Inactive"}
         </Badge>
       </Group>
@@ -2024,7 +2024,7 @@ function CorporateDetail({ corporateId, canUpdate }: { corporateId: string; canU
               <Table.Td>{new Date(e.enrolled_at).toLocaleDateString()}</Table.Td>
               {canUpdate && (
                 <Table.Td>
-                  <ActionIcon variant="subtle" color="red" size="sm" onClick={() => unenrollMutation.mutate(e.id)}>
+                  <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => unenrollMutation.mutate(e.id)}>
                     <IconTrash size={14} />
                   </ActionIcon>
                 </Table.Td>
@@ -2068,7 +2068,7 @@ function CorporateDetail({ corporateId, canUpdate }: { corporateId: string; canU
             {invoices.map((inv: Invoice) => (
               <Table.Tr key={inv.id}>
                 <Table.Td>{inv.invoice_number}</Table.Td>
-                <Table.Td><Badge variant="light" color={statusColors[inv.status] ?? "gray"}>{inv.status.replace(/_/g, " ")}</Badge></Table.Td>
+                <Table.Td><Badge variant="light" color={statusColors[inv.status] ?? "slate"}>{inv.status.replace(/_/g, " ")}</Badge></Table.Td>
                 <Table.Td>₹{inv.total_amount}</Table.Td>
                 <Table.Td>{new Date(inv.created_at).toLocaleDateString()}</Table.Td>
               </Table.Tr>
@@ -2169,7 +2169,7 @@ function ReportsTab() {
             </Card>
             <Card withBorder p="sm">
               <Text size="xs" c="dimmed">Total Collected</Text>
-              <Text fw={700} size="lg" c="green">₹{daily.total_collected}</Text>
+              <Text fw={700} size="lg" c="success">₹{daily.total_collected}</Text>
             </Card>
           </SimpleGrid>
         </>
@@ -2189,7 +2189,7 @@ function ReportsTab() {
             <Table.Tbody>
               {aging.map((b: AgingBucket) => (
                 <Table.Tr key={b.bucket}>
-                  <Table.Td><Badge variant="light" color={b.bucket.includes("90") ? "red" : b.bucket.includes("60") ? "orange" : b.bucket.includes("30") ? "yellow" : "green"}>{b.bucket}</Badge></Table.Td>
+                  <Table.Td><Badge variant="light" color={b.bucket.includes("90") ? "danger" : b.bucket.includes("60") ? "orange" : b.bucket.includes("30") ? "warning" : "success"}>{b.bucket}</Badge></Table.Td>
                   <Table.Td>{b.count}</Table.Td>
                   <Table.Td>₹{b.total_amount}</Table.Td>
                 </Table.Tr>
@@ -2244,7 +2244,7 @@ function ReportsTab() {
                   <Table.Td>₹{m.collected}</Table.Td>
                   <Table.Td>
                     <Group gap="xs">
-                      <Progress value={Number(m.rate)} size="sm" w={80} color={Number(m.rate) > 80 ? "green" : Number(m.rate) > 50 ? "yellow" : "red"} />
+                      <Progress value={Number(m.rate)} size="sm" w={80} color={Number(m.rate) > 80 ? "success" : Number(m.rate) > 50 ? "warning" : "danger"} />
                       <Text size="xs">{m.rate}%</Text>
                     </Group>
                   </Table.Td>
@@ -2301,7 +2301,7 @@ function ReportsTab() {
                   <Table.Td>₹{row.total_claimed}</Table.Td>
                   <Table.Td>₹{row.total_approved}</Table.Td>
                   <Table.Td>₹{row.total_settled}</Table.Td>
-                  <Table.Td><Badge color="yellow" variant="light">{row.pending_count}</Badge></Table.Td>
+                  <Table.Td><Badge color="warning" variant="light">{row.pending_count}</Badge></Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>
@@ -2325,11 +2325,11 @@ function ReportsTab() {
           </Card>
           <Card withBorder p="sm">
             <Text size="xs" c="dimmed">Cash Difference</Text>
-            <Text fw={700} c={Number(reconciliation.cash_difference) === 0 ? "green" : "red"}>₹{reconciliation.cash_difference}</Text>
+            <Text fw={700} c={Number(reconciliation.cash_difference) === 0 ? "success" : "danger"}>₹{reconciliation.cash_difference}</Text>
           </Card>
           <Card withBorder p="sm">
             <Text size="xs" c="dimmed">Status</Text>
-            <Badge color={reconciliation.status === "verified" ? "green" : reconciliation.status === "discrepancy" ? "red" : "blue"}>{reconciliation.status}</Badge>
+            <Badge color={reconciliation.status === "verified" ? "success" : reconciliation.status === "discrepancy" ? "danger" : "primary"}>{reconciliation.status}</Badge>
           </Card>
         </SimpleGrid>
       )}
@@ -2346,11 +2346,11 @@ function ReportSummaryCards({ summary }: { summary: BillingSummaryReport }) {
       </Card>
       <Card withBorder p="sm">
         <Text size="xs" c="dimmed">Total Collected</Text>
-        <Text fw={700} size="lg" c="green">₹{summary.total_collected}</Text>
+        <Text fw={700} size="lg" c="success">₹{summary.total_collected}</Text>
       </Card>
       <Card withBorder p="sm">
         <Text size="xs" c="dimmed">Outstanding</Text>
-        <Text fw={700} size="lg" c="red">₹{summary.total_outstanding}</Text>
+        <Text fw={700} size="lg" c="danger">₹{summary.total_outstanding}</Text>
       </Card>
       <Card withBorder p="sm">
         <Text size="xs" c="dimmed">Invoices</Text>
@@ -2393,23 +2393,23 @@ function DayCloseTab() {
       queryClient.invalidateQueries({ queryKey: ["day-closes"] });
       setShowForm(false);
       setForm({});
-      notifications.show({ title: "Success", message: "Day close created", color: "green" });
+      notifications.show({ title: "Success", message: "Day close created", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create day close", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create day close", color: "danger" }),
   });
 
   const verifyMutation = useMutation({
     mutationFn: (id: string) => api.verifyDayClose(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["day-closes"] });
-      notifications.show({ title: "Verified", message: "Day close verified", color: "green" });
+      notifications.show({ title: "Verified", message: "Day close verified", color: "success" });
     },
   });
 
   const dayCloseStatusColors: Record<string, string> = {
-    open: "blue",
-    verified: "green",
-    discrepancy: "red",
+    open: "primary",
+    verified: "success",
+    discrepancy: "danger",
   };
 
   const columns = [
@@ -2420,7 +2420,7 @@ function DayCloseTab() {
       key: "cash_difference", label: "Difference",
       render: (row: DayEndClose) => {
         const diff = Number(row.cash_difference);
-        return <Text size="sm" fw={600} c={diff === 0 ? "green" : "red"}>₹{row.cash_difference}</Text>;
+        return <Text size="sm" fw={600} c={diff === 0 ? "success" : "danger"}>₹{row.cash_difference}</Text>;
       },
     },
     { key: "total_collected", label: "Total Collected", render: (row: DayEndClose) => <Text size="sm">₹{row.total_collected}</Text> },
@@ -2428,13 +2428,13 @@ function DayCloseTab() {
     {
       key: "status", label: "Status",
       render: (row: DayEndClose) => (
-        <Badge color={dayCloseStatusColors[row.status] ?? "gray"} variant="light">{row.status}</Badge>
+        <Badge color={dayCloseStatusColors[row.status] ?? "slate"} variant="light">{row.status}</Badge>
       ),
     },
     {
       key: "actions", label: "",
       render: (row: DayEndClose) => row.status === "open" && canVerify ? (
-        <Button size="compact-xs" variant="light" color="green" leftSection={<IconCheck size={14} />} onClick={() => verifyMutation.mutate(row.id)}>
+        <Button size="compact-xs" variant="light" color="success" leftSection={<IconCheck size={14} />} onClick={() => verifyMutation.mutate(row.id)}>
           Verify
         </Button>
       ) : null,
@@ -2478,25 +2478,25 @@ function AuditLogTab() {
   });
 
   const actionColors: Record<string, string> = {
-    invoice_created: "blue",
+    invoice_created: "primary",
     invoice_issued: "teal",
-    invoice_cancelled: "red",
-    payment_recorded: "green",
+    invoice_cancelled: "danger",
+    payment_recorded: "success",
     payment_voided: "orange",
     refund_created: "orange",
     discount_applied: "violet",
-    discount_removed: "gray",
-    advance_collected: "cyan",
-    advance_adjusted: "yellow",
-    advance_refunded: "pink",
-    credit_note_created: "indigo",
-    credit_note_applied: "indigo",
-    claim_created: "blue",
-    claim_updated: "blue",
+    discount_removed: "slate",
+    advance_collected: "info",
+    advance_adjusted: "warning",
+    advance_refunded: "danger",
+    credit_note_created: "primary",
+    credit_note_applied: "primary",
+    claim_created: "primary",
+    claim_updated: "primary",
     day_closed: "teal",
     write_off_created: "orange",
-    write_off_approved: "green",
-    invoice_cloned: "grape",
+    write_off_approved: "success",
+    invoice_cloned: "violet",
   };
 
   const columns = [
@@ -2507,7 +2507,7 @@ function AuditLogTab() {
     {
       key: "action", label: "Action",
       render: (row: BillingAuditEntry) => (
-        <Badge size="sm" variant="light" color={actionColors[row.action] ?? "gray"}>
+        <Badge size="sm" variant="light" color={actionColors[row.action] ?? "slate"}>
           {row.action.replace(/_/g, " ")}
         </Badge>
       ),
@@ -2588,9 +2588,9 @@ function CreditPatientsTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["credit-patients"] });
       close();
-      notifications.show({ title: "Created", message: "Credit patient added", color: "green" });
+      notifications.show({ title: "Created", message: "Credit patient added", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create", color: "danger" }),
   });
 
   const updateMut = useMutation({
@@ -2599,13 +2599,13 @@ function CreditPatientsTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["credit-patients"] });
       close();
-      notifications.show({ title: "Updated", message: "Credit patient updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Credit patient updated", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Update failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Update failed", color: "danger" }),
   });
 
   const creditStatusColors: Record<string, string> = {
-    active: "green", overdue: "red", suspended: "orange", closed: "gray",
+    active: "success", overdue: "danger", suspended: "orange", closed: "slate",
   };
 
   const columns = [
@@ -2613,7 +2613,7 @@ function CreditPatientsTab() {
     {
       key: "status", label: "Status",
       render: (r: CreditPatient) => (
-        <Badge size="sm" color={creditStatusColors[r.status] ?? "gray"}>{r.status}</Badge>
+        <Badge size="sm" color={creditStatusColors[r.status] ?? "slate"}>{r.status}</Badge>
       ),
     },
     {
@@ -2623,7 +2623,7 @@ function CreditPatientsTab() {
     {
       key: "current_balance", label: "Balance",
       render: (r: CreditPatient) => (
-        <Text size="sm" c={r.current_balance > r.credit_limit * 0.8 ? "red" : undefined}>
+        <Text size="sm" c={r.current_balance > r.credit_limit * 0.8 ? "danger" : undefined}>
           ₹{r.current_balance.toLocaleString()}
         </Text>
       ),
@@ -2650,11 +2650,11 @@ function CreditPatientsTab() {
       key: "utilization", label: "Utilization",
       render: (r: CreditAgingRow) => {
         const pct = r.credit_limit > 0 ? (r.current_balance / r.credit_limit) * 100 : 0;
-        return <Progress value={pct} size="sm" color={pct > 90 ? "red" : pct > 70 ? "orange" : "green"} />;
+        return <Progress value={pct} size="sm" color={pct > 90 ? "danger" : pct > 70 ? "orange" : "success"} />;
       },
     },
-    { key: "status", label: "Status", render: (r: CreditAgingRow) => <Badge size="sm" color={creditStatusColors[r.status] ?? "gray"}>{r.status}</Badge> },
-    { key: "days_overdue", label: "Days Overdue", render: (r: CreditAgingRow) => <Text size="sm" c={r.days_overdue && r.days_overdue > 30 ? "red" : undefined}>{r.days_overdue ?? "—"}</Text> },
+    { key: "status", label: "Status", render: (r: CreditAgingRow) => <Badge size="sm" color={creditStatusColors[r.status] ?? "slate"}>{r.status}</Badge> },
+    { key: "days_overdue", label: "Days Overdue", render: (r: CreditAgingRow) => <Text size="sm" c={r.days_overdue && r.days_overdue > 30 ? "danger" : undefined}>{r.days_overdue ?? "—"}</Text> },
     { key: "overdue_since", label: "Overdue Since", render: (r: CreditAgingRow) => <Text size="sm">{r.overdue_since ? new Date(r.overdue_since).toLocaleDateString() : "—"}</Text> },
   ];
 
@@ -2775,28 +2775,28 @@ function GstrSubView({ canManage }: { canManage: boolean }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["gstr-summaries"] });
       closeGen();
-      notifications.show({ title: "Generated", message: "GSTR summary created", color: "green" });
+      notifications.show({ title: "Generated", message: "GSTR summary created", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to generate", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to generate", color: "danger" }),
   });
 
   const fileMut = useMutation({
     mutationFn: (id: string) => api.fileGstr(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["gstr-summaries"] });
-      notifications.show({ title: "Filed", message: "GSTR marked as filed", color: "green" });
+      notifications.show({ title: "Filed", message: "GSTR marked as filed", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Filing failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Filing failed", color: "danger" }),
   });
 
   const gstrStatusColors: Record<string, string> = {
-    draft: "gray", validated: "blue", filed: "green", accepted: "teal", error: "red",
+    draft: "slate", validated: "primary", filed: "success", accepted: "teal", error: "danger",
   };
 
   const columns = [
     { key: "return_type", label: "Type", render: (r: GstReturnSummary) => <Badge size="sm">{r.return_type}</Badge> },
     { key: "period", label: "Period", render: (r: GstReturnSummary) => <Text size="sm">{r.period}</Text> },
-    { key: "filing_status", label: "Status", render: (r: GstReturnSummary) => <Badge size="sm" color={gstrStatusColors[r.filing_status] ?? "gray"}>{r.filing_status}</Badge> },
+    { key: "filing_status", label: "Status", render: (r: GstReturnSummary) => <Badge size="sm" color={gstrStatusColors[r.filing_status] ?? "slate"}>{r.filing_status}</Badge> },
     { key: "total_taxable", label: "Taxable", render: (r: GstReturnSummary) => <Text size="sm">₹{r.total_taxable.toLocaleString()}</Text> },
     { key: "cgst", label: "CGST", render: (r: GstReturnSummary) => <Text size="sm">₹{r.total_cgst.toLocaleString()}</Text> },
     { key: "sgst", label: "SGST", render: (r: GstReturnSummary) => <Text size="sm">₹{r.total_sgst.toLocaleString()}</Text> },
@@ -2847,9 +2847,9 @@ function TdsSubView({ canManage }: { canManage: boolean }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tds-deductions"] });
       close();
-      notifications.show({ title: "Created", message: "TDS deduction recorded", color: "green" });
+      notifications.show({ title: "Created", message: "TDS deduction recorded", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed", color: "danger" }),
   });
 
   const depositMut = useMutation({
@@ -2857,7 +2857,7 @@ function TdsSubView({ canManage }: { canManage: boolean }) {
       api.depositTds(args.id, { challan_number: args.challan, challan_date: new Date().toISOString().slice(0, 10) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tds-deductions"] });
-      notifications.show({ title: "Deposited", message: "TDS challan recorded", color: "green" });
+      notifications.show({ title: "Deposited", message: "TDS challan recorded", color: "success" });
     },
   });
 
@@ -2866,12 +2866,12 @@ function TdsSubView({ canManage }: { canManage: boolean }) {
       api.issueTdsCertificate(args.id, { certificate_number: args.cert, certificate_date: new Date().toISOString().slice(0, 10) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tds-deductions"] });
-      notifications.show({ title: "Issued", message: "Certificate recorded", color: "green" });
+      notifications.show({ title: "Issued", message: "Certificate recorded", color: "success" });
     },
   });
 
   const tdsStatusColors: Record<string, string> = {
-    deducted: "blue", deposited: "teal", certificate_issued: "green",
+    deducted: "primary", deposited: "teal", certificate_issued: "success",
   };
 
   const columns = [
@@ -2881,7 +2881,7 @@ function TdsSubView({ canManage }: { canManage: boolean }) {
     { key: "tds_rate", label: "Rate %", render: (r: TdsDeduction) => <Text size="sm">{r.tds_rate}%</Text> },
     { key: "base_amount", label: "Base", render: (r: TdsDeduction) => <Text size="sm">₹{r.base_amount.toLocaleString()}</Text> },
     { key: "tds_amount", label: "TDS", render: (r: TdsDeduction) => <Text size="sm" fw={600}>₹{r.tds_amount.toLocaleString()}</Text> },
-    { key: "status", label: "Status", render: (r: TdsDeduction) => <Badge size="sm" color={tdsStatusColors[r.status] ?? "gray"}>{r.status.replace(/_/g, " ")}</Badge> },
+    { key: "status", label: "Status", render: (r: TdsDeduction) => <Badge size="sm" color={tdsStatusColors[r.status] ?? "slate"}>{r.status.replace(/_/g, " ")}</Badge> },
     { key: "fy", label: "FY / Q", render: (r: TdsDeduction) => <Text size="sm">{r.financial_year} {r.quarter}</Text> },
     ...(canManage ? [{
       key: "actions", label: "",
@@ -2896,7 +2896,7 @@ function TdsSubView({ canManage }: { canManage: boolean }) {
           )}
           {r.status === "deposited" && (
             <Tooltip label="Issue Certificate">
-              <ActionIcon variant="subtle" color="green" onClick={() => certMut.mutate({ id: r.id, cert: `CERT-${Date.now()}` })}>
+              <ActionIcon variant="subtle" color="success" onClick={() => certMut.mutate({ id: r.id, cert: `CERT-${Date.now()}` })}>
                 <IconShieldCheck size={16} />
               </ActionIcon>
             </Tooltip>
@@ -3010,27 +3010,27 @@ function JournalEntriesTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
       close();
-      notifications.show({ title: "Created", message: "Journal entry created", color: "green" });
+      notifications.show({ title: "Created", message: "Journal entry created", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed — ensure debits equal credits", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed — ensure debits equal credits", color: "danger" }),
   });
 
   const postMut = useMutation({
     mutationFn: (id: string) => api.postJournalEntry(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
-      notifications.show({ title: "Posted", message: "Journal entry posted to ledger", color: "green" });
+      notifications.show({ title: "Posted", message: "Journal entry posted to ledger", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Post failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Post failed", color: "danger" }),
   });
 
   const reverseMut = useMutation({
     mutationFn: (id: string) => api.reverseJournalEntry(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
-      notifications.show({ title: "Reversed", message: "Reversal entry created", color: "green" });
+      notifications.show({ title: "Reversed", message: "Reversal entry created", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Reversal failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Reversal failed", color: "danger" }),
   });
 
   const addLine = () => setForm({ ...form, lines: [...form.lines, { account_id: "", debit_amount: 0, credit_amount: 0 }] });
@@ -3043,14 +3043,14 @@ function JournalEntriesTab() {
   };
 
   const jeStatusColors: Record<string, string> = {
-    draft: "gray", posted: "green", reversed: "red",
+    draft: "slate", posted: "success", reversed: "danger",
   };
 
   const columns = [
     { key: "entry_number", label: "JE #", render: (r: JournalEntry) => <Text size="sm" fw={600}>{r.entry_number}</Text> },
     { key: "entry_date", label: "Date", render: (r: JournalEntry) => <Text size="sm">{new Date(r.entry_date).toLocaleDateString()}</Text> },
     { key: "entry_type", label: "Type", render: (r: JournalEntry) => <Badge size="sm" variant="light">{r.entry_type.replace(/_/g, " ")}</Badge> },
-    { key: "status", label: "Status", render: (r: JournalEntry) => <Badge size="sm" color={jeStatusColors[r.status] ?? "gray"}>{r.status}</Badge> },
+    { key: "status", label: "Status", render: (r: JournalEntry) => <Badge size="sm" color={jeStatusColors[r.status] ?? "slate"}>{r.status}</Badge> },
     { key: "total_debit", label: "Debit", render: (r: JournalEntry) => <Text size="sm">₹{r.total_debit.toLocaleString()}</Text> },
     { key: "total_credit", label: "Credit", render: (r: JournalEntry) => <Text size="sm">₹{r.total_credit.toLocaleString()}</Text> },
     { key: "description", label: "Description", render: (r: JournalEntry) => <Text size="sm" lineClamp={1}>{r.description ?? "—"}</Text> },
@@ -3060,14 +3060,14 @@ function JournalEntriesTab() {
         <Group gap={4}>
           {r.status === "draft" && (
             <Tooltip label="Post to ledger">
-              <ActionIcon variant="subtle" color="green" onClick={() => postMut.mutate(r.id)}>
+              <ActionIcon variant="subtle" color="success" onClick={() => postMut.mutate(r.id)}>
                 <IconCheck size={16} />
               </ActionIcon>
             </Tooltip>
           )}
           {r.status === "posted" && (
             <Tooltip label="Reverse entry">
-              <ActionIcon variant="subtle" color="red" onClick={() => reverseMut.mutate(r.id)}>
+              <ActionIcon variant="subtle" color="danger" onClick={() => reverseMut.mutate(r.id)}>
                 <IconX size={16} />
               </ActionIcon>
             </Tooltip>
@@ -3116,7 +3116,7 @@ function JournalEntriesTab() {
                 <NumberInput placeholder="Debit" value={line.debit_amount} onChange={(v) => updateLine(idx, "debit_amount", Number(v))} min={0} w={120} />
                 <NumberInput placeholder="Credit" value={line.credit_amount} onChange={(v) => updateLine(idx, "credit_amount", Number(v))} min={0} w={120} />
                 {form.lines.length > 2 && (
-                  <ActionIcon variant="subtle" color="red" onClick={() => removeLine(idx)}>
+                  <ActionIcon variant="subtle" color="danger" onClick={() => removeLine(idx)}>
                     <IconTrash size={16} />
                   </ActionIcon>
                 )}
@@ -3129,7 +3129,7 @@ function JournalEntriesTab() {
             <Text size="sm">Total Credit: ₹{totalCredit.toLocaleString()}</Text>
           </Group>
           {!balanced && totalDebit > 0 && (
-            <Alert color="red" title="Unbalanced">
+            <Alert color="danger" title="Unbalanced">
               Debits must equal credits before saving.
             </Alert>
           )}
@@ -3173,22 +3173,22 @@ function BankReconTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bank-transactions"] });
       closeImport();
-      notifications.show({ title: "Imported", message: "Bank transactions imported", color: "green" });
+      notifications.show({ title: "Imported", message: "Bank transactions imported", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Import failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Import failed", color: "danger" }),
   });
 
   const autoReconMut = useMutation({
     mutationFn: () => api.autoReconcile(),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["bank-transactions"] });
-      notifications.show({ title: "Auto-Reconciled", message: `${res.matched_count ?? 0} transactions matched`, color: "green" });
+      notifications.show({ title: "Auto-Reconciled", message: `${res.matched_count ?? 0} transactions matched`, color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Auto-reconcile failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Auto-reconcile failed", color: "danger" }),
   });
 
   const reconStatusColors: Record<string, string> = {
-    unmatched: "orange", matched: "green", discrepancy: "red", excluded: "gray",
+    unmatched: "orange", matched: "success", discrepancy: "danger", excluded: "slate",
   };
 
   const columns = [
@@ -3198,7 +3198,7 @@ function BankReconTab() {
     { key: "debit_amount", label: "Debit", render: (r: BankTransaction) => <Text size="sm">{r.debit_amount ? `₹${r.debit_amount.toLocaleString()}` : "—"}</Text> },
     { key: "credit_amount", label: "Credit", render: (r: BankTransaction) => <Text size="sm">{r.credit_amount ? `₹${r.credit_amount.toLocaleString()}` : "—"}</Text> },
     { key: "reference_number", label: "Reference", render: (r: BankTransaction) => <Text size="sm" ff="monospace">{r.reference_number ?? "—"}</Text> },
-    { key: "recon_status", label: "Status", render: (r: BankTransaction) => <Badge size="sm" color={reconStatusColors[r.recon_status] ?? "gray"}>{r.recon_status}</Badge> },
+    { key: "recon_status", label: "Status", render: (r: BankTransaction) => <Badge size="sm" color={reconStatusColors[r.recon_status] ?? "slate"}>{r.recon_status}</Badge> },
   ];
 
   const addManualTxn = () => {
@@ -3300,12 +3300,12 @@ function FinancialMisTab() {
 
   const plColumns = [
     { key: "department_name", label: "Department", render: (r: ProfitLossDeptRow) => <Text size="sm" fw={500}>{r.department_name ?? "Unassigned"}</Text> },
-    { key: "revenue", label: "Revenue", render: (r: ProfitLossDeptRow) => <Text size="sm" c="green">₹{r.revenue.toLocaleString()}</Text> },
-    { key: "expenses", label: "Expenses", render: (r: ProfitLossDeptRow) => <Text size="sm" c="red">₹{r.expenses.toLocaleString()}</Text> },
+    { key: "revenue", label: "Revenue", render: (r: ProfitLossDeptRow) => <Text size="sm" c="success">₹{r.revenue.toLocaleString()}</Text> },
+    { key: "expenses", label: "Expenses", render: (r: ProfitLossDeptRow) => <Text size="sm" c="danger">₹{r.expenses.toLocaleString()}</Text> },
     {
       key: "profit", label: "Profit/Loss",
       render: (r: ProfitLossDeptRow) => (
-        <Text size="sm" fw={600} c={r.profit >= 0 ? "green" : "red"}>₹{r.profit.toLocaleString()}</Text>
+        <Text size="sm" fw={600} c={r.profit >= 0 ? "success" : "danger"}>₹{r.profit.toLocaleString()}</Text>
       ),
     },
     {
@@ -3328,7 +3328,7 @@ function FinancialMisTab() {
         <SimpleGrid cols={4}>
           <Card withBorder p="md">
             <Text size="xs" c="dimmed">Total Revenue</Text>
-            <Text size="xl" fw={700} c="green">₹{misData.total_revenue.toLocaleString()}</Text>
+            <Text size="xl" fw={700} c="success">₹{misData.total_revenue.toLocaleString()}</Text>
           </Card>
           <Card withBorder p="md">
             <Text size="xs" c="dimmed">Total Collections</Text>
@@ -3337,7 +3337,7 @@ function FinancialMisTab() {
           <Card withBorder p="md">
             <Text size="xs" c="dimmed">Collection Rate</Text>
             <Text size="xl" fw={700}>{Number(misData.collection_rate).toFixed(1)}%</Text>
-            <Progress value={Number(misData.collection_rate)} size="sm" mt="xs" color={Number(misData.collection_rate) >= 80 ? "green" : "orange"} />
+            <Progress value={Number(misData.collection_rate)} size="sm" mt="xs" color={Number(misData.collection_rate) >= 80 ? "success" : "orange"} />
           </Card>
           <Card withBorder p="md">
             <Text size="xs" c="dimmed">Outstanding</Text>
@@ -3404,22 +3404,22 @@ function ErpExportTab() {
     mutationFn: () => api.exportToErp(form),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["erp-exports"] });
-      notifications.show({ title: "Exported", message: "Data exported to ERP", color: "green" });
+      notifications.show({ title: "Exported", message: "Data exported to ERP", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Export failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Export failed", color: "danger" }),
   });
 
   const erpStatusColors: Record<string, string> = {
-    pending: "yellow", exported: "green", failed: "red", acknowledged: "teal",
+    pending: "warning", exported: "success", failed: "danger", acknowledged: "teal",
   };
 
   const columns = [
     { key: "target_system", label: "System", render: (r: ErpExportLog) => <Badge size="sm">{r.target_system}</Badge> },
     { key: "export_type", label: "Type", render: (r: ErpExportLog) => <Text size="sm">{r.export_type}</Text> },
-    { key: "status", label: "Status", render: (r: ErpExportLog) => <Badge size="sm" color={erpStatusColors[r.status] ?? "gray"}>{r.status}</Badge> },
+    { key: "status", label: "Status", render: (r: ErpExportLog) => <Badge size="sm" color={erpStatusColors[r.status] ?? "slate"}>{r.status}</Badge> },
     { key: "record_count", label: "Records", render: (r: ErpExportLog) => <Text size="sm">{r.record_ids?.length ?? 0}</Text> },
     { key: "created_at", label: "Exported At", render: (r: ErpExportLog) => <Text size="sm">{new Date(r.created_at).toLocaleString()}</Text> },
-    { key: "error_message", label: "Error", render: (r: ErpExportLog) => <Text size="sm" c="red" lineClamp={1}>{r.error_message ?? "—"}</Text> },
+    { key: "error_message", label: "Error", render: (r: ErpExportLog) => <Text size="sm" c="danger" lineClamp={1}>{r.error_message ?? "—"}</Text> },
   ];
 
   return (

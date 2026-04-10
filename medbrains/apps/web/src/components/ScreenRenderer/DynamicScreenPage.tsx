@@ -52,7 +52,7 @@ export function DynamicScreenPage({ screenCode: codeProp }: DynamicScreenPagePro
 
   if (error || !screen) {
     return (
-      <Alert icon={<IconAlertCircle size={16} />} color="red" title="Screen not found">
+      <Alert icon={<IconAlertCircle size={16} />} color="danger" title="Screen not found">
         <Stack gap="xs">
           <Text size="sm">
             Could not resolve screen &quot;{code}&quot;.

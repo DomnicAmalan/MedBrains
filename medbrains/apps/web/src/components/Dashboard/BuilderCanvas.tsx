@@ -450,7 +450,7 @@ function CanvasWidget({
           {widget.icon && (
             <ThemeIcon
               variant="light"
-              color={widget.color ?? "gray"}
+              color={widget.color ?? "slate"}
               size={18}
               radius="md"
             >
@@ -474,7 +474,7 @@ function CanvasWidget({
                 <ActionIcon
                   variant="subtle"
                   size="xs"
-                  color="gray"
+                  color="slate"
                   onClick={(e) => {
                     e.stopPropagation();
                     duplicateWidget(widget.clientId);
@@ -487,7 +487,7 @@ function CanvasWidget({
                 <ActionIcon
                   variant="subtle"
                   size="xs"
-                  color="red"
+                  color="danger"
                   onClick={(e) => {
                     e.stopPropagation();
                     removeWidget(widget.clientId);
@@ -516,7 +516,7 @@ function CanvasWidget({
           <Badge
             size="xs"
             variant="light"
-            color={widget.color ?? "gray"}
+            color={widget.color ?? "slate"}
             radius="sm"
           >
             {widgetTypeLabel}
@@ -527,7 +527,7 @@ function CanvasWidget({
               <Badge
                 size="xs"
                 variant="light"
-                color={scope === "auto" ? "teal" : scope === "all" ? "gray" : "blue"}
+                color={scope === "auto" ? "teal" : scope === "all" ? "slate" : "primary"}
                 radius="sm"
               >
                 {scope === "auto" ? "Dept" : scope === "all" ? "All" : "Filtered"}

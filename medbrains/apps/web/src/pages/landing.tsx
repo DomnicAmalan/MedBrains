@@ -123,7 +123,7 @@ function PlatformBadge({ web, mobile, tv }: { web: string; mobile: string; tv: s
         <Badge size="xs" variant="dot" color="medbrainsTeal">M</Badge>
       )}
       {tv === "Y" && (
-        <Badge size="xs" variant="dot" color="gray">TV</Badge>
+        <Badge size="xs" variant="dot" color="slate">TV</Badge>
       )}
     </Group>
   );
@@ -235,7 +235,7 @@ export function LandingPage() {
                           <Accordion.Control>
                             <Group justify="space-between" pr="sm">
                               <Text size="sm" fw={500}>{mod}</Text>
-                              <Badge size="xs" variant="light" color="gray">
+                              <Badge size="xs" variant="light" color="slate">
                                 {feats.length}
                               </Badge>
                             </Group>

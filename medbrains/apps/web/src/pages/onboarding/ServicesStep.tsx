@@ -43,12 +43,12 @@ const templateServices: Array<{ code: string; name: string; service_type: Servic
 ];
 
 const typeColors: Record<string, string> = {
-  consultation: "blue",
-  procedure: "grape",
+  consultation: "primary",
+  procedure: "violet",
   investigation: "teal",
-  nursing: "pink",
+  nursing: "danger",
   diet: "orange",
-  other: "gray",
+  other: "slate",
 };
 
 export function ServicesStep({ onNext, onBack }: Props) {
@@ -132,12 +132,12 @@ export function ServicesStep({ onNext, onBack }: Props) {
             </Text>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Badge variant="light" color={typeColors[svc.service_type] ?? "gray"}>
+            <Badge variant="light" color={typeColors[svc.service_type] ?? "slate"}>
               {svc.service_type}
             </Badge>
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               onClick={() => removeService(svc.local_id)}
             >
               <IconTrash size={16} />

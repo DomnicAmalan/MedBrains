@@ -136,7 +136,7 @@ export function MapperToolbar({
             Visual Field Mapper
           </Text>
         </Group>
-        <Badge size="sm" variant="light" color="gray">
+        <Badge size="sm" variant="light" color="slate">
           {mappingCount} mapping{mappingCount !== 1 ? "s" : ""}
         </Badge>
       </Group>
@@ -182,7 +182,7 @@ export function MapperToolbar({
             >
               Sample Data
               {filledCount > 0 && (
-                <Badge size="xs" variant="filled" color="blue" ml={6}>
+                <Badge size="xs" variant="filled" color="primary" ml={6}>
                   {filledCount}
                 </Badge>
               )}

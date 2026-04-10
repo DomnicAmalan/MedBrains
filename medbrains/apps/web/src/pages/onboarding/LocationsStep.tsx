@@ -88,7 +88,7 @@ export function LocationsStep({ onNext, onBack }: Props) {
       </Text>
 
       {locations.length === 0 && (
-        <Alert variant="light" color="blue">
+        <Alert variant="light" color="primary">
           No locations yet. Add your first campus location.
         </Alert>
       )}
@@ -103,7 +103,7 @@ export function LocationsStep({ onNext, onBack }: Props) {
           </div>
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => removeLocation(loc.local_id)}
           >
             <IconTrash size={16} />

@@ -41,14 +41,14 @@ const FACILITY_TYPE_OPTIONS = [
 ];
 
 const FACILITY_TYPE_COLORS: Record<string, string> = {
-  hospital: "blue",
-  clinic: "green",
+  hospital: "primary",
+  clinic: "success",
   satellite_center: "violet",
   nursing_home: "orange",
-  blood_bank: "red",
-  diagnostic_center: "cyan",
+  blood_bank: "danger",
+  diagnostic_center: "info",
   pharmacy: "teal",
-  warehouse: "gray",
+  warehouse: "slate",
 };
 
 // ── Form State ────────────────────────────────────────────
@@ -177,7 +177,7 @@ function FacilityModal({
       notifications.show({
         title: "Facility created",
         message: "Facility has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-facilities"] });
@@ -187,7 +187,7 @@ function FacilityModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -199,7 +199,7 @@ function FacilityModal({
       notifications.show({
         title: "Facility updated",
         message: "Facility has been updated successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-facilities"] });
@@ -209,7 +209,7 @@ function FacilityModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -219,7 +219,7 @@ function FacilityModal({
       notifications.show({
         title: "Missing fields",
         message: "Code, name, and facility type are required",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -396,7 +396,7 @@ export function FacilitiesSettings() {
       notifications.show({
         title: "Facility deleted",
         message: "Facility has been removed",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-facilities"] });
@@ -405,7 +405,7 @@ export function FacilitiesSettings() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -451,7 +451,7 @@ export function FacilitiesSettings() {
         <Badge
           size="sm"
           variant="light"
-          color={FACILITY_TYPE_COLORS[facility.facility_type] ?? "gray"}
+          color={FACILITY_TYPE_COLORS[facility.facility_type] ?? "slate"}
         >
           {facility.facility_type.replace(/_/g, " ")}
         </Badge>
@@ -468,7 +468,7 @@ export function FacilitiesSettings() {
         <Badge
           size="sm"
           variant="light"
-          color={facility.is_active ? "green" : "gray"}
+          color={facility.is_active ? "success" : "slate"}
         >
           {facility.is_active ? "Active" : "Inactive"}
         </Badge>
@@ -477,14 +477,14 @@ export function FacilitiesSettings() {
         <Group gap={4}>
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color="primary"
             onClick={() => openEdit(facility)}
           >
             <IconPencil size={16} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => handleDelete(facility)}
             loading={deleteMutation.isPending}
           >

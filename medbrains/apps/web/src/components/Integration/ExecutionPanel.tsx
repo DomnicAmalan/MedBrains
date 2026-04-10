@@ -21,11 +21,11 @@ interface ExecutionPanelProps {
 }
 
 const STATUS_COLORS: Record<ExecutionStatus, string> = {
-  pending: "gray",
-  running: "blue",
-  completed: "green",
-  failed: "red",
-  skipped: "yellow",
+  pending: "slate",
+  running: "primary",
+  completed: "success",
+  failed: "danger",
+  skipped: "warning",
 };
 
 function formatTime(ts: string | null): string {
@@ -114,7 +114,7 @@ function ExecutionCard({ execution }: { execution: IntegrationExecution }) {
       </Group>
 
       {execution.error && (
-        <Code block mt="xs" c="red" style={{ fontSize: 11 }}>
+        <Code block mt="xs" c="danger" style={{ fontSize: 11 }}>
           {execution.error}
         </Code>
       )}

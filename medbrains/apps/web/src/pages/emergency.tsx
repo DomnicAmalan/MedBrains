@@ -23,6 +23,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
@@ -72,11 +73,11 @@ const ARRIVAL_MODES = [
 ];
 
 const CODE_TYPES = [
-  { value: "blue", label: "Code Blue (Cardiac Arrest)" },
-  { value: "yellow", label: "Code Yellow (Mass Casualty)" },
-  { value: "pink", label: "Code Pink (Child Abduction)" },
+  { value: "primary", label: "Code Blue (Cardiac Arrest)" },
+  { value: "warning", label: "Code Yellow (Mass Casualty)" },
+  { value: "danger", label: "Code Pink (Child Abduction)" },
   { value: "orange", label: "Code Orange (Hazmat)" },
-  { value: "red", label: "Code Red (Fire)" },
+  { value: "danger", label: "Code Red (Fire)" },
   { value: "silver", label: "Code Silver (Active Threat)" },
   { value: "black", label: "Code Black (Bomb Threat)" },
 ];
@@ -122,26 +123,26 @@ interface TriageInfo {
 
 function triageInfo(level: string | null): TriageInfo {
   switch (level) {
-    case "immediate": return { color: "red", label: "RED - Immediate", level: 1 };
+    case "immediate": return { color: "danger", label: "RED - Immediate", level: 1 };
     case "emergent": return { color: "orange", label: "ORANGE - Emergent", level: 2 };
-    case "urgent": return { color: "yellow", label: "YELLOW - Urgent", level: 3 };
-    case "less_urgent": return { color: "green", label: "GREEN - Delayed", level: 4 };
-    case "non_urgent": return { color: "blue", label: "BLUE - Non-Urgent", level: 5 };
+    case "urgent": return { color: "warning", label: "YELLOW - Urgent", level: 3 };
+    case "less_urgent": return { color: "success", label: "GREEN - Delayed", level: 4 };
+    case "non_urgent": return { color: "primary", label: "BLUE - Non-Urgent", level: 5 };
     case "expectant": return { color: "dark", label: "BLACK - Expectant", level: 6 };
-    default: return { color: "gray", label: "Unassigned", level: 0 };
+    default: return { color: "slate", label: "Unassigned", level: 0 };
   }
 }
 
 function statusColor(status: string): string {
   switch (status) {
-    case "registered": return "blue";
+    case "registered": return "primary";
     case "triaged": return "cyan";
     case "in_treatment": return "orange";
-    case "observation": return "yellow";
+    case "observation": return "warning";
     case "admitted": return "teal";
-    case "discharged": return "green";
+    case "discharged": return "success";
     case "transferred": return "violet";
-    case "lama": return "red";
+    case "lama": return "danger";
     case "deceased": return "dark";
     default: return "gray";
   }
@@ -207,7 +208,7 @@ function WaitTimeBadge({ arrivalTime, doorToDoctorMins }: { arrivalTime: string;
 
   if (doorToDoctorMins !== null && doorToDoctorMins !== undefined) {
     return (
-      <Badge color="green" variant="light" size="lg" leftSection={<IconCheck size={12} />}>
+      <Badge color="success" variant="light" size="lg" leftSection={<IconCheck size={12} />}>
         {display}
       </Badge>
     );
@@ -278,7 +279,7 @@ function VisitsTab({ canCreate }: { canCreate: boolean }) {
       api.admitFromEr(visitId, d),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["er-visits"] });
-      notifications.show({ title: "Patient Admitted", message: "Patient has been admitted to IPD from ER", color: "green" });
+      notifications.show({ title: "Patient Admitted", message: "Patient has been admitted to IPD from ER", color: "success" });
       setAdmitForm({});
       setAdmitVisitId(null);
       admitHandlers.close();
@@ -302,7 +303,7 @@ function VisitsTab({ canCreate }: { canCreate: boolean }) {
       render: (r: ErVisit) => {
         const info = triageInfo(r.triage_level);
         if (!r.triage_level) {
-          return <Badge color="gray" size="lg" variant="outline">Unassigned</Badge>;
+          return <Badge color="slate" size="lg" variant="outline">Unassigned</Badge>;
         }
         return (
           <Badge
@@ -321,7 +322,7 @@ function VisitsTab({ canCreate }: { canCreate: boolean }) {
       },
     },
     { key: "status", label: "Status", render: (r: ErVisit) => <Badge color={statusColor(r.status)} size="sm">{r.status}</Badge> },
-    { key: "is_mlc", label: "MLC", render: (r: ErVisit) => r.is_mlc ? <Badge color="red" size="sm">MLC</Badge> : null },
+    { key: "is_mlc", label: "MLC", render: (r: ErVisit) => r.is_mlc ? <Badge color="danger" size="sm">MLC</Badge> : null },
     { key: "bay_number", label: "Bay", render: (r: ErVisit) => r.bay_number ?? "---" },
     {
       key: "wait_time",
@@ -362,7 +363,7 @@ function VisitsTab({ canCreate }: { canCreate: boolean }) {
 
       <Drawer opened={opened} onClose={close} title="Register ER Visit" position="right" size="md">
         <Stack>
-          <TextInput label="Patient ID" required value={form.patient_id} onChange={(e) => setForm({ ...form, patient_id: e.currentTarget.value })} />
+          <PatientSearchSelect value={form.patient_id} onChange={(v) => setForm({ ...form, patient_id: v })} required />
           <Select label="Arrival Mode" data={ARRIVAL_MODES} value={form.arrival_mode ?? null} onChange={(v) => setForm({ ...form, arrival_mode: v ?? undefined })} />
           <TextInput label="Chief Complaint" value={form.chief_complaint ?? ""} onChange={(e) => setForm({ ...form, chief_complaint: e.currentTarget.value })} />
           <TextInput label="Bay Number" value={form.bay_number ?? ""} onChange={(e) => setForm({ ...form, bay_number: e.currentTarget.value })} />
@@ -444,7 +445,7 @@ function CrashCartChecklist({
           <IconFirstAidKit size={20} />
           <Title order={5}>Crash Cart Checklist</Title>
         </Group>
-        <Badge color={allChecked ? "green" : "orange"} variant="light">
+        <Badge color={allChecked ? "success" : "orange"} variant="light">
           {checkedCount}/{CRASH_CART_ITEMS.length}
         </Badge>
       </Group>
@@ -479,7 +480,7 @@ function CodesTab({ canCreate }: { canCreate: boolean }) {
       qc.invalidateQueries({ queryKey: ["er-codes"] });
       close();
       setCrashCart({});
-      notifications.show({ title: "Code Activated", message: `${form.code_type.toUpperCase()} activated`, color: "red" });
+      notifications.show({ title: "Code Activated", message: `${form.code_type.toUpperCase()} activated`, color: "danger" });
     },
   });
 
@@ -503,11 +504,11 @@ function CodesTab({ canCreate }: { canCreate: boolean }) {
   };
 
   const columns = [
-    { key: "code_type", label: "Code", render: (r: ErCodeActivation) => <Badge color={r.code_type === "blue" ? "blue" : r.code_type === "yellow" ? "yellow" : "orange"} size="lg">CODE {r.code_type.toUpperCase()}</Badge> },
+    { key: "code_type", label: "Code", render: (r: ErCodeActivation) => <Badge color={r.code_type === "blue" ? "primary" : r.code_type === "yellow" ? "warning" : "orange"} size="lg">CODE {r.code_type.toUpperCase()}</Badge> },
     { key: "activated_at", label: "Activated", render: (r: ErCodeActivation) => new Date(r.activated_at).toLocaleString() },
     { key: "location", label: "Location", render: (r: ErCodeActivation) => r.location ?? "---" },
     { key: "outcome", label: "Outcome", render: (r: ErCodeActivation) => r.outcome ?? "---" },
-    { key: "deactivated_at", label: "Status", render: (r: ErCodeActivation) => r.deactivated_at ? <Badge color="green" size="sm">Resolved</Badge> : <Badge color="red" size="sm">Active</Badge> },
+    { key: "deactivated_at", label: "Status", render: (r: ErCodeActivation) => r.deactivated_at ? <Badge color="success" size="sm">Resolved</Badge> : <Badge color="danger" size="sm">Active</Badge> },
     {
       key: "crash_cart", label: "Crash Cart", render: (r: ErCodeActivation) => {
         const checklist = r.crash_cart_checklist as Record<string, boolean> | null;
@@ -515,7 +516,7 @@ function CodesTab({ canCreate }: { canCreate: boolean }) {
         const checked = Object.values(checklist).filter(Boolean).length;
         const total = CRASH_CART_ITEMS.length;
         return (
-          <Badge color={checked === total ? "green" : "orange"} variant="light" size="sm">
+          <Badge color={checked === total ? "success" : "orange"} variant="light" size="sm">
             {checked}/{total}
           </Badge>
         );
@@ -531,7 +532,7 @@ function CodesTab({ canCreate }: { canCreate: boolean }) {
           </Tooltip>
           {!r.deactivated_at && canCreate && (
             <Tooltip label="Deactivate">
-              <ActionIcon color="green" variant="light" onClick={() => deactivateMut.mutate(r.id)}>
+              <ActionIcon color="success" variant="light" onClick={() => deactivateMut.mutate(r.id)}>
                 <IconCheck size={16} />
               </ActionIcon>
             </Tooltip>
@@ -547,7 +548,7 @@ function CodesTab({ canCreate }: { canCreate: boolean }) {
     <Stack mt="md">
       {canCreate && (
         <Group justify="flex-end">
-          <Button leftSection={<IconAlertTriangle size={16} />} color="red" onClick={open}>Activate Code</Button>
+          <Button leftSection={<IconAlertTriangle size={16} />} color="danger" onClick={open}>Activate Code</Button>
         </Group>
       )}
       <DataTable columns={columns} data={data} loading={isLoading} rowKey={(r) => r.id} />
@@ -560,7 +561,7 @@ function CodesTab({ canCreate }: { canCreate: boolean }) {
           <Textarea label="Notes" value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })} />
           <Divider />
           <CrashCartChecklist value={crashCart} onChange={setCrashCart} />
-          <Button color="red" onClick={handleCreate} loading={createMut.isPending}>Activate Code</Button>
+          <Button color="danger" onClick={handleCreate} loading={createMut.isPending}>Activate Code</Button>
         </Stack>
       </Drawer>
 
@@ -569,13 +570,13 @@ function CodesTab({ canCreate }: { canCreate: boolean }) {
         {selectedCode && (
           <Stack>
             <Group>
-              <Badge color={selectedCode.code_type === "blue" ? "blue" : "orange"} size="xl">
+              <Badge color={selectedCode.code_type === "blue" ? "primary" : "orange"} size="xl">
                 CODE {selectedCode.code_type.toUpperCase()}
               </Badge>
               {selectedCode.deactivated_at ? (
-                <Badge color="green" size="lg">Resolved</Badge>
+                <Badge color="success" size="lg">Resolved</Badge>
               ) : (
-                <Badge color="red" size="lg">Active</Badge>
+                <Badge color="danger" size="lg">Active</Badge>
               )}
             </Group>
             <Text size="sm"><Text span fw={600}>Activated:</Text> {new Date(selectedCode.activated_at).toLocaleString()}</Text>
@@ -600,11 +601,11 @@ function CodesTab({ canCreate }: { canCreate: boolean }) {
                   {CRASH_CART_ITEMS.map((item) => (
                     <Group key={item.key} gap="xs">
                       {selectedChecklist[item.key] ? (
-                        <ThemeIcon color="green" size="sm" radius="xl"><IconCheck size={12} /></ThemeIcon>
+                        <ThemeIcon color="success" size="sm" radius="xl"><IconCheck size={12} /></ThemeIcon>
                       ) : (
-                        <ThemeIcon color="red" size="sm" radius="xl" variant="light"><IconAlertTriangle size={12} /></ThemeIcon>
+                        <ThemeIcon color="danger" size="sm" radius="xl" variant="light"><IconAlertTriangle size={12} /></ThemeIcon>
                       )}
-                      <Text size="sm" c={selectedChecklist[item.key] ? undefined : "red"}>{item.label}</Text>
+                      <Text size="sm" c={selectedChecklist[item.key] ? undefined : "danger"}>{item.label}</Text>
                     </Group>
                   ))}
                 </Stack>
@@ -746,7 +747,7 @@ function MlcCaseDetail({
         {/* POCSO Banner */}
         {mlcCase.is_pocso && (
           <Alert
-            color="red"
+            color="danger"
             variant="filled"
             icon={<IconAlertOctagon size={20} />}
             title="POCSO Case"
@@ -760,9 +761,9 @@ function MlcCaseDetail({
           <Group justify="space-between" mb="xs">
             <Title order={5}>{mlcCase.mlc_number}</Title>
             <Group gap="xs">
-              {mlcCase.is_pocso && <Badge color="red" size="lg">POCSO</Badge>}
+              {mlcCase.is_pocso && <Badge color="danger" size="lg">POCSO</Badge>}
               {mlcCase.is_death_case && <Badge color="dark" size="lg">Death Case</Badge>}
-              <Badge color={mlcCase.status === "closed" ? "green" : "orange"} size="lg">{mlcCase.status}</Badge>
+              <Badge color={mlcCase.status === "closed" ? "success" : "orange"} size="lg">{mlcCase.status}</Badge>
             </Group>
           </Group>
           <Text size="sm"><Text span fw={600}>Type:</Text> {mlcCase.case_type ?? "---"}</Text>
@@ -777,9 +778,9 @@ function MlcCaseDetail({
           <Button leftSection={<IconShieldCheck size={16} />} variant="light" onClick={openSbar}>SBAR Handover</Button>
           <Button leftSection={<IconScale size={16} />} variant="light" color="violet" onClick={openAgeEst}>Age Estimation</Button>
           {mlcCase.is_pocso && (
-            <Button leftSection={<IconAlertOctagon size={16} />} variant="light" color="red" onClick={openPocso}>POCSO Report</Button>
+            <Button leftSection={<IconAlertOctagon size={16} />} variant="light" color="danger" onClick={openPocso}>POCSO Report</Button>
           )}
-          <Button leftSection={<IconGavel size={16} />} variant="light" color="yellow" onClick={openSummons}>Add Court Summons</Button>
+          <Button leftSection={<IconGavel size={16} />} variant="light" color="warning" onClick={openSummons}>Add Court Summons</Button>
         </Group>
 
         <Divider />
@@ -889,7 +890,7 @@ function MlcCaseDetail({
                     render: (d: MlcDocument) => {
                       const c = d.content as Record<string, string>;
                       const s = c.status || "pending";
-                      const color = s === "attended" ? "green" : s === "adjourned" ? "yellow" : s === "pending" ? "blue" : "gray";
+                      const color = s === "attended" ? "success" : s === "adjourned" ? "warning" : s === "pending" ? "primary" : "slate";
                       return <Badge color={color} size="sm">{s}</Badge>;
                     },
                   },
@@ -913,7 +914,7 @@ function MlcCaseDetail({
       {/* SBAR Handover Drawer */}
       <Drawer opened={sbarOpened} onClose={() => { closeSbar(); setSbarForm({ ...EMPTY_SBAR }); }} title="SBAR Handover" position="right" size="lg">
         <Stack>
-          <Alert color="blue" variant="light" icon={<IconShieldCheck size={16} />}>
+          <Alert color="primary" variant="light" icon={<IconShieldCheck size={16} />}>
             SBAR (Situation-Background-Assessment-Recommendation) is a standardized communication tool for clinical handovers as recommended by WHO and NABH.
           </Alert>
           <Textarea
@@ -1022,7 +1023,7 @@ function MlcCaseDetail({
       {/* POCSO Report Drawer */}
       <Drawer opened={pocsoOpened} onClose={() => { closePocso(); setPocsoForm({ ...EMPTY_POCSO }); }} title="POCSO Report" position="right" size="lg">
         <Stack>
-          <Alert color="red" variant="filled" icon={<IconAlertOctagon size={16} />}>
+          <Alert color="danger" variant="filled" icon={<IconAlertOctagon size={16} />}>
             POCSO Act, 2012 mandates mandatory reporting. This report is a legal document. Ensure child-friendly language and procedures throughout.
           </Alert>
           <TextInput
@@ -1062,7 +1063,7 @@ function MlcCaseDetail({
             onChange={(e) => setPocsoForm({ ...pocsoForm, psych_assessment_needed: e.currentTarget.checked })}
           />
           <Button
-            color="red"
+            color="danger"
             onClick={handlePocsoSubmit}
             loading={createDocMut.isPending}
             disabled={
@@ -1116,7 +1117,7 @@ function MlcCaseDetail({
             onChange={(e) => setSummonsForm({ ...summonsForm, notes: e.currentTarget.value })}
           />
           <Button
-            color="yellow"
+            color="warning"
             onClick={handleSummonsSubmit}
             loading={createDocMut.isPending}
             disabled={!summonsForm.date || !summonsForm.court_name || !summonsForm.case_number}
@@ -1144,11 +1145,11 @@ function MlcTab({ canCreate }: { canCreate: boolean }) {
 
   const mlcStatusColor = (s: string) => {
     switch (s) {
-      case "registered": return "blue";
+      case "registered": return "primary";
       case "under_investigation": return "orange";
       case "opinion_given": return "teal";
-      case "court_pending": return "yellow";
-      case "closed": return "green";
+      case "court_pending": return "warning";
+      case "closed": return "success";
       default: return "gray";
     }
   };
@@ -1165,7 +1166,7 @@ function MlcTab({ canCreate }: { canCreate: boolean }) {
     { key: "status", label: "Status", render: (r: MlcCase) => <Badge color={mlcStatusColor(r.status)} size="sm">{r.status}</Badge> },
     { key: "fir_number", label: "FIR #", render: (r: MlcCase) => r.fir_number ?? "---" },
     { key: "police_station", label: "Police Station", render: (r: MlcCase) => r.police_station ?? "---" },
-    { key: "is_pocso", label: "POCSO", render: (r: MlcCase) => r.is_pocso ? <Badge color="red" size="sm">POCSO</Badge> : null },
+    { key: "is_pocso", label: "POCSO", render: (r: MlcCase) => r.is_pocso ? <Badge color="danger" size="sm">POCSO</Badge> : null },
     { key: "is_death_case", label: "Death", render: (r: MlcCase) => r.is_death_case ? <Badge color="dark" size="sm">Death</Badge> : null },
     {
       key: "actions", label: "", render: (r: MlcCase) => (
@@ -1190,7 +1191,7 @@ function MlcTab({ canCreate }: { canCreate: boolean }) {
       {/* Create MLC Drawer */}
       <Drawer opened={opened} onClose={close} title="Register MLC Case" position="right" size="lg">
         <Stack>
-          <TextInput label="Patient ID" required value={form.patient_id} onChange={(e) => setForm({ ...form, patient_id: e.currentTarget.value })} />
+          <PatientSearchSelect value={form.patient_id} onChange={(v) => setForm({ ...form, patient_id: v })} required />
           <Select label="Case Type" data={MLC_CASE_TYPES} value={form.case_type ?? null} onChange={(v) => setForm({ ...form, case_type: v ?? undefined })} />
           <TextInput label="FIR Number" value={form.fir_number ?? ""} onChange={(e) => setForm({ ...form, fir_number: e.currentTarget.value })} />
           <TextInput label="Police Station" value={form.police_station ?? ""} onChange={(e) => setForm({ ...form, police_station: e.currentTarget.value })} />
@@ -1231,15 +1232,15 @@ function MassCasualtyTab({ canCreate }: { canCreate: boolean }) {
   const [form, setForm] = useState<CreateMassCasualtyEventRequest>({ event_name: "" });
   const mutation = useMutation({
     mutationFn: (d: CreateMassCasualtyEventRequest) => api.createMassCasualtyEvent(d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mass-casualty"] }); close(); notifications.show({ title: "Code Yellow", message: "Mass casualty event activated", color: "red" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mass-casualty"] }); close(); notifications.show({ title: "Code Yellow", message: "Mass casualty event activated", color: "danger" }); },
   });
 
   const mcStatusColor = (s: string) => {
     switch (s) {
-      case "activated": return "red";
+      case "activated": return "danger";
       case "ongoing": return "orange";
-      case "scaling_down": return "yellow";
-      case "deactivated": return "green";
+      case "scaling_down": return "warning";
+      case "deactivated": return "success";
       default: return "gray";
     }
   };
@@ -1258,7 +1259,7 @@ function MassCasualtyTab({ canCreate }: { canCreate: boolean }) {
     <Stack mt="md">
       {canCreate && (
         <Group justify="flex-end">
-          <Button leftSection={<IconBell size={16} />} color="red" onClick={open}>Activate Mass Casualty</Button>
+          <Button leftSection={<IconBell size={16} />} color="danger" onClick={open}>Activate Mass Casualty</Button>
         </Group>
       )}
       <DataTable columns={columns} data={data} loading={isLoading} rowKey={(r) => r.id} />
@@ -1270,7 +1271,7 @@ function MassCasualtyTab({ canCreate }: { canCreate: boolean }) {
           <TextInput label="Location" value={form.location ?? ""} onChange={(e) => setForm({ ...form, location: e.currentTarget.value })} />
           <NumberInput label="Estimated Casualties" value={form.estimated_casualties ?? ""} onChange={(v) => setForm({ ...form, estimated_casualties: typeof v === "number" ? v : undefined })} />
           <Textarea label="Notes" value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })} />
-          <Button color="red" onClick={() => mutation.mutate(form)} loading={mutation.isPending}>Activate Mass Casualty</Button>
+          <Button color="danger" onClick={() => mutation.mutate(form)} loading={mutation.isPending}>Activate Mass Casualty</Button>
         </Stack>
       </Drawer>
     </Stack>

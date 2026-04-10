@@ -79,7 +79,7 @@ export function ConsultationTemplatesSettings() {
       notifications.show({
         title: "Created",
         message: "Consultation template created.",
-        color: "green",
+        color: "success",
       });
       setModalOpen(false);
       setForm(EMPTY_FORM);
@@ -88,7 +88,7 @@ export function ConsultationTemplatesSettings() {
       notifications.show({
         title: "Error",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -100,7 +100,7 @@ export function ConsultationTemplatesSettings() {
       notifications.show({
         title: "Deleted",
         message: "Template removed.",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -182,7 +182,7 @@ export function ConsultationTemplatesSettings() {
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={tmpl.is_shared ? "green" : "gray"}
+                    color={tmpl.is_shared ? "success" : "slate"}
                     variant="light"
                     size="sm"
                   >
@@ -204,7 +204,7 @@ export function ConsultationTemplatesSettings() {
                     {canDelete && (
                       <ActionIcon
                         variant="subtle"
-                        color="red"
+                        color="danger"
                         title="Delete"
                         onClick={() => deleteMutation.mutate(tmpl.id)}
                       >

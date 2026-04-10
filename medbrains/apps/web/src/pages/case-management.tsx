@@ -17,6 +17,7 @@ import {
   Textarea,
   Timeline,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -56,28 +57,28 @@ import type { Column } from "../components/DataTable";
 // ── Constants ──────────────────────────────────────────
 
 const STATUS_COLORS: Record<string, string> = {
-  assigned: "blue",
-  active: "green",
+  assigned: "primary",
+  active: "success",
   pending_discharge: "orange",
   discharged: "teal",
-  closed: "gray",
+  closed: "slate",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  routine: "gray",
-  urgent: "red",
-  complex: "yellow",
+  routine: "slate",
+  urgent: "danger",
+  complex: "warning",
 };
 
 const BARRIER_TYPE_COLORS: Record<string, string> = {
-  insurance_auth: "red",
+  insurance_auth: "danger",
   placement: "orange",
-  equipment: "cyan",
-  family: "yellow",
-  transport: "blue",
-  financial: "pink",
-  clinical: "grape",
-  documentation: "gray",
+  equipment: "info",
+  family: "warning",
+  transport: "primary",
+  financial: "danger",
+  clinical: "violet",
+  documentation: "slate",
   other: "dark",
 };
 
@@ -104,11 +105,11 @@ const REFERRAL_TYPES = [
 ];
 
 const REFERRAL_STATUS_COLORS: Record<string, string> = {
-  pending: "yellow",
-  accepted: "green",
-  declined: "red",
+  pending: "warning",
+  accepted: "success",
+  declined: "danger",
   completed: "teal",
-  cancelled: "gray",
+  cancelled: "slate",
 };
 
 const PRIORITIES = [
@@ -226,7 +227,7 @@ function CaseBoardTab() {
       qc.invalidateQueries({ queryKey: ["case-caseload"] });
       createHandlers.close();
       setForm({ admission_id: "", patient_id: "", case_manager_id: "" });
-      notifications.show({ title: "Case Assigned", message: "Case assignment created", color: "green" });
+      notifications.show({ title: "Case Assigned", message: "Case assignment created", color: "success" });
     },
   });
 
@@ -241,7 +242,7 @@ function CaseBoardTab() {
       editHandlers.close();
       setEditing(null);
       setEditForm({});
-      notifications.show({ title: "Updated", message: "Case assignment updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Case assignment updated", color: "success" });
     },
   });
 
@@ -265,7 +266,7 @@ function CaseBoardTab() {
   const enhancedAssignments = useMemo(() => {
     return assignments.map((a) => {
       let losDays = 0;
-      let losColor = "green";
+      let losColor = "success";
       let losStatus = "Within";
 
       if (a.status === "active" || a.status === "pending_discharge") {
@@ -276,10 +277,10 @@ function CaseBoardTab() {
         if (a.target_discharge_date) {
           const targetDate = new Date(a.target_discharge_date);
           if (now > targetDate) {
-            losColor = "red";
+            losColor = "danger";
             losStatus = "Over";
           } else if (Math.abs(now.getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24) <= 1) {
-            losColor = "yellow";
+            losColor = "warning";
             losStatus = "At";
           }
         }
@@ -288,7 +289,7 @@ function CaseBoardTab() {
       // Parse risk_score from notes or use dummy calculation
       let riskScore = 0;
       let riskLabel = "Not assessed";
-      let riskColor = "gray";
+      let riskColor = "slate";
 
       if (a.notes) {
         const match = a.notes.match(/risk[:\s]+(\d+)/i);
@@ -297,13 +298,13 @@ function CaseBoardTab() {
       if (riskScore > 0) {
         if (riskScore <= 3) {
           riskLabel = "Low";
-          riskColor = "green";
+          riskColor = "success";
         } else if (riskScore <= 6) {
           riskLabel = "Medium";
-          riskColor = "yellow";
+          riskColor = "warning";
         } else {
           riskLabel = "High";
-          riskColor = "red";
+          riskColor = "danger";
         }
       }
 
@@ -338,7 +339,7 @@ function CaseBoardTab() {
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge color={STATUS_COLORS[r.status] ?? "gray"} variant="filled" size="sm">
+        <Badge color={STATUS_COLORS[r.status] ?? "slate"} variant="filled" size="sm">
           {r.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -347,7 +348,7 @@ function CaseBoardTab() {
       key: "priority",
       label: "Priority",
       render: (r) => (
-        <Badge color={PRIORITY_COLORS[r.priority] ?? "gray"} variant="light" size="sm">
+        <Badge color={PRIORITY_COLORS[r.priority] ?? "slate"} variant="light" size="sm">
           {r.priority}
         </Badge>
       ),
@@ -417,9 +418,9 @@ function CaseBoardTab() {
             <Card withBorder p="sm" key={c.case_manager_id}>
               <Text size="xs" c="dimmed">CM: {truncate(c.case_manager_id, 8)}</Text>
               <Group gap="xs" mt={4}>
-                <Badge color="green" variant="light" size="xs">Active: {c.active_cases}</Badge>
+                <Badge color="success" variant="light" size="xs">Active: {c.active_cases}</Badge>
                 <Badge color="orange" variant="light" size="xs">Pending: {c.pending_discharge}</Badge>
-                <Badge color="blue" variant="light" size="xs">Total: {c.total_cases}</Badge>
+                <Badge color="primary" variant="light" size="xs">Total: {c.total_cases}</Badge>
               </Group>
             </Card>
           ))}
@@ -468,12 +469,7 @@ function CaseBoardTab() {
             value={form.admission_id}
             onChange={(e) => setForm({ ...form, admission_id: e.currentTarget.value })}
           />
-          <TextInput
-            label="Patient ID"
-            required
-            value={form.patient_id}
-            onChange={(e) => setForm({ ...form, patient_id: e.currentTarget.value })}
-          />
+          <PatientSearchSelect value={form.patient_id} onChange={(v) => setForm({ ...form, patient_id: v })} required />
           <TextInput
             label="Case Manager ID"
             required
@@ -520,12 +516,7 @@ function CaseBoardTab() {
             value={autoForm.admission_id}
             onChange={(e) => setAutoForm({ ...autoForm, admission_id: e.currentTarget.value })}
           />
-          <TextInput
-            label="Patient ID"
-            required
-            value={autoForm.patient_id}
-            onChange={(e) => setAutoForm({ ...autoForm, patient_id: e.currentTarget.value })}
-          />
+          <PatientSearchSelect value={autoForm.patient_id} onChange={(v) => setAutoForm({ ...autoForm, patient_id: v })} required />
           <Select
             label="Priority"
             data={PRIORITIES}
@@ -624,7 +615,7 @@ function CaseBoardTab() {
               </div>
               <div>
                 <Text size="xs" c="dimmed">Priority</Text>
-                <Badge color={PRIORITY_COLORS[editing.priority] ?? "gray"}>{editing.priority}</Badge>
+                <Badge color={PRIORITY_COLORS[editing.priority] ?? "slate"}>{editing.priority}</Badge>
               </div>
             </SimpleGrid>
 
@@ -649,7 +640,7 @@ function CaseBoardTab() {
 
                 return (
                   <>
-                    <Progress value={progressPct} color="blue" size="lg" mb="md" />
+                    <Progress value={progressPct} color="primary" size="lg" mb="md" />
                     <Text size="sm" c="dimmed" mb="md">
                       {completedCount} of {milestones.length} milestones completed ({progressPct.toFixed(0)}%)
                     </Text>
@@ -662,7 +653,7 @@ function CaseBoardTab() {
                         >
                           <Text size="xs" c="dimmed">Target: {m.target}</Text>
                           {m.completed && <Text size="xs" c="teal">Completed: {m.completed}</Text>}
-                          <Badge color={m.status === "completed" ? "green" : "gray"} size="xs" mt={4}>
+                          <Badge color={m.status === "completed" ? "success" : "slate"} size="xs" mt={4}>
                             {m.status}
                           </Badge>
                         </Timeline.Item>
@@ -721,7 +712,7 @@ function DischargeBarriersTab() {
       qc.invalidateQueries({ queryKey: ["case-barriers"] });
       createHandlers.close();
       setForm({ case_assignment_id: "", barrier_type: "insurance_auth", description: "" });
-      notifications.show({ title: "Barrier Added", message: "Discharge barrier recorded", color: "green" });
+      notifications.show({ title: "Barrier Added", message: "Discharge barrier recorded", color: "success" });
     },
   });
 
@@ -743,7 +734,7 @@ function DischargeBarriersTab() {
       key: "barrier_type",
       label: "Barrier Type",
       render: (r) => (
-        <Badge color={BARRIER_TYPE_COLORS[r.barrier_type] ?? "gray"} variant="filled" size="sm">
+        <Badge color={BARRIER_TYPE_COLORS[r.barrier_type] ?? "slate"} variant="filled" size="sm">
           {r.barrier_type.replace(/_/g, " ")}
         </Badge>
       ),
@@ -763,9 +754,9 @@ function DischargeBarriersTab() {
       label: "Resolved",
       render: (r) =>
         r.is_resolved ? (
-          <Badge color="green" variant="filled" size="sm">Resolved</Badge>
+          <Badge color="success" variant="filled" size="sm">Resolved</Badge>
         ) : (
-          <Badge color="red" variant="filled" size="sm">Unresolved</Badge>
+          <Badge color="danger" variant="filled" size="sm">Unresolved</Badge>
         ),
     },
     {
@@ -780,7 +771,7 @@ function DischargeBarriersTab() {
         canManage && !r.is_resolved ? (
           <ActionIcon
             variant="subtle"
-            color="green"
+            color="success"
             size="sm"
             onClick={() => resolveMut.mutate(r.id)}
           >
@@ -896,7 +887,7 @@ function ReferralsTab() {
       qc.invalidateQueries({ queryKey: ["case-referrals"] });
       createHandlers.close();
       setForm({ case_assignment_id: "", referral_type: "post_acute", referred_to: "" });
-      notifications.show({ title: "Referral Created", message: "Referral recorded", color: "green" });
+      notifications.show({ title: "Referral Created", message: "Referral recorded", color: "success" });
     },
   });
 
@@ -910,7 +901,7 @@ function ReferralsTab() {
       editHandlers.close();
       setEditing(null);
       setEditForm({});
-      notifications.show({ title: "Updated", message: "Referral updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Referral updated", color: "success" });
     },
   });
 
@@ -938,7 +929,7 @@ function ReferralsTab() {
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge color={REFERRAL_STATUS_COLORS[r.status] ?? "gray"} variant="filled" size="sm">
+        <Badge color={REFERRAL_STATUS_COLORS[r.status] ?? "slate"} variant="filled" size="sm">
           {r.status}
         </Badge>
       ),
@@ -1093,7 +1084,7 @@ function AnalyticsTab() {
       key: "barrier_type",
       label: "Barrier Type",
       render: (r) => (
-        <Badge color={BARRIER_TYPE_COLORS[r.barrier_type] ?? "gray"} variant="light" size="sm">
+        <Badge color={BARRIER_TYPE_COLORS[r.barrier_type] ?? "slate"} variant="light" size="sm">
           {r.barrier_type.replace(/_/g, " ")}
         </Badge>
       ),

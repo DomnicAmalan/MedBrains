@@ -25,7 +25,7 @@ function isConfigured(config: Record<string, unknown>): boolean {
 
 export function TriggerNode({ data, selected }: NodeProps) {
   const d = data as TriggerNodeData;
-  const color = d.color ?? "blue";
+  const color = d.color ?? "primary";
   const config = (d.config ?? {}) as Record<string, unknown>;
   const summary = getConfigSummary(d.templateCode as string | undefined, config);
   const configured = isConfigured(config);

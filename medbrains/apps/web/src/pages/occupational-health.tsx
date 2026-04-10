@@ -70,10 +70,10 @@ const SCREENING_TYPES = [
 ];
 
 const SCREENING_TYPE_COLORS: Record<string, string> = {
-  pre_employment: "blue",
-  periodic: "cyan",
+  pre_employment: "primary",
+  periodic: "info",
   special: "orange",
-  exit: "gray",
+  exit: "slate",
 };
 
 const FITNESS_STATUS_OPTIONS = [
@@ -84,9 +84,9 @@ const FITNESS_STATUS_OPTIONS = [
 ];
 
 const FITNESS_STATUS_COLORS: Record<string, string> = {
-  fit: "green",
-  unfit: "red",
-  pending: "gray",
+  fit: "success",
+  unfit: "danger",
+  pending: "slate",
   referred: "orange",
 };
 
@@ -102,14 +102,14 @@ const DRUG_SCREEN_STATUS_OPTIONS = [
 ];
 
 const DRUG_SCREEN_STATUS_COLORS: Record<string, string> = {
-  ordered: "gray",
-  collected: "blue",
-  sent_to_lab: "cyan",
-  mro_review: "yellow",
-  positive: "red",
-  negative: "green",
+  ordered: "slate",
+  collected: "primary",
+  sent_to_lab: "info",
+  mro_review: "warning",
+  positive: "danger",
+  negative: "success",
   inconclusive: "orange",
-  cancelled: "gray",
+  cancelled: "slate",
 };
 
 const DRUG_PANEL_OPTIONS = [
@@ -135,11 +135,11 @@ const RTW_STATUS_OPTIONS = [
 ];
 
 const RTW_STATUS_COLORS: Record<string, string> = {
-  pending_evaluation: "yellow",
-  cleared_full: "green",
+  pending_evaluation: "warning",
+  cleared_full: "success",
   cleared_with_restrictions: "orange",
-  not_cleared: "red",
-  follow_up_required: "blue",
+  not_cleared: "danger",
+  follow_up_required: "primary",
 };
 
 // ── Main Page ──────────────────────────────────────────
@@ -290,7 +290,7 @@ function ScreeningsPanel() {
       notifications.show({
         title: "Screening Created",
         message: "Health screening record created successfully",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -308,7 +308,7 @@ function ScreeningsPanel() {
       notifications.show({
         title: "Screening Updated",
         message: "Health screening updated successfully",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -328,7 +328,7 @@ function ScreeningsPanel() {
       label: "Type",
       render: (r) => (
         <Badge
-          color={SCREENING_TYPE_COLORS[r.screening_type] ?? "gray"}
+          color={SCREENING_TYPE_COLORS[r.screening_type] ?? "slate"}
           variant="light"
           size="sm"
         >
@@ -346,7 +346,7 @@ function ScreeningsPanel() {
       label: "Fitness Status",
       render: (r) => (
         <Badge
-          color={FITNESS_STATUS_COLORS[r.fitness_status] ?? "gray"}
+          color={FITNESS_STATUS_COLORS[r.fitness_status] ?? "slate"}
           variant="filled"
           size="sm"
         >
@@ -368,7 +368,7 @@ function ScreeningsPanel() {
             <ActionIcon
               variant="subtle"
               size="sm"
-              color="green"
+              color="success"
               onClick={() => {
                 setSelected(r);
                 certHandlers.open();
@@ -421,11 +421,11 @@ function ScreeningsPanel() {
 
   // Helper to get urgency color
   const getUrgencyColor = (dueDate: string) => {
-    if (!dueDate) return "blue";
+    if (!dueDate) return "primary";
     const days = Math.floor((new Date(dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-    if (days < 0) return "red";
-    if (days <= 7) return "yellow";
-    return "blue";
+    if (days < 0) return "danger";
+    if (days <= 7) return "warning";
+    return "primary";
   };
 
   return (
@@ -755,13 +755,13 @@ function ScreeningsPanel() {
                   </Group>
                   <Group>
                     <Text fw={600}>Examination Type:</Text>
-                    <Badge color={SCREENING_TYPE_COLORS[selected.screening_type] ?? "gray"}>
+                    <Badge color={SCREENING_TYPE_COLORS[selected.screening_type] ?? "slate"}>
                       {SCREENING_TYPES.find((t) => t.value === selected.screening_type)?.label}
                     </Badge>
                   </Group>
                   <Group>
                     <Text fw={600}>Fitness Status:</Text>
-                    <Badge color={FITNESS_STATUS_COLORS[selected.fitness_status] ?? "gray"} size="lg">
+                    <Badge color={FITNESS_STATUS_COLORS[selected.fitness_status] ?? "slate"} size="lg">
                       {selected.fitness_status.toUpperCase()}
                     </Badge>
                   </Group>
@@ -842,7 +842,7 @@ function DrugScreensPanel() {
       notifications.show({
         title: "Drug Screen Created",
         message: "Drug screening order created successfully",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -862,7 +862,7 @@ function DrugScreensPanel() {
       notifications.show({
         title: "Drug Screen Updated",
         message: "Drug screen status updated successfully",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -887,7 +887,7 @@ function DrugScreensPanel() {
       label: "Status",
       render: (r) => (
         <Badge
-          color={DRUG_SCREEN_STATUS_COLORS[r.status] ?? "gray"}
+          color={DRUG_SCREEN_STATUS_COLORS[r.status] ?? "slate"}
           variant="filled"
           size="sm"
         >
@@ -1068,7 +1068,7 @@ function VaccinationsPanel() {
       notifications.show({
         title: "Vaccination Recorded",
         message: "Vaccination record created successfully",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -1102,7 +1102,7 @@ function VaccinationsPanel() {
       key: "is_compliant",
       label: "Compliant",
       render: (r) => (
-        <Badge color={r.is_compliant ? "green" : "red"} variant="filled" size="sm">
+        <Badge color={r.is_compliant ? "success" : "danger"} variant="filled" size="sm">
           {r.is_compliant ? "Yes" : "No"}
         </Badge>
       ),
@@ -1134,7 +1134,7 @@ function VaccinationsPanel() {
                   {row.compliant_count} / {row.total_employees}
                 </Text>
                 <Badge
-                  color={row.compliance_pct >= 90 ? "green" : row.compliance_pct >= 70 ? "yellow" : "red"}
+                  color={row.compliance_pct >= 90 ? "success" : row.compliance_pct >= 70 ? "warning" : "danger"}
                   variant="light"
                   size="sm"
                 >
@@ -1299,7 +1299,7 @@ function InjuriesPanel() {
       notifications.show({
         title: "Injury Report Created",
         message: "Workplace injury report created successfully",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -1316,7 +1316,7 @@ function InjuriesPanel() {
       notifications.show({
         title: "Injury Updated",
         message: "Injury report and RTW status updated successfully",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -1355,7 +1355,7 @@ function InjuriesPanel() {
       key: "is_osha_recordable",
       label: "OSHA",
       render: (r) => (
-        <Badge color={r.is_osha_recordable ? "red" : "gray"} variant="filled" size="sm">
+        <Badge color={r.is_osha_recordable ? "danger" : "slate"} variant="filled" size="sm">
           {r.is_osha_recordable ? "Recordable" : "Non-Rec."}
         </Badge>
       ),
@@ -1365,7 +1365,7 @@ function InjuriesPanel() {
       label: "RTW Status",
       render: (r) => (
         <Badge
-          color={RTW_STATUS_COLORS[r.rtw_status] ?? "gray"}
+          color={RTW_STATUS_COLORS[r.rtw_status] ?? "slate"}
           variant="filled"
           size="sm"
         >
@@ -1606,10 +1606,10 @@ const HAZARD_TYPES = [
 ];
 
 const HAZARD_RISK_COLORS: Record<string, string> = {
-  low: "green",
-  medium: "yellow",
+  low: "success",
+  medium: "warning",
   high: "orange",
-  critical: "red",
+  critical: "danger",
 };
 
 function HazardRegistryPanel() {
@@ -1643,11 +1643,11 @@ function HazardRegistryPanel() {
       notifications.show({
         title: "Hazard Created",
         message: "Hazard registry entry created successfully",
-        color: "green",
+        color: "success",
       });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1670,7 +1670,7 @@ function HazardRegistryPanel() {
       key: "risk_level",
       label: "Risk Level",
       render: (r) => (
-        <Badge color={HAZARD_RISK_COLORS[r.risk_level] ?? "gray"} variant="filled" size="sm">
+        <Badge color={HAZARD_RISK_COLORS[r.risk_level] ?? "slate"} variant="filled" size="sm">
           {r.risk_level}
         </Badge>
       ),
@@ -1802,7 +1802,7 @@ function OccHealthAnalyticsPanel() {
   const fitnessData = Object.entries(analytics.fitness_rates).map(([status, rate]) => ({
     name: status,
     value: Math.round(rate * 100),
-    color: FITNESS_STATUS_COLORS[status] ?? "gray",
+    color: FITNESS_STATUS_COLORS[status] ?? "slate",
   }));
 
   const byDeptData = Object.entries(analytics.by_department).map(([dept, count]) => ({
@@ -1816,7 +1816,7 @@ function OccHealthAnalyticsPanel() {
       <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
         <Card withBorder p="md">
           <Text size="xs" c="dimmed">Total Screenings</Text>
-          <Text fw={700} size="xl" c="blue">{analytics.total_screenings}</Text>
+          <Text fw={700} size="xl" c="primary">{analytics.total_screenings}</Text>
         </Card>
         <Card withBorder p="md">
           <Text size="xs" c="dimmed">Screening Types</Text>
@@ -1841,7 +1841,7 @@ function OccHealthAnalyticsPanel() {
               h={250}
               data={byTypeData}
               dataKey="type"
-              series={[{ name: "count", label: "Count", color: "blue" }]}
+              series={[{ name: "count", label: "Count", color: "primary" }]}
             />
           </Card>
         )}
@@ -1894,7 +1894,7 @@ function ReturnToWorkPanel() {
       notifications.show({
         title: "Clearance Issued",
         message: "Return-to-work clearance issued successfully. A screening record has been created.",
-        color: "green",
+        color: "success",
       });
       qc.invalidateQueries({ queryKey: ["occ-screenings"] });
       setForm({
@@ -1903,7 +1903,7 @@ function ReturnToWorkPanel() {
       });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 

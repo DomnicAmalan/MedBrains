@@ -68,32 +68,32 @@ import { DataTable, PageHeader } from "../components";
 import { useRequirePermission } from "../hooks/useRequirePermission";
 
 const severityColors: Record<string, string> = {
-  mild: "blue",
-  moderate: "yellow",
+  mild: "primary",
+  moderate: "warning",
   severe: "orange",
-  fatal: "red",
+  fatal: "danger",
 };
 
 const eventStatusColors: Record<string, string> = {
-  draft: "gray",
-  submitted: "blue",
-  under_review: "yellow",
-  closed: "green",
+  draft: "slate",
+  submitted: "primary",
+  under_review: "warning",
+  closed: "success",
   withdrawn: "dimmed",
 };
 
 const checklistStatusColors: Record<string, string> = {
-  not_started: "gray",
-  in_progress: "blue",
-  compliant: "green",
-  non_compliant: "red",
+  not_started: "slate",
+  in_progress: "primary",
+  compliant: "success",
+  non_compliant: "danger",
   not_applicable: "dimmed",
 };
 
 const calendarStatusColors: Record<string, string> = {
-  upcoming: "blue",
-  overdue: "red",
-  completed: "green",
+  upcoming: "primary",
+  overdue: "danger",
+  completed: "success",
   cancelled: "dimmed",
 };
 
@@ -220,13 +220,13 @@ function DashboardOverview({ dashboard, gaps }: { dashboard: ComplianceDashboard
           <Paper p="md" withBorder>
             <Text size="sm" c="dimmed">Total Checklists</Text>
             <Title order={2}>{dashboard.total_checklists}</Title>
-            <Text size="xs" c="green">{dashboard.compliant_checklists} compliant</Text>
+            <Text size="xs" c="success">{dashboard.compliant_checklists} compliant</Text>
           </Paper>
         </Grid.Col>
         <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
           <Paper p="md" withBorder>
             <Text size="sm" c="dimmed">Overdue Items</Text>
-            <Title order={2} c={dashboard.overdue_items > 0 ? "red" : undefined}>
+            <Title order={2} c={dashboard.overdue_items > 0 ? "danger" : undefined}>
               {dashboard.overdue_items}
             </Title>
           </Paper>
@@ -258,7 +258,7 @@ function DashboardOverview({ dashboard, gaps }: { dashboard: ComplianceDashboard
                     size={80}
                     thickness={8}
                     roundCaps
-                    sections={[{ value: s.score_percent, color: s.score_percent >= 80 ? "green" : s.score_percent >= 60 ? "yellow" : "red" }]}
+                    sections={[{ value: s.score_percent, color: s.score_percent >= 80 ? "success" : s.score_percent >= 60 ? "warning" : "danger" }]}
                     label={<Text ta="center" size="xs" fw={700}>{Math.round(s.score_percent)}%</Text>}
                   />
                   <div>
@@ -282,7 +282,7 @@ function DashboardOverview({ dashboard, gaps }: { dashboard: ComplianceDashboard
             columns={[
               { key: "department_name", label: "Department", render: (r) => <Text size="sm">{r.department_name}</Text> },
               { key: "avg_score", label: "Avg Score", render: (r) => (
-                <Badge color={r.avg_score >= 80 ? "green" : r.avg_score >= 60 ? "yellow" : "red"}>
+                <Badge color={r.avg_score >= 80 ? "success" : r.avg_score >= 60 ? "warning" : "danger"}>
                   {r.avg_score.toFixed(1)}%
                 </Badge>
               )},
@@ -303,7 +303,7 @@ function DashboardOverview({ dashboard, gaps }: { dashboard: ComplianceDashboard
               { key: "checklist_name", label: "Checklist", render: (r) => <Text size="sm">{r.checklist_name}</Text> },
               { key: "department_name", label: "Department", render: (r) => <Text size="sm">{r.department_name ?? "Org-wide"}</Text> },
               { key: "accreditation_body", label: "Body", render: (r) => <Badge size="sm" tt="uppercase">{r.accreditation_body}</Badge> },
-              { key: "non_compliant_items", label: "Gaps", render: (r) => <Badge color="red">{r.non_compliant_items}</Badge> },
+              { key: "non_compliant_items", label: "Gaps", render: (r) => <Badge color="danger">{r.non_compliant_items}</Badge> },
             ]}
           />
         </Paper>
@@ -334,7 +334,7 @@ function SelfAssessmentView() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["accreditation-compliance"] });
       qc.invalidateQueries({ queryKey: ["regulatory-dashboard"] });
-      notifications.show({ title: "Assessment updated", message: "", color: "green" });
+      notifications.show({ title: "Assessment updated", message: "", color: "success" });
     },
   });
 
@@ -407,7 +407,7 @@ function SelfAssessmentView() {
                     <Text size="sm" fw={600}>{std.standard_code}: {std.name}</Text>
                     <Text size="xs" c="dimmed">{std.chapter || "General"}</Text>
                   </div>
-                  <Badge color={currentScore >= 80 ? "green" : currentScore >= 50 ? "yellow" : "red"}>
+                  <Badge color={currentScore >= 80 ? "success" : currentScore >= 50 ? "warning" : "danger"}>
                     Current: {currentScore}%
                   </Badge>
                 </Group>
@@ -491,7 +491,7 @@ function ChecklistsTab() {
     mutationFn: (data: CreateChecklistRequest) => api.createChecklist(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-checklists"] });
-      notifications.show({ title: "Checklist created", message: "", color: "green" });
+      notifications.show({ title: "Checklist created", message: "", color: "success" });
       close();
     },
   });
@@ -581,7 +581,7 @@ function ChecklistListView({
       notifications.show({ title: "Auto-populated", message: `${result.updated} item(s) updated`, color: "teal" });
     },
     onError: () => {
-      notifications.show({ title: "Auto-populate failed", message: "Could not auto-populate checklist", color: "red" });
+      notifications.show({ title: "Auto-populate failed", message: "Could not auto-populate checklist", color: "danger" });
     },
   });
 
@@ -617,7 +617,7 @@ function ChecklistListView({
           )},
           { key: "compliance_score", label: "Score", render: (r) => (
             r.compliance_score != null
-              ? <Badge color={r.compliance_score >= 80 ? "green" : r.compliance_score >= 60 ? "yellow" : "red"}>
+              ? <Badge color={r.compliance_score >= 80 ? "success" : r.compliance_score >= 60 ? "warning" : "danger"}>
                   {r.compliance_score}%
                 </Badge>
               : <Text size="sm" c="dimmed">-</Text>
@@ -704,9 +704,9 @@ function GapAnalysisView({ checklists, isLoading }: { checklists: ComplianceChec
             data={chartData}
             dataKey="name"
             series={[
-              { name: "met", label: "Met", color: "green" },
-              { name: "partial", label: "Partial", color: "yellow" },
-              { name: "unmet", label: "Unmet", color: "red" },
+              { name: "met", label: "Met", color: "success" },
+              { name: "partial", label: "Partial", color: "warning" },
+              { name: "unmet", label: "Unmet", color: "danger" },
             ]}
             type="stacked"
             orientation="horizontal"
@@ -728,24 +728,24 @@ function GapAnalysisView({ checklists, isLoading }: { checklists: ComplianceChec
             { key: "total", label: "Total", render: (r) => <Text size="sm">{r.total}</Text> },
             { key: "met", label: "Met", render: (r) => (
               <Group gap={4}>
-                <Text size="sm" c="green" fw={600}>{r.met}</Text>
+                <Text size="sm" c="success" fw={600}>{r.met}</Text>
                 <Text size="xs" c="dimmed">({r.metPercent}%)</Text>
               </Group>
             )},
             { key: "partial", label: "Partial", render: (r) => (
               <Group gap={4}>
-                <Text size="sm" c="yellow" fw={600}>{r.partial}</Text>
+                <Text size="sm" c="warning" fw={600}>{r.partial}</Text>
                 <Text size="xs" c="dimmed">({r.partialPercent}%)</Text>
               </Group>
             )},
             { key: "unmet", label: "Unmet", render: (r) => (
               <Group gap={4}>
-                <Text size="sm" c="red" fw={600}>{r.unmet}</Text>
+                <Text size="sm" c="danger" fw={600}>{r.unmet}</Text>
                 <Text size="xs" c="dimmed">({r.unmetPercent}%)</Text>
               </Group>
             )},
             { key: "status", label: "Status", render: (r) => (
-              <Badge color={r.metPercent >= 80 ? "green" : r.metPercent >= 50 ? "yellow" : "red"}>
+              <Badge color={r.metPercent >= 80 ? "success" : r.metPercent >= 50 ? "warning" : "danger"}>
                 {r.metPercent >= 80 ? "Good" : r.metPercent >= 50 ? "Fair" : "Critical"}
               </Badge>
             )},
@@ -796,7 +796,7 @@ function AdrTab() {
     mutationFn: (data: CreateAdrRequest) => api.createAdrReport(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-adr"] });
-      notifications.show({ title: "ADR Report created", message: "", color: "green" });
+      notifications.show({ title: "ADR Report created", message: "", color: "success" });
       closeAdr();
     },
   });
@@ -805,7 +805,7 @@ function AdrTab() {
     mutationFn: (data: CreateMvRequest) => api.createMvReport(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-mv"] });
-      notifications.show({ title: "Materiovigilance Report created", message: "", color: "green" });
+      notifications.show({ title: "Materiovigilance Report created", message: "", color: "success" });
       closeMv();
     },
   });
@@ -814,7 +814,7 @@ function AdrTab() {
     mutationFn: (id: string) => api.submitAdrToPvpi(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-adr"] });
-      notifications.show({ title: "Submitted to PvPI", message: "", color: "blue" });
+      notifications.show({ title: "Submitted to PvPI", message: "", color: "primary" });
     },
   });
 
@@ -822,7 +822,7 @@ function AdrTab() {
     mutationFn: (id: string) => api.submitMvToCdsco(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-mv"] });
-      notifications.show({ title: "Submitted to CDSCO", message: "", color: "blue" });
+      notifications.show({ title: "Submitted to CDSCO", message: "", color: "primary" });
     },
   });
 
@@ -875,9 +875,9 @@ function AdrTab() {
           { key: "status", label: "Status", render: (r) => <Badge color={eventStatusColors[r.status]}>{r.status.replace(/_/g, " ")}</Badge> },
           { key: "pvpi", label: "PvPI", render: (r) => (
             r.submitted_to_pvpi
-              ? <Badge color="green" size="sm">Submitted</Badge>
+              ? <Badge color="success" size="sm">Submitted</Badge>
               : r.status === "draft" && canCreateAdr
-                ? <ActionIcon variant="light" color="blue" onClick={() => submitAdrMut.mutate(r.id)}><IconSend size={14} /></ActionIcon>
+                ? <ActionIcon variant="light" color="primary" onClick={() => submitAdrMut.mutate(r.id)}><IconSend size={14} /></ActionIcon>
                 : <Text size="sm" c="dimmed">-</Text>
           )},
           { key: "date", label: "Date", render: (r) => <Text size="sm">{r.reaction_date}</Text> },
@@ -897,9 +897,9 @@ function AdrTab() {
           { key: "status", label: "Status", render: (r) => <Badge color={eventStatusColors[r.status]}>{r.status.replace(/_/g, " ")}</Badge> },
           { key: "cdsco", label: "CDSCO", render: (r) => (
             r.submitted_to_cdsco
-              ? <Badge color="green" size="sm">Submitted</Badge>
+              ? <Badge color="success" size="sm">Submitted</Badge>
               : r.status === "draft" && canCreateMv
-                ? <ActionIcon variant="light" color="blue" onClick={() => submitMvMut.mutate(r.id)}><IconSend size={14} /></ActionIcon>
+                ? <ActionIcon variant="light" color="primary" onClick={() => submitMvMut.mutate(r.id)}><IconSend size={14} /></ActionIcon>
                 : <Text size="sm" c="dimmed">-</Text>
           )},
           { key: "date", label: "Date", render: (r) => <Text size="sm">{r.event_date}</Text> },
@@ -1001,10 +1001,10 @@ function PcpndtTab() {
   });
 
   const pcpndtStatusColors: Record<string, string> = {
-    draft: "gray",
-    submitted: "blue",
-    registered: "green",
-    expired: "red",
+    draft: "slate",
+    submitted: "primary",
+    registered: "success",
+    expired: "danger",
   };
 
   const [form, setForm] = useState<CreatePcpndtRequest>({
@@ -1018,7 +1018,7 @@ function PcpndtTab() {
     mutationFn: (data: CreatePcpndtRequest) => api.createPcpndtForm(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-pcpndt"] });
-      notifications.show({ title: "PCPNDT Form created", message: "Gender disclosure blocked by default", color: "green" });
+      notifications.show({ title: "PCPNDT Form created", message: "Gender disclosure blocked by default", color: "success" });
       close();
     },
   });
@@ -1053,7 +1053,7 @@ function PcpndtTab() {
           { key: "indication", label: "Indication", render: (r) => <Text size="sm" lineClamp={1}>{r.indication}</Text> },
           { key: "status", label: "Status", render: (r) => <Badge color={pcpndtStatusColors[r.status]}>{r.status}</Badge> },
           { key: "gender_blocked", label: "Gender Blocked", render: (r) => (
-            <Badge color={r.gender_disclosure_blocked ? "green" : "red"}>
+            <Badge color={r.gender_disclosure_blocked ? "success" : "danger"}>
               {r.gender_disclosure_blocked ? "Yes" : "VIOLATION"}
             </Badge>
           )},
@@ -1061,7 +1061,7 @@ function PcpndtTab() {
             <Text size="sm">{r.gestational_age_weeks ? `${r.gestational_age_weeks}w` : "-"}</Text>
           )},
           { key: "quarterly", label: "In Quarterly", render: (r) => (
-            <Badge color={r.quarterly_report_included ? "green" : "gray"} size="sm">
+            <Badge color={r.quarterly_report_included ? "success" : "slate"} size="sm">
               {r.quarterly_report_included ? "Yes" : "No"}
             </Badge>
           )},
@@ -1139,7 +1139,7 @@ function CalendarTab() {
     mutationFn: (data: CreateCalendarEventRequest) => api.createCalendarEvent(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-calendar"] });
-      notifications.show({ title: "Calendar event created", message: "", color: "green" });
+      notifications.show({ title: "Calendar event created", message: "", color: "success" });
       close();
     },
   });
@@ -1148,7 +1148,7 @@ function CalendarTab() {
     mutationFn: (id: string) => api.updateCalendarEvent(id, { status: "completed" }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-calendar"] });
-      notifications.show({ title: "Marked complete", message: "", color: "green" });
+      notifications.show({ title: "Marked complete", message: "", color: "success" });
     },
   });
 
@@ -1284,7 +1284,7 @@ function CalendarListView({
           { key: "title", label: "Title", render: (r) => <Text size="sm" fw={500}>{r.title}</Text> },
           { key: "event_type", label: "Type", render: (r) => <Badge size="sm" variant="light">{r.event_type.replace(/_/g, " ")}</Badge> },
           { key: "due_date", label: "Due Date", render: (r) => (
-            <Text size="sm" c={r.status === "overdue" ? "red" : undefined} fw={r.status === "overdue" ? 600 : undefined}>
+            <Text size="sm" c={r.status === "overdue" ? "danger" : undefined} fw={r.status === "overdue" ? 600 : undefined}>
               {r.due_date}
             </Text>
           )},
@@ -1293,7 +1293,7 @@ function CalendarListView({
           { key: "actions", label: "Actions", render: (r) => (
             r.status !== "completed" && canManage ? (
               <Group gap={4}>
-                <ActionIcon variant="light" color="green" onClick={() => completeMut.mutate(r.id)} title="Mark complete">
+                <ActionIcon variant="light" color="success" onClick={() => completeMut.mutate(r.id)} title="Mark complete">
                   <IconChecklist size={14} />
                 </ActionIcon>
               </Group>
@@ -1318,11 +1318,11 @@ function LicenseAlertsView({ dashboard }: { dashboard?: ComplianceDashboard }) {
   };
 
   const getLicenseColor = (days: number): string => {
-    if (days < 0) return "red";
-    if (days < 30) return "red";
+    if (days < 0) return "danger";
+    if (days < 30) return "danger";
     if (days < 60) return "orange";
-    if (days < 90) return "yellow";
-    return "green";
+    if (days < 90) return "warning";
+    return "success";
   };
 
   const licenseRenewalEvents = dashboard.upcoming_deadlines.filter(
@@ -1339,7 +1339,7 @@ function LicenseAlertsView({ dashboard }: { dashboard?: ComplianceDashboard }) {
           </div>
           <Paper p="md" withBorder bg={dashboard.license_expiring_soon > 0 ? "orange.0" : "green.0"}>
             <Text size="xs" c="dimmed">Expiring Soon</Text>
-            <Title order={2} c={dashboard.license_expiring_soon > 0 ? "orange" : "green"}>
+            <Title order={2} c={dashboard.license_expiring_soon > 0 ? "orange" : "success"}>
               {dashboard.license_expiring_soon}
             </Title>
           </Paper>
@@ -1381,7 +1381,7 @@ function LicenseAlertsView({ dashboard }: { dashboard?: ComplianceDashboard }) {
         <Paper p="xl" withBorder>
           <Stack align="center" gap="xs">
             <Text size="lg" c="dimmed">No license renewals due within 90 days</Text>
-            <Text size="sm" c="green">All licenses are current</Text>
+            <Text size="sm" c="success">All licenses are current</Text>
           </Stack>
         </Paper>
       )}
@@ -1390,16 +1390,16 @@ function LicenseAlertsView({ dashboard }: { dashboard?: ComplianceDashboard }) {
         <Text size="sm" fw={600} mb="xs">Alert Thresholds</Text>
         <Grid>
           <Grid.Col span={3}>
-            <Badge color="red" size="lg" fullWidth>Critical: Less than 30 days</Badge>
+            <Badge color="danger" size="lg" fullWidth>Critical: Less than 30 days</Badge>
           </Grid.Col>
           <Grid.Col span={3}>
             <Badge color="orange" size="lg" fullWidth>High: 30-60 days</Badge>
           </Grid.Col>
           <Grid.Col span={3}>
-            <Badge color="yellow" size="lg" fullWidth>Medium: 60-90 days</Badge>
+            <Badge color="warning" size="lg" fullWidth>Medium: 60-90 days</Badge>
           </Grid.Col>
           <Grid.Col span={3}>
-            <Badge color="green" size="lg" fullWidth>Low: More than 90 days</Badge>
+            <Badge color="success" size="lg" fullWidth>Low: More than 90 days</Badge>
           </Grid.Col>
         </Grid>
       </Paper>
@@ -1445,13 +1445,13 @@ function TimelineView({ events, isLoading }: { events: ComplianceCalendarEvent[]
           <Stack gap="xl">
             {timelineData.map(({ month, events: monthEvents }) => (
               <div key={month}>
-                <Text fw={600} size="sm" mb="xs" c="blue">{month}</Text>
+                <Text fw={600} size="sm" mb="xs" c="primary">{month}</Text>
                 <Stack gap="xs">
                   {monthEvents.map((event) => {
                     const startDate = new Date(event.due_date);
                     startDate.setDate(startDate.getDate() - 14);
                     const daysFromStart = Math.max(0, Math.floor((new Date(event.due_date).getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-                    const barColor = event.status === "overdue" ? "red" : event.status === "completed" ? "green" : "yellow";
+                    const barColor = event.status === "overdue" ? "danger" : event.status === "completed" ? "success" : "warning";
 
                     return (
                       <Box key={event.id} pos="relative">
@@ -1468,7 +1468,7 @@ function TimelineView({ events, isLoading }: { events: ComplianceCalendarEvent[]
                               paddingLeft: "8px",
                             }}
                           >
-                            <Text size="xs" fw={600} c={barColor === "yellow" ? "dark" : "white"}>
+                            <Text size="xs" fw={600} c={barColor === "warning" ? "dark" : "white"}>
                               {event.title.length > 50 ? event.title.slice(0, 47) + "..." : event.title}
                             </Text>
                           </Box>
@@ -1533,17 +1533,17 @@ function SubmissionsTab() {
     mutationFn: (data: CreateRegulatorySubmissionRequest) => api.createRegulatorySubmission(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-submissions"] });
-      notifications.show({ title: "Submission recorded", message: "", color: "green" });
+      notifications.show({ title: "Submission recorded", message: "", color: "success" });
       close();
       setForm({ submission_type: "", submitted_to: "", submitted_at: new Date().toISOString().slice(0, 10) });
     },
   });
 
   const submissionStatusColors: Record<string, string> = {
-    pending: "yellow",
-    submitted: "blue",
-    acknowledged: "green",
-    rejected: "red",
+    pending: "warning",
+    submitted: "primary",
+    acknowledged: "success",
+    rejected: "danger",
   };
 
   return (
@@ -1569,7 +1569,7 @@ function SubmissionsTab() {
           { key: "submitted_to", label: "Submitted To", render: (r: RegulatorySubmission) => <Text size="sm" fw={500}>{r.submitted_to}</Text> },
           { key: "reference_number", label: "Reference #", render: (r: RegulatorySubmission) => <Text size="sm">{r.reference_number ?? "---"}</Text> },
           { key: "submitted_at", label: "Date", render: (r: RegulatorySubmission) => <Text size="sm">{r.submitted_at.slice(0, 10)}</Text> },
-          { key: "status", label: "Status", render: (r: RegulatorySubmission) => <Badge color={submissionStatusColors[r.status] ?? "gray"}>{r.status}</Badge> },
+          { key: "status", label: "Status", render: (r: RegulatorySubmission) => <Badge color={submissionStatusColors[r.status] ?? "slate"}>{r.status}</Badge> },
           { key: "notes", label: "Notes", render: (r: RegulatorySubmission) => <Text size="sm" lineClamp={1}>{r.notes ?? "---"}</Text> },
         ]}
       />
@@ -1626,7 +1626,7 @@ function MockSurveysTab() {
     mutationFn: (data: CreateChecklistRequest) => api.createMockSurvey(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["regulatory-mock-surveys"] });
-      notifications.show({ title: "Mock survey created", message: "", color: "green" });
+      notifications.show({ title: "Mock survey created", message: "", color: "success" });
       close();
     },
   });
@@ -1658,7 +1658,7 @@ function MockSurveysTab() {
           )},
           { key: "compliance_score", label: "Score", render: (r: ComplianceChecklist) => (
             r.compliance_score != null
-              ? <Badge color={r.compliance_score >= 80 ? "green" : r.compliance_score >= 60 ? "yellow" : "red"}>
+              ? <Badge color={r.compliance_score >= 80 ? "success" : r.compliance_score >= 60 ? "warning" : "danger"}>
                   {r.compliance_score}%
                 </Badge>
               : <Text size="sm" c="dimmed">-</Text>
@@ -1706,10 +1706,10 @@ function StaffCredentialsTab() {
   });
 
   const credentialStatusColors: Record<string, string> = {
-    valid: "green",
+    valid: "success",
     expiring_soon: "orange",
-    expired: "red",
-    not_verified: "gray",
+    expired: "danger",
+    not_verified: "slate",
   };
 
   return (
@@ -1731,14 +1731,14 @@ function StaffCredentialsTab() {
           )},
           { key: "days_until_expiry", label: "Days Until Expiry", render: (r: StaffCredentialSummary) => {
             if (r.days_until_expiry == null) return <Text size="sm" c="dimmed">N/A</Text>;
-            const color = r.days_until_expiry < 0 ? "red" : r.days_until_expiry < 30 ? "red" : r.days_until_expiry < 90 ? "orange" : "green";
+            const color = r.days_until_expiry < 0 ? "danger" : r.days_until_expiry < 30 ? "danger" : r.days_until_expiry < 90 ? "orange" : "success";
             return (
               <Badge color={color}>
                 {r.days_until_expiry < 0 ? `${Math.abs(r.days_until_expiry)}d expired` : `${r.days_until_expiry}d`}
               </Badge>
             );
           }},
-          { key: "status", label: "Status", render: (r: StaffCredentialSummary) => <Badge color={credentialStatusColors[r.status] ?? "gray"}>{r.status.replace(/_/g, " ")}</Badge> },
+          { key: "status", label: "Status", render: (r: StaffCredentialSummary) => <Badge color={credentialStatusColors[r.status] ?? "slate"}>{r.status.replace(/_/g, " ")}</Badge> },
         ]}
       />
     </Stack>
@@ -1756,11 +1756,11 @@ function LicenseDashboardTab() {
   });
 
   const renewalStatusColors: Record<string, string> = {
-    active: "green",
+    active: "success",
     expiring_soon: "orange",
-    expired: "red",
-    pending_renewal: "blue",
-    not_applicable: "gray",
+    expired: "danger",
+    pending_renewal: "primary",
+    not_applicable: "slate",
   };
 
   const expiredCount = licenses.filter((l) => l.days_until_expiry != null && l.days_until_expiry < 0).length;
@@ -1778,7 +1778,7 @@ function LicenseDashboardTab() {
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Card withBorder p="md">
             <Text size="sm" c="dimmed">Active</Text>
-            <Title order={2} c="green">{activeCount}</Title>
+            <Title order={2} c="success">{activeCount}</Title>
           </Card>
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 4 }}>
@@ -1790,7 +1790,7 @@ function LicenseDashboardTab() {
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Card withBorder p="md">
             <Text size="sm" c="dimmed">Expired</Text>
-            <Title order={2} c="red">{expiredCount}</Title>
+            <Title order={2} c="danger">{expiredCount}</Title>
           </Card>
         </Grid.Col>
       </Grid>
@@ -1805,21 +1805,21 @@ function LicenseDashboardTab() {
           { key: "issued_date", label: "Issued", render: (r: LicenseDashboardItem) => <Text size="sm">{r.issued_date ? r.issued_date.slice(0, 10) : "---"}</Text> },
           { key: "expiry_date", label: "Expiry", render: (r: LicenseDashboardItem) => (
             r.expiry_date ? (
-              <Text size="sm" c={r.days_until_expiry != null && r.days_until_expiry < 30 ? "red" : undefined} fw={r.days_until_expiry != null && r.days_until_expiry < 30 ? 600 : undefined}>
+              <Text size="sm" c={r.days_until_expiry != null && r.days_until_expiry < 30 ? "danger" : undefined} fw={r.days_until_expiry != null && r.days_until_expiry < 30 ? 600 : undefined}>
                 {r.expiry_date.slice(0, 10)}
               </Text>
             ) : <Text size="sm" c="dimmed">N/A</Text>
           )},
           { key: "days_until_expiry", label: "Days Left", render: (r: LicenseDashboardItem) => {
             if (r.days_until_expiry == null) return <Text size="sm" c="dimmed">N/A</Text>;
-            const color = r.days_until_expiry < 0 ? "red" : r.days_until_expiry < 30 ? "red" : r.days_until_expiry < 90 ? "orange" : "green";
+            const color = r.days_until_expiry < 0 ? "danger" : r.days_until_expiry < 30 ? "danger" : r.days_until_expiry < 90 ? "orange" : "success";
             return (
               <Badge color={color} size="lg">
                 {r.days_until_expiry < 0 ? `EXPIRED (${Math.abs(r.days_until_expiry)}d)` : `${r.days_until_expiry}d`}
               </Badge>
             );
           }},
-          { key: "renewal_status", label: "Status", render: (r: LicenseDashboardItem) => <Badge color={renewalStatusColors[r.renewal_status] ?? "gray"}>{r.renewal_status.replace(/_/g, " ")}</Badge> },
+          { key: "renewal_status", label: "Status", render: (r: LicenseDashboardItem) => <Badge color={renewalStatusColors[r.renewal_status] ?? "slate"}>{r.renewal_status.replace(/_/g, " ")}</Badge> },
           { key: "responsible_person", label: "Responsible", render: (r: LicenseDashboardItem) => <Text size="sm">{r.responsible_person ?? "---"}</Text> },
         ]}
       />
@@ -1852,8 +1852,8 @@ function NablDocumentsTab() {
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Card withBorder p="md">
             <Text size="sm" c="dimmed">Overall Completeness</Text>
-            <Title order={2} c={overallPct >= 80 ? "green" : overallPct >= 50 ? "yellow" : "red"}>{overallPct}%</Title>
-            <Progress value={overallPct} color={overallPct >= 80 ? "green" : overallPct >= 50 ? "yellow" : "red"} size="lg" mt="xs" />
+            <Title order={2} c={overallPct >= 80 ? "success" : overallPct >= 50 ? "warning" : "danger"}>{overallPct}%</Title>
+            <Progress value={overallPct} color={overallPct >= 80 ? "success" : overallPct >= 50 ? "warning" : "danger"} size="lg" mt="xs" />
           </Card>
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 4 }}>
@@ -1880,16 +1880,16 @@ function NablDocumentsTab() {
           { key: "total_uploaded", label: "Uploaded", render: (r: NablDocumentSummary) => <Text size="sm">{r.total_uploaded}</Text> },
           { key: "completeness_pct", label: "Completeness", render: (r: NablDocumentSummary) => (
             <Group gap="xs">
-              <Progress value={r.completeness_pct} color={r.completeness_pct >= 80 ? "green" : r.completeness_pct >= 50 ? "yellow" : "red"} size="lg" w={100} />
+              <Progress value={r.completeness_pct} color={r.completeness_pct >= 80 ? "success" : r.completeness_pct >= 50 ? "warning" : "danger"} size="lg" w={100} />
               <Text size="sm" fw={500}>{r.completeness_pct.toFixed(0)}%</Text>
             </Group>
           )},
           { key: "status", label: "Status", render: (r: NablDocumentSummary) => (
             r.completeness_pct >= 100
-              ? <Badge color="green">Complete</Badge>
+              ? <Badge color="success">Complete</Badge>
               : r.completeness_pct >= 50
-                ? <Badge color="yellow">In Progress</Badge>
-                : <Badge color="red">Incomplete</Badge>
+                ? <Badge color="warning">In Progress</Badge>
+                : <Badge color="danger">Incomplete</Badge>
           )},
         ]}
       />

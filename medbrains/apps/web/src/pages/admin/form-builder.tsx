@@ -95,7 +95,7 @@ function DragOverlayContent({
       <div className={classes.dragOverlay}>
         <IconLetterCase size={14} />
         {activeField.label}
-        <Badge size="xs" variant="light" color="gray">
+        <Badge size="xs" variant="light" color="slate">
           {activeField.dataType}
         </Badge>
       </div>
@@ -116,7 +116,7 @@ function fieldLabel(field: FormBuilderFieldNode) {
         {field.label}
       </Text>
       {field.requirementLevel === "mandatory" && (
-        <Text size="sm" c="red">
+        <Text size="sm" c="danger">
           *
         </Text>
       )}
@@ -147,7 +147,7 @@ function fieldLabel(field: FormBuilderFieldNode) {
           position="top-end"
           events={{ hover: true, focus: true, touch: true }}
         >
-          <ActionIcon variant="subtle" size="xs" color="gray">
+          <ActionIcon variant="subtle" size="xs" color="slate">
             <IconInfoCircle size={14} />
           </ActionIcon>
         </Tooltip>
@@ -846,13 +846,13 @@ export function FormBuilderPage() {
       notifications.show({
         title: "Form saved",
         message: `${state.form.name} has been saved`,
-        color: "green",
+        color: "success",
       });
     } catch (err) {
       notifications.show({
         title: "Save failed",
         message: err instanceof Error ? err.message : "Unknown error",
-        color: "red",
+        color: "danger",
       });
     } finally {
       setSaving(false);
@@ -869,7 +869,7 @@ export function FormBuilderPage() {
       notifications.show({
         title: "Form published",
         message: "Form is now active and locked.",
-        color: "green",
+        color: "success",
       });
       hasLoadedRef.current = null; // force reload so locked state updates
       queryClient.invalidateQueries({ queryKey: ["admin-form-detail", formId] });
@@ -881,7 +881,7 @@ export function FormBuilderPage() {
       notifications.show({
         title: "Publish failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -892,7 +892,7 @@ export function FormBuilderPage() {
       notifications.show({
         title: "New version created",
         message: "Form is now a draft. You can edit it.",
-        color: "blue",
+        color: "primary",
       });
       hasLoadedRef.current = null; // force reload from fresh data
       queryClient.invalidateQueries({ queryKey: ["admin-form-detail", formId] });
@@ -902,7 +902,7 @@ export function FormBuilderPage() {
       notifications.show({
         title: "Failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -1125,7 +1125,7 @@ export function FormBuilderPage() {
             }}
           />
           {isDirty && (
-            <Badge size="xs" variant="dot" color="yellow">
+            <Badge size="xs" variant="dot" color="warning">
               Unsaved
             </Badge>
           )}
@@ -1188,7 +1188,7 @@ export function FormBuilderPage() {
           {isLocked ? (
             <Button
               size="compact-sm"
-              color="blue"
+              color="primary"
               leftSection={<IconGitBranch size={14} />}
               onClick={() => newVersionMutation.mutate()}
               loading={newVersionMutation.isPending}
@@ -1208,7 +1208,7 @@ export function FormBuilderPage() {
               </Button>
               <Button
                 size="compact-sm"
-                color="green"
+                color="success"
                 leftSection={<IconUpload size={14} />}
                 onClick={publishModalHandlers.open}
                 disabled={isDirty}
@@ -1257,7 +1257,7 @@ export function FormBuilderPage() {
       {/* Status Bar */}
       <div className={classes.statusBar}>
         <div className={classes.statusItem}>
-          <Badge size="xs" variant="light" color={form.status === "draft" ? "yellow" : "green"}>
+          <Badge size="xs" variant="light" color={form.status === "draft" ? "warning" : "success"}>
             v{form.version} {form.status.toUpperCase()}
           </Badge>
           {isLocked && <IconLock size={12} color="var(--mantine-color-green-6)" style={{ marginLeft: 4 }} />}
@@ -1314,7 +1314,7 @@ export function FormBuilderPage() {
               Cancel
             </Button>
             <Button
-              color="green"
+              color="success"
               leftSection={<IconUpload size={14} />}
               loading={publishMutation.isPending}
               onClick={() => publishMutation.mutate()}

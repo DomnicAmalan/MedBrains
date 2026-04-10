@@ -55,37 +55,37 @@ import { useRequirePermission } from "../hooks/useRequirePermission";
 // ── Status colors ────────────────────────────────────────────
 
 const poStatusColors: Record<string, string> = {
-  draft: "gray",
-  submitted: "blue",
-  approved: "green",
+  draft: "slate",
+  submitted: "primary",
+  approved: "success",
   sent_to_vendor: "teal",
-  partially_received: "indigo",
+  partially_received: "primary",
   fully_received: "violet",
   closed: "dark",
-  cancelled: "red",
+  cancelled: "danger",
 };
 
 const grnStatusColors: Record<string, string> = {
-  draft: "gray",
-  inspecting: "blue",
-  accepted: "green",
+  draft: "slate",
+  inspecting: "primary",
+  accepted: "success",
   partially_accepted: "teal",
-  rejected: "red",
+  rejected: "danger",
   completed: "violet",
 };
 
 const vendorStatusColors: Record<string, string> = {
-  active: "green",
-  inactive: "gray",
-  blacklisted: "red",
+  active: "success",
+  inactive: "slate",
+  blacklisted: "danger",
   pending_approval: "orange",
 };
 
 const rcStatusColors: Record<string, string> = {
-  draft: "gray",
-  active: "green",
+  draft: "slate",
+  active: "success",
   expired: "orange",
-  terminated: "red",
+  terminated: "danger",
 };
 
 // ══════════════════════════════════════════════════════════
@@ -111,7 +111,7 @@ export function ProcurementPage() {
         title="Procurement"
         subtitle="Vendors, purchase orders, GRN, rate contracts, and batch stock"
         icon={<IconTruck size={20} stroke={1.5} />}
-        color="grape"
+        color="violet"
       />
 
       <Tabs value={activeTab} onChange={setActiveTab}>
@@ -189,7 +189,7 @@ function VendorPanel({ canCreate }: { canCreate: boolean }) {
       key: "status",
       label: "Status",
       render: (row: Vendor) => (
-        <Badge color={vendorStatusColors[row.status] ?? "gray"} variant="light" size="sm">
+        <Badge color={vendorStatusColors[row.status] ?? "slate"} variant="light" size="sm">
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -286,11 +286,11 @@ function VendorForm({ onSuccess }: { onSuccess: () => void }) {
         payment_terms: paymentTerms,
       }),
     onSuccess: () => {
-      notifications.show({ title: "Created", message: "Vendor registered", color: "green" });
+      notifications.show({ title: "Created", message: "Vendor registered", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -353,7 +353,7 @@ function PurchaseOrderPanel({ canCreate }: { canCreate: boolean }) {
   const approveMutation = useMutation({
     mutationFn: (id: string) => api.approvePurchaseOrder(id),
     onSuccess: () => {
-      notifications.show({ title: "Approved", message: "Purchase order approved", color: "green" });
+      notifications.show({ title: "Approved", message: "Purchase order approved", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
     },
   });
@@ -361,7 +361,7 @@ function PurchaseOrderPanel({ canCreate }: { canCreate: boolean }) {
   const sendMutation = useMutation({
     mutationFn: (id: string) => api.sendPurchaseOrder(id),
     onSuccess: () => {
-      notifications.show({ title: "Sent", message: "PO sent to vendor", color: "green" });
+      notifications.show({ title: "Sent", message: "PO sent to vendor", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
     },
   });
@@ -372,7 +372,7 @@ function PurchaseOrderPanel({ canCreate }: { canCreate: boolean }) {
       key: "status",
       label: "Status",
       render: (row: PurchaseOrder) => (
-        <Badge color={poStatusColors[row.status] ?? "gray"} variant="light" size="sm">
+        <Badge color={poStatusColors[row.status] ?? "slate"} variant="light" size="sm">
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -391,7 +391,7 @@ function PurchaseOrderPanel({ canCreate }: { canCreate: boolean }) {
             </ActionIcon>
           </Tooltip>
           {row.status === "draft" && canApprove && (
-            <Button size="compact-xs" variant="light" color="green" loading={approveMutation.isPending} onClick={() => approveMutation.mutate(row.id)}>
+            <Button size="compact-xs" variant="light" color="success" loading={approveMutation.isPending} onClick={() => approveMutation.mutate(row.id)}>
               Approve
             </Button>
           )}
@@ -518,11 +518,11 @@ function CreatePoForm({ onSuccess }: { onSuccess: () => void }) {
         items,
       }),
     onSuccess: () => {
-      notifications.show({ title: "Created", message: "Purchase order created", color: "green" });
+      notifications.show({ title: "Created", message: "Purchase order created", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -587,7 +587,7 @@ function CreatePoForm({ onSuccess }: { onSuccess: () => void }) {
                 <NumberInput size="xs" w={100} min={0} decimalScale={2} value={item.unit_price} onChange={(v) => updateItem(idx, "unit_price", Number(v))} />
               </Table.Td>
               <Table.Td>
-                <ActionIcon variant="subtle" color="red" size="sm" onClick={() => removeItem(idx)}>×</ActionIcon>
+                <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => removeItem(idx)}>×</ActionIcon>
               </Table.Td>
             </Table.Tr>
           ))}
@@ -625,7 +625,7 @@ function GrnPanel({ canCreate }: { canCreate: boolean }) {
       key: "status",
       label: "Status",
       render: (row: GoodsReceiptNote) => (
-        <Badge color={grnStatusColors[row.status] ?? "gray"} variant="light" size="sm">
+        <Badge color={grnStatusColors[row.status] ?? "slate"} variant="light" size="sm">
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -715,8 +715,8 @@ function GrnDetailView({ id }: { id: string }) {
             <Table.Tr key={item.id}>
               <Table.Td>{item.item_name}</Table.Td>
               <Table.Td>{item.quantity_received}</Table.Td>
-              <Table.Td><Text c="green">{item.quantity_accepted}</Text></Table.Td>
-              <Table.Td>{item.quantity_rejected > 0 ? <Text c="red">{item.quantity_rejected}</Text> : "-"}</Table.Td>
+              <Table.Td><Text c="success">{item.quantity_accepted}</Text></Table.Td>
+              <Table.Td>{item.quantity_rejected > 0 ? <Text c="danger">{item.quantity_rejected}</Text> : "-"}</Table.Td>
               <Table.Td>{item.batch_number ?? "-"}</Table.Td>
               <Table.Td>{item.expiry_date ?? "-"}</Table.Td>
             </Table.Tr>
@@ -757,11 +757,11 @@ function CreateGrnForm({ onSuccess }: { onSuccess: () => void }) {
         items,
       }),
     onSuccess: () => {
-      notifications.show({ title: "Created", message: "GRN created and stock updated", color: "green" });
+      notifications.show({ title: "Created", message: "GRN created and stock updated", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -858,7 +858,7 @@ function RateContractPanel({ canManage }: { canManage: boolean }) {
       key: "status",
       label: "Status",
       render: (row: RateContract) => (
-        <Badge color={rcStatusColors[row.status] ?? "gray"} variant="light" size="sm">{row.status}</Badge>
+        <Badge color={rcStatusColors[row.status] ?? "slate"} variant="light" size="sm">{row.status}</Badge>
       ),
     },
     { key: "start_date", label: "Start", render: (row: RateContract) => row.start_date },
@@ -921,11 +921,11 @@ function CreateRcForm({ onSuccess }: { onSuccess: () => void }) {
         items,
       }),
     onSuccess: () => {
-      notifications.show({ title: "Created", message: "Rate contract created", color: "green" });
+      notifications.show({ title: "Created", message: "Rate contract created", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1002,7 +1002,7 @@ function BatchStockPanel() {
       render: (row: BatchStock) => {
         if (!row.expiry_date) return "-";
         const isExpiring = new Date(row.expiry_date) < new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
-        return <Text c={isExpiring ? "red" : undefined} fw={isExpiring ? 600 : undefined}>{row.expiry_date}</Text>;
+        return <Text c={isExpiring ? "danger" : undefined} fw={isExpiring ? 600 : undefined}>{row.expiry_date}</Text>;
       },
     },
     {
@@ -1044,7 +1044,7 @@ function StoreLocationPanel() {
     {
       key: "is_active",
       label: "Active",
-      render: (row: StoreLocation) => <Badge color={row.is_active ? "green" : "gray"} size="sm">{row.is_active ? "Yes" : "No"}</Badge>,
+      render: (row: StoreLocation) => <Badge color={row.is_active ? "success" : "slate"} size="sm">{row.is_active ? "Yes" : "No"}</Badge>,
     },
     { key: "address", label: "Address", render: (row: StoreLocation) => row.address ?? "-" },
   ];
@@ -1090,11 +1090,11 @@ function StoreLocationForm({ onSuccess }: { onSuccess: () => void }) {
         address: address || undefined,
       }),
     onSuccess: () => {
-      notifications.show({ title: "Created", message: "Store location created", color: "green" });
+      notifications.show({ title: "Created", message: "Store location created", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1151,7 +1151,7 @@ function VendorPerformancePanel() {
       label: "On-Time %",
       render: (row: VendorPerformanceRow) => {
         const pct = Number(row.on_time_pct);
-        const color = pct >= 80 ? "green" : pct >= 60 ? "yellow" : "red";
+        const color = pct >= 80 ? "success" : pct >= 60 ? "warning" : "danger";
         return (
           <Badge color={color} variant="light">
             {row.on_time_pct}%
@@ -1164,7 +1164,7 @@ function VendorPerformancePanel() {
       label: "Rejection Rate",
       render: (row: VendorPerformanceRow) => {
         const rate = Number(row.rejection_rate);
-        const color = rate <= 5 ? "green" : rate <= 15 ? "yellow" : "red";
+        const color = rate <= 5 ? "success" : rate <= 15 ? "warning" : "danger";
         return (
           <Badge color={color} variant="light">
             {row.rejection_rate}%
@@ -1247,7 +1247,7 @@ function VendorComparisonView({
       render: (row: VendorComparisonRow) => {
         if (row.rejection_rate == null) return "-";
         const rate = Number(row.rejection_rate);
-        const color = rate <= 5 ? "green" : rate <= 15 ? "yellow" : "red";
+        const color = rate <= 5 ? "success" : rate <= 15 ? "warning" : "danger";
         return (
           <Badge color={color} variant="light" size="sm">
             {row.rejection_rate}%
@@ -1287,10 +1287,10 @@ function VendorComparisonView({
 
 const paymentStatusColors: Record<string, string> = {
   pending: "orange",
-  partially_paid: "blue",
-  paid: "green",
-  overdue: "red",
-  disputed: "grape",
+  partially_paid: "primary",
+  paid: "success",
+  overdue: "danger",
+  disputed: "violet",
 };
 
 function SupplierPaymentsPanel() {
@@ -1328,7 +1328,7 @@ function SupplierPaymentsPanel() {
       key: "status",
       label: "Status",
       render: (row: SupplierPayment) => (
-        <Badge color={paymentStatusColors[row.status] ?? "gray"} variant="light" size="sm">
+        <Badge color={paymentStatusColors[row.status] ?? "slate"} variant="light" size="sm">
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -1340,7 +1340,7 @@ function SupplierPaymentsPanel() {
         if (!row.due_date) return "-";
         const overdue = new Date(row.due_date) < new Date() && row.status !== "paid";
         return (
-          <Text c={overdue ? "red" : undefined} fw={overdue ? 600 : undefined}>
+          <Text c={overdue ? "danger" : undefined} fw={overdue ? 600 : undefined}>
             {row.due_date}
           </Text>
         );
@@ -1417,11 +1417,11 @@ function CreatePaymentForm({ onSuccess }: { onSuccess: () => void }) {
         notes: notes || undefined,
       }),
     onSuccess: () => {
-      notifications.show({ title: "Created", message: "Payment recorded", color: "green" });
+      notifications.show({ title: "Created", message: "Payment recorded", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 

@@ -32,11 +32,11 @@ const NODE_TYPE_ICONS: Record<PipelineNodeType, typeof IconBolt> = {
 };
 
 const NODE_TYPE_COLORS: Record<PipelineNodeType, string> = {
-  trigger: "blue",
+  trigger: "primary",
   condition: "orange",
   action: "teal",
-  transform: "grape",
-  delay: "cyan",
+  transform: "violet",
+  delay: "info",
 };
 
 const CATEGORY_ORDER = ["Triggers", "Logic", "Actions"];
@@ -98,7 +98,7 @@ export function NodePalette() {
         <Text size="xs" fw={700} tt="uppercase" c="dimmed">
           Nodes
         </Text>
-        <Badge size="xs" variant="light" color="gray">
+        <Badge size="xs" variant="light" color="slate">
           {templates?.length ?? 0}
         </Badge>
       </Group>
@@ -127,7 +127,7 @@ export function NodePalette() {
                 <Text size="xs" fw={700} tt="uppercase">
                   {category}
                 </Text>
-                <Badge size="xs" variant="light" color="gray" circle>
+                <Badge size="xs" variant="light" color="slate" circle>
                   {grouped[category]?.length ?? 0}
                 </Badge>
               </Group>
@@ -135,7 +135,7 @@ export function NodePalette() {
             <Accordion.Panel>
               {grouped[category]?.map((template) => {
                 const Icon = NODE_TYPE_ICONS[template.node_type] ?? IconPlayerPlay;
-                const nodeColor = template.color ?? NODE_TYPE_COLORS[template.node_type] ?? "gray";
+                const nodeColor = template.color ?? NODE_TYPE_COLORS[template.node_type] ?? "slate";
                 return (
                   <UnstyledButton
                     key={template.id}

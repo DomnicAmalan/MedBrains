@@ -41,6 +41,7 @@ function isFieldVisible(
 const VALID_MANTINE_COLORS = new Set([
   "dark", "gray", "red", "pink", "grape", "violet", "indigo", "blue",
   "cyan", "teal", "green", "lime", "yellow", "orange",
+  "primary", "success", "warning", "danger", "info", "slate",
 ]);
 
 /** Build CSS custom properties for section icon color theming */
@@ -70,7 +71,7 @@ export function DynamicFormSection({
   if (visibleFields.length === 0) return null;
 
   const fieldGrid = (
-    <Grid gutter="md">
+    <Grid gap="md">
       {visibleFields.map((field) => {
         const override = renderOverrides?.[field.field_code];
         if (override) {

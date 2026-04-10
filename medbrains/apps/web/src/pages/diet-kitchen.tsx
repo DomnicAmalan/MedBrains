@@ -74,18 +74,18 @@ const MEAL_TYPES = [
 ];
 
 const ORDER_STATUS_COLORS: Record<string, string> = {
-  active: "green",
-  modified: "yellow",
-  completed: "blue",
-  cancelled: "gray",
+  active: "success",
+  modified: "warning",
+  completed: "primary",
+  cancelled: "slate",
 };
 
 const PREP_STATUS_COLORS: Record<string, string> = {
-  pending: "gray",
-  preparing: "yellow",
-  ready: "blue",
+  pending: "slate",
+  preparing: "warning",
+  ready: "primary",
   dispatched: "orange",
-  delivered: "green",
+  delivered: "success",
 };
 
 // ══════════════════════════════════════════════════════════
@@ -113,7 +113,7 @@ function DietOrdersTab() {
     mutationFn: (data: CreateDietOrderRequest) => api.createDietOrder(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["diet-orders"] });
-      notifications.show({ title: "Success", message: "Diet order created", color: "green" });
+      notifications.show({ title: "Success", message: "Diet order created", color: "success" });
       close();
       setForm({});
     },
@@ -125,9 +125,9 @@ function DietOrdersTab() {
     {
       key: "status",
       label: "Status",
-      render: (r: DietOrder) => <Badge color={ORDER_STATUS_COLORS[r.status] ?? "gray"}>{r.status}</Badge>,
+      render: (r: DietOrder) => <Badge color={ORDER_STATUS_COLORS[r.status] ?? "slate"}>{r.status}</Badge>,
     },
-    { key: "is_npo", label: "NPO", render: (r: DietOrder) => r.is_npo ? <Badge color="red">NPO</Badge> : <Text size="sm">-</Text> },
+    { key: "is_npo", label: "NPO", render: (r: DietOrder) => r.is_npo ? <Badge color="danger">NPO</Badge> : <Text size="sm">-</Text> },
     { key: "start_date", label: "Start", render: (r: DietOrder) => <Text size="sm">{r.start_date}</Text> },
     { key: "end_date", label: "End", render: (r: DietOrder) => <Text size="sm">{r.end_date ?? "-"}</Text> },
     { key: "calories_target", label: "Cal Target", render: (r: DietOrder) => <Text size="sm">{r.calories_target ?? "-"}</Text> },
@@ -181,7 +181,7 @@ function DietTemplatesTab() {
     mutationFn: (data: CreateDietTemplateRequest) => api.createDietTemplate(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["diet-templates"] });
-      notifications.show({ title: "Success", message: "Template created", color: "green" });
+      notifications.show({ title: "Success", message: "Template created", color: "success" });
       close();
       setForm({});
     },
@@ -208,13 +208,13 @@ function DietTemplatesTab() {
             {totalMacros > 0 && (
               <>
                 <Progress.Root size="sm">
-                  <Progress.Section value={proteinPct} color="blue">
+                  <Progress.Section value={proteinPct} color="primary">
                     <Progress.Label>P</Progress.Label>
                   </Progress.Section>
-                  <Progress.Section value={carbsPct} color="green">
+                  <Progress.Section value={carbsPct} color="success">
                     <Progress.Label>C</Progress.Label>
                   </Progress.Section>
-                  <Progress.Section value={fatPct} color="yellow">
+                  <Progress.Section value={fatPct} color="warning">
                     <Progress.Label>F</Progress.Label>
                   </Progress.Section>
                 </Progress.Root>
@@ -227,7 +227,7 @@ function DietTemplatesTab() {
         );
       }
     },
-    { key: "is_active", label: "Active", render: (r: DietTemplate) => <Badge color={r.is_active ? "green" : "gray"}>{r.is_active ? "Yes" : "No"}</Badge> },
+    { key: "is_active", label: "Active", render: (r: DietTemplate) => <Badge color={r.is_active ? "success" : "slate"}>{r.is_active ? "Yes" : "No"}</Badge> },
   ];
 
   return (
@@ -293,7 +293,7 @@ function KitchenTab() {
     mutationFn: (data: CreateKitchenMenuRequest) => api.createKitchenMenu(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["kitchen-menus"] });
-      notifications.show({ title: "Success", message: "Menu created", color: "green" });
+      notifications.show({ title: "Success", message: "Menu created", color: "success" });
       closeMenu();
       setMenuForm({});
     },
@@ -303,7 +303,7 @@ function KitchenTab() {
     mutationFn: (data: CreateMealPrepRequest) => api.createMealPrep(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["meal-preps"] });
-      notifications.show({ title: "Success", message: "Meal prep created", color: "green" });
+      notifications.show({ title: "Success", message: "Meal prep created", color: "success" });
       closePrep();
       setPrepForm({});
     },
@@ -313,7 +313,7 @@ function KitchenTab() {
     mutationFn: ({ id, data }: { id: string; data: UpdateMealPrepStatusRequest }) => api.updateMealPrepStatus(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["meal-preps"] });
-      notifications.show({ title: "Success", message: "Status updated", color: "green" });
+      notifications.show({ title: "Success", message: "Status updated", color: "success" });
     },
   });
 
@@ -321,7 +321,7 @@ function KitchenTab() {
     { key: "name", label: "Menu Name", render: (r: KitchenMenu) => <Text fw={500}>{r.name}</Text> },
     { key: "week_number", label: "Week", render: (r: KitchenMenu) => <Text size="sm">{r.week_number ?? "-"}</Text> },
     { key: "season", label: "Season", render: (r: KitchenMenu) => <Text size="sm">{r.season ?? "-"}</Text> },
-    { key: "is_active", label: "Active", render: (r: KitchenMenu) => <Badge color={r.is_active ? "green" : "gray"}>{r.is_active ? "Yes" : "No"}</Badge> },
+    { key: "is_active", label: "Active", render: (r: KitchenMenu) => <Badge color={r.is_active ? "success" : "slate"}>{r.is_active ? "Yes" : "No"}</Badge> },
     { key: "valid_from", label: "Valid From", render: (r: KitchenMenu) => <Text size="sm">{r.valid_from ?? "-"}</Text> },
     { key: "valid_until", label: "Valid Until", render: (r: KitchenMenu) => <Text size="sm">{r.valid_until ?? "-"}</Text> },
   ];
@@ -332,7 +332,7 @@ function KitchenTab() {
     {
       key: "status",
       label: "Status",
-      render: (r: MealPreparation) => <Badge color={PREP_STATUS_COLORS[r.status] ?? "gray"}>{r.status}</Badge>,
+      render: (r: MealPreparation) => <Badge color={PREP_STATUS_COLORS[r.status] ?? "slate"}>{r.status}</Badge>,
     },
     { key: "delivered_to_ward", label: "Ward", render: (r: MealPreparation) => <Text size="sm">{r.delivered_to_ward ?? "-"}</Text> },
     { key: "feedback_rating", label: "Rating", render: (r: MealPreparation) => <Text size="sm">{r.feedback_rating ? `${r.feedback_rating}/5` : "-"}</Text> },
@@ -365,7 +365,7 @@ function KitchenTab() {
     { key: "meal_type", label: "Meal", render: (r: MealCount) => <Badge variant="light">{r.meal_type}</Badge> },
     { key: "ward", label: "Ward", render: (r: MealCount) => <Text size="sm">{r.ward}</Text> },
     { key: "occupied", label: "Occupied", render: (r: MealCount) => <Text size="sm">{r.occupied}/{r.total_beds}</Text> },
-    { key: "npo_count", label: "NPO", render: (r: MealCount) => <Text size="sm" c={r.npo_count > 0 ? "red" : undefined}>{r.npo_count}</Text> },
+    { key: "npo_count", label: "NPO", render: (r: MealCount) => <Text size="sm" c={r.npo_count > 0 ? "danger" : undefined}>{r.npo_count}</Text> },
     { key: "regular_count", label: "Regular", render: (r: MealCount) => <Text size="sm">{r.regular_count}</Text> },
     { key: "special_count", label: "Special", render: (r: MealCount) => <Text size="sm">{r.special_count}</Text> },
   ];
@@ -415,15 +415,15 @@ function KitchenTab() {
             </Card>
             <Card withBorder>
               <Text size="xs" c="dimmed" tt="uppercase">Pending</Text>
-              <Text size="xl" fw={700} c="gray">{summary.stats.pending}</Text>
+              <Text size="xl" fw={700} c="slate">{summary.stats.pending}</Text>
             </Card>
             <Card withBorder>
               <Text size="xs" c="dimmed" tt="uppercase">Preparing</Text>
-              <Text size="xl" fw={700} c="yellow">{summary.stats.preparing}</Text>
+              <Text size="xl" fw={700} c="warning">{summary.stats.preparing}</Text>
             </Card>
             <Card withBorder>
               <Text size="xs" c="dimmed" tt="uppercase">Ready</Text>
-              <Text size="xl" fw={700} c="blue">{summary.stats.ready}</Text>
+              <Text size="xl" fw={700} c="primary">{summary.stats.ready}</Text>
             </Card>
             <Card withBorder>
               <Text size="xs" c="dimmed" tt="uppercase">Dispatched</Text>
@@ -431,7 +431,7 @@ function KitchenTab() {
             </Card>
             <Card withBorder>
               <Text size="xs" c="dimmed" tt="uppercase">Delivered</Text>
-              <Text size="xl" fw={700} c="green">{summary.stats.delivered}</Text>
+              <Text size="xl" fw={700} c="success">{summary.stats.delivered}</Text>
             </Card>
           </SimpleGrid>
 
@@ -502,7 +502,7 @@ function InventoryTab() {
     mutationFn: (data: CreateKitchenInventoryRequest) => api.createKitchenInventoryItem(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["kitchen-inventory"] });
-      notifications.show({ title: "Success", message: "Item added", color: "green" });
+      notifications.show({ title: "Success", message: "Item added", color: "success" });
       close();
       setForm({});
     },
@@ -513,12 +513,12 @@ function InventoryTab() {
     { key: "category", label: "Category", render: (r: KitchenInventory) => <Text size="sm">{r.category ?? "-"}</Text> },
     { key: "current_stock", label: "Stock", render: (r: KitchenInventory) => {
       const low = r.reorder_level && r.current_stock <= r.reorder_level;
-      return <Text size="sm" c={low ? "red" : undefined} fw={low ? 700 : undefined}>{r.current_stock} {r.unit}</Text>;
+      return <Text size="sm" c={low ? "danger" : undefined} fw={low ? 700 : undefined}>{r.current_stock} {r.unit}</Text>;
     }},
     { key: "reorder_level", label: "Reorder Level", render: (r: KitchenInventory) => <Text size="sm">{r.reorder_level ?? "-"} {r.unit}</Text> },
     { key: "supplier", label: "Supplier", render: (r: KitchenInventory) => <Text size="sm">{r.supplier ?? "-"}</Text> },
     { key: "expiry_date", label: "Expiry", render: (r: KitchenInventory) => <Text size="sm">{r.expiry_date ?? "-"}</Text> },
-    { key: "is_active", label: "Active", render: (r: KitchenInventory) => <Badge color={r.is_active ? "green" : "gray"}>{r.is_active ? "Yes" : "No"}</Badge> },
+    { key: "is_active", label: "Active", render: (r: KitchenInventory) => <Badge color={r.is_active ? "success" : "slate"}>{r.is_active ? "Yes" : "No"}</Badge> },
   ];
 
   return (
@@ -568,7 +568,7 @@ function AuditsTab() {
     mutationFn: (data: CreateKitchenAuditRequest) => api.createKitchenAudit(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["kitchen-audits"] });
-      notifications.show({ title: "Success", message: "Audit recorded", color: "green" });
+      notifications.show({ title: "Success", message: "Audit recorded", color: "success" });
       close();
       setForm({});
     },
@@ -580,10 +580,10 @@ function AuditsTab() {
     { key: "audit_type", label: "Type", render: (r: KitchenAudit) => <Badge variant="light">{r.audit_type}</Badge> },
     { key: "hygiene_score", label: "Hygiene Score", render: (r: KitchenAudit) => {
       const score = r.hygiene_score;
-      const color = score == null ? "gray" : score >= 80 ? "green" : score >= 60 ? "yellow" : "red";
+      const color = score == null ? "slate" : score >= 80 ? "success" : score >= 60 ? "warning" : "danger";
       return <Badge color={color}>{score ?? "-"}/100</Badge>;
     }},
-    { key: "is_compliant", label: "Compliant", render: (r: KitchenAudit) => <Badge color={r.is_compliant ? "green" : "red"}>{r.is_compliant ? "Yes" : "No"}</Badge> },
+    { key: "is_compliant", label: "Compliant", render: (r: KitchenAudit) => <Badge color={r.is_compliant ? "success" : "danger"}>{r.is_compliant ? "Yes" : "No"}</Badge> },
     { key: "findings", label: "Findings", render: (r: KitchenAudit) => <Text size="sm" truncate>{r.findings ?? "-"}</Text> },
     { key: "next_audit_date", label: "Next Audit", render: (r: KitchenAudit) => <Text size="sm">{r.next_audit_date ?? "-"}</Text> },
   ];

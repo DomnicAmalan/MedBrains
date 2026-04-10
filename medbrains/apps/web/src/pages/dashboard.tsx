@@ -176,7 +176,7 @@ const ACTIVITY_ICON_MAP: Record<string, { icon: typeof IconActivity; color: stri
   opd: { icon: IconStethoscope, color: "teal" },
   lab: { icon: IconFlask, color: "success" },
   billing: { icon: IconReceipt, color: "violet" },
-  appointment: { icon: IconCalendar, color: "blue" },
+  appointment: { icon: IconCalendar, color: "primary" },
 };
 
 function timeAgo(dateStr: string): string {
@@ -290,13 +290,13 @@ function DefaultDashboard({
           label="Today's Appointments"
           value={stats?.today_appointments ?? 0}
           icon={<IconCalendar size={20} stroke={1.5} />}
-          color="blue"
+          color="primary"
         />
         <StatCard
           label="IPD Active"
           value={stats?.ipd_active ?? 0}
           icon={<IconBed size={20} stroke={1.5} />}
-          color="cyan"
+          color="info"
         />
       </SimpleGrid>
 

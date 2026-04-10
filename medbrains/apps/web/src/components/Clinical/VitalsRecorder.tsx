@@ -67,10 +67,10 @@ function computeBmi(weightKg: number | undefined, heightCm: number | undefined):
 }
 
 function getBmiCategory(bmi: number): { labelKey: string; color: string } {
-  if (bmi < 18.5) return { labelKey: "vitals.underweight", color: "yellow" };
-  if (bmi < 25) return { labelKey: "vitals.normal", color: "green" };
+  if (bmi < 18.5) return { labelKey: "vitals.underweight", color: "warning" };
+  if (bmi < 25) return { labelKey: "vitals.normal", color: "success" };
   if (bmi < 30) return { labelKey: "vitals.overweight", color: "orange" };
-  return { labelKey: "vitals.obese", color: "red" };
+  return { labelKey: "vitals.obese", color: "danger" };
 }
 
 function computeMap(systolic: number | undefined, diastolic: number | undefined): number | null {
@@ -265,7 +265,7 @@ export function VitalsRecorder({ onSubmit, isSubmitting, onCancel }: VitalsRecor
                   variant="light"
                   size={28}
                   radius="md"
-                  color={level === "critical" ? "red" : level === "borderline" ? "yellow" : "blue"}
+                  color={level === "critical" ? "danger" : level === "borderline" ? "warning" : "primary"}
                 >
                   {config.icon}
                 </ThemeIcon>

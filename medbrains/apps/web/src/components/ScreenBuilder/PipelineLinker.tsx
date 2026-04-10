@@ -55,7 +55,7 @@ export function PipelineLinker({
             </Button>
             <Button
               variant="light"
-              color="red"
+              color="danger"
               size="compact-xs"
               leftSection={<IconUnlink size={12} />}
               onClick={handleUnlink}

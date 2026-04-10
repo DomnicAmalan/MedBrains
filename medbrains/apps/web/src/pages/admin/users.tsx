@@ -76,17 +76,17 @@ const BUILT_IN_ROLES = [
 ];
 
 const ROLE_COLORS: Record<string, string> = {
-  super_admin: "red",
+  super_admin: "danger",
   hospital_admin: "violet",
-  doctor: "blue",
+  doctor: "primary",
   nurse: "teal",
-  receptionist: "green",
+  receptionist: "success",
   lab_technician: "orange",
-  pharmacist: "cyan",
-  billing_clerk: "yellow",
-  housekeeping_staff: "gray",
-  facilities_manager: "indigo",
-  audit_officer: "pink",
+  pharmacist: "info",
+  billing_clerk: "warning",
+  housekeeping_staff: "slate",
+  facilities_manager: "primary",
+  audit_officer: "danger",
 };
 
 // ── Permission Tree Helpers ───────────────────────────────
@@ -156,7 +156,7 @@ function PermissionGroupNode({
             size="sm"
           />
           <Text size="sm" fw={500}>{group.label}</Text>
-          <Badge size="xs" variant="light" color={checked === total ? "green" : "gray"}>
+          <Badge size="xs" variant="light" color={checked === total ? "success" : "slate"}>
             {checked}/{total}
           </Badge>
         </Group>
@@ -313,7 +313,7 @@ function UserModal({
       notifications.show({
         title: "User created",
         message: "User has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-users"] });
@@ -323,7 +323,7 @@ function UserModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -335,7 +335,7 @@ function UserModal({
       notifications.show({
         title: "User updated",
         message: "User has been updated successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-users"] });
@@ -345,7 +345,7 @@ function UserModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -355,7 +355,7 @@ function UserModal({
       notifications.show({
         title: "Missing role",
         message: "Please select a role for the user",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -385,7 +385,7 @@ function UserModal({
         notifications.show({
           title: "Missing password",
           message: "Please enter a password for the new user",
-          color: "red",
+          color: "danger",
         });
         return;
       }
@@ -560,7 +560,7 @@ function DeleteUserModal({
       notifications.show({
         title: "User deleted",
         message: `User "${user!.full_name}" has been deleted`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-users"] });
@@ -570,7 +570,7 @@ function DeleteUserModal({
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -590,7 +590,7 @@ function DeleteUserModal({
             Cancel
           </Button>
           <Button
-            color="red"
+            color="danger"
             onClick={() => deleteMutation.mutate()}
             loading={deleteMutation.isPending}
           >
@@ -855,7 +855,7 @@ function UserPermissionOverrideDrawer({
       notifications.show({
         title: "Permissions updated",
         message: `Permission overrides for "${user?.full_name}" saved`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-users"] });
@@ -865,7 +865,7 @@ function UserPermissionOverrideDrawer({
       notifications.show({
         title: "Save failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -885,7 +885,7 @@ function UserPermissionOverrideDrawer({
           <div>
             <Text fw={600} size="sm">{user?.full_name ?? "Permissions"}</Text>
             {user && (
-              <Badge size="xs" variant="light" color={ROLE_COLORS[user.role] ?? "gray"}>
+              <Badge size="xs" variant="light" color={ROLE_COLORS[user.role] ?? "slate"}>
                 {user.role.replace(/_/g, " ")}
               </Badge>
             )}
@@ -900,7 +900,7 @@ function UserPermissionOverrideDrawer({
         <Alert
           icon={<IconInfoCircle size={16} />}
           variant="light"
-          color="blue"
+          color="primary"
         >
           <Text size="xs">
             <Text span fw={600}>Extra permissions</Text> are granted to this user beyond
@@ -918,8 +918,8 @@ function UserPermissionOverrideDrawer({
             <Box>
               <Group justify="space-between" mb="xs">
                 <Group gap="xs">
-                  <Text size="sm" fw={600} c="green">Extra Permissions</Text>
-                  <Badge size="xs" variant="light" color="green">
+                  <Text size="sm" fw={600} c="success">Extra Permissions</Text>
+                  <Badge size="xs" variant="light" color="success">
                     {extraPerms.size}
                   </Badge>
                 </Group>
@@ -963,8 +963,8 @@ function UserPermissionOverrideDrawer({
             <Box>
               <Group justify="space-between" mb="xs">
                 <Group gap="xs">
-                  <Text size="sm" fw={600} c="red">Denied Permissions</Text>
-                  <Badge size="xs" variant="light" color="red">
+                  <Text size="sm" fw={600} c="danger">Denied Permissions</Text>
+                  <Badge size="xs" variant="light" color="danger">
                     {deniedPerms.size}
                   </Badge>
                 </Group>
@@ -1052,7 +1052,7 @@ function UserPermissionOverrideDrawer({
                             <Text size="sm" fw={500} tt="capitalize">
                               {module.replace(/_/g, " ")}
                             </Text>
-                            <Badge size="xs" variant="light" color="gray">
+                            <Badge size="xs" variant="light" color="slate">
                               {fields.length} {fields.length === 1 ? "field" : "fields"}
                             </Badge>
                             {moduleOverrideCount > 0 && (
@@ -1153,7 +1153,7 @@ function UserPermissionOverrideDrawer({
                           <Text size="sm" fw={500} tt="capitalize">
                             {category}
                           </Text>
-                          <Badge size="xs" variant="light" color="gray">
+                          <Badge size="xs" variant="light" color="slate">
                             {templates.length} widget{templates.length !== 1 ? "s" : ""}
                           </Badge>
                         </Group>
@@ -1233,7 +1233,7 @@ function BulkImportModal({
       notifications.show({
         title: "Bulk Import Complete",
         message: `${result.created} user(s) created successfully`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-users"] });
@@ -1245,7 +1245,7 @@ function BulkImportModal({
       notifications.show({
         title: "Bulk Import Failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -1291,7 +1291,7 @@ function BulkImportModal({
   return (
     <Modal opened={opened} onClose={onClose} title="Bulk Import Users" size="lg">
       <Stack gap="md">
-        <Alert icon={<IconInfoCircle size={16} />} variant="light" color="blue">
+        <Alert icon={<IconInfoCircle size={16} />} variant="light" color="primary">
           <Text size="xs">
             Paste a JSON array of user objects. Each object needs:{" "}
             <Text span fw={600}>username</Text>, <Text span fw={600}>email</Text>,{" "}
@@ -1313,7 +1313,7 @@ function BulkImportModal({
           styles={{ input: { fontFamily: "monospace", fontSize: 12 } }}
         />
         {parseError && (
-          <Alert color="red" variant="light">
+          <Alert color="danger" variant="light">
             <Text size="sm">{parseError}</Text>
           </Alert>
         )}
@@ -1415,7 +1415,7 @@ export function UsersPage() {
         <Badge
           size="sm"
           variant="light"
-          color={ROLE_COLORS[row.role] ?? "gray"}
+          color={ROLE_COLORS[row.role] ?? "slate"}
         >
           {row.role.replace(/_/g, " ")}
         </Badge>
@@ -1434,7 +1434,7 @@ export function UsersPage() {
       key: "status",
       label: "Status",
       render: (row: SetupUser) => (
-        <StatusDot color={row.is_active ? "green" : "red"} label={row.is_active ? "Active" : "Inactive"} size="sm" />
+        <StatusDot color={row.is_active ? "success" : "danger"} label={row.is_active ? "Active" : "Inactive"} size="sm" />
       ),
     },
     {
@@ -1446,7 +1446,7 @@ export function UsersPage() {
             <Tooltip label="Edit user">
               <ActionIcon
                 variant="subtle"
-                color="blue"
+                color="primary"
                 onClick={() => openEdit(row)}
               >
                 <IconPencil size={16} />
@@ -1468,7 +1468,7 @@ export function UsersPage() {
             <Tooltip label="Delete user">
               <ActionIcon
                 variant="subtle"
-                color="red"
+                color="danger"
                 onClick={() => openDelete(row)}
               >
                 <IconTrash size={16} />
@@ -1486,7 +1486,7 @@ export function UsersPage() {
         title="User Management"
         subtitle="Manage system users, roles, and permission overrides"
         icon={<IconUsers size={20} stroke={1.5} />}
-        color="gray"
+        color="slate"
         actions={
           canCreate ? (
             <Group gap="sm">

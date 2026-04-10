@@ -62,24 +62,24 @@ import type { Column } from "../components/DataTable";
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const RISK_LEVEL_COLORS: Record<string, string> = {
-  low: "green",
-  medium: "yellow",
-  high: "red",
+  low: "success",
+  medium: "warning",
+  high: "danger",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: "gray",
-  normal: "blue",
+  low: "slate",
+  normal: "primary",
   high: "orange",
-  urgent: "red",
+  urgent: "danger",
 };
 
 const WAITLIST_STATUS_COLORS: Record<string, string> = {
-  waiting: "yellow",
-  offered: "blue",
-  booked: "green",
-  expired: "gray",
-  cancelled: "red",
+  waiting: "warning",
+  offered: "primary",
+  booked: "success",
+  expired: "slate",
+  cancelled: "danger",
 };
 
 // ── Helpers ────────────────────────────────────────────
@@ -190,14 +190,14 @@ function PredictionsTab({ canScore }: { canScore: boolean }) {
       notifications.show({
         title: "Batch Scoring Complete",
         message: "Today's appointments have been scored",
-        color: "green",
+        color: "success",
       });
     },
     onError: () => {
       notifications.show({
         title: "Scoring Failed",
         message: "Failed to score appointments",
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -210,7 +210,7 @@ function PredictionsTab({ canScore }: { canScore: boolean }) {
       notifications.show({
         title: "Scored",
         message: "Appointment prediction scored",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -247,7 +247,7 @@ function PredictionsTab({ canScore }: { canScore: boolean }) {
       key: "risk_level",
       label: "Risk Level",
       render: (r) => (
-        <Badge color={RISK_LEVEL_COLORS[r.risk_level] ?? "gray"} variant="light" size="sm">
+        <Badge color={RISK_LEVEL_COLORS[r.risk_level] ?? "slate"} variant="light" size="sm">
           {r.risk_level}
         </Badge>
       ),
@@ -270,7 +270,7 @@ function PredictionsTab({ canScore }: { canScore: boolean }) {
             render: (r: NoshowPredictionScore) => (
               <ActionIcon
                 variant="subtle"
-                color="blue"
+                color="primary"
                 size="sm"
                 onClick={() => scoreOneMut.mutate(r.appointment_id)}
                 loading={scoreOneMut.isPending}
@@ -361,7 +361,7 @@ function WaitlistTab({
       qc.invalidateQueries({ queryKey: ["scheduling-waitlist"] });
       closeCreate();
       resetCreateForm();
-      notifications.show({ title: "Created", message: "Waitlist entry created", color: "green" });
+      notifications.show({ title: "Created", message: "Waitlist entry created", color: "success" });
     },
   });
 
@@ -373,7 +373,7 @@ function WaitlistTab({
       closeOffer();
       setOfferTarget(null);
       setOfferedAppointmentId("");
-      notifications.show({ title: "Offered", message: "Slot offered to patient", color: "blue" });
+      notifications.show({ title: "Offered", message: "Slot offered to patient", color: "primary" });
     },
   });
 
@@ -385,7 +385,7 @@ function WaitlistTab({
       notifications.show({
         title: variables.accept ? "Accepted" : "Declined",
         message: variables.accept ? "Offer accepted, slot booked" : "Offer declined",
-        color: variables.accept ? "green" : "orange",
+        color: variables.accept ? "success" : "orange",
       });
     },
   });
@@ -397,14 +397,14 @@ function WaitlistTab({
       notifications.show({
         title: "Auto-Fill Complete",
         message: result.message,
-        color: "green",
+        color: "success",
       });
     },
     onError: () => {
       notifications.show({
         title: "Auto-Fill Failed",
         message: "Could not auto-fill slots",
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -479,7 +479,7 @@ function WaitlistTab({
       key: "priority",
       label: "Priority",
       render: (r) => (
-        <Badge color={PRIORITY_COLORS[r.priority] ?? "gray"} variant="light" size="sm">
+        <Badge color={PRIORITY_COLORS[r.priority] ?? "slate"} variant="light" size="sm">
           {r.priority}
         </Badge>
       ),
@@ -488,7 +488,7 @@ function WaitlistTab({
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge color={WAITLIST_STATUS_COLORS[r.status] ?? "gray"} variant="light" size="sm">
+        <Badge color={WAITLIST_STATUS_COLORS[r.status] ?? "slate"} variant="light" size="sm">
           {r.status}
         </Badge>
       ),
@@ -503,7 +503,7 @@ function WaitlistTab({
                 {r.status === "waiting" && (
                   <ActionIcon
                     variant="subtle"
-                    color="blue"
+                    color="primary"
                     size="sm"
                     title="Offer Slot"
                     onClick={() => {
@@ -519,7 +519,7 @@ function WaitlistTab({
                   <>
                     <ActionIcon
                       variant="subtle"
-                      color="green"
+                      color="success"
                       size="sm"
                       title="Accept"
                       onClick={() => respondMut.mutate({ id: r.id, accept: true })}
@@ -529,7 +529,7 @@ function WaitlistTab({
                     </ActionIcon>
                     <ActionIcon
                       variant="subtle"
-                      color="red"
+                      color="danger"
                       size="sm"
                       title="Decline"
                       onClick={() => respondMut.mutate({ id: r.id, accept: false })}
@@ -690,7 +690,7 @@ function OverbookingTab({ canManage }: { canManage: boolean }) {
       qc.invalidateQueries({ queryKey: ["scheduling-overbooking-rules"] });
       close();
       resetForm();
-      notifications.show({ title: "Created", message: "Overbooking rule created", color: "green" });
+      notifications.show({ title: "Created", message: "Overbooking rule created", color: "success" });
     },
   });
 
@@ -702,7 +702,7 @@ function OverbookingTab({ canManage }: { canManage: boolean }) {
       close();
       setEditing(null);
       resetForm();
-      notifications.show({ title: "Updated", message: "Overbooking rule updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Overbooking rule updated", color: "success" });
     },
   });
 
@@ -710,7 +710,7 @@ function OverbookingTab({ canManage }: { canManage: boolean }) {
     mutationFn: (id: string) => api.deleteOverbookingRule(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["scheduling-overbooking-rules"] });
-      notifications.show({ title: "Deleted", message: "Overbooking rule removed", color: "red" });
+      notifications.show({ title: "Deleted", message: "Overbooking rule removed", color: "danger" });
     },
   });
 
@@ -797,7 +797,7 @@ function OverbookingTab({ canManage }: { canManage: boolean }) {
       key: "is_active",
       label: "Active",
       render: (r) => (
-        <Badge color={r.is_active ? "green" : "red"} variant="light" size="sm">
+        <Badge color={r.is_active ? "success" : "danger"} variant="light" size="sm">
           {r.is_active ? "Active" : "Inactive"}
         </Badge>
       ),
@@ -809,12 +809,12 @@ function OverbookingTab({ canManage }: { canManage: boolean }) {
             label: "Actions",
             render: (r: SchedulingOverbookingRule) => (
               <Group gap="xs" wrap="nowrap">
-                <ActionIcon variant="subtle" color="blue" size="sm" onClick={() => openEdit(r)}>
+                <ActionIcon variant="subtle" color="primary" size="sm" onClick={() => openEdit(r)}>
                   <IconPencil size={14} />
                 </ActionIcon>
                 <ActionIcon
                   variant="subtle"
-                  color="red"
+                  color="danger"
                   size="sm"
                   onClick={() => deleteMut.mutate(r.id)}
                   loading={deleteMut.isPending}
@@ -1029,12 +1029,12 @@ function RecurringBlocksTab({ canManage }: { canManage: boolean }) {
       notifications.show({
         title: "Recurring Created",
         message: `${result.created} recurring slot(s) created`,
-        color: "green",
+        color: "success",
       });
       qc.invalidateQueries({ queryKey: ["scheduling-conflicts"] });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1061,11 +1061,11 @@ function RecurringBlocksTab({ canManage }: { canManage: boolean }) {
       notifications.show({
         title: "Block Created",
         message: "Schedule block created successfully",
-        color: "green",
+        color: "success",
       });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1080,12 +1080,12 @@ function RecurringBlocksTab({ canManage }: { canManage: boolean }) {
         message: result.promoted
           ? "Waitlist entry promoted to the slot"
           : "No eligible waitlist entry found for this slot",
-        color: result.promoted ? "green" : "yellow",
+        color: result.promoted ? "success" : "warning",
       });
       qc.invalidateQueries({ queryKey: ["scheduling-waitlist"] });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1126,7 +1126,7 @@ function RecurringBlocksTab({ canManage }: { canManage: boolean }) {
           </Button>
           <Button
             variant="light"
-            color="red"
+            color="danger"
             leftSection={<IconLock size={16} />}
             onClick={openBlock}
           >
@@ -1250,7 +1250,7 @@ function RecurringBlocksTab({ canManage }: { canManage: boolean }) {
             onChange={(e) => setBlockForm({ ...blockForm, block_reason: e.currentTarget.value })}
           />
           <Button
-            color="red"
+            color="danger"
             onClick={() => blockMut.mutate()}
             loading={blockMut.isPending}
             disabled={!blockForm.resource_id || !blockForm.start_time || !blockForm.end_time || !blockForm.block_reason}
@@ -1371,20 +1371,20 @@ function AnalyticsTab() {
         {schedAnalytics && (
           <>
             <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} mb="md">
-              <StatCard label="Total Slots" value={schedAnalytics.total_slots} color="blue" />
+              <StatCard label="Total Slots" value={schedAnalytics.total_slots} color="primary" />
               <StatCard
                 label="Utilization Rate"
                 value={formatPercent(schedAnalytics.utilization_rate)}
-                color="green"
+                color="success"
               />
               <StatCard
                 label="No-Show Rate"
                 value={formatPercent(schedAnalytics.no_show_rate)}
-                color="red"
+                color="danger"
               />
               <StatCard
                 label="Avg Wait (min)"
-                value={schedAnalytics.avg_wait_minutes.toFixed(1)}
+                value={(schedAnalytics.avg_wait_minutes ?? 0).toFixed(1)}
                 color="orange"
               />
             </SimpleGrid>
@@ -1393,7 +1393,7 @@ function AnalyticsTab() {
                 h={250}
                 data={chartData}
                 dataKey="metric"
-                series={[{ name: "value", label: "Count", color: "blue" }]}
+                series={[{ name: "value", label: "Count", color: "primary" }]}
               />
             )}
           </>
@@ -1407,13 +1407,13 @@ function AnalyticsTab() {
             Waitlist Overview
           </Text>
           <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
-            <StatCard label="Waiting" value={waitlistStatsData.total_waiting} color="yellow" />
-            <StatCard label="Offered" value={waitlistStatsData.total_offered} color="blue" />
-            <StatCard label="Booked" value={waitlistStatsData.total_booked} color="green" />
+            <StatCard label="Waiting" value={waitlistStatsData.total_waiting} color="warning" />
+            <StatCard label="Offered" value={waitlistStatsData.total_offered} color="primary" />
+            <StatCard label="Booked" value={waitlistStatsData.total_booked} color="success" />
             <StatCard
               label="Avg Wait (days)"
               value={waitlistStatsData.avg_wait_days != null ? waitlistStatsData.avg_wait_days.toFixed(1) : "—"}
-              color="gray"
+              color="slate"
             />
           </SimpleGrid>
         </div>

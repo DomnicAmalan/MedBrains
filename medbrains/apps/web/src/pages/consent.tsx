@@ -88,46 +88,46 @@ const INJURY_CLASSIFICATION_OPTIONS = [
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  general: "gray",
-  surgical: "red",
-  anesthesia: "grape",
-  blood_transfusion: "pink",
-  investigation: "blue",
-  data_sharing: "indigo",
+  general: "slate",
+  surgical: "danger",
+  anesthesia: "violet",
+  blood_transfusion: "danger",
+  investigation: "primary",
+  data_sharing: "primary",
   research: "violet",
-  photography: "cyan",
+  photography: "info",
   teaching: "teal",
   refusal: "orange",
-  advance_directive: "yellow",
+  advance_directive: "warning",
   organ_donation: "lime",
-  communication: "green",
+  communication: "success",
   death_certificate: "red.9",
   medico_legal_opinion: "orange.9",
   custom: "dark",
 };
 
 const AUDIT_ACTION_COLORS: Record<string, string> = {
-  created: "gray",
-  granted: "green",
-  signed: "green",
-  denied: "red",
-  refused: "red",
+  created: "slate",
+  granted: "success",
+  signed: "success",
+  denied: "danger",
+  refused: "danger",
   withdrawn: "orange",
-  revoked: "red",
-  expired: "yellow",
-  renewed: "blue",
-  amended: "indigo",
+  revoked: "danger",
+  expired: "warning",
+  renewed: "primary",
+  amended: "primary",
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  granted: "green",
-  signed: "green",
-  pending: "yellow",
-  denied: "red",
-  refused: "red",
+  granted: "success",
+  signed: "success",
+  pending: "warning",
+  denied: "danger",
+  refused: "danger",
   withdrawn: "orange",
-  expired: "gray",
-  missing: "red",
+  expired: "slate",
+  missing: "danger",
 };
 
 const SIGNATURE_TYPES = [
@@ -233,7 +233,7 @@ function TemplatesTab({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["consent-templates"] });
       close();
-      notifications.show({ title: "Created", message: "Template created", color: "green" });
+      notifications.show({ title: "Created", message: "Template created", color: "success" });
     },
   });
 
@@ -244,7 +244,7 @@ function TemplatesTab({
       qc.invalidateQueries({ queryKey: ["consent-templates"] });
       close();
       setEditing(null);
-      notifications.show({ title: "Updated", message: "Template updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Template updated", color: "success" });
     },
   });
 
@@ -252,7 +252,7 @@ function TemplatesTab({
     mutationFn: (id: string) => api.deleteConsentTemplate(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["consent-templates"] });
-      notifications.show({ title: "Deleted", message: "Template removed", color: "red" });
+      notifications.show({ title: "Deleted", message: "Template removed", color: "danger" });
     },
   });
 
@@ -263,7 +263,7 @@ function TemplatesTab({
       key: "category",
       label: "Category",
       render: (r) => (
-        <Badge color={CATEGORY_COLORS[r.category] ?? "gray"} variant="light" size="sm">
+        <Badge color={CATEGORY_COLORS[r.category] ?? "slate"} variant="light" size="sm">
           {r.category.replace(/_/g, " ")}
         </Badge>
       ),
@@ -287,12 +287,12 @@ function TemplatesTab({
             </Badge>
           )}
           {r.requires_doctor && (
-            <Badge size="xs" variant="outline" color="blue">
+            <Badge size="xs" variant="outline" color="primary">
               Doctor
             </Badge>
           )}
           {r.is_read_aloud_required && (
-            <Badge size="xs" variant="outline" color="grape">
+            <Badge size="xs" variant="outline" color="violet">
               Read-aloud
             </Badge>
           )}
@@ -303,7 +303,7 @@ function TemplatesTab({
       key: "active",
       label: "Active",
       render: (r) => (
-        <Badge color={r.is_active ? "green" : "gray"} variant="light" size="sm">
+        <Badge color={r.is_active ? "success" : "slate"} variant="light" size="sm">
           {r.is_active ? "Active" : "Inactive"}
         </Badge>
       ),
@@ -328,7 +328,7 @@ function TemplatesTab({
           {canDelete && (
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               size="sm"
               onClick={() => deleteMut.mutate(r.id)}
             >
@@ -345,7 +345,7 @@ function TemplatesTab({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["consent-templates"] });
       closeDeathCert();
-      notifications.show({ title: "Created", message: "Death certificate template created", color: "green" });
+      notifications.show({ title: "Created", message: "Death certificate template created", color: "success" });
     },
   });
 
@@ -354,7 +354,7 @@ function TemplatesTab({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["consent-templates"] });
       closeMlo();
-      notifications.show({ title: "Created", message: "Medico-legal opinion template created", color: "green" });
+      notifications.show({ title: "Created", message: "Medico-legal opinion template created", color: "success" });
     },
   });
 
@@ -373,7 +373,7 @@ function TemplatesTab({
           {canCreate && (
             <Button
               variant="light"
-              color="red.9"
+              color="danger.9"
               leftSection={<IconCertificate size={16} />}
               onClick={openDeathCert}
             >
@@ -686,11 +686,11 @@ function DeathCertificateForm({
 
       <Group>
         <Switch label="Autopsy Requested" checked={autopsyRequested} onChange={(e) => setAutopsyRequested(e.currentTarget.checked)} />
-        <Switch label="Medico-Legal Case" checked={isMedicoLegal} onChange={(e) => setIsMedicoLegal(e.currentTarget.checked)} color="red" />
+        <Switch label="Medico-Legal Case" checked={isMedicoLegal} onChange={(e) => setIsMedicoLegal(e.currentTarget.checked)} color="danger" />
       </Group>
 
       {isMedicoLegal && (
-        <Badge color="red" variant="light" size="lg">
+        <Badge color="danger" variant="light" size="lg">
           MLC — Police intimation and inquest required under CrPC
         </Badge>
       )}
@@ -708,7 +708,7 @@ function DeathCertificateForm({
       <TextInput label="Witness Name" value={witnessName} onChange={(e) => setWitnessName(e.target.value)} />
       <Textarea label="Additional Notes" value={notes} onChange={(e) => setNotes(e.target.value)} minRows={2} />
 
-      <Button onClick={handleSubmit} loading={loading} color="red.9" leftSection={<IconCertificate size={16} />}>
+      <Button onClick={handleSubmit} loading={loading} color="danger.9" leftSection={<IconCertificate size={16} />}>
         Create Death Certificate Template
       </Button>
     </Stack>
@@ -951,7 +951,7 @@ function AuditTab() {
       key: "consent_source",
       label: "Source",
       render: (r) => (
-        <Badge color={r.consent_source === "patient_consent" ? "blue" : "grape"} variant="light" size="sm">
+        <Badge color={r.consent_source === "patient_consent" ? "primary" : "violet"} variant="light" size="sm">
           {r.consent_source === "patient_consent" ? "Patient" : "Procedure"}
         </Badge>
       ),
@@ -960,7 +960,7 @@ function AuditTab() {
       key: "action",
       label: "Action",
       render: (r) => (
-        <Badge color={AUDIT_ACTION_COLORS[r.action] ?? "gray"} variant="light" size="sm">
+        <Badge color={AUDIT_ACTION_COLORS[r.action] ?? "slate"} variant="light" size="sm">
           {r.action}
         </Badge>
       ),
@@ -1104,7 +1104,7 @@ function VerificationTab({ canRevoke }: { canRevoke: boolean }) {
       key: "source",
       label: "Source",
       render: (r) => (
-        <Badge color={r.source === "patient_consent" ? "blue" : "grape"} variant="light" size="sm">
+        <Badge color={r.source === "patient_consent" ? "primary" : "violet"} variant="light" size="sm">
           {r.source === "patient_consent" ? "Patient" : "Procedure"}
         </Badge>
       ),
@@ -1113,7 +1113,7 @@ function VerificationTab({ canRevoke }: { canRevoke: boolean }) {
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge color={STATUS_COLORS[r.status] ?? "gray"} variant="light" size="sm">
+        <Badge color={STATUS_COLORS[r.status] ?? "slate"} variant="light" size="sm">
           {r.status}
         </Badge>
       ),
@@ -1208,7 +1208,7 @@ function SignaturesTab({ canManage }: { canManage: boolean }) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["consent-signatures"] });
       close();
-      notifications.show({ title: "Created", message: "Signature recorded", color: "green" });
+      notifications.show({ title: "Created", message: "Signature recorded", color: "success" });
     },
   });
 
@@ -1216,7 +1216,7 @@ function SignaturesTab({ canManage }: { canManage: boolean }) {
     mutationFn: (id: string) => api.deleteConsentSignature(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["consent-signatures"] });
-      notifications.show({ title: "Deleted", message: "Signature removed", color: "red" });
+      notifications.show({ title: "Deleted", message: "Signature removed", color: "danger" });
     },
   });
 
@@ -1225,7 +1225,7 @@ function SignaturesTab({ canManage }: { canManage: boolean }) {
       key: "consent_source",
       label: "Source",
       render: (r) => (
-        <Badge color={r.consent_source === "patient_consent" ? "blue" : "grape"} variant="light" size="sm">
+        <Badge color={r.consent_source === "patient_consent" ? "primary" : "violet"} variant="light" size="sm">
           {r.consent_source === "patient_consent" ? "Patient" : "Procedure"}
         </Badge>
       ),
@@ -1263,7 +1263,7 @@ function SignaturesTab({ canManage }: { canManage: boolean }) {
             <IconSearch size={14} />
           </ActionIcon>
           {canManage && (
-            <ActionIcon variant="subtle" color="red" size="sm" onClick={() => deleteMut.mutate(r.id)}>
+            <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => deleteMut.mutate(r.id)}>
               <IconTrash size={14} />
             </ActionIcon>
           )}

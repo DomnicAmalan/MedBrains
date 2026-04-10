@@ -162,11 +162,11 @@ function HemodynamicChart({ flowsheets }: { flowsheets: IcuFlowsheet[] }) {
         data={chartData}
         dataKey="time"
         series={[
-          { name: "HR", color: "red" },
-          { name: "SBP", color: "blue" },
-          { name: "DBP", color: "cyan" },
+          { name: "HR", color: "danger" },
+          { name: "SBP", color: "primary" },
+          { name: "DBP", color: "info" },
           { name: "MAP", color: "orange" },
-          { name: "CVP", color: "grape" },
+          { name: "CVP", color: "violet" },
         ]}
         curveType="monotone"
         connectNulls
@@ -214,7 +214,7 @@ function InfusionTracker({
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-flowsheets", admissionId] });
-      notifications.show({ title: "Infusion added", message: "", color: "green" });
+      notifications.show({ title: "Infusion added", message: "", color: "success" });
       setAdding(false);
       setInfForm({});
     },
@@ -322,7 +322,7 @@ function FlowsheetsTab({ admissionId }: { admissionId: string }) {
       api.createIcuFlowsheet(admissionId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-flowsheets", admissionId] });
-      notifications.show({ title: "Flowsheet recorded", message: "", color: "green" });
+      notifications.show({ title: "Flowsheet recorded", message: "", color: "success" });
       close();
       setForm({});
     },
@@ -420,7 +420,7 @@ function VentilatorTab({ admissionId }: { admissionId: string }) {
       api.createIcuVentilatorRecord(admissionId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-ventilator", admissionId] });
-      notifications.show({ title: "Ventilator record saved", message: "", color: "green" });
+      notifications.show({ title: "Ventilator record saved", message: "", color: "success" });
       close();
       setForm({ mode: "cmv" });
     },
@@ -511,12 +511,12 @@ function MortalityComparison({ scores }: { scores: IcuScore[] }) {
   // Determine severity color based on predicted mortality
   const severityColor =
     latestMortality >= 75
-      ? "red"
+      ? "danger"
       : latestMortality >= 50
         ? "orange"
         : latestMortality >= 25
-          ? "yellow"
-          : "green";
+          ? "warning"
+          : "success";
 
   // Average predicted mortality across all scored entries
   const avgMortality =
@@ -546,13 +546,13 @@ function MortalityComparison({ scores }: { scores: IcuScore[] }) {
           <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
             Average Predicted Mortality
           </Text>
-          <Text size="xl" fw={700} c={avgMortality >= 50 ? "orange" : "blue"} mt={4}>
+          <Text size="xl" fw={700} c={avgMortality >= 50 ? "orange" : "primary"} mt={4}>
             {avgMortality.toFixed(1)}%
           </Text>
           <Text size="xs" c="dimmed">
             Across {mortalityScores.length} scored assessment{mortalityScores.length > 1 ? "s" : ""}
           </Text>
-          <Progress value={avgMortality} color={avgMortality >= 50 ? "orange" : "blue"} mt="xs" size="sm" />
+          <Progress value={avgMortality} color={avgMortality >= 50 ? "orange" : "primary"} mt="xs" size="sm" />
         </Card>
 
         <Card withBorder padding="sm" radius="md">
@@ -567,7 +567,7 @@ function MortalityComparison({ scores }: { scores: IcuScore[] }) {
                 const improving = diff < 0;
                 return (
                   <>
-                    <Text size="xl" fw={700} c={improving ? "green" : "red"} mt={4}>
+                    <Text size="xl" fw={700} c={improving ? "success" : "danger"} mt={4}>
                       {improving ? "" : "+"}{diff.toFixed(1)}%
                     </Text>
                     <Text size="xs" c="dimmed">
@@ -576,7 +576,7 @@ function MortalityComparison({ scores }: { scores: IcuScore[] }) {
                     <ThemeIcon
                       size="sm"
                       variant="light"
-                      color={improving ? "green" : "red"}
+                      color={improving ? "success" : "danger"}
                       mt="xs"
                     >
                       <Text size="xs">{improving ? "v" : "^"}</Text>
@@ -615,7 +615,7 @@ function ScoresTab({ admissionId }: { admissionId: string }) {
       api.createIcuScore(admissionId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-scores", admissionId] });
-      notifications.show({ title: "Score recorded", message: "", color: "green" });
+      notifications.show({ title: "Score recorded", message: "", color: "success" });
       close();
       setForm({ score_type: "sofa", score_value: 0 });
     },
@@ -685,7 +685,7 @@ function DevicesTab({ admissionId }: { admissionId: string }) {
       api.createIcuDevice(admissionId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-devices", admissionId] });
-      notifications.show({ title: "Device tracked", message: "", color: "green" });
+      notifications.show({ title: "Device tracked", message: "", color: "success" });
       close();
       setForm({ device_type: "central_line" });
     },
@@ -696,7 +696,7 @@ function DevicesTab({ admissionId }: { admissionId: string }) {
       api.removeIcuDevice(admissionId, deviceId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-devices", admissionId] });
-      notifications.show({ title: "Device removed", message: "", color: "blue" });
+      notifications.show({ title: "Device removed", message: "", color: "primary" });
     },
   });
 
@@ -716,7 +716,7 @@ function DevicesTab({ admissionId }: { admissionId: string }) {
       api.createIcuBundleCheck(admissionId, selectedDevice?.id ?? "", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-bundle-checks", selectedDevice?.id] });
-      notifications.show({ title: "Bundle check saved", message: "", color: "green" });
+      notifications.show({ title: "Bundle check saved", message: "", color: "success" });
       setBundleForm({ is_compliant: true, still_needed: true });
     },
   });
@@ -725,7 +725,7 @@ function DevicesTab({ admissionId }: { admissionId: string }) {
     { key: "device_type" as const, label: "Type", render: (d: IcuDevice) => deviceTypeLabels[d.device_type] ?? d.device_type },
     { key: "site" as const, label: "Site", render: (d: IcuDevice) => d.site ?? "—" },
     { key: "inserted_at" as const, label: "Inserted", render: (d: IcuDevice) => new Date(d.inserted_at).toLocaleDateString() },
-    { key: "is_active" as const, label: "Status", render: (d: IcuDevice) => d.is_active ? <Badge color="green">Active</Badge> : <Badge color="gray">Removed</Badge> },
+    { key: "is_active" as const, label: "Status", render: (d: IcuDevice) => d.is_active ? <Badge color="success">Active</Badge> : <Badge color="slate">Removed</Badge> },
     {
       key: "id" as const,
       label: "Actions",
@@ -738,7 +738,7 @@ function DevicesTab({ admissionId }: { admissionId: string }) {
           </Tooltip>
           {canManage && d.is_active && (
             <Tooltip label="Remove Device">
-              <ActionIcon variant="subtle" color="red" onClick={() => removeMut.mutate(d.id)}>
+              <ActionIcon variant="subtle" color="danger" onClick={() => removeMut.mutate(d.id)}>
                 <IconTrash size={16} />
               </ActionIcon>
             </Tooltip>
@@ -792,7 +792,7 @@ function DevicesTab({ admissionId }: { admissionId: string }) {
                 {bundleChecks.map((bc: IcuBundleCheck) => (
                   <Table.Tr key={bc.id}>
                     <Table.Td>{new Date(bc.checked_at).toLocaleString()}</Table.Td>
-                    <Table.Td>{bc.is_compliant ? <Badge color="green">Yes</Badge> : <Badge color="red">No</Badge>}</Table.Td>
+                    <Table.Td>{bc.is_compliant ? <Badge color="success">Yes</Badge> : <Badge color="danger">No</Badge>}</Table.Td>
                     <Table.Td>{bc.still_needed ? "Yes" : "No"}</Table.Td>
                     <Table.Td>{bc.notes ?? "—"}</Table.Td>
                   </Table.Tr>
@@ -835,7 +835,7 @@ function NutritionTab({ admissionId }: { admissionId: string }) {
       api.createIcuNutrition(admissionId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-nutrition", admissionId] });
-      notifications.show({ title: "Nutrition recorded", message: "", color: "green" });
+      notifications.show({ title: "Nutrition recorded", message: "", color: "success" });
       close();
       setForm({ route: "enteral" });
     },
@@ -961,7 +961,7 @@ function BilirubinPhototherapyPanel({ records }: { records: IcuNeonatalRecord[] 
           </Text>
           <Badge
             size="lg"
-            color={phototherapySummary.currentlyActive ? "yellow" : "gray"}
+            color={phototherapySummary.currentlyActive ? "warning" : "slate"}
             mt={4}
           >
             {phototherapySummary.currentlyActive ? "Active" : "Completed / Off"}
@@ -987,7 +987,7 @@ function BilirubinPhototherapyPanel({ records }: { records: IcuNeonatalRecord[] 
           <Text
             size="xl"
             fw={700}
-            c={phototherapySummary.peakBili >= 20 ? "red" : phototherapySummary.peakBili >= 15 ? "orange" : "blue"}
+            c={phototherapySummary.peakBili >= 20 ? "danger" : phototherapySummary.peakBili >= 15 ? "orange" : "primary"}
             mt={4}
           >
             {phototherapySummary.peakBili > 0 ? `${phototherapySummary.peakBili.toFixed(1)} mg/dL` : "—"}
@@ -1004,7 +1004,7 @@ function BilirubinPhototherapyPanel({ records }: { records: IcuNeonatalRecord[] 
             c={
               phototherapySummary.latestBili != null && phototherapySummary.latestBili >= 15
                 ? "orange"
-                : "green"
+                : "success"
             }
             mt={4}
           >
@@ -1095,7 +1095,7 @@ function NeonatalTab({ admissionId }: { admissionId: string }) {
       api.createIcuNeonatalRecord(admissionId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["icu-neonatal", admissionId] });
-      notifications.show({ title: "Neonatal record saved", message: "", color: "green" });
+      notifications.show({ title: "Neonatal record saved", message: "", color: "success" });
       close();
       setForm({});
     },
@@ -1106,7 +1106,7 @@ function NeonatalTab({ admissionId }: { admissionId: string }) {
     { key: "gestational_age_weeks" as const, label: "GA wks", render: (r: IcuNeonatalRecord) => r.gestational_age_weeks != null ? String(r.gestational_age_weeks) : "—" },
     { key: "current_weight_gm" as const, label: "Weight g", render: (r: IcuNeonatalRecord) => r.current_weight_gm != null ? String(r.current_weight_gm) : "—" },
     { key: "bilirubin_total" as const, label: "Bilirubin", render: (r: IcuNeonatalRecord) => r.bilirubin_total != null ? String(r.bilirubin_total) : "—" },
-    { key: "phototherapy_active" as const, label: "Phototherapy", render: (r: IcuNeonatalRecord) => r.phototherapy_active ? <Badge color="yellow">Active</Badge> : <Badge color="gray">Off</Badge> },
+    { key: "phototherapy_active" as const, label: "Phototherapy", render: (r: IcuNeonatalRecord) => r.phototherapy_active ? <Badge color="warning">Active</Badge> : <Badge color="slate">Off</Badge> },
     { key: "notes" as const, label: "Notes", render: (r: IcuNeonatalRecord) => r.notes ?? "" },
   ];
 
@@ -1202,11 +1202,11 @@ function AnalyticsTab() {
           </Paper>
           <Paper withBorder p="md" radius="md">
             <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Readmissions (30d)</Text>
-            <Text size="xl" fw={700} c={losData.readmission_count > 0 ? "orange" : "green"} mt={4}>{losData.readmission_count}</Text>
+            <Text size="xl" fw={700} c={losData.readmission_count > 0 ? "orange" : "success"} mt={4}>{losData.readmission_count}</Text>
           </Paper>
           <Paper withBorder p="md" radius="md">
             <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Readmission Rate</Text>
-            <Text size="xl" fw={700} c={losData.readmission_rate != null && losData.readmission_rate > 10 ? "red" : "green"} mt={4}>
+            <Text size="xl" fw={700} c={losData.readmission_rate != null && losData.readmission_rate > 10 ? "danger" : "success"} mt={4}>
               {losData.readmission_rate != null ? `${losData.readmission_rate.toFixed(1)}%` : "—"}
             </Text>
           </Paper>

@@ -38,13 +38,13 @@ const LEVEL_OPTIONS = [
 ];
 
 const LEVEL_COLORS: Record<string, string> = {
-  campus: "blue",
+  campus: "primary",
   building: "violet",
-  floor: "cyan",
+  floor: "info",
   wing: "teal",
   zone: "orange",
-  room: "green",
-  bed: "gray",
+  room: "success",
+  bed: "slate",
 };
 
 const QUERY_KEY = ["setup-locations"];
@@ -107,7 +107,7 @@ function LocationModal({
       notifications.show({
         title: "Location created",
         message: "Location has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -117,7 +117,7 @@ function LocationModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -129,7 +129,7 @@ function LocationModal({
       notifications.show({
         title: "Location updated",
         message: "Location has been updated successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -139,7 +139,7 @@ function LocationModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -149,7 +149,7 @@ function LocationModal({
       notifications.show({
         title: "Validation error",
         message: "Code and Name are required",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -267,7 +267,7 @@ function DeleteConfirmModal({
           <Button variant="light" onClick={onClose}>
             Cancel
           </Button>
-          <Button color="red" onClick={onConfirm} loading={isDeleting}>
+          <Button color="danger" onClick={onConfirm} loading={isDeleting}>
             Delete
           </Button>
         </Group>
@@ -295,7 +295,7 @@ export function LocationsSettings() {
       notifications.show({
         title: "Location deleted",
         message: "Location has been deleted successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -305,7 +305,7 @@ export function LocationsSettings() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -348,7 +348,7 @@ export function LocationsSettings() {
         <Text size="sm">{loc.name}</Text>
       </Table.Td>
       <Table.Td>
-        <Badge size="sm" variant="light" color={LEVEL_COLORS[loc.level] ?? "gray"}>
+        <Badge size="sm" variant="light" color={LEVEL_COLORS[loc.level] ?? "slate"}>
           {loc.level}
         </Badge>
       </Table.Td>
@@ -358,16 +358,16 @@ export function LocationsSettings() {
         </Text>
       </Table.Td>
       <Table.Td>
-        <Badge size="sm" variant="light" color={loc.is_active ? "green" : "red"}>
+        <Badge size="sm" variant="light" color={loc.is_active ? "success" : "danger"}>
           {loc.is_active ? "Active" : "Inactive"}
         </Badge>
       </Table.Td>
       <Table.Td>
         <Group gap={4}>
-          <ActionIcon variant="subtle" color="blue" onClick={() => openEdit(loc)}>
+          <ActionIcon variant="subtle" color="primary" onClick={() => openEdit(loc)}>
             <IconPencil size={16} />
           </ActionIcon>
-          <ActionIcon variant="subtle" color="red" onClick={() => setDeleteTarget(loc)}>
+          <ActionIcon variant="subtle" color="danger" onClick={() => setDeleteTarget(loc)}>
             <IconTrash size={16} />
           </ActionIcon>
         </Group>

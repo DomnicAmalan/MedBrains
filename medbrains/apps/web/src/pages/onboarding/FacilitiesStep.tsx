@@ -120,7 +120,7 @@ export function FacilitiesStep({ onNext, onBack }: Props) {
         sub-institutions or satellite facilities below.
       </Text>
 
-      <Alert variant="light" color="blue">
+      <Alert variant="light" color="primary">
         <Text size="sm" fw={600}>Main Hospital</Text>
         <Text size="xs" c="dimmed">MAIN &middot; main hospital (auto-created)</Text>
         <Badge size="xs" mt={4}>Main</Badge>
@@ -138,7 +138,7 @@ export function FacilitiesStep({ onNext, onBack }: Props) {
           </div>
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => removeFacility(f.local_id)}
           >
             <IconTrash size={16} />

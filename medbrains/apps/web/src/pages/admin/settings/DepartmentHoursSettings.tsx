@@ -93,7 +93,7 @@ export function DepartmentHoursSettings() {
       notifications.show({
         title: "Operating hours updated",
         message: "The department operating hours have been saved.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -101,7 +101,7 @@ export function DepartmentHoursSettings() {
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -173,7 +173,7 @@ export function DepartmentHoursSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load departments:{" "}
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
@@ -223,7 +223,7 @@ export function DepartmentHoursSettings() {
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={dept.is_active ? "green" : "gray"}
+                    color={dept.is_active ? "success" : "slate"}
                     variant="light"
                     size="sm"
                   >
@@ -233,7 +233,7 @@ export function DepartmentHoursSettings() {
                 <Table.Td>
                   <ActionIcon
                     variant="subtle"
-                    color="blue"
+                    color="primary"
                     size="sm"
                     onClick={() => openEditModal(dept)}
                     title="Edit operating hours"

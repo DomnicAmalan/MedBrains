@@ -41,32 +41,32 @@ import { DataTable } from "../../../components";
 import { FieldAuditLog } from "../../../components/FormBuilder/FieldAuditLog";
 
 const dataTypeColors: Record<string, string> = {
-  text: "blue",
-  email: "cyan",
+  text: "primary",
+  email: "info",
   phone: "teal",
   date: "violet",
   datetime: "violet",
   time: "violet",
-  select: "grape",
-  multiselect: "grape",
+  select: "violet",
+  multiselect: "violet",
   checkbox: "orange",
   radio: "orange",
-  textarea: "blue",
-  number: "green",
-  decimal: "green",
-  file: "yellow",
-  hidden: "gray",
-  computed: "pink",
+  textarea: "primary",
+  number: "success",
+  decimal: "success",
+  file: "warning",
+  hidden: "slate",
+  computed: "danger",
   boolean: "orange",
-  uuid_fk: "indigo",
-  json: "red",
+  uuid_fk: "primary",
+  json: "danger",
 };
 
 const requirementColors: Record<string, string> = {
-  mandatory: "red",
+  mandatory: "danger",
   conditional: "orange",
-  recommended: "yellow",
-  optional: "gray",
+  recommended: "warning",
+  optional: "slate",
 };
 
 function DetailRow({
@@ -130,13 +130,13 @@ function FieldDetailDrawer({
             </Box>
             <Group gap="xs">
               <Badge
-                color={dataTypeColors[detail.field.data_type] ?? "gray"}
+                color={dataTypeColors[detail.field.data_type] ?? "slate"}
                 variant="light"
               >
                 {detail.field.data_type}
               </Badge>
               {detail.field.is_system && (
-                <Badge color="red" variant="light">
+                <Badge color="danger" variant="light">
                   System
                 </Badge>
               )}
@@ -220,7 +220,7 @@ function FieldDetailDrawer({
                         <Badge
                           size="xs"
                           color={
-                            requirementColors[rl.requirement_level] ?? "gray"
+                            requirementColors[rl.requirement_level] ?? "slate"
                           }
                           variant="light"
                         >
@@ -300,7 +300,7 @@ function FieldEditModal({
       notifications.show({
         title: "Field created",
         message: "New field has been created",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-fields"] });
       onClose();
@@ -309,7 +309,7 @@ function FieldEditModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -321,7 +321,7 @@ function FieldEditModal({
       notifications.show({
         title: "Field updated",
         message: "Field has been updated",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-fields"] });
       queryClient.invalidateQueries({
@@ -333,7 +333,7 @@ function FieldEditModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -347,7 +347,7 @@ function FieldEditModal({
         notifications.show({
           title: "Invalid JSON",
           message: "Validation must be valid JSON",
-          color: "red",
+          color: "danger",
         });
         return;
       }
@@ -543,7 +543,7 @@ export function FieldMasterList() {
       label: "Type",
       render: (row: FieldMasterFull) => (
         <Badge
-          color={dataTypeColors[row.data_type] ?? "gray"}
+          color={dataTypeColors[row.data_type] ?? "slate"}
           variant="light"
           size="sm"
         >
@@ -585,14 +585,14 @@ export function FieldMasterList() {
         <Group gap={4} wrap="nowrap">
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color="primary"
             onClick={() => openDetail(row)}
           >
             <IconEye size={16} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
-            color="gray"
+            color="slate"
             onClick={() => {
               setAuditFieldId(row.id);
               setAuditFieldName(row.name);

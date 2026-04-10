@@ -345,7 +345,7 @@ function SystemHealthContent({ data }: { data: unknown }) {
           <Group gap="sm">
             <ThemeIcon
               variant="light"
-              color={svc.status === "healthy" || svc.status === "connected" ? "green" : "gray"}
+              color={svc.status === "healthy" || svc.status === "connected" ? "success" : "slate"}
               size={24}
               radius="lg"
             >
@@ -356,7 +356,7 @@ function SystemHealthContent({ data }: { data: unknown }) {
             </Text>
           </Group>
           <Badge
-            color={svc.status === "healthy" || svc.status === "connected" ? "green" : "gray"}
+            color={svc.status === "healthy" || svc.status === "connected" ? "success" : "slate"}
             variant="light"
             size="sm"
           >

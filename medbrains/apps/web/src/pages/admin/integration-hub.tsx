@@ -30,9 +30,9 @@ import { useRequirePermission } from "../../hooks/useRequirePermission";
 import { ExecutionPanel } from "../../components/Integration";
 
 const STATUS_COLORS: Record<PipelineStatus, string> = {
-  draft: "gray",
-  active: "green",
-  paused: "yellow",
+  draft: "slate",
+  active: "success",
+  paused: "warning",
   archived: "dimmed",
 };
 
@@ -153,7 +153,7 @@ export function IntegrationHubPage() {
               <ActionIcon
                 variant="subtle"
                 size="sm"
-                color="blue"
+                color="primary"
                 onClick={() => triggerPipeline.mutate(row.id)}
               >
                 <IconPlayerPlay size={14} />
@@ -191,7 +191,7 @@ export function IntegrationHubPage() {
                 <ActionIcon
                   variant="subtle"
                   size="sm"
-                  color={row.status === "active" ? "yellow" : "green"}
+                  color={row.status === "active" ? "warning" : "success"}
                   onClick={() => toggleStatus.mutate(row)}
                 >
                   {row.status === "active" ? (
@@ -208,7 +208,7 @@ export function IntegrationHubPage() {
               <ActionIcon
                 variant="subtle"
                 size="sm"
-                color="red"
+                color="danger"
                 onClick={() => deletePipeline.mutate(row.id)}
               >
                 <IconTrash size={14} />

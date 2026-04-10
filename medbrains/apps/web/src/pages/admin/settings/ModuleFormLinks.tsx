@@ -57,7 +57,7 @@ function LinkFormModal({
       notifications.show({
         title: "Link created",
         message: "Form linked to module",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-module-links"] });
       onClose();
@@ -66,7 +66,7 @@ function LinkFormModal({
       notifications.show({
         title: "Link failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -157,7 +157,7 @@ export function ModuleFormLinks() {
       notifications.show({
         title: "Link removed",
         message: "Form unlinked from module",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-module-links"] });
     },
@@ -165,7 +165,7 @@ export function ModuleFormLinks() {
       notifications.show({
         title: "Unlink failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -270,7 +270,7 @@ export function ModuleFormLinks() {
                       </Box>
                       <ActionIcon
                         variant="subtle"
-                        color="red"
+                        color="danger"
                         onClick={() => deleteMutation.mutate(link)}
                         loading={deleteMutation.isPending}
                       >

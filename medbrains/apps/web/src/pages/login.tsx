@@ -100,7 +100,7 @@ export function LoginPage() {
               </div>
 
               {loginMutation.isError && (
-                <Alert color="red" variant="light" radius="md">
+                <Alert color="danger" variant="light" radius="md">
                   {loginMutation.error.message}
                 </Alert>
               )}

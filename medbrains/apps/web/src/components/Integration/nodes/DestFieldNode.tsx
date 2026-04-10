@@ -34,12 +34,12 @@ export function DestFieldNode({ data, selected }: NodeProps) {
         {nodeData.fieldPath}
       </Text>
       {nodeData.required && (
-        <Badge size="xs" variant="light" color="red" mt={4}>
+        <Badge size="xs" variant="light" color="danger" mt={4}>
           required
         </Badge>
       )}
       {nodeData.fieldType && (
-        <Badge size="xs" variant="light" color="gray" mt={4} ml={nodeData.required ? 4 : 0}>
+        <Badge size="xs" variant="light" color="slate" mt={4} ml={nodeData.required ? 4 : 0}>
           {nodeData.fieldType}
         </Badge>
       )}

@@ -46,7 +46,7 @@ export function CreateLocationModal({
       notifications.show({
         title: "Location created",
         message: "Location has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-locations"] });
@@ -60,7 +60,7 @@ export function CreateLocationModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -70,7 +70,7 @@ export function CreateLocationModal({
       notifications.show({
         title: "Missing fields",
         message: "Code and Name are required",
-        color: "red",
+        color: "danger",
       });
       return;
     }

@@ -202,7 +202,7 @@ function SortableSourceChip({
               )}
               <ActionIcon
                 variant="transparent"
-                color="gray"
+                color="slate"
                 size={14}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -220,7 +220,7 @@ function SortableSourceChip({
                 key={child.id}
                 size="xs"
                 variant="light"
-                color="green"
+                color="success"
               >
                 {child.path.split(".").pop() ?? child.path}
               </Badge>
@@ -238,7 +238,7 @@ function SortableSourceChip({
           </Text>
           <ActionIcon
             variant="transparent"
-            color="gray"
+            color="slate"
             size={14}
             onClick={(e) => {
               e.stopPropagation();
@@ -573,7 +573,7 @@ export function MappingCard({
       {/* ── Header ──────────────────────────────────── */}
       <div className={styles.cardHeader} {...attributes} {...listeners}>
         <IconGripVertical size={14} color="var(--mantine-color-gray-5)" />
-        <Badge size="xs" variant="light" color="blue" circle>
+        <Badge size="xs" variant="light" color="primary" circle>
           {index + 1}
         </Badge>
         <Text size="xs" fw={500} truncate style={{ flex: 1 }}>
@@ -581,7 +581,7 @@ export function MappingCard({
         </Text>
         <ActionIcon
           variant="subtle"
-          color="red"
+          color="danger"
           size="xs"
           onClick={(e) => {
             e.stopPropagation();
@@ -761,7 +761,7 @@ export function MappingCard({
               )}
               {typeMismatch && (
                 <Tooltip label={`Type mismatch: source is ${sourceType}, destination expects ${destType}`} withArrow>
-                  <Badge size="xs" variant="light" color="yellow">
+                  <Badge size="xs" variant="light" color="warning">
                     mismatch
                   </Badge>
                 </Tooltip>
@@ -794,7 +794,7 @@ export function MappingCard({
                     <Badge
                       size="xs"
                       variant="light"
-                      color={preview.error ? "red" : "green"}
+                      color={preview.error ? "danger" : "success"}
                       className={styles.previewBadge}
                     >
                       {truncatePreview(preview.finalOutput)}

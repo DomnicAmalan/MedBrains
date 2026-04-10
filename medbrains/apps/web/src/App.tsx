@@ -42,7 +42,10 @@ const FrontOfficePage = lazy(() => import("./pages/front-office").then((m) => ({
 const HousekeepingPage = lazy(() => import("./pages/housekeeping").then((m) => ({ default: m.HousekeepingPage })));
 const HrPage = lazy(() => import("./pages/hr").then((m) => ({ default: m.HrPage })));
 const BmePage = lazy(() => import("./pages/bme").then((m) => ({ default: m.BmePage })));
+const AmbulancePage = lazy(() => import("./pages/ambulance").then((m) => ({ default: m.AmbulancePage })));
+const CommunicationsPage = lazy(() => import("./pages/communications").then((m) => ({ default: m.CommunicationsPage })));
 const CampPage = lazy(() => import("./pages/camp").then((m) => ({ default: m.CampPage })));
+const BedsidePortalPage = lazy(() => import("./pages/bedside-portal").then((m) => ({ default: m.BedsidePortalPage })));
 const CommandCenterPage = lazy(() => import("./pages/command-center").then((m) => ({ default: m.CommandCenterPage })));
 const ConsentPage = lazy(() => import("./pages/consent").then((m) => ({ default: m.ConsentPage })));
 const FacilitiesPage = lazy(() => import("./pages/facilities").then((m) => ({ default: m.FacilitiesPage })));
@@ -123,6 +126,8 @@ export function App() {
             <Route path="housekeeping" element={<HousekeepingPage />} />
             <Route path="hr" element={<HrPage />} />
             <Route path="bme" element={<BmePage />} />
+            <Route path="ambulance" element={<AmbulancePage />} />
+            <Route path="communications" element={<CommunicationsPage />} />
             <Route path="camp" element={<CampPage />} />
             <Route path="command-center" element={<CommandCenterPage />} />
             <Route path="facilities" element={<FacilitiesPage />} />
@@ -158,6 +163,7 @@ export function App() {
             <Route path="icu" element={<IcuPage />} />
             <Route path="ipd" element={<IpdPage />} />
             <Route path="ipd/beds" element={<DynamicScreenPage screenCode="ipd-bed-board" />} />
+            <Route path="bedside-portal" element={<BedsidePortalPage />} />
             <Route path="care-view" element={<CareViewPage />} />
             <Route path="ot" element={<OtPage />} />
             <Route path="admin">

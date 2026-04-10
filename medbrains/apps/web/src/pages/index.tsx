@@ -17,7 +17,7 @@ function StatusBadge({ label, status }: { label: string; status: string }) {
   const isConnected = status === "connected" || status === "ok";
   return (
     <Group gap="sm">
-      <Badge size="lg" variant="dot" color={isConnected ? "green" : "red"}>
+      <Badge size="lg" variant="dot" color={isConnected ? "success" : "danger"}>
         {label}
       </Badge>
       <Text size="sm" c="dimmed">
@@ -57,7 +57,7 @@ export function IndexPage() {
             )}
 
             {error && (
-              <Alert color="red" variant="light">
+              <Alert color="danger" variant="light">
                 Unable to reach API server. Is the backend running?
               </Alert>
             )}

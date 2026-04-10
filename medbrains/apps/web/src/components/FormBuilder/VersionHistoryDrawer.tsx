@@ -40,8 +40,8 @@ function timeAgo(dateStr: string): string {
 }
 
 const statusColors: Record<string, string> = {
-  draft: "gray",
-  active: "green",
+  draft: "slate",
+  active: "success",
   deprecated: "orange",
 };
 
@@ -78,7 +78,7 @@ export function VersionHistoryDrawer({
       notifications.show({
         title: "Version restored",
         message: "Form has been restored to the selected version as a new draft.",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-forms"] });
       queryClient.invalidateQueries({ queryKey: ["form-versions", formId] });
@@ -90,7 +90,7 @@ export function VersionHistoryDrawer({
       notifications.show({
         title: "Restore failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -131,13 +131,13 @@ export function VersionHistoryDrawer({
                   bullet={<IconClock size={14} />}
                   title={
                     <Group gap="xs">
-                      <Badge size="sm" variant="filled" color="blue">
+                      <Badge size="sm" variant="filled" color="primary">
                         v{v.version}
                       </Badge>
                       <Badge
                         size="xs"
                         variant="light"
-                        color={statusColors[v.status] ?? "gray"}
+                        color={statusColors[v.status] ?? "slate"}
                       >
                         {v.status}
                       </Badge>
@@ -166,7 +166,7 @@ export function VersionHistoryDrawer({
                         <ActionIcon
                           size="sm"
                           variant="subtle"
-                          color="blue"
+                          color="primary"
                           onClick={() => openCompare(v.version)}
                         >
                           <IconGitCompare size={14} />
@@ -201,9 +201,9 @@ export function VersionHistoryDrawer({
         {previewVersion && (
           <Stack gap="sm">
             <Group>
-              <Badge color="blue">v{previewVersion.version}</Badge>
+              <Badge color="primary">v{previewVersion.version}</Badge>
               <Badge
-                color={statusColors[previewVersion.status] ?? "gray"}
+                color={statusColors[previewVersion.status] ?? "slate"}
                 variant="light"
               >
                 {previewVersion.status}

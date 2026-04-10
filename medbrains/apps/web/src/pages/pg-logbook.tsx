@@ -80,11 +80,11 @@ export function PgLogbookPage() {
     mutationFn: (data: CreatePgLogbookRequest) => api.createPgLogbookEntry(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pg-logbook"] });
-      notifications.show({ title: "Created", message: "Logbook entry added", color: "green" });
+      notifications.show({ title: "Created", message: "Logbook entry added", color: "success" });
       handleClose();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create entry", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create entry", color: "danger" });
     },
   });
 
@@ -92,7 +92,7 @@ export function PgLogbookPage() {
     mutationFn: (id: string) => api.verifyPgLogbookEntry(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pg-logbook"] });
-      notifications.show({ title: "Verified", message: "Logbook entry verified", color: "green" });
+      notifications.show({ title: "Verified", message: "Logbook entry verified", color: "success" });
     },
   });
 
@@ -101,7 +101,7 @@ export function PgLogbookPage() {
       api.updateCoSignature(id, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["co-signatures"] });
-      notifications.show({ title: "Updated", message: "Co-signature decision recorded", color: "green" });
+      notifications.show({ title: "Updated", message: "Co-signature decision recorded", color: "success" });
     },
   });
 
@@ -240,16 +240,16 @@ function LogbookTable({
             </Table.Td>
             <Table.Td>
               {e.supervisor_verified ? (
-                <Badge color="green" size="sm">Verified</Badge>
+                <Badge color="success" size="sm">Verified</Badge>
               ) : (
-                <Badge color="yellow" size="sm">Pending</Badge>
+                <Badge color="warning" size="sm">Pending</Badge>
               )}
             </Table.Td>
             {showVerify && (
               <Table.Td>
                 {!e.supervisor_verified && onVerify && (
                   <Tooltip label="Verify entry">
-                    <ActionIcon variant="light" color="green" size="sm" onClick={() => onVerify(e.id)}>
+                    <ActionIcon variant="light" color="success" size="sm" onClick={() => onVerify(e.id)}>
                       <IconCheck size={14} />
                     </ActionIcon>
                   </Tooltip>
@@ -282,9 +282,9 @@ function CoSignatureTable({
 
   const statusColor = (s: string) => {
     switch (s) {
-      case "approved": return "green";
-      case "denied": return "red";
-      default: return "yellow";
+      case "approved": return "success";
+      case "denied": return "danger";
+      default: return "warning";
     }
   };
 
@@ -307,10 +307,10 @@ function CoSignatureTable({
             <Table.Td>
               {e.status === "pending" && e.approver_id === userId && (
                 <Group gap={4}>
-                  <Button size="xs" color="green" variant="light" onClick={() => onDecision(e.id, "approved")}>
+                  <Button size="xs" color="success" variant="light" onClick={() => onDecision(e.id, "approved")}>
                     Approve
                   </Button>
-                  <Button size="xs" color="red" variant="light" onClick={() => onDecision(e.id, "denied")}>
+                  <Button size="xs" color="danger" variant="light" onClick={() => onDecision(e.id, "denied")}>
                     Deny
                   </Button>
                 </Group>

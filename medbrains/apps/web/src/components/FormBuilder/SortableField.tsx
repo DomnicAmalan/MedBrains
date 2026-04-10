@@ -44,10 +44,10 @@ const DATA_TYPE_ICONS: Record<string, React.ReactNode> = {
 };
 
 const REQUIREMENT_COLORS: Record<string, string> = {
-  mandatory: "red",
-  conditional: "yellow",
-  recommended: "blue",
-  optional: "gray",
+  mandatory: "danger",
+  conditional: "warning",
+  recommended: "primary",
+  optional: "slate",
 };
 
 interface SortableFieldProps {
@@ -140,7 +140,7 @@ export function SortableField({ field, sectionId }: SortableFieldProps) {
     [field.id, field.colSpan, resizeField],
   );
 
-  const requirementColor = REQUIREMENT_COLORS[field.requirementLevel] ?? "gray";
+  const requirementColor = REQUIREMENT_COLORS[field.requirementLevel] ?? "slate";
 
   // Build hint text for (i) icon tooltip
   const hintParts: string[] = [];
@@ -212,13 +212,13 @@ export function SortableField({ field, sectionId }: SortableFieldProps) {
           )}
         </Group>
         <div className={classes.fieldMeta}>
-          <Badge size="xs" variant="light" color="gray">
+          <Badge size="xs" variant="light" color="slate">
             {field.dataType}
           </Badge>
           <Badge size="xs" variant="dot" color={requirementColor}>
             {field.requirementLevel}
           </Badge>
-          <Badge size="xs" variant="outline" color="gray">
+          <Badge size="xs" variant="outline" color="slate">
             {field.colSpan}/12
           </Badge>
         </div>
@@ -230,7 +230,7 @@ export function SortableField({ field, sectionId }: SortableFieldProps) {
           <ActionIcon
             size="xs"
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={(e) => {
               e.stopPropagation();
               removeField(field.id);

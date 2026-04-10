@@ -8,6 +8,7 @@ import {
   Loader,
   Modal,
   NumberInput,
+  SegmentedControl,
   Select,
   SimpleGrid,
   Stack,
@@ -20,10 +21,15 @@ import {
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
+import { WeekView } from "@mantine/schedule";
+import type { ScheduleEventData } from "@mantine/schedule";
+import dayjs from "dayjs";
 import {
   IconCalendarOff,
   IconCheck,
   IconClock,
+  IconList,
+  IconCalendarEvent,
   IconPencil,
   IconPlus,
   IconSearch,
@@ -116,14 +122,14 @@ function ScheduleFormModal({
       notifications.show({
         title: "Schedule created",
         message: "Doctor schedule slot has been added.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["doctor-schedules"] });
       onClose();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -140,14 +146,14 @@ function ScheduleFormModal({
       notifications.show({
         title: "Schedule updated",
         message: "Doctor schedule has been updated.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["doctor-schedules"] });
       onClose();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -275,14 +281,14 @@ function ExceptionFormModal({
         message: isAvailable
           ? "Special availability has been added."
           : "Day has been marked as unavailable.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["doctor-exceptions"] });
       onClose();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -358,6 +364,8 @@ export function DoctorSchedulesPage() {
   const [scheduleModal, setScheduleModal] = useState(false);
   const [editSchedule, setEditSchedule] = useState<DoctorSchedule | null>(null);
   const [exceptionModal, setExceptionModal] = useState(false);
+  const [viewMode, setViewMode] = useState("calendar");
+  const [calDate, setCalDate] = useState(dayjs().format("YYYY-MM-DD"));
 
   // Load doctors (server-side filtered to role=doctor, is_active=true)
   const { data: users, isLoading: usersLoading } = useQuery({
@@ -416,13 +424,13 @@ export function DoctorSchedulesPage() {
       notifications.show({
         title: "Deleted",
         message: "Schedule slot removed.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["doctor-schedules"] });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -432,13 +440,13 @@ export function DoctorSchedulesPage() {
       notifications.show({
         title: "Deleted",
         message: "Exception removed.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["doctor-exceptions"] });
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Failed", message: err.message, color: "red" });
+      notifications.show({ title: "Failed", message: err.message, color: "danger" });
     },
   });
 
@@ -452,6 +460,55 @@ export function DoctorSchedulesPage() {
     }
     return grouped;
   }, [schedules]);
+
+  // Convert weekly schedules + exceptions into calendar events for the selected week
+  const calendarEvents: ScheduleEventData[] = useMemo(() => {
+    const events: ScheduleEventData[] = [];
+    const weekStart = dayjs(calDate).startOf("week");
+
+    // Repeat weekly schedule slots across the displayed week
+    for (const s of schedules ?? []) {
+      if (selectedDeptId && s.department_id !== selectedDeptId) continue;
+      if (!s.is_active) continue;
+      const dayDate = weekStart.add(s.day_of_week, "day");
+      const dateStr = dayDate.format("YYYY-MM-DD");
+      events.push({
+        id: `sched-${s.id}`,
+        title: `${deptMap.get(s.department_id) ?? "Dept"} (${s.slot_duration_mins}m slots, max ${s.max_patients})`,
+        start: `${dateStr} ${s.start_time}:00`,
+        end: `${dateStr} ${s.end_time}:00`,
+        color: "blue",
+        payload: { type: "schedule", schedule: s },
+      });
+    }
+
+    // Add exceptions
+    for (const ex of exceptions ?? []) {
+      const exDate = ex.exception_date;
+      if (ex.is_available && ex.start_time && ex.end_time) {
+        events.push({
+          id: `exc-${ex.id}`,
+          title: `Override: ${ex.reason ?? "Custom hours"}`,
+          start: `${exDate} ${ex.start_time}:00`,
+          end: `${exDate} ${ex.end_time}:00`,
+          color: "orange",
+          payload: { type: "exception", exception: ex },
+        });
+      } else {
+        events.push({
+          id: `exc-${ex.id}`,
+          title: `Unavailable: ${ex.reason ?? "No reason"}`,
+          start: `${exDate} 00:00:00`,
+          end: `${exDate} 23:59:59`,
+          color: "red",
+          display: "background",
+          payload: { type: "exception", exception: ex },
+        });
+      }
+    }
+
+    return events;
+  }, [schedules, exceptions, calDate, selectedDeptId, deptMap]);
 
   // If no doctor selected, show doctor list
   if (!selectedDoctor) {
@@ -491,7 +548,7 @@ export function DoctorSchedulesPage() {
                 <Group justify="space-between" mb="xs">
                   <Text fw={600}>{doc.full_name}</Text>
                   <Badge
-                    color={doc.is_active ? "green" : "gray"}
+                    color={doc.is_active ? "success" : "slate"}
                     variant="light"
                     size="sm"
                   >
@@ -561,26 +618,83 @@ export function DoctorSchedulesPage() {
 
       {/* Weekly Schedule Section */}
       <Group justify="space-between" mb="sm">
-        <Title order={4}>Weekly Schedule</Title>
-        {canManage && (
-          <Button
+        <Group>
+          <Title order={4}>Weekly Schedule</Title>
+          <SegmentedControl
             size="xs"
-            leftSection={<IconPlus size={14} />}
-            onClick={() => {
-              setEditSchedule(null);
-              setScheduleModal(true);
-            }}
-          >
-            Add Slot
-          </Button>
+            value={viewMode}
+            onChange={setViewMode}
+            data={[
+              { value: "calendar", label: <Group gap={4}><IconCalendarEvent size={14} /><span>Calendar</span></Group> },
+              { value: "table", label: <Group gap={4}><IconList size={14} /><span>Table</span></Group> },
+            ]}
+          />
+        </Group>
+        {canManage && (
+          <Group>
+            <Button
+              size="xs"
+              leftSection={<IconPlus size={14} />}
+              onClick={() => {
+                setEditSchedule(null);
+                setScheduleModal(true);
+              }}
+            >
+              Add Slot
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="orange"
+              leftSection={<IconCalendarOff size={14} />}
+              onClick={() => setExceptionModal(true)}
+            >
+              Add Exception
+            </Button>
+          </Group>
         )}
       </Group>
 
-      {schedulesLoading ? (
+      {/* Calendar View */}
+      {viewMode === "calendar" && (
+        <Card withBorder mb="xl" p={0} style={{ overflow: "hidden" }}>
+          {schedulesLoading ? (
+            <Stack align="center" py="xl"><Loader size="sm" /></Stack>
+          ) : (
+            <WeekView
+              date={calDate}
+              onDateChange={setCalDate}
+              events={calendarEvents}
+              startTime="06:00:00"
+              endTime="22:00:00"
+              intervalMinutes={30}
+              highlightToday
+              withCurrentTimeIndicator
+              firstDayOfWeek={1}
+              slotHeight={40}
+              onEventClick={(event) => {
+                const payload = event.payload as Record<string, unknown> | undefined;
+                if (payload?.type === "schedule") {
+                  setEditSchedule(payload.schedule as DoctorSchedule);
+                  setScheduleModal(true);
+                }
+              }}
+              onTimeSlotClick={canManage ? () => {
+                setEditSchedule(null);
+                setScheduleModal(true);
+              } : undefined}
+              mode={canManage ? undefined : "static"}
+            />
+          )}
+        </Card>
+      )}
+
+      {/* Table View */}
+      {viewMode === "table" && schedulesLoading ? (
         <Stack align="center" py="md">
           <Loader size="sm" />
         </Stack>
-      ) : schedules && schedules.length > 0 ? (
+      ) : viewMode === "table" && schedules && schedules.length > 0 ? (
         <Table striped highlightOnHover mb="xl">
           <Table.Thead>
             <Table.Tr>
@@ -629,7 +743,7 @@ export function DoctorSchedulesPage() {
                       </Table.Td>
                       <Table.Td>
                         <Badge
-                          color={s.is_active ? "green" : "gray"}
+                          color={s.is_active ? "success" : "slate"}
                           variant="light"
                           size="sm"
                         >
@@ -641,7 +755,7 @@ export function DoctorSchedulesPage() {
                           <Group gap="xs" wrap="nowrap">
                             <ActionIcon
                               variant="subtle"
-                              color="blue"
+                              color="primary"
                               title="Edit"
                               onClick={() => {
                                 setEditSchedule(s);
@@ -652,7 +766,7 @@ export function DoctorSchedulesPage() {
                             </ActionIcon>
                             <ActionIcon
                               variant="subtle"
-                              color="red"
+                              color="danger"
                               title="Delete"
                               onClick={() => deleteMutation.mutate(s.id)}
                             >
@@ -666,31 +780,22 @@ export function DoctorSchedulesPage() {
               )}
           </Table.Tbody>
         </Table>
-      ) : (
+      ) : viewMode === "table" ? (
         <Card withBorder p="lg" mb="xl">
           <Text c="dimmed" ta="center">
             No schedule slots configured. Click "Add Slot" to set up weekly availability.
           </Text>
         </Card>
-      )}
+      ) : null}
 
-      {/* Schedule Exceptions Section */}
+      {/* Schedule Exceptions Section (table view only — calendar shows them inline) */}
+      {viewMode === "table" && (
       <Group justify="space-between" mb="sm">
         <Title order={4}>Schedule Exceptions</Title>
-        {canManage && (
-          <Button
-            size="xs"
-            variant="light"
-            color="orange"
-            leftSection={<IconCalendarOff size={14} />}
-            onClick={() => setExceptionModal(true)}
-          >
-            Add Exception
-          </Button>
-        )}
       </Group>
+      )}
 
-      {exceptions && exceptions.length > 0 ? (
+      {viewMode === "table" && exceptions && exceptions.length > 0 ? (
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
@@ -711,7 +816,7 @@ export function DoctorSchedulesPage() {
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={ex.is_available ? "blue" : "red"}
+                    color={ex.is_available ? "primary" : "danger"}
                     variant="light"
                     size="sm"
                   >
@@ -734,7 +839,7 @@ export function DoctorSchedulesPage() {
                   <Table.Td>
                     <ActionIcon
                       variant="subtle"
-                      color="red"
+                      color="danger"
                       title="Remove"
                       onClick={() => deleteExceptionMutation.mutate(ex.id)}
                     >
@@ -746,13 +851,13 @@ export function DoctorSchedulesPage() {
             ))}
           </Table.Tbody>
         </Table>
-      ) : (
+      ) : viewMode === "table" ? (
         <Card withBorder p="lg">
           <Text c="dimmed" ta="center">
             No schedule exceptions. Add exceptions for holidays, leave, or custom hours.
           </Text>
         </Card>
-      )}
+      ) : null}
 
       {/* Modals */}
       {scheduleModal && (

@@ -242,7 +242,7 @@ export function ConditionBuilder({ condition, onChange }: ConditionBuilderProps)
           <ActionIcon
             size="sm"
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => removeRow(index)}
           >
             <IconTrash size={12} />
@@ -263,7 +263,7 @@ export function ConditionBuilder({ condition, onChange }: ConditionBuilderProps)
           <Button
             size="xs"
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => updateAndEmit({ connector: "and", rows: [] })}
           >
             Clear All
@@ -327,7 +327,7 @@ export function ConditionSummary({ group, fieldOptions }: ConditionSummaryProps)
             {getOperatorLabel(row.operator)}
           </Text>
           {row.operator !== "!" && row.operator !== "!!" && (
-            <Text size="xs" fw={500} c="blue">
+            <Text size="xs" fw={500} c="primary">
               {formatConditionValue(row.value, row.operator)}
             </Text>
           )}

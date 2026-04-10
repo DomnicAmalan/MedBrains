@@ -44,30 +44,30 @@ import type { Column } from "../components/DataTable";
 // ── Helpers ─────────────────────────────────────────────
 
 function urgencyColor(overdue: number, pending: number): string {
-  if (overdue > 0) return "red";
-  if (pending > 0) return "yellow";
-  return "green";
+  if (overdue > 0) return "danger";
+  if (pending > 0) return "warning";
+  return "success";
 }
 
 function news2Color(score: number | null): string {
   if (score === null) return "gray";
-  if (score >= 7) return "red";
-  if (score >= 5) return "yellow";
-  return "green";
+  if (score >= 7) return "danger";
+  if (score >= 5) return "warning";
+  return "success";
 }
 
 function fallRiskColor(level: string | null): string {
   if (!level) return "gray";
   const l = level.toLowerCase();
-  if (l.includes("high")) return "red";
-  if (l.includes("medium") || l.includes("moderate")) return "yellow";
-  return "green";
+  if (l.includes("high")) return "danger";
+  if (l.includes("medium") || l.includes("moderate")) return "warning";
+  return "success";
 }
 
 function readinessColor(pct: number): string {
-  if (pct >= 80) return "green";
-  if (pct >= 50) return "yellow";
-  return "red";
+  if (pct >= 80) return "success";
+  if (pct >= 50) return "warning";
+  return "danger";
 }
 
 const SHIFTS = [
@@ -183,16 +183,16 @@ function PatientGridTab({ wardId }: { wardId: string | null }) {
       {/* Summary banner */}
       {summary && (
         <Group gap="xl">
-          <Badge size="lg" variant="light" color="blue">
+          <Badge size="lg" variant="light" color="primary">
             Occupied: {summary.occupied} / {summary.total_beds}
           </Badge>
-          <Badge size="lg" variant="light" color="red">
+          <Badge size="lg" variant="light" color="danger">
             Critical: {summary.critical_count}
           </Badge>
           <Badge size="lg" variant="light" color="orange">
             Isolation: {summary.isolation_count}
           </Badge>
-          <Badge size="lg" variant="light" color="yellow">
+          <Badge size="lg" variant="light" color="warning">
             Overdue Tasks: {summary.overdue_tasks_total}
           </Badge>
           <Badge size="lg" variant="light" color="violet">
@@ -246,7 +246,7 @@ function PatientCard({ patient: p }: { patient: PatientCardRow }) {
 
       <Group gap={4} mb={6}>
         {p.is_critical && (
-          <Badge size="xs" color="red" variant="filled">
+          <Badge size="xs" color="danger" variant="filled">
             Critical
           </Badge>
         )}
@@ -256,7 +256,7 @@ function PatientCard({ patient: p }: { patient: PatientCardRow }) {
           </Badge>
         )}
         {p.ip_type && (
-          <Badge size="xs" color="blue" variant="light">
+          <Badge size="xs" color="primary" variant="light">
             {p.ip_type}
           </Badge>
         )}
@@ -291,7 +291,7 @@ function PatientCard({ patient: p }: { patient: PatientCardRow }) {
           <Text size="xs">
             {p.pending_tasks} pending
             {p.overdue_tasks > 0 && (
-              <Text span c="red" fw={600}>
+              <Text span c="danger" fw={600}>
                 {" "}
                 ({p.overdue_tasks} overdue)
               </Text>
@@ -307,7 +307,7 @@ function PatientCard({ patient: p }: { patient: PatientCardRow }) {
           <Text size="xs">
             {p.pending_meds} pending
             {p.overdue_meds > 0 && (
-              <Text span c="red" fw={600}>
+              <Text span c="danger" fw={600}>
                 {" "}
                 ({p.overdue_meds} overdue)
               </Text>
@@ -368,7 +368,7 @@ function VitalsChecklistSection({ wardId }: { wardId: string | null }) {
       key: "hours_since_last",
       label: "Hours Since Last",
       render: (r) => (
-        <Text size="sm" c={r.vitals_due ? "red" : undefined}>
+        <Text size="sm" c={r.vitals_due ? "danger" : undefined}>
           {r.hours_since_last !== null ? `${r.hours_since_last.toFixed(1)}h` : "Never"}
         </Text>
       ),
@@ -377,7 +377,7 @@ function VitalsChecklistSection({ wardId }: { wardId: string | null }) {
       key: "vitals_due",
       label: "Status",
       render: (r) => (
-        <Badge size="sm" color={r.vitals_due ? "red" : "green"}>
+        <Badge size="sm" color={r.vitals_due ? "danger" : "success"}>
           {r.vitals_due ? "Due" : "OK"}
         </Badge>
       ),
@@ -448,7 +448,7 @@ function MedicationsTable({ items, loading }: { items: MedAdminItem[]; loading: 
         <Group gap={4}>
           <Text size="sm">{r.drug_name}</Text>
           {r.is_high_alert && (
-            <Badge size="xs" color="red" variant="filled">
+            <Badge size="xs" color="danger" variant="filled">
               HIGH ALERT
             </Badge>
           )}
@@ -461,7 +461,7 @@ function MedicationsTable({ items, loading }: { items: MedAdminItem[]; loading: 
       key: "scheduled_at",
       label: "Scheduled",
       render: (r) => (
-        <Text size="sm" c={r.is_overdue ? "red" : undefined}>
+        <Text size="sm" c={r.is_overdue ? "danger" : undefined}>
           {new Date(r.scheduled_at).toLocaleTimeString()}
         </Text>
       ),
@@ -470,7 +470,7 @@ function MedicationsTable({ items, loading }: { items: MedAdminItem[]; loading: 
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge size="sm" color={r.is_overdue ? "red" : "yellow"}>
+        <Badge size="sm" color={r.is_overdue ? "danger" : "warning"}>
           {r.is_overdue ? "Overdue" : "Pending"}
         </Badge>
       ),
@@ -500,7 +500,7 @@ function NursingTasksTable({
   const completeMut = useMutation({
     mutationFn: (taskId: string) => api.completeCareViewTask(taskId),
     onSuccess: () => {
-      notifications.show({ title: "Task completed", message: "", color: "green" });
+      notifications.show({ title: "Task completed", message: "", color: "success" });
       qc.invalidateQueries({ queryKey: ["care-view", "my-tasks"] });
       qc.invalidateQueries({ queryKey: ["care-view", "ward-grid"] });
     },
@@ -514,7 +514,7 @@ function NursingTasksTable({
       key: "category",
       label: "Category",
       render: (r) => (
-        <Badge size="xs" variant="light" color="blue">
+        <Badge size="xs" variant="light" color="primary">
           {r.category ?? "—"}
         </Badge>
       ),
@@ -525,7 +525,7 @@ function NursingTasksTable({
       render: (r) => (
         <Badge
           size="xs"
-          color={r.priority === "stat" ? "red" : r.priority === "urgent" ? "orange" : "gray"}
+          color={r.priority === "stat" ? "danger" : r.priority === "urgent" ? "orange" : "slate"}
         >
           {r.priority}
         </Badge>
@@ -535,7 +535,7 @@ function NursingTasksTable({
       key: "due_at",
       label: "Due",
       render: (r) => (
-        <Text size="sm" c={r.is_overdue ? "red" : undefined}>
+        <Text size="sm" c={r.is_overdue ? "danger" : undefined}>
           {r.due_at ? new Date(r.due_at).toLocaleTimeString() : "—"}
         </Text>
       ),
@@ -544,7 +544,7 @@ function NursingTasksTable({
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge size="sm" color={r.is_overdue ? "red" : "yellow"}>
+        <Badge size="sm" color={r.is_overdue ? "danger" : "warning"}>
           {r.is_overdue ? "Overdue" : "Pending"}
         </Badge>
       ),
@@ -559,7 +559,7 @@ function NursingTasksTable({
         <Tooltip label="Complete task">
           <ActionIcon
             size="sm"
-            color="green"
+            color="success"
             variant="light"
             loading={completeMut.isPending}
             onClick={() => completeMut.mutate(r.task_id)}
@@ -634,10 +634,10 @@ function HandoverTab({ wardId }: { wardId: string | null }) {
             <Text fw={600}>
               {data.ward_name} — {data.shift} shift
             </Text>
-            <Badge color="blue" size="lg">
+            <Badge color="primary" size="lg">
               {data.total_patients} patients
             </Badge>
-            <Badge color="red" size="lg">
+            <Badge color="danger" size="lg">
               {data.critical_count} critical
             </Badge>
           </Group>
@@ -655,7 +655,7 @@ function HandoverTab({ wardId }: { wardId: string | null }) {
                 </Group>
                 <Group gap={4}>
                   {p.is_critical && (
-                    <Badge size="xs" color="red">
+                    <Badge size="xs" color="danger">
                       Critical
                     </Badge>
                   )}
@@ -764,7 +764,7 @@ function DischargeTrackerTab({ wardId }: { wardId: string | null }) {
       key: "billing_cleared",
       label: "Billing",
       render: (r) => (
-        <Badge size="xs" color={r.billing_cleared ? "green" : "gray"}>
+        <Badge size="xs" color={r.billing_cleared ? "success" : "slate"}>
           {r.billing_cleared ? "Cleared" : "Pending"}
         </Badge>
       ),
@@ -773,7 +773,7 @@ function DischargeTrackerTab({ wardId }: { wardId: string | null }) {
       key: "pharmacy_cleared",
       label: "Pharmacy",
       render: (r) => (
-        <Badge size="xs" color={r.pharmacy_cleared ? "green" : "gray"}>
+        <Badge size="xs" color={r.pharmacy_cleared ? "success" : "slate"}>
           {r.pharmacy_cleared ? "Cleared" : "Pending"}
         </Badge>
       ),
@@ -782,7 +782,7 @@ function DischargeTrackerTab({ wardId }: { wardId: string | null }) {
       key: "nursing_cleared",
       label: "Nursing",
       render: (r) => (
-        <Badge size="xs" color={r.nursing_cleared ? "green" : "gray"}>
+        <Badge size="xs" color={r.nursing_cleared ? "success" : "slate"}>
           {r.nursing_cleared ? "Cleared" : "Pending"}
         </Badge>
       ),
@@ -791,7 +791,7 @@ function DischargeTrackerTab({ wardId }: { wardId: string | null }) {
       key: "doctor_cleared",
       label: "Doctor",
       render: (r) => (
-        <Badge size="xs" color={r.doctor_cleared ? "green" : "gray"}>
+        <Badge size="xs" color={r.doctor_cleared ? "success" : "slate"}>
           {r.doctor_cleared ? "Cleared" : "Pending"}
         </Badge>
       ),
@@ -800,7 +800,7 @@ function DischargeTrackerTab({ wardId }: { wardId: string | null }) {
       key: "pending_lab_count",
       label: "Pending Labs",
       render: (r) => (
-        <Text size="sm" c={r.pending_lab_count > 0 ? "red" : undefined}>
+        <Text size="sm" c={r.pending_lab_count > 0 ? "danger" : undefined}>
           {r.pending_lab_count}
         </Text>
       ),

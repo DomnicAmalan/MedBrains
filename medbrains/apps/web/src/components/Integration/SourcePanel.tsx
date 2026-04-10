@@ -86,12 +86,12 @@ function DraggableSourceField({
         {field.path}
       </Text>
       {field.type && field.type !== "unknown" && (
-        <Badge size="xs" variant="light" color={TYPE_COLORS[field.type as MappingFieldType] ?? "gray"} style={{ flexShrink: 0 }}>
+        <Badge size="xs" variant="light" color={TYPE_COLORS[field.type as MappingFieldType] ?? "slate"} style={{ flexShrink: 0 }}>
           {TYPE_LABELS[field.type as MappingFieldType] ?? field.type}
         </Badge>
       )}
       {field.source && (
-        <Badge size="xs" variant="dot" color="grape">
+        <Badge size="xs" variant="dot" color="violet">
           {field.source}
         </Badge>
       )}
@@ -113,12 +113,12 @@ function DraggableSourceField({
 // ── Draggable operation ───────────────────────────────────
 
 const CATEGORY_COLORS: Record<string, string> = {
-  string: "blue",
+  string: "primary",
   array: "teal",
   number: "orange",
-  date: "grape",
-  conversion: "pink",
-  merge: "indigo",
+  date: "violet",
+  conversion: "danger",
+  merge: "primary",
 };
 
 function DraggableOperation({
@@ -133,7 +133,7 @@ function DraggableOperation({
     data: { type: "operation", operation: op },
   });
 
-  const color = CATEGORY_COLORS[op.category] ?? "gray";
+  const color = CATEGORY_COLORS[op.category] ?? "slate";
 
   const handleDragStart = (e: React.DragEvent) => {
     if (viewMode === "freeform") {
@@ -255,7 +255,7 @@ export function SourcePanel({
           <Text size="xs" fw={700} tt="uppercase" c="dimmed">
             Source Fields
           </Text>
-          <Badge size="xs" variant="light" color="blue">
+          <Badge size="xs" variant="light" color="primary">
             {availableFields.length}
           </Badge>
         </Group>

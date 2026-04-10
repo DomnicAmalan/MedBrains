@@ -17,6 +17,7 @@ import {
   Textarea,
   Tooltip,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
@@ -42,19 +43,19 @@ import { ClinicalEventProvider, useClinicalEmit, DataTable, PageHeader, StatusDo
 import { useRequirePermission } from "../hooks/useRequirePermission";
 
 const statusColors: Record<string, string> = {
-  ordered: "blue",
-  scheduled: "cyan",
-  in_progress: "yellow",
+  ordered: "primary",
+  scheduled: "info",
+  in_progress: "warning",
   completed: "orange",
   reported: "teal",
-  verified: "green",
-  cancelled: "red",
+  verified: "success",
+  cancelled: "danger",
 };
 
 const priorityColors: Record<string, string> = {
-  routine: "gray",
+  routine: "slate",
   urgent: "orange",
-  stat: "red",
+  stat: "danger",
 };
 
 // ══════════════════════════════════════════════════════════
@@ -120,7 +121,7 @@ function RadiologyOrdersTab() {
       api.cancelRadiologyOrder(id, { cancellation_reason: "Cancelled by user" }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["radiology-orders"] });
-      notifications.show({ title: "Order cancelled", message: "", color: "red" });
+      notifications.show({ title: "Order cancelled", message: "", color: "danger" });
     },
   });
 
@@ -141,13 +142,13 @@ function RadiologyOrdersTab() {
       key: "priority" as const,
       label: "Priority",
       render: (o: RadiologyOrder) => (
-        <Badge size="xs" color={priorityColors[o.priority] ?? "gray"}>{o.priority}</Badge>
+        <Badge size="xs" color={priorityColors[o.priority] ?? "slate"}>{o.priority}</Badge>
       ),
     },
     {
       key: "status" as const,
       label: "Status",
-      render: (o: RadiologyOrder) => <StatusDot label={o.status} color={statusColors[o.status] ?? "gray"} />,
+      render: (o: RadiologyOrder) => <StatusDot label={o.status} color={statusColors[o.status] ?? "slate"} />,
     },
     { key: "body_part" as const, label: "Body Part", render: (o: RadiologyOrder) => o.body_part ?? "—" },
     {
@@ -155,9 +156,9 @@ function RadiologyOrdersTab() {
       label: "Flags",
       render: (o: RadiologyOrder) => (
         <Group gap={4}>
-          {o.contrast_required && <Badge size="xs" color="yellow">Contrast</Badge>}
-          {o.allergy_flagged && <Badge size="xs" color="red">Allergy</Badge>}
-          {o.pregnancy_checked && <Badge size="xs" color="pink">Preg-Chk</Badge>}
+          {o.contrast_required && <Badge size="xs" color="warning">Contrast</Badge>}
+          {o.allergy_flagged && <Badge size="xs" color="danger">Allergy</Badge>}
+          {o.pregnancy_checked && <Badge size="xs" color="danger">Preg-Chk</Badge>}
         </Group>
       ),
     },
@@ -178,7 +179,7 @@ function RadiologyOrdersTab() {
           </Tooltip>
           {o.status === "ordered" && canCancel && (
             <Tooltip label="Cancel">
-              <ActionIcon variant="subtle" color="red" onClick={() => cancelMutation.mutate(o.id)}>
+              <ActionIcon variant="subtle" color="danger" onClick={() => cancelMutation.mutate(o.id)}>
                 <IconX size={16} />
               </ActionIcon>
             </Tooltip>
@@ -269,7 +270,7 @@ function CreateOrderDrawer({ opened, onClose }: { opened: boolean; onClose: () =
     mutationFn: (data: CreateRadiologyOrderRequest) => api.createRadiologyOrder(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["radiology-orders"] });
-      notifications.show({ title: "Order created", message: "", color: "green" });
+      notifications.show({ title: "Order created", message: "", color: "success" });
       emit("radiology.order.created", {});
       setForm({});
       setContrast(false);
@@ -286,12 +287,7 @@ function CreateOrderDrawer({ opened, onClose }: { opened: boolean; onClose: () =
   return (
     <Drawer opened={opened} onClose={onClose} title="New Radiology Order" position="right" size="md">
       <Stack>
-        <TextInput
-          label="Patient ID"
-          required
-          value={form.patient_id ?? ""}
-          onChange={(e) => setForm({ ...form, patient_id: e.currentTarget.value })}
-        />
+        <PatientSearchSelect value={form.patient_id ?? ""} onChange={(v) => setForm({ ...form, patient_id: v })} required />
         <Select
           label="Modality"
           required
@@ -393,7 +389,7 @@ function OrderDetailDrawer({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["radiology-order", id] });
       qc.invalidateQueries({ queryKey: ["radiology-orders"] });
-      notifications.show({ title: "Report created", message: "", color: "green" });
+      notifications.show({ title: "Report created", message: "", color: "success" });
       emit("radiology.report.created", { orderId: id });
       setFindings("");
       setImpression("");
@@ -407,7 +403,7 @@ function OrderDetailDrawer({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["radiology-order", id] });
       qc.invalidateQueries({ queryKey: ["radiology-orders"] });
-      notifications.show({ title: "Report verified", message: "", color: "green" });
+      notifications.show({ title: "Report verified", message: "", color: "success" });
     },
   });
 
@@ -421,14 +417,14 @@ function OrderDetailDrawer({
         <Stack>
           <Group>
             <Text fw={600}>Status:</Text>
-            <Badge color={statusColors[order.status] ?? "gray"}>{order.status}</Badge>
+            <Badge color={statusColors[order.status] ?? "slate"}>{order.status}</Badge>
             <Text fw={600}>Priority:</Text>
-            <Badge color={priorityColors[order.priority] ?? "gray"}>{order.priority}</Badge>
+            <Badge color={priorityColors[order.priority] ?? "slate"}>{order.priority}</Badge>
           </Group>
           {order.body_part && <Text size="sm">Body Part: {order.body_part}</Text>}
           {order.clinical_indication && <Text size="sm">Indication: {order.clinical_indication}</Text>}
           {order.cancellation_reason && (
-            <Badge color="red" variant="light">Cancelled: {order.cancellation_reason}</Badge>
+            <Badge color="danger" variant="light">Cancelled: {order.cancellation_reason}</Badge>
           )}
 
           <Tabs value={reportTab} onChange={setReportTab}>
@@ -441,9 +437,9 @@ function OrderDetailDrawer({
             <Tabs.Panel value="details" pt="sm">
               <Stack gap="xs">
                 <Group gap={8}>
-                  {order.contrast_required && <Badge size="sm" color="yellow">Contrast Required</Badge>}
-                  {order.pregnancy_checked && <Badge size="sm" color="pink">Pregnancy Verified</Badge>}
-                  {order.allergy_flagged && <Badge size="sm" color="red">Allergy Flagged</Badge>}
+                  {order.contrast_required && <Badge size="sm" color="warning">Contrast Required</Badge>}
+                  {order.pregnancy_checked && <Badge size="sm" color="danger">Pregnancy Verified</Badge>}
+                  {order.allergy_flagged && <Badge size="sm" color="danger">Allergy Flagged</Badge>}
                 </Group>
                 {order.notes && <Text size="sm">Notes: {order.notes}</Text>}
                 {order.scheduled_at && (
@@ -459,8 +455,8 @@ function OrderDetailDrawer({
               {report ? (
                 <Stack>
                   <Group>
-                    <Badge color={report.status === "final" ? "green" : "yellow"}>{report.status}</Badge>
-                    {report.is_critical && <Badge color="red">CRITICAL</Badge>}
+                    <Badge color={report.status === "final" ? "success" : "warning"}>{report.status}</Badge>
+                    {report.is_critical && <Badge color="danger">CRITICAL</Badge>}
                   </Group>
                   <Text fw={600}>Findings:</Text>
                   <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>{report.findings}</Text>
@@ -478,7 +474,7 @@ function OrderDetailDrawer({
                   )}
                   {canVerify && report.status !== "final" && (
                     <Button
-                      color="green"
+                      color="success"
                       onClick={() => verifyMutation.mutate(report.id)}
                       loading={verifyMutation.isPending}
                     >
@@ -559,7 +555,7 @@ function ModalitiesTab() {
     mutationFn: () => api.createRadiologyModality({ code, name, description: description || undefined }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["radiology-modalities"] });
-      notifications.show({ title: "Modality created", message: "", color: "green" });
+      notifications.show({ title: "Modality created", message: "", color: "success" });
       setCode("");
       setName("");
       setDescription("");
@@ -571,7 +567,7 @@ function ModalitiesTab() {
     mutationFn: (id: string) => api.deleteRadiologyModality(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["radiology-modalities"] });
-      notifications.show({ title: "Modality deleted", message: "", color: "red" });
+      notifications.show({ title: "Modality deleted", message: "", color: "danger" });
     },
   });
 
@@ -625,10 +621,10 @@ function ModalitiesTab() {
               <Table.Td fw={600}>{m.code}</Table.Td>
               <Table.Td>{m.name}</Table.Td>
               <Table.Td>{m.description ?? "—"}</Table.Td>
-              <Table.Td>{m.is_active ? <Badge color="green" size="xs">Active</Badge> : <Badge color="gray" size="xs">Inactive</Badge>}</Table.Td>
+              <Table.Td>{m.is_active ? <Badge color="success" size="xs">Active</Badge> : <Badge color="slate" size="xs">Inactive</Badge>}</Table.Td>
               {canManage && (
                 <Table.Td>
-                  <ActionIcon variant="subtle" color="red" onClick={() => deleteMutation.mutate(m.id)}>
+                  <ActionIcon variant="subtle" color="danger" onClick={() => deleteMutation.mutate(m.id)}>
                     <IconX size={16} />
                   </ActionIcon>
                 </Table.Td>
@@ -666,7 +662,7 @@ function AppointmentsTab() {
     mutationFn: (data: CreateRadiologyAppointmentRequest) => api.createRadiologyAppointment(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["radiology-appointments"] });
-      notifications.show({ title: "Appointment created", message: "", color: "green" });
+      notifications.show({ title: "Appointment created", message: "", color: "success" });
       setForm({});
       createHandlers.close();
     },
@@ -700,7 +696,7 @@ function AppointmentsTab() {
       label: "Priority",
       render: (r: Record<string, unknown>) => {
         const p = String(r.priority ?? "routine");
-        return <Badge size="xs" color={priorityColors[p] ?? "gray"}>{p}</Badge>;
+        return <Badge size="xs" color={priorityColors[p] ?? "slate"}>{p}</Badge>;
       },
     },
     {
@@ -739,12 +735,7 @@ function AppointmentsTab() {
 
       <Modal opened={createOpen} onClose={createHandlers.close} title="Create Radiology Appointment" size="md">
         <Stack>
-          <TextInput
-            label="Patient ID"
-            required
-            value={form.patient_id ?? ""}
-            onChange={(e) => setForm({ ...form, patient_id: e.currentTarget.value })}
-          />
+          <PatientSearchSelect value={form.patient_id ?? ""} onChange={(v) => setForm({ ...form, patient_id: v })} required />
           <Select
             label="Modality"
             required
@@ -827,7 +818,7 @@ function TatAnalyticsTab() {
       render: (r: RadiologyTatRow) =>
         r.avg_tat_hours !== null ? (
           <Badge
-            color={r.avg_tat_hours <= 24 ? "green" : r.avg_tat_hours <= 48 ? "yellow" : "red"}
+            color={r.avg_tat_hours <= 24 ? "success" : r.avg_tat_hours <= 48 ? "warning" : "danger"}
             variant="light"
           >
             {r.avg_tat_hours.toFixed(1)}h

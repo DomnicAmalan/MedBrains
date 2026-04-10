@@ -57,30 +57,30 @@ import { useRequirePermission } from "../hooks/useRequirePermission";
 // ── Status colors ────────────────────────────────────────────
 
 const employeeStatusColors: Record<string, string> = {
-  active: "green",
-  on_leave: "yellow",
+  active: "success",
+  on_leave: "warning",
   suspended: "orange",
-  resigned: "gray",
-  terminated: "red",
+  resigned: "slate",
+  terminated: "danger",
   retired: "dark",
-  absconding: "red",
+  absconding: "danger",
 };
 
 const leaveStatusColors: Record<string, string> = {
-  draft: "gray",
-  pending_hod: "blue",
-  pending_admin: "indigo",
-  approved: "green",
-  rejected: "red",
+  draft: "slate",
+  pending_hod: "primary",
+  pending_admin: "primary",
+  approved: "success",
+  rejected: "danger",
   cancelled: "dark",
 };
 
 const credentialStatusColors: Record<string, string> = {
-  active: "green",
-  expired: "red",
+  active: "success",
+  expired: "danger",
   suspended: "orange",
-  revoked: "red",
-  pending_renewal: "yellow",
+  revoked: "danger",
+  pending_renewal: "warning",
 };
 
 // ══════════════════════════════════════════════════════════
@@ -108,7 +108,7 @@ export function HrPage() {
         title="HR & Staff Management"
         subtitle="Employee directory, attendance, leave, roster, training, and compliance"
         icon={<IconIdBadge2 size={20} stroke={1.5} />}
-        color="grape"
+        color="violet"
       />
 
       <Tabs value={activeTab} onChange={setActiveTab}>
@@ -172,9 +172,9 @@ function EmployeesTab({ canCreate, canManageCredentials }: { canCreate: boolean;
       qc.invalidateQueries({ queryKey: ["hr-employees"] });
       closeCreate();
       setForm({ employee_code: "", first_name: "", last_name: "", phone: "", email: "", employment_type: "permanent", department_id: "", designation_id: "", date_of_joining: "" });
-      notifications.show({ title: "Employee Created", message: "Employee record added", color: "green" });
+      notifications.show({ title: "Employee Created", message: "Employee record added", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create employee", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create employee", color: "danger" }),
   });
 
   // ── Designation form ──
@@ -185,7 +185,7 @@ function EmployeesTab({ canCreate, canManageCredentials }: { canCreate: boolean;
       qc.invalidateQueries({ queryKey: ["hr-designations"] });
       closeDesig();
       setDesigForm({ code: "", name: "", level: 1, category: "clinical" });
-      notifications.show({ title: "Designation Created", message: "Designation added", color: "green" });
+      notifications.show({ title: "Designation Created", message: "Designation added", color: "success" });
     },
   });
 
@@ -214,7 +214,7 @@ function EmployeesTab({ canCreate, canManageCredentials }: { canCreate: boolean;
           { key: "employee_code", label: "Code", render: (r: Employee) => <Text size="sm" fw={500}>{r.employee_code}</Text> },
           { key: "name", label: "Name", render: (r: Employee) => <Text size="sm">{r.first_name} {r.last_name || ""}</Text> },
           { key: "employment_type", label: "Type", render: (r: Employee) => <Badge variant="light" size="sm">{r.employment_type.replace(/_/g, " ")}</Badge> },
-          { key: "status", label: "Status", render: (r: Employee) => <Badge color={employeeStatusColors[r.status] || "gray"} size="sm">{r.status.replace(/_/g, " ")}</Badge> },
+          { key: "status", label: "Status", render: (r: Employee) => <Badge color={employeeStatusColors[r.status] || "slate"} size="sm">{r.status.replace(/_/g, " ")}</Badge> },
           { key: "phone", label: "Phone", render: (r: Employee) => <Text size="sm">{r.phone || "—"}</Text> },
           { key: "email", label: "Email", render: (r: Employee) => <Text size="sm">{r.email || "—"}</Text> },
           { key: "actions", label: "", render: (r: Employee) => (
@@ -291,7 +291,7 @@ function EmployeeDetailDrawer({ employeeId, opened, onClose, canManageCredential
       qc.invalidateQueries({ queryKey: ["hr-credentials", employeeId] });
       closeCred();
       setCredForm({ credential_type: "medical_council", issuing_body: "", registration_no: "", state_code: "", expiry_date: "" });
-      notifications.show({ title: "Credential Added", message: "Credential recorded", color: "green" });
+      notifications.show({ title: "Credential Added", message: "Credential recorded", color: "success" });
     },
   });
 
@@ -308,7 +308,7 @@ function EmployeeDetailDrawer({ employeeId, opened, onClose, canManageCredential
           {employee && (
             <Stack gap="xs">
               <Group><Text fw={500} size="sm" w={140}>Code:</Text><Text size="sm">{employee.employee_code}</Text></Group>
-              <Group><Text fw={500} size="sm" w={140}>Status:</Text><Badge color={employeeStatusColors[employee.status] || "gray"} size="sm">{employee.status.replace(/_/g, " ")}</Badge></Group>
+              <Group><Text fw={500} size="sm" w={140}>Status:</Text><Badge color={employeeStatusColors[employee.status] || "slate"} size="sm">{employee.status.replace(/_/g, " ")}</Badge></Group>
               <Group><Text fw={500} size="sm" w={140}>Type:</Text><Text size="sm">{employee.employment_type.replace(/_/g, " ")}</Text></Group>
               <Group><Text fw={500} size="sm" w={140}>Phone:</Text><Text size="sm">{employee.phone || "—"}</Text></Group>
               <Group><Text fw={500} size="sm" w={140}>Email:</Text><Text size="sm">{employee.email || "—"}</Text></Group>
@@ -333,7 +333,7 @@ function EmployeeDetailDrawer({ employeeId, opened, onClose, canManageCredential
               { key: "reg", label: "Reg No", render: (r: EmployeeCredential) => <Text size="sm">{r.registration_no}</Text> },
               { key: "body", label: "Issuing Body", render: (r: EmployeeCredential) => <Text size="sm">{r.issuing_body}</Text> },
               { key: "expiry", label: "Expiry", render: (r: EmployeeCredential) => r.expiry_date ? <Text size="sm">{r.expiry_date}</Text> : <Text size="sm" c="dimmed">—</Text> },
-              { key: "status", label: "Status", render: (r: EmployeeCredential) => <Badge color={credentialStatusColors[r.status] || "gray"} size="sm">{r.status.replace(/_/g, " ")}</Badge> },
+              { key: "status", label: "Status", render: (r: EmployeeCredential) => <Badge color={credentialStatusColors[r.status] || "slate"} size="sm">{r.status.replace(/_/g, " ")}</Badge> },
             ]}
           />
           {/* Add Credential sub-drawer */}
@@ -365,7 +365,7 @@ function EmployeeDetailDrawer({ employeeId, opened, onClose, canManageCredential
               { key: "opening", label: "Opening", render: (r: LeaveBalance) => <Text size="sm">{r.opening}</Text> },
               { key: "earned", label: "Earned", render: (r: LeaveBalance) => <Text size="sm">{r.earned}</Text> },
               { key: "used", label: "Used", render: (r: LeaveBalance) => <Text size="sm">{r.used}</Text> },
-              { key: "balance", label: "Balance", render: (r: LeaveBalance) => <Text size="sm" fw={600} c={Number(r.balance) <= 0 ? "red" : undefined}>{r.balance}</Text> },
+              { key: "balance", label: "Balance", render: (r: LeaveBalance) => <Text size="sm" fw={600} c={Number(r.balance) <= 0 ? "danger" : undefined}>{r.balance}</Text> },
             ]}
           />
         </Tabs.Panel>
@@ -403,9 +403,9 @@ function AttendanceTab({ canManage }: { canManage: boolean }) {
       qc.invalidateQueries({ queryKey: ["hr-attendance"] });
       closeCreate();
       setForm({ employee_id: "", attendance_date: "", check_in: "", check_out: "", status: "present", source: "manual" });
-      notifications.show({ title: "Attendance Recorded", message: "Attendance marked", color: "green" });
+      notifications.show({ title: "Attendance Recorded", message: "Attendance marked", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to record attendance", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to record attendance", color: "danger" }),
   });
 
   return (
@@ -429,7 +429,7 @@ function AttendanceTab({ canManage }: { canManage: boolean }) {
           { key: "check_out", label: "Check Out", render: (r: AttendanceRecord) => <Text size="sm">{r.check_out ? new Date(r.check_out).toLocaleTimeString() : "—"}</Text> },
           { key: "status", label: "Status", render: (r: AttendanceRecord) => <Badge variant="light" size="sm">{r.status}</Badge> },
           { key: "late", label: "Late", render: (r: AttendanceRecord) => r.is_late ? <Badge color="orange" size="sm">{r.late_minutes}m</Badge> : <Text size="sm" c="dimmed">—</Text> },
-          { key: "overtime", label: "OT", render: (r: AttendanceRecord) => r.overtime_minutes > 0 ? <Badge color="blue" size="sm">{r.overtime_minutes}m</Badge> : <Text size="sm" c="dimmed">—</Text> },
+          { key: "overtime", label: "OT", render: (r: AttendanceRecord) => r.overtime_minutes > 0 ? <Badge color="primary" size="sm">{r.overtime_minutes}m</Badge> : <Text size="sm" c="dimmed">—</Text> },
           { key: "source", label: "Source", render: (r: AttendanceRecord) => <Badge variant="outline" size="sm">{r.source}</Badge> },
         ]}
       />
@@ -484,16 +484,16 @@ function LeaveTab({ canCreate, canApprove }: { canCreate: boolean; canApprove: b
       qc.invalidateQueries({ queryKey: ["hr-leaves"] });
       closeCreate();
       setForm({ employee_id: "", leave_type: "casual", start_date: "", end_date: "", days: 1, is_half_day: false, reason: "" });
-      notifications.show({ title: "Leave Applied", message: "Leave request submitted", color: "green" });
+      notifications.show({ title: "Leave Applied", message: "Leave request submitted", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to submit leave", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to submit leave", color: "danger" }),
   });
 
   const actionMut = useMutation({
     mutationFn: ({ id, action }: { id: string; action: string }) => api.leaveAction(id, { action }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr-leaves"] });
-      notifications.show({ title: "Leave Updated", message: "Leave status updated", color: "green" });
+      notifications.show({ title: "Leave Updated", message: "Leave status updated", color: "success" });
     },
   });
 
@@ -525,18 +525,18 @@ function LeaveTab({ canCreate, canApprove }: { canCreate: boolean; canApprove: b
           { key: "type", label: "Type", render: (r: LeaveRequest) => <Badge variant="light" size="sm">{r.leave_type.replace(/_/g, " ")}</Badge> },
           { key: "dates", label: "Period", render: (r: LeaveRequest) => <Text size="sm">{r.start_date} → {r.end_date}</Text> },
           { key: "days", label: "Days", render: (r: LeaveRequest) => <Text size="sm">{r.days}{r.is_half_day ? " (½)" : ""}</Text> },
-          { key: "status", label: "Status", render: (r: LeaveRequest) => <Badge color={leaveStatusColors[r.status] || "gray"} size="sm">{r.status.replace(/_/g, " ")}</Badge> },
+          { key: "status", label: "Status", render: (r: LeaveRequest) => <Badge color={leaveStatusColors[r.status] || "slate"} size="sm">{r.status.replace(/_/g, " ")}</Badge> },
           { key: "reason", label: "Reason", render: (r: LeaveRequest) => <Text size="sm" lineClamp={1}>{r.reason || "—"}</Text> },
           { key: "actions", label: "", render: (r: LeaveRequest) => (
             <Group gap={4}>
               {canApprove && r.status === "pending_hod" && (
                 <>
-                  <Tooltip label="Approve"><ActionIcon color="green" variant="subtle" onClick={() => actionMut.mutate({ id: r.id, action: "approve" })}><IconCheck size={16} /></ActionIcon></Tooltip>
-                  <Tooltip label="Reject"><ActionIcon color="red" variant="subtle" onClick={() => actionMut.mutate({ id: r.id, action: "reject" })}><IconX size={16} /></ActionIcon></Tooltip>
+                  <Tooltip label="Approve"><ActionIcon color="success" variant="subtle" onClick={() => actionMut.mutate({ id: r.id, action: "approve" })}><IconCheck size={16} /></ActionIcon></Tooltip>
+                  <Tooltip label="Reject"><ActionIcon color="danger" variant="subtle" onClick={() => actionMut.mutate({ id: r.id, action: "reject" })}><IconX size={16} /></ActionIcon></Tooltip>
                 </>
               )}
               {(r.status === "draft" || r.status === "pending_hod") && (
-                <Tooltip label="Cancel"><ActionIcon color="gray" variant="subtle" onClick={() => cancelMut.mutate(r.id)}><IconX size={16} /></ActionIcon></Tooltip>
+                <Tooltip label="Cancel"><ActionIcon color="slate" variant="subtle" onClick={() => cancelMut.mutate(r.id)}><IconX size={16} /></ActionIcon></Tooltip>
               )}
             </Group>
           )},
@@ -592,7 +592,7 @@ function RosterTab({ canManage, canManageOnCall }: { canManage: boolean; canMana
   const [shiftForm, setShiftForm] = useState({ code: "", name: "", shift_type: "general", start_time: "09:00", end_time: "17:00", break_minutes: 30, is_night: false });
   const shiftMut = useMutation({
     mutationFn: () => api.createShift({ code: shiftForm.code, name: shiftForm.name, shift_type: shiftForm.shift_type, start_time: shiftForm.start_time, end_time: shiftForm.end_time, break_minutes: shiftForm.break_minutes, is_night: shiftForm.is_night }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["hr-shifts"] }); closeShift(); notifications.show({ title: "Shift Created", message: "Shift definition added", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["hr-shifts"] }); closeShift(); notifications.show({ title: "Shift Created", message: "Shift definition added", color: "success" }); },
   });
 
   // ── Create roster entry ──
@@ -603,9 +603,9 @@ function RosterTab({ canManage, canManageOnCall }: { canManage: boolean; canMana
       qc.invalidateQueries({ queryKey: ["hr-rosters"] });
       closeRoster();
       setRosterForm({ employee_id: "", shift_id: "", roster_date: "", is_on_call: false });
-      notifications.show({ title: "Roster Entry Added", message: "Duty roster updated", color: "green" });
+      notifications.show({ title: "Roster Entry Added", message: "Duty roster updated", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create roster entry", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create roster entry", color: "danger" }),
   });
 
   // ── Create on-call ──
@@ -616,16 +616,16 @@ function RosterTab({ canManage, canManageOnCall }: { canManage: boolean; canMana
       qc.invalidateQueries({ queryKey: ["hr-on-call"] });
       closeOnCall();
       setOnCallForm({ employee_id: "", schedule_date: "", start_time: "18:00", end_time: "06:00", is_primary: true, contact_number: "" });
-      notifications.show({ title: "On-Call Scheduled", message: "On-call schedule added", color: "green" });
+      notifications.show({ title: "On-Call Scheduled", message: "On-call schedule added", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create on-call entry", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create on-call entry", color: "danger" }),
   });
 
   const swapMut = useMutation({
     mutationFn: (id: string) => api.approveSwap(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hr-rosters"] });
-      notifications.show({ title: "Swap Approved", message: "Shift swap approved", color: "green" });
+      notifications.show({ title: "Swap Approved", message: "Shift swap approved", color: "success" });
     },
   });
 
@@ -655,10 +655,10 @@ function RosterTab({ canManage, canManageOnCall }: { canManage: boolean; canMana
               { key: "employee", label: "Employee", render: (r: DutyRoster) => <Text size="sm" ff="monospace">{r.employee_id.slice(0, 8)}</Text> },
               { key: "shift", label: "Shift", render: (r: DutyRoster) => <Text size="sm" ff="monospace">{r.shift_id.slice(0, 8)}</Text> },
               { key: "on_call", label: "On-Call", render: (r: DutyRoster) => r.is_on_call ? <Badge color="orange" size="sm">Yes</Badge> : <Text size="sm" c="dimmed">No</Text> },
-              { key: "swap", label: "Swap", render: (r: DutyRoster) => r.swap_with ? (r.swap_approved ? <Badge color="green" size="sm">Approved</Badge> : <Badge color="yellow" size="sm">Pending</Badge>) : <Text size="sm" c="dimmed">—</Text> },
+              { key: "swap", label: "Swap", render: (r: DutyRoster) => r.swap_with ? (r.swap_approved ? <Badge color="success" size="sm">Approved</Badge> : <Badge color="warning" size="sm">Pending</Badge>) : <Text size="sm" c="dimmed">—</Text> },
               { key: "actions", label: "", render: (r: DutyRoster) => (
                 canManage && r.swap_with && !r.swap_approved ? (
-                  <Tooltip label="Approve Swap"><ActionIcon color="green" variant="subtle" onClick={() => swapMut.mutate(r.id)}><IconCheck size={16} /></ActionIcon></Tooltip>
+                  <Tooltip label="Approve Swap"><ActionIcon color="success" variant="subtle" onClick={() => swapMut.mutate(r.id)}><IconCheck size={16} /></ActionIcon></Tooltip>
                 ) : null
               )},
             ]}
@@ -678,8 +678,8 @@ function RosterTab({ canManage, canManageOnCall }: { canManage: boolean; canMana
               { key: "type", label: "Type", render: (r: ShiftDefinition) => <Badge variant="light" size="sm">{r.shift_type.replace(/_/g, " ")}</Badge> },
               { key: "time", label: "Time", render: (r: ShiftDefinition) => <Text size="sm">{r.start_time} - {r.end_time}</Text> },
               { key: "break", label: "Break", render: (r: ShiftDefinition) => <Text size="sm">{r.break_minutes}m</Text> },
-              { key: "night", label: "Night", render: (r: ShiftDefinition) => r.is_night ? <Badge color="indigo" size="sm">Night</Badge> : <Text size="sm" c="dimmed">Day</Text> },
-              { key: "active", label: "Active", render: (r: ShiftDefinition) => r.is_active ? <Badge color="green" size="sm">Yes</Badge> : <Badge color="gray" size="sm">No</Badge> },
+              { key: "night", label: "Night", render: (r: ShiftDefinition) => r.is_night ? <Badge color="primary" size="sm">Night</Badge> : <Text size="sm" c="dimmed">Day</Text> },
+              { key: "active", label: "Active", render: (r: ShiftDefinition) => r.is_active ? <Badge color="success" size="sm">Yes</Badge> : <Badge color="slate" size="sm">No</Badge> },
             ]}
           />
         </Tabs.Panel>
@@ -696,7 +696,7 @@ function RosterTab({ canManage, canManageOnCall }: { canManage: boolean; canMana
               { key: "date", label: "Date", render: (r: OnCallSchedule) => <Text size="sm">{r.schedule_date}</Text> },
               { key: "employee", label: "Employee", render: (r: OnCallSchedule) => <Text size="sm" ff="monospace">{r.employee_id.slice(0, 8)}</Text> },
               { key: "time", label: "Time", render: (r: OnCallSchedule) => <Text size="sm">{r.start_time} - {r.end_time}</Text> },
-              { key: "primary", label: "Primary", render: (r: OnCallSchedule) => r.is_primary ? <Badge color="green" size="sm">Primary</Badge> : <Badge variant="light" size="sm">Backup</Badge> },
+              { key: "primary", label: "Primary", render: (r: OnCallSchedule) => r.is_primary ? <Badge color="success" size="sm">Primary</Badge> : <Badge variant="light" size="sm">Backup</Badge> },
               { key: "contact", label: "Contact", render: (r: OnCallSchedule) => <Text size="sm">{r.contact_number || "—"}</Text> },
             ]}
           />
@@ -778,7 +778,7 @@ function TrainingTab({ canManage }: { canManage: boolean }) {
       qc.invalidateQueries({ queryKey: ["hr-training-programs"] });
       closeProgram();
       setProgForm({ code: "", name: "", description: "", is_mandatory: false, frequency_months: 12, duration_hours: 2 });
-      notifications.show({ title: "Program Created", message: "Training program added", color: "green" });
+      notifications.show({ title: "Program Created", message: "Training program added", color: "success" });
     },
   });
 
@@ -793,7 +793,7 @@ function TrainingTab({ canManage }: { canManage: boolean }) {
     onSuccess: () => {
       closeRecord();
       setRecForm({ employee_id: "", program_id: "", training_date: "", status: "completed", score: 0, certificate_no: "", trainer_name: "" });
-      notifications.show({ title: "Training Recorded", message: "Training record added", color: "green" });
+      notifications.show({ title: "Training Recorded", message: "Training record added", color: "success" });
     },
   });
 
@@ -834,10 +834,10 @@ function TrainingTab({ canManage }: { canManage: boolean }) {
           columns={[
             { key: "code", label: "Code", render: (r: TrainingProgram) => <Text size="sm" fw={500}>{r.code}</Text> },
             { key: "name", label: "Name", render: (r: TrainingProgram) => <Text size="sm">{r.name}</Text> },
-            { key: "mandatory", label: "Mandatory", render: (r: TrainingProgram) => r.is_mandatory ? <Badge color="red" size="sm">Mandatory</Badge> : <Badge color="gray" variant="light" size="sm">Optional</Badge> },
+            { key: "mandatory", label: "Mandatory", render: (r: TrainingProgram) => r.is_mandatory ? <Badge color="danger" size="sm">Mandatory</Badge> : <Badge color="slate" variant="light" size="sm">Optional</Badge> },
             { key: "frequency", label: "Frequency", render: (r: TrainingProgram) => <Text size="sm">{r.frequency_months ? `${r.frequency_months}mo` : "—"}</Text> },
             { key: "duration", label: "Duration", render: (r: TrainingProgram) => <Text size="sm">{r.duration_hours ? `${r.duration_hours}h` : "—"}</Text> },
-            { key: "active", label: "Active", render: (r: TrainingProgram) => r.is_active ? <Badge color="green" size="sm">Yes</Badge> : <Badge color="gray" size="sm">No</Badge> },
+            { key: "active", label: "Active", render: (r: TrainingProgram) => r.is_active ? <Badge color="success" size="sm">Yes</Badge> : <Badge color="slate" size="sm">No</Badge> },
           ]}
         />
       )}
@@ -851,17 +851,17 @@ function TrainingTab({ canManage }: { canManage: boolean }) {
             </Card>
             <Card withBorder p="md">
               <Text size="xs" c="dimmed">Mandatory Compliance</Text>
-              <Text fw={700} size="xl" c={mandatoryPct >= 90 ? "green" : mandatoryPct >= 70 ? "yellow" : "red"}>
+              <Text fw={700} size="xl" c={mandatoryPct >= 90 ? "success" : mandatoryPct >= 70 ? "warning" : "danger"}>
                 {mandatoryPct.toFixed(1)}%
               </Text>
-              <Progress value={mandatoryPct} color={mandatoryPct >= 90 ? "green" : mandatoryPct >= 70 ? "yellow" : "red"} size="sm" mt={4} />
+              <Progress value={mandatoryPct} color={mandatoryPct >= 90 ? "success" : mandatoryPct >= 70 ? "warning" : "danger"} size="sm" mt={4} />
             </Card>
             <Card withBorder p="md">
               <Text size="xs" c="dimmed">Overall Compliance</Text>
-              <Text fw={700} size="xl" c={overallPct >= 90 ? "green" : overallPct >= 70 ? "yellow" : "red"}>
+              <Text fw={700} size="xl" c={overallPct >= 90 ? "success" : overallPct >= 70 ? "warning" : "danger"}>
                 {overallPct.toFixed(1)}%
               </Text>
-              <Progress value={overallPct} color={overallPct >= 90 ? "green" : overallPct >= 70 ? "yellow" : "red"} size="sm" mt={4} />
+              <Progress value={overallPct} color={overallPct >= 90 ? "success" : overallPct >= 70 ? "warning" : "danger"} size="sm" mt={4} />
             </Card>
           </SimpleGrid>
           <DataTable
@@ -870,12 +870,12 @@ function TrainingTab({ canManage }: { canManage: boolean }) {
             rowKey={(r: TrainingComplianceRow) => r.program_id}
             columns={[
               { key: "program_name", label: "Program", render: (r: TrainingComplianceRow) => <Text size="sm" fw={500}>{r.program_name}</Text> },
-              { key: "mandatory", label: "Type", render: (r: TrainingComplianceRow) => r.is_mandatory ? <Badge color="red" size="sm">Mandatory</Badge> : <Badge color="gray" variant="light" size="sm">Optional</Badge> },
+              { key: "mandatory", label: "Type", render: (r: TrainingComplianceRow) => r.is_mandatory ? <Badge color="danger" size="sm">Mandatory</Badge> : <Badge color="slate" variant="light" size="sm">Optional</Badge> },
               { key: "total", label: "Total Staff", render: (r: TrainingComplianceRow) => <Text size="sm">{r.total_staff}</Text> },
               { key: "completed", label: "Completed", render: (r: TrainingComplianceRow) => <Text size="sm">{r.completed}</Text> },
               { key: "pct", label: "Compliance %", render: (r: TrainingComplianceRow) => (
                 <Group gap="xs">
-                  <Progress value={r.compliance_pct} color={r.compliance_pct >= 90 ? "green" : r.compliance_pct >= 70 ? "yellow" : "red"} size="sm" style={{ width: 80 }} />
+                  <Progress value={r.compliance_pct} color={r.compliance_pct >= 90 ? "success" : r.compliance_pct >= 70 ? "warning" : "danger"} size="sm" style={{ width: 80 }} />
                   <Text size="sm" fw={500}>{r.compliance_pct.toFixed(1)}%</Text>
                 </Group>
               )},
@@ -943,7 +943,7 @@ function ComplianceTab({ canManageCredentials, canManageAppraisal }: { canManage
     onSuccess: () => {
       closeAppraisal();
       setApprForm({ employee_id: "", appraisal_year: new Date().getFullYear(), rating: 3.0, strengths: "", improvements: "" });
-      notifications.show({ title: "Appraisal Created", message: "Appraisal record added", color: "green" });
+      notifications.show({ title: "Appraisal Created", message: "Appraisal record added", color: "success" });
     },
   });
 
@@ -957,7 +957,7 @@ function ComplianceTab({ canManageCredentials, canManageAppraisal }: { canManage
     onSuccess: () => {
       closeStat();
       setStatForm({ employee_id: "", record_type: "posh", title: "", compliance_date: "", expiry_date: "" });
-      notifications.show({ title: "Record Added", message: "Statutory record created", color: "green" });
+      notifications.show({ title: "Record Added", message: "Statutory record created", color: "success" });
     },
   });
 
@@ -981,7 +981,7 @@ function ComplianceTab({ canManageCredentials, canManageAppraisal }: { canManage
             { key: "code", label: "Code", render: (r: Employee) => <Text size="sm" fw={500}>{r.employee_code}</Text> },
             { key: "name", label: "Name", render: (r: Employee) => <Text size="sm">{r.first_name} {r.last_name || ""}</Text> },
             { key: "type", label: "Type", render: (r: Employee) => <Badge variant="light" size="sm">{r.employment_type.replace(/_/g, " ")}</Badge> },
-            { key: "status", label: "Status", render: (r: Employee) => <Badge color={employeeStatusColors[r.status] || "gray"} size="sm">{r.status.replace(/_/g, " ")}</Badge> },
+            { key: "status", label: "Status", render: (r: Employee) => <Badge color={employeeStatusColors[r.status] || "slate"} size="sm">{r.status.replace(/_/g, " ")}</Badge> },
           ]}
         />
       </Tabs.Panel>

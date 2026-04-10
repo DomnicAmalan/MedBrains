@@ -41,9 +41,9 @@ const TRIGGER_TYPE_OPTIONS: { value: PipelineTriggerType; label: string }[] = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "gray",
-  active: "green",
-  paused: "yellow",
+  draft: "slate",
+  active: "success",
+  paused: "warning",
   archived: "dimmed",
 };
 
@@ -122,14 +122,14 @@ export function IntegrationBuilderPage() {
       notifications.show({
         title: "Saved",
         message: "Pipeline saved successfully",
-        color: "green",
+        color: "success",
       });
     },
     onError: () => {
       notifications.show({
         title: "Error",
         message: "Failed to save pipeline",
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -140,7 +140,7 @@ export function IntegrationBuilderPage() {
       notifications.show({
         title: "Triggered",
         message: "Pipeline execution started",
-        color: "blue",
+        color: "primary",
       });
     },
   });
@@ -156,7 +156,7 @@ export function IntegrationBuilderPage() {
       notifications.show({
         title: "Status Updated",
         message: `Pipeline is now ${data.status}`,
-        color: data.status === "active" ? "green" : "yellow",
+        color: data.status === "active" ? "success" : "warning",
       });
     },
   });
@@ -226,7 +226,7 @@ export function IntegrationBuilderPage() {
 
             {serverPipelineId && (
               <Badge
-                color={STATUS_COLORS[pipeline.status] ?? "gray"}
+                color={STATUS_COLORS[pipeline.status] ?? "slate"}
                 variant="light"
                 size="sm"
               >
@@ -271,7 +271,7 @@ export function IntegrationBuilderPage() {
                 <ActionIcon
                   variant="light"
                   size="md"
-                  color={pipeline.status === "active" ? "yellow" : "green"}
+                  color={pipeline.status === "active" ? "warning" : "success"}
                   onClick={() => toggleStatusMutation.mutate()}
                   loading={toggleStatusMutation.isPending}
                 >
@@ -288,7 +288,7 @@ export function IntegrationBuilderPage() {
               <Button
                 size="xs"
                 variant="light"
-                color="blue"
+                color="primary"
                 leftSection={<IconPlayerPlay size={14} />}
                 onClick={() => triggerMutation.mutate()}
                 loading={triggerMutation.isPending}

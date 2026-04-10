@@ -80,27 +80,27 @@ const AREA_TYPES: CleaningAreaType[] = [
 ];
 
 const taskStatusColors: Record<CleaningTaskStatusType, string> = {
-  pending: "gray",
-  assigned: "blue",
+  pending: "slate",
+  assigned: "primary",
   in_progress: "orange",
-  completed: "green",
+  completed: "success",
   verified: "teal",
-  rejected: "red",
+  rejected: "danger",
 };
 
 const linenStatusColors: Record<LinenStatusType, string> = {
-  clean: "green",
-  in_use: "blue",
-  soiled: "yellow",
+  clean: "success",
+  in_use: "primary",
+  soiled: "warning",
   washing: "orange",
-  condemned: "red",
+  condemned: "danger",
 };
 
 const turnaroundColor = (mins?: number) => {
   if (!mins) return "gray";
-  if (mins <= 30) return "green";
-  if (mins <= 60) return "yellow";
-  return "red";
+  if (mins <= 30) return "success";
+  if (mins <= 60) return "warning";
+  return "danger";
 };
 
 const LINEN_TYPES = [
@@ -109,13 +109,13 @@ const LINEN_TYPES = [
 
 // ── BMW Color Codes (per CPCB guidelines) ────────────────
 const BMW_CATEGORY_META: Record<WasteCategoryType, { color: string; mantineColor: string; label: string; description: string }> = {
-  yellow: { color: "#FFC107", mantineColor: "yellow", label: "Yellow", description: "Human anatomical waste, animal waste, expired medicines" },
-  red: { color: "#F44336", mantineColor: "red", label: "Red", description: "Contaminated waste (recyclable), blood-soaked items, tubing, catheters" },
-  white_translucent: { color: "#90A4AE", mantineColor: "gray", label: "White (Translucent)", description: "Sharps waste — needles, syringes, blades, broken glass" },
-  blue: { color: "#2196F3", mantineColor: "blue", label: "Blue", description: "Glassware, metallic body implants, contaminated glass" },
+  yellow: { color: "#FFC107", mantineColor: "warning", label: "Yellow", description: "Human anatomical waste, animal waste, expired medicines" },
+  red: { color: "#F44336", mantineColor: "danger", label: "Red", description: "Contaminated waste (recyclable), blood-soaked items, tubing, catheters" },
+  white_translucent: { color: "#90A4AE", mantineColor: "slate", label: "White (Translucent)", description: "Sharps waste — needles, syringes, blades, broken glass" },
+  blue: { color: "#2196F3", mantineColor: "primary", label: "Blue", description: "Glassware, metallic body implants, contaminated glass" },
   cytotoxic: { color: "#9C27B0", mantineColor: "violet", label: "Cytotoxic", description: "Cytotoxic drug vials, contaminated items from chemo" },
   chemical: { color: "#FF9800", mantineColor: "orange", label: "Chemical", description: "Discarded chemicals, liquid waste from lab" },
-  radioactive: { color: "#795548", mantineColor: "grape", label: "Radioactive", description: "Radioactive waste from imaging / nuclear medicine" },
+  radioactive: { color: "#795548", mantineColor: "violet", label: "Radioactive", description: "Radioactive waste from imaging / nuclear medicine" },
 };
 
 const BMW_CATEGORIES: WasteCategoryType[] = ["yellow", "red", "white_translucent", "blue", "cytotoxic", "chemical", "radioactive"];
@@ -124,8 +124,8 @@ const BMW_CATEGORIES: WasteCategoryType[] = ["yellow", "red", "white_translucent
 const CONTAMINATION_TYPES: LinenContaminationTypeValue[] = ["regular", "contaminated", "isolation"];
 
 const contaminationMeta: Record<LinenContaminationTypeValue, { color: string; label: string; icon: typeof IconDroplet }> = {
-  regular: { color: "green", label: "Normal", icon: IconCheck },
-  contaminated: { color: "red", label: "Contaminated", icon: IconAlertTriangle },
+  regular: { color: "success", label: "Normal", icon: IconCheck },
+  contaminated: { color: "danger", label: "Contaminated", icon: IconAlertTriangle },
   isolation: { color: "orange", label: "Isolation", icon: IconBiohazard },
 };
 
@@ -238,7 +238,7 @@ function RoomBedTab({
 
   const createTaskM = useMutation({
     mutationFn: (data: CreateCleaningTaskRequest) => api.createCleaningTask(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "tasks"] }); taskDrawerH.close(); notifications.show({ title: "Task Created", message: "Cleaning task created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "tasks"] }); taskDrawerH.close(); notifications.show({ title: "Task Created", message: "Cleaning task created", color: "success" }); },
   });
 
   const updateStatusM = useMutation({
@@ -258,7 +258,7 @@ function RoomBedTab({
 
   const completeTurnaroundM = useMutation({
     mutationFn: (id: string) => api.completeTurnaround(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "turnarounds"] }); notifications.show({ title: "Room Ready", message: "Turnaround completed", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "turnarounds"] }); notifications.show({ title: "Room Ready", message: "Turnaround completed", color: "success" }); },
   });
 
   return (
@@ -282,13 +282,13 @@ function RoomBedTab({
               { key: "discharge_at", label: "Discharged", render: (r: RoomTurnaround) => r.discharge_at ? new Date(r.discharge_at).toLocaleString() : "-" },
               { key: "cleaned_by", label: "Cleaned By", render: (r: RoomTurnaround) => r.cleaned_by ?? "-" },
               { key: "turnaround_minutes", label: "TAT (min)", render: (r: RoomTurnaround) => r.turnaround_minutes != null ? <Badge color={turnaroundColor(r.turnaround_minutes)}>{r.turnaround_minutes}m</Badge> : "-" },
-              { key: "ready_at", label: "Ready At", render: (r: RoomTurnaround) => r.ready_at ? new Date(r.ready_at).toLocaleString() : <Badge color="yellow">Pending</Badge> },
+              { key: "ready_at", label: "Ready At", render: (r: RoomTurnaround) => r.ready_at ? new Date(r.ready_at).toLocaleString() : <Badge color="warning">Pending</Badge> },
               ...(canManageTurnaround ? [{
                 key: "actions" as const,
                 label: "Actions",
                 render: (r: RoomTurnaround) => !r.ready_at ? (
                   <Tooltip label="Mark Ready">
-                    <ActionIcon color="green" variant="light" onClick={() => completeTurnaroundM.mutate(r.id)}>
+                    <ActionIcon color="success" variant="light" onClick={() => completeTurnaroundM.mutate(r.id)}>
                       <IconCheck size={16} />
                     </ActionIcon>
                   </Tooltip>
@@ -324,14 +324,14 @@ function RoomBedTab({
               <Group gap={4}>
                 {r.status === "pending" && (
                   <Tooltip label="Start">
-                    <ActionIcon variant="light" color="blue" onClick={() => updateStatusM.mutate({ id: r.id, status: "in_progress" })}>
+                    <ActionIcon variant="light" color="primary" onClick={() => updateStatusM.mutate({ id: r.id, status: "in_progress" })}>
                       <IconWash size={16} />
                     </ActionIcon>
                   </Tooltip>
                 )}
                 {r.status === "in_progress" && (
                   <Tooltip label="Complete">
-                    <ActionIcon variant="light" color="green" onClick={() => updateStatusM.mutate({ id: r.id, status: "completed" })}>
+                    <ActionIcon variant="light" color="success" onClick={() => updateStatusM.mutate({ id: r.id, status: "completed" })}>
                       <IconCheck size={16} />
                     </ActionIcon>
                   </Tooltip>
@@ -398,7 +398,7 @@ function SchedulesTab({
 
   const createSchedM = useMutation({
     mutationFn: (data: CreateCleaningScheduleRequest) => api.createCleaningSchedule(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "schedules"] }); schedDrawerH.close(); notifications.show({ title: "Schedule Created", message: "Cleaning schedule created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "schedules"] }); schedDrawerH.close(); notifications.show({ title: "Schedule Created", message: "Cleaning schedule created", color: "success" }); },
   });
 
   const createPestM = useMutation({
@@ -427,7 +427,7 @@ function SchedulesTab({
         columns={[
           { key: "area_type", label: "Area", render: (r: CleaningSchedule) => <Badge variant="outline">{r.area_type}</Badge> },
           { key: "frequency_hours", label: "Frequency", render: (r: CleaningSchedule) => `Every ${r.frequency_hours}h` },
-          { key: "is_active", label: "Status", render: (r: CleaningSchedule) => <Badge color={r.is_active ? "green" : "gray"}>{r.is_active ? "Active" : "Inactive"}</Badge> },
+          { key: "is_active", label: "Status", render: (r: CleaningSchedule) => <Badge color={r.is_active ? "success" : "slate"}>{r.is_active ? "Active" : "Inactive"}</Badge> },
           { key: "notes", label: "Notes", render: (r: CleaningSchedule) => r.notes ?? "-" },
         ]}
       />
@@ -452,7 +452,7 @@ function SchedulesTab({
               { key: "pest_type", label: "Pest Type", render: (r: PestControlSchedule) => r.pest_type },
               { key: "frequency_months", label: "Frequency", render: (r: PestControlSchedule) => `Every ${r.frequency_months} months` },
               { key: "last_done", label: "Last Done", render: (r: PestControlSchedule) => r.last_done ?? "-" },
-              { key: "next_due", label: "Next Due", render: (r: PestControlSchedule) => r.next_due ? <Badge color={new Date(r.next_due) < new Date() ? "red" : "green"}>{r.next_due}</Badge> : "-" },
+              { key: "next_due", label: "Next Due", render: (r: PestControlSchedule) => r.next_due ? <Badge color={new Date(r.next_due) < new Date() ? "danger" : "success"}>{r.next_due}</Badge> : "-" },
               { key: "vendor_name", label: "Vendor", render: (r: PestControlSchedule) => r.vendor_name ?? "-" },
             ]}
           />
@@ -538,7 +538,7 @@ function LinenTab({
 
   const createLinenM = useMutation({
     mutationFn: (data: CreateLinenItemRequest) => api.createLinenItem(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "linen"] }); linenDrawerH.close(); notifications.show({ title: "Item Added", message: "Linen item created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "linen"] }); linenDrawerH.close(); notifications.show({ title: "Item Added", message: "Linen item created", color: "success" }); },
   });
 
   const createMovementM = useMutation({
@@ -553,7 +553,7 @@ function LinenTab({
 
   const completeBatchM = useMutation({
     mutationFn: (id: string) => api.completeLaundryBatch(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "batches"] }); notifications.show({ title: "Batch Complete", message: "Laundry batch completed", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "batches"] }); notifications.show({ title: "Batch Complete", message: "Laundry batch completed", color: "success" }); },
   });
 
   return (
@@ -577,7 +577,7 @@ function LinenTab({
               { key: "current_status", label: "Status", render: (r: LinenItem) => <Badge color={linenStatusColors[r.current_status]}>{r.current_status}</Badge> },
               { key: "wash_count", label: "Washes", render: (r: LinenItem) => {
                 const pct = (r.wash_count / r.max_washes) * 100;
-                const color = pct > 80 ? "red" : pct > 50 ? "yellow" : "green";
+                const color = pct > 80 ? "danger" : pct > 50 ? "warning" : "success";
                 return <Badge color={color}>{r.wash_count}/{r.max_washes}</Badge>;
               }},
               { key: "commissioned_date", label: "Commissioned", render: (r: LinenItem) => r.commissioned_date ?? "-" },
@@ -602,7 +602,7 @@ function LinenTab({
                 size="xs"
               />
               {contaminationFilter && (
-                <Badge color={contaminationMeta[contaminationFilter as LinenContaminationTypeValue]?.color ?? "gray"} size="sm">
+                <Badge color={contaminationMeta[contaminationFilter as LinenContaminationTypeValue]?.color ?? "slate"} size="sm">
                   {(movementsQ.data ?? []).filter((m) => m.contamination_type === contaminationFilter).length} record(s)
                 </Badge>
               )}
@@ -636,7 +636,7 @@ function LinenTab({
                   <Badge color={meta.color} variant="filled" leftSection={(() => { const I = meta.icon; return <I size={12} />; })()}>
                     {meta.label}
                   </Badge>
-                ) : <Badge color="gray">{r.contamination_type}</Badge>;
+                ) : <Badge color="slate">{r.contamination_type}</Badge>;
               }},
               { key: "recorded_by", label: "Recorded By", render: (r: LinenMovement) => r.recorded_by ?? "-" },
             ]}
@@ -661,14 +661,14 @@ function LinenTab({
               { key: "batch_number", label: "Batch #", render: (r: LaundryBatch) => r.batch_number },
               { key: "items_count", label: "Items", render: (r: LaundryBatch) => String(r.items_count) },
               { key: "total_weight", label: "Weight (kg)", render: (r: LaundryBatch) => r.total_weight != null ? String(r.total_weight) : "-" },
-              { key: "contamination_type", label: "Type", render: (r: LaundryBatch) => <Badge color={r.contamination_type === "regular" ? "green" : "red"}>{r.contamination_type}</Badge> },
-              { key: "status", label: "Status", render: (r: LaundryBatch) => <Badge color={r.status === "completed" ? "green" : "blue"}>{r.status}</Badge> },
+              { key: "contamination_type", label: "Type", render: (r: LaundryBatch) => <Badge color={r.contamination_type === "regular" ? "success" : "danger"}>{r.contamination_type}</Badge> },
+              { key: "status", label: "Status", render: (r: LaundryBatch) => <Badge color={r.status === "completed" ? "success" : "primary"}>{r.status}</Badge> },
               ...(canManageLaundry ? [{
                 key: "actions" as const,
                 label: "Actions",
                 render: (r: LaundryBatch) => r.status !== "completed" ? (
                   <Tooltip label="Complete Batch">
-                    <ActionIcon color="green" variant="light" onClick={() => completeBatchM.mutate(r.id)}>
+                    <ActionIcon color="success" variant="light" onClick={() => completeBatchM.mutate(r.id)}>
                       <IconCheck size={16} />
                     </ActionIcon>
                   </Tooltip>
@@ -733,7 +733,7 @@ function ParAuditTab({ canList, canManage }: { canList: boolean; canManage: bool
 
   const upsertParM = useMutation({
     mutationFn: (data: UpsertParLevelRequest) => api.upsertParLevel(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "par-levels"] }); parDrawerH.close(); notifications.show({ title: "Par Level Updated", message: "Par level saved", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["housekeeping", "par-levels"] }); parDrawerH.close(); notifications.show({ title: "Par Level Updated", message: "Par level saved", color: "success" }); },
   });
 
   return (
@@ -753,7 +753,7 @@ function ParAuditTab({ canList, canManage }: { canList: boolean; canManage: bool
           { key: "item_type", label: "Item Type", render: (r: LinenParLevel) => r.item_type },
           { key: "par_level", label: "Par Level", render: (r: LinenParLevel) => String(r.par_level) },
           { key: "current_stock", label: "Current Stock", render: (r: LinenParLevel) => {
-            const color = r.current_stock <= r.reorder_level ? "red" : r.current_stock < r.par_level ? "yellow" : "green";
+            const color = r.current_stock <= r.reorder_level ? "danger" : r.current_stock < r.par_level ? "warning" : "success";
             return <Badge color={color}>{r.current_stock}</Badge>;
           }},
           { key: "reorder_level", label: "Reorder Level", render: (r: LinenParLevel) => String(r.reorder_level) },
@@ -770,7 +770,7 @@ function ParAuditTab({ canList, canManage }: { canList: boolean; canManage: bool
           { key: "condemned_date", label: "Date", render: (r: LinenCondemnation) => r.condemned_date },
           { key: "reason", label: "Reason", render: (r: LinenCondemnation) => r.reason },
           { key: "wash_count_at_condemn", label: "Wash Count", render: (r: LinenCondemnation) => r.wash_count_at_condemn != null ? String(r.wash_count_at_condemn) : "-" },
-          { key: "replacement_requested", label: "Replacement", render: (r: LinenCondemnation) => r.replacement_requested ? <Badge color="blue">Requested</Badge> : <Badge color="gray">No</Badge> },
+          { key: "replacement_requested", label: "Replacement", render: (r: LinenCondemnation) => r.replacement_requested ? <Badge color="primary">Requested</Badge> : <Badge color="slate">No</Badge> },
         ]}
       />
 
@@ -840,7 +840,7 @@ function BmwTab({ canCreate }: { canCreate: boolean }) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["housekeeping", "biowaste"] });
       manifestDrawerH.close();
-      notifications.show({ title: "Transport Manifest Saved", message: "BMW transport record created", color: "green" });
+      notifications.show({ title: "Transport Manifest Saved", message: "BMW transport record created", color: "success" });
       setManifestForm({
         department_id: "",
         waste_category: "yellow",
@@ -868,7 +868,7 @@ function BmwTab({ canCreate }: { canCreate: boolean }) {
       qc.invalidateQueries({ queryKey: ["housekeeping", "bmw-schedule"] });
       sharpModalH.close();
       setSharpForm({ location_id: "", container_type: "", notes: "" });
-      notifications.show({ title: "Sharp Container Replaced", message: "Replacement record created", color: "green" });
+      notifications.show({ title: "Sharp Container Replaced", message: "Replacement record created", color: "success" });
     },
   });
 
@@ -908,7 +908,7 @@ function BmwTab({ canCreate }: { canCreate: boolean }) {
     <Stack gap="lg">
       {/* Segregation Checklist */}
       <Text fw={600} size="lg">BMW Segregation Overview</Text>
-      <Alert icon={<IconAlertTriangle size={16} />} color="yellow" variant="light" title="CPCB BMW Rules 2016">
+      <Alert icon={<IconAlertTriangle size={16} />} color="warning" variant="light" title="CPCB BMW Rules 2016">
         All biomedical waste must be segregated at source into color-coded containers as per Biomedical Waste Management Rules, 2016. Ensure correct category before disposal.
       </Alert>
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing="md">
@@ -937,7 +937,7 @@ function BmwTab({ canCreate }: { canCreate: boolean }) {
               </Box>
               <Box>
                 <Text size="xs" c="dimmed">Manifests</Text>
-                <Text fw={600} c={hasManifest === count && count > 0 ? "green" : count > 0 ? "red" : "dimmed"}>
+                <Text fw={600} c={hasManifest === count && count > 0 ? "success" : count > 0 ? "danger" : "dimmed"}>
                   {hasManifest}/{count}
                 </Text>
               </Box>
@@ -979,7 +979,7 @@ function BmwTab({ canCreate }: { canCreate: boolean }) {
           }},
           { key: "waste_category", label: "Category", render: (r: BiowasteRecord) => {
             const meta = BMW_CATEGORY_META[r.waste_category];
-            return <Badge color={meta?.mantineColor ?? "gray"} variant="filled">{meta?.label ?? r.waste_category}</Badge>;
+            return <Badge color={meta?.mantineColor ?? "slate"} variant="filled">{meta?.label ?? r.waste_category}</Badge>;
           }},
           { key: "weight_kg", label: "Weight (kg)", render: (r: BiowasteRecord) => String(r.weight_kg) },
           { key: "container_count", label: "Containers", render: (r: BiowasteRecord) => String(r.container_count) },
@@ -987,7 +987,7 @@ function BmwTab({ canCreate }: { canCreate: boolean }) {
           { key: "disposal_vendor", label: "Vendor", render: (r: BiowasteRecord) => r.disposal_vendor ?? "-" },
           { key: "manifest_number", label: "Manifest #", render: (r: BiowasteRecord) => r.manifest_number ? (
             <Badge color="teal" variant="light" leftSection={<IconTruck size={12} />}>{r.manifest_number}</Badge>
-          ) : <Badge color="red" variant="light">No manifest</Badge> },
+          ) : <Badge color="danger" variant="light">No manifest</Badge> },
         ]}
       />
 
@@ -1007,15 +1007,15 @@ function BmwTab({ canCreate }: { canCreate: boolean }) {
         columns={[
           { key: "category", label: "Waste Category", render: (r: BmwScheduleEntry) => {
             const bmwColorMap: Record<string, string> = {
-              yellow: "yellow",
-              red: "red",
-              blue: "blue",
-              white_translucent: "gray",
+              yellow: "warning",
+              red: "danger",
+              blue: "primary",
+              white_translucent: "slate",
               cytotoxic: "violet",
               chemical: "orange",
-              radioactive: "grape",
+              radioactive: "violet",
             };
-            return <Badge color={bmwColorMap[r.category] ?? "gray"} variant="filled">{r.category.replace(/_/g, " ")}</Badge>;
+            return <Badge color={bmwColorMap[r.category] ?? "slate"} variant="filled">{r.category.replace(/_/g, " ")}</Badge>;
           }},
           { key: "ward", label: "Ward", render: (r: BmwScheduleEntry) => r.ward },
           { key: "record_count", label: "Records", render: (r: BmwScheduleEntry) => String(r.record_count) },
@@ -1074,7 +1074,7 @@ function BmwTab({ canCreate }: { canCreate: boolean }) {
       {/* Transport Manifest Drawer */}
       <Drawer opened={manifestDrawer} onClose={manifestDrawerH.close} title="BMW Transport Manifest" position="right" size="lg">
         <Stack>
-          <Alert icon={<IconTruck size={16} />} color="blue" variant="light" title="Transport Documentation">
+          <Alert icon={<IconTruck size={16} />} color="primary" variant="light" title="Transport Documentation">
             Complete all fields for BMW transport compliance. Manifest number is auto-generated but can be overridden.
           </Alert>
           <TextInput

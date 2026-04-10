@@ -145,7 +145,7 @@ export function StructuredHistory({
     <Accordion variant="separated" multiple defaultValue={["hpi"]}>
       {/* HPI */}
       <Accordion.Item value="hpi">
-        <Accordion.Control icon={<ThemeIcon variant="light" color="blue" size="sm"><IconStethoscope size={14} /></ThemeIcon>}>
+        <Accordion.Control icon={<ThemeIcon variant="light" color="primary" size="sm"><IconStethoscope size={14} /></ThemeIcon>}>
           <Text size="sm" fw={600}>History of Present Illness (HPI)</Text>
         </Accordion.Control>
         <Accordion.Panel>
@@ -198,12 +198,12 @@ export function StructuredHistory({
                 <Group justify="space-between">
                   <Group gap={8}>
                     <Text size="sm">{entry.condition}</Text>
-                    <Badge size="xs" color={entry.status === "active" ? "red" : entry.status === "controlled" ? "yellow" : "green"} variant="light">
+                    <Badge size="xs" color={entry.status === "active" ? "danger" : entry.status === "controlled" ? "warning" : "success"} variant="light">
                       {entry.status}
                     </Badge>
                   </Group>
                   {canUpdate && (
-                    <ActionIcon variant="subtle" color="red" size="sm" onClick={() => removePmh(idx)}>
+                    <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => removePmh(idx)}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   )}
@@ -253,7 +253,7 @@ export function StructuredHistory({
                 <Group justify="space-between">
                   <Text size="sm">{entry.procedure}{entry.year ? ` (${entry.year})` : ""}</Text>
                   {canUpdate && (
-                    <ActionIcon variant="subtle" color="red" size="sm" onClick={() => removePsh(idx)}>
+                    <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => removePsh(idx)}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   )}
@@ -306,7 +306,7 @@ export function StructuredHistory({
                     <Text size="sm">{entry.condition}</Text>
                   </Group>
                   {canUpdate && (
-                    <ActionIcon variant="subtle" color="red" size="sm" onClick={() => removeFh(idx)}>
+                    <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => removeFh(idx)}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   )}
@@ -320,7 +320,7 @@ export function StructuredHistory({
 
       {/* Social History */}
       <Accordion.Item value="social">
-        <Accordion.Control icon={<ThemeIcon variant="light" color="pink" size="sm"><IconBottle size={14} /></ThemeIcon>}>
+        <Accordion.Control icon={<ThemeIcon variant="light" color="danger" size="sm"><IconBottle size={14} /></ThemeIcon>}>
           <Text size="sm" fw={600}>Social History</Text>
         </Accordion.Control>
         <Accordion.Panel>

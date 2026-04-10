@@ -35,11 +35,13 @@
   "collapse": "Collapse",
   "unpin": "Unpin",
   "expand": "Expand",
+  "ambulance": "Ambulance",
   "bme": "Biomedical Engineering",
   "camp": "Camp Management",
   "caseManagement": "Case Management",
   "cathLab": "Cath Lab",
   "commandCenter": "Command Center",
+  "communications": "Communications",
   "consent": "Consent Management",
   "documents": "Documents & Printing",
   "endoscopy": "Endoscopy",
@@ -62,5 +64,6 @@
   "security": "Security",
   "analytics": "Analytics & Dashboards",
   "audit": "Audit Trail",
-  "utilizationReview": "Utilization Review"
+  "utilizationReview": "Utilization Review",
+  "bedsidePortal": "Bedside Portal"
 }

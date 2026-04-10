@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import type { TFunction } from "i18next";
 import {
+  IconAmbulance,
   IconBed,
+  IconMessage,
   IconBuildingFactory2,
   IconWash,
   IconCalendar,
@@ -52,6 +54,7 @@ import {
   IconCalendarStats,
   IconHistory,
   IconFileAnalytics,
+  IconDeviceTablet,
 } from "@tabler/icons-react";
 import { createElement } from "react";
 
@@ -75,9 +78,12 @@ export interface NavGroupConfig {
 // ── Icon Map ──
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number; stroke?: number }>> = {
+  IconAmbulance,
   IconAppWindow,
+  IconMessage,
   IconBed,
   IconBuildingFactory2,
+  IconDeviceTablet,
   IconWash,
   IconIdBadge2,
   IconFileCertificate,
@@ -171,6 +177,7 @@ export const NAV_GROUPS: NavGroupConfig[] = [
       { i18nKey: "icu", path: "/icu", icon: "IconHeartRateMonitor", requiredPermission: "icu.flowsheets.list" },
       { i18nKey: "ot", path: "/ot", icon: "IconScissors", requiredPermission: "ot.bookings.list" },
       { i18nKey: "dietKitchen", path: "/diet-kitchen", icon: "IconToolsKitchen2", requiredPermission: "diet.orders.list" },
+      { i18nKey: "bedsidePortal", path: "/bedside-portal", icon: "IconDeviceTablet", requiredPermission: "bedside.view" },
     ],
   },
   {
@@ -190,6 +197,8 @@ export const NAV_GROUPS: NavGroupConfig[] = [
       { i18nKey: "frontOffice", path: "/front-office", icon: "IconDoorEnter", requiredPermission: "front_office.queue.list" },
       { i18nKey: "hr", path: "/hr", icon: "IconIdBadge2", requiredPermission: "hr.employees.list" },
       { i18nKey: "bme", path: "/bme", icon: "IconDeviceDesktopAnalytics", requiredPermission: "bme.equipment.list" },
+      { i18nKey: "ambulance", path: "/ambulance", icon: "IconAmbulance", requiredPermission: "ambulance.fleet.list" },
+      { i18nKey: "communications", path: "/communications", icon: "IconMessage", requiredPermission: "communications.messages.list" },
       { i18nKey: "camp", path: "/camp", icon: "IconFirstAidKit", requiredPermission: "camp.list" },
       { i18nKey: "commandCenter", path: "/command-center", icon: "IconLayoutDashboard", requiredPermission: "command_center.view" },
       { i18nKey: "facilities", path: "/facilities", icon: "IconBuildingFactory2", requiredPermission: "facilities.gas.list" },

@@ -423,6 +423,56 @@ pub mod icu {
     }
 }
 
+pub mod ambulance {
+    pub mod fleet {
+        pub const LIST: &str = "ambulance.fleet.list";
+        pub const CREATE: &str = "ambulance.fleet.create";
+        pub const UPDATE: &str = "ambulance.fleet.update";
+    }
+    pub mod drivers {
+        pub const LIST: &str = "ambulance.drivers.list";
+        pub const MANAGE: &str = "ambulance.drivers.manage";
+    }
+    pub mod trips {
+        pub const LIST: &str = "ambulance.trips.list";
+        pub const CREATE: &str = "ambulance.trips.create";
+        pub const UPDATE: &str = "ambulance.trips.update";
+    }
+    pub mod maintenance {
+        pub const LIST: &str = "ambulance.maintenance.list";
+        pub const MANAGE: &str = "ambulance.maintenance.manage";
+    }
+}
+
+pub mod communications {
+    pub mod messages {
+        pub const LIST: &str = "communications.messages.list";
+        pub const CREATE: &str = "communications.messages.create";
+    }
+    pub mod clinical {
+        pub const LIST: &str = "communications.clinical.list";
+        pub const CREATE: &str = "communications.clinical.create";
+        pub const ACKNOWLEDGE: &str = "communications.clinical.acknowledge";
+    }
+    pub mod alerts {
+        pub const LIST: &str = "communications.alerts.list";
+        pub const CREATE: &str = "communications.alerts.create";
+        pub const MANAGE: &str = "communications.alerts.manage";
+    }
+    pub mod complaints {
+        pub const LIST: &str = "communications.complaints.list";
+        pub const CREATE: &str = "communications.complaints.create";
+        pub const MANAGE: &str = "communications.complaints.manage";
+    }
+    pub mod feedback {
+        pub const LIST: &str = "communications.feedback.list";
+        pub const CREATE: &str = "communications.feedback.create";
+    }
+    pub mod config {
+        pub const MANAGE: &str = "communications.config.manage";
+    }
+}
+
 pub mod camp {
     pub const LIST: &str = "camp.list";
     pub const CREATE: &str = "camp.create";
@@ -489,6 +539,26 @@ pub mod blood_bank {
     pub mod transfusion {
         pub const LIST: &str = "blood_bank.transfusion.list";
         pub const CREATE: &str = "blood_bank.transfusion.create";
+    }
+}
+
+pub mod bedside {
+    pub const VIEW: &str = "bedside.view";
+    pub const REQUEST: &str = "bedside.request";
+
+    pub mod videos {
+        pub const LIST: &str = "bedside.videos.list";
+        pub const MANAGE: &str = "bedside.videos.manage";
+    }
+
+    pub mod feedback {
+        pub const LIST: &str = "bedside.feedback.list";
+        pub const CREATE: &str = "bedside.feedback.create";
+    }
+
+    pub mod sessions {
+        pub const LIST: &str = "bedside.sessions.list";
+        pub const MANAGE: &str = "bedside.sessions.manage";
     }
 }
 

@@ -19,6 +19,7 @@ import {
   Timeline,
   Tooltip,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
@@ -71,21 +72,21 @@ import { useRequirePermission } from "../hooks/useRequirePermission";
 // ── Status colors ─────────────────────────────────────────
 
 const statusColors: Record<string, string> = {
-  draft: "gray",
-  submitted: "blue",
-  approved: "green",
+  draft: "slate",
+  submitted: "primary",
+  approved: "success",
   partially_approved: "teal",
-  rejected: "red",
+  rejected: "danger",
   issued: "violet",
-  partially_issued: "indigo",
+  partially_issued: "primary",
   closed: "dark",
-  cancelled: "red",
+  cancelled: "danger",
 };
 
 const priorityColors: Record<string, string> = {
-  normal: "gray",
+  normal: "slate",
   urgent: "orange",
-  emergency: "red",
+  emergency: "danger",
 };
 
 const indentTypeLabels: Record<string, string> = {
@@ -145,7 +146,7 @@ function IndentPageInner() {
         title="Indent & Store"
         subtitle="Requisitions, approvals, and store management"
         icon={<IconClipboardList size={20} stroke={1.5} />}
-        color="cyan"
+        color="info"
         actions={
           canCreate ? (
             <Button leftSection={<IconPlus size={16} />} onClick={() => setActiveTab("create")}>
@@ -262,14 +263,14 @@ function IndentListPanel({ status, requestedBy }: { status?: string; requestedBy
       key: "priority",
       label: "Priority",
       render: (row: IndentRequisition) => (
-        <StatusDot color={priorityColors[row.priority] ?? "gray"} label={row.priority} size="sm" />
+        <StatusDot color={priorityColors[row.priority] ?? "slate"} label={row.priority} size="sm" />
       ),
     },
     {
       key: "status",
       label: "Status",
       render: (row: IndentRequisition) => (
-        <StatusDot color={statusColors[row.status] ?? "gray"} label={row.status.replace(/_/g, " ")} size="sm" />
+        <StatusDot color={statusColors[row.status] ?? "slate"} label={row.status.replace(/_/g, " ")} size="sm" />
       ),
     },
     { key: "total_amount", label: "Amount", render: (row: IndentRequisition) => `₹${row.total_amount}` },
@@ -333,7 +334,7 @@ function IndentDetailView({ id, onClose }: { id: string; onClose: () => void }) 
   const submitMutation = useMutation({
     mutationFn: () => api.submitIndentRequisition(id),
     onSuccess: () => {
-      notifications.show({ title: "Submitted", message: "Indent submitted for approval", color: "green" });
+      notifications.show({ title: "Submitted", message: "Indent submitted for approval", color: "success" });
       emit("indent.submitted", { requisition_id: id });
       queryClient.invalidateQueries({ queryKey: ["indent-requisition"] });
       queryClient.invalidateQueries({ queryKey: ["indent-requisitions"] });
@@ -343,7 +344,7 @@ function IndentDetailView({ id, onClose }: { id: string; onClose: () => void }) 
   const rejectMutation = useMutation({
     mutationFn: () => api.rejectIndentRequisition(id),
     onSuccess: () => {
-      notifications.show({ title: "Rejected", message: "Indent rejected", color: "red" });
+      notifications.show({ title: "Rejected", message: "Indent rejected", color: "danger" });
       queryClient.invalidateQueries({ queryKey: ["indent-requisition"] });
       queryClient.invalidateQueries({ queryKey: ["indent-requisitions"] });
     },
@@ -375,10 +376,10 @@ function IndentDetailView({ id, onClose }: { id: string; onClose: () => void }) 
       </Stepper>
 
       <Group>
-        <Badge color={statusColors[requisition.status] ?? "gray"} variant="filled">
+        <Badge color={statusColors[requisition.status] ?? "slate"} variant="filled">
           {requisition.status.replace(/_/g, " ")}
         </Badge>
-        <Badge color={priorityColors[requisition.priority] ?? "gray"} variant="outline">
+        <Badge color={priorityColors[requisition.priority] ?? "slate"} variant="outline">
           {requisition.priority}
         </Badge>
         <Badge variant="light">{indentTypeLabels[requisition.indent_type] ?? requisition.indent_type}</Badge>
@@ -424,7 +425,7 @@ function IndentDetailView({ id, onClose }: { id: string; onClose: () => void }) 
             </Button>
             <Button
               variant="outline"
-              color="red"
+              color="danger"
               leftSection={<IconX size={16} />}
               loading={cancelMutation.isPending}
               onClick={() => cancelMutation.mutate()}
@@ -439,7 +440,7 @@ function IndentDetailView({ id, onClose }: { id: string; onClose: () => void }) 
             <ApproveButton requisitionId={id} items={items} />
             <Button
               variant="outline"
-              color="red"
+              color="danger"
               leftSection={<IconX size={16} />}
               loading={rejectMutation.isPending}
               onClick={() => rejectMutation.mutate()}
@@ -482,7 +483,7 @@ function ApproveButton({
       return api.approveIndentRequisition(requisitionId, { items: approveItems });
     },
     onSuccess: () => {
-      notifications.show({ title: "Approved", message: "Indent approved", color: "green" });
+      notifications.show({ title: "Approved", message: "Indent approved", color: "success" });
       emit("indent.approved", { requisition_id: requisitionId });
       queryClient.invalidateQueries({ queryKey: ["indent-requisition"] });
       queryClient.invalidateQueries({ queryKey: ["indent-requisitions"] });
@@ -492,7 +493,7 @@ function ApproveButton({
 
   return (
     <>
-      <Button leftSection={<IconCheck size={16} />} color="green" onClick={open}>
+      <Button leftSection={<IconCheck size={16} />} color="success" onClick={open}>
         Approve
       </Button>
       <Drawer opened={opened} onClose={close} title="Approve Indent Items" position="right" size="md">
@@ -545,7 +546,7 @@ function IssueButton({
       return api.issueIndentRequisition(requisitionId, { items: issueItems });
     },
     onSuccess: () => {
-      notifications.show({ title: "Issued", message: "Items issued and stock updated", color: "green" });
+      notifications.show({ title: "Issued", message: "Items issued and stock updated", color: "success" });
       emit("indent.issued", { requisition_id: requisitionId });
       queryClient.invalidateQueries({ queryKey: ["indent-requisition"] });
       queryClient.invalidateQueries({ queryKey: ["indent-requisitions"] });
@@ -758,12 +759,12 @@ function CreateIndentPanel({ onDone }: { onDone: () => void }) {
         items,
       }),
     onSuccess: () => {
-      notifications.show({ title: "Created", message: "Indent requisition created", color: "green" });
+      notifications.show({ title: "Created", message: "Indent requisition created", color: "success" });
       queryClient.invalidateQueries({ queryKey: ["indent-requisitions"] });
       onDone();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -879,7 +880,7 @@ function CreateIndentPanel({ onDone }: { onDone: () => void }) {
                 />
               </Table.Td>
               <Table.Td>
-                <ActionIcon variant="subtle" color="red" onClick={() => removeItem(idx)}>
+                <ActionIcon variant="subtle" color="danger" onClick={() => removeItem(idx)}>
                   <IconX size={14} />
                 </ActionIcon>
               </Table.Td>
@@ -931,7 +932,7 @@ function CatalogPanel() {
       key: "current_stock",
       label: "Stock",
       render: (row: StoreCatalog) => (
-        <Badge color={row.current_stock <= row.reorder_level ? "red" : "green"} variant="light">
+        <Badge color={row.current_stock <= row.reorder_level ? "danger" : "success"} variant="light">
           {row.current_stock}
         </Badge>
       ),
@@ -1005,11 +1006,11 @@ function CatalogForm({ initial, onSuccess }: { initial?: StoreCatalog; onSuccess
         reorder_level: reorderLevel,
       } as CreateStoreCatalogRequest),
     onSuccess: () => {
-      notifications.show({ title: "Created", message: "Catalog item created", color: "green" });
+      notifications.show({ title: "Created", message: "Catalog item created", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1023,11 +1024,11 @@ function CatalogForm({ initial, onSuccess }: { initial?: StoreCatalog; onSuccess
         reorder_level: reorderLevel,
       } as UpdateStoreCatalogRequest),
     onSuccess: () => {
-      notifications.show({ title: "Updated", message: "Catalog item updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Catalog item updated", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1069,7 +1070,7 @@ function StockPanel() {
       label: "Type",
       render: (row: StoreStockMovement) => (
         <Badge
-          color={row.movement_type === "receipt" || row.movement_type === "return" ? "green" : "red"}
+          color={row.movement_type === "receipt" || row.movement_type === "return" ? "success" : "danger"}
           variant="light"
           size="sm"
         >
@@ -1133,11 +1134,11 @@ function StockMovementForm({ onSuccess }: { onSuccess: () => void }) {
         notes: notes || undefined,
       }),
     onSuccess: () => {
-      notifications.show({ title: "Recorded", message: "Stock movement recorded", color: "green" });
+      notifications.show({ title: "Recorded", message: "Stock movement recorded", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1286,7 +1287,7 @@ function AbcView() {
     queryFn: () => api.getAbcAnalysis(),
   });
 
-  const abcColors: Record<string, string> = { A: "red", B: "orange", C: "green" };
+  const abcColors: Record<string, string> = { A: "danger", B: "orange", C: "success" };
 
   const columns = [
     { key: "item_name", label: "Item", render: (row: AbcAnalysisRow) => row.item_name },
@@ -1296,7 +1297,7 @@ function AbcView() {
       key: "abc_class",
       label: "Class",
       render: (row: AbcAnalysisRow) => (
-        <Badge color={abcColors[row.abc_class] ?? "gray"} variant="filled" size="sm">
+        <Badge color={abcColors[row.abc_class] ?? "slate"} variant="filled" size="sm">
           {row.abc_class}
         </Badge>
       ),
@@ -1322,7 +1323,7 @@ function VedView() {
     queryFn: () => api.getVedAnalysis(),
   });
 
-  const vedColors: Record<string, string> = { vital: "red", essential: "orange", desirable: "green" };
+  const vedColors: Record<string, string> = { vital: "danger", essential: "orange", desirable: "success" };
 
   const classified = (data ?? []).filter((r) => r.ved_class);
   const unclassified = (data ?? []).filter((r) => !r.ved_class);
@@ -1334,7 +1335,7 @@ function VedView() {
       label: "VED Class",
       render: (row: VedAnalysisRow) =>
         row.ved_class ? (
-          <Badge color={vedColors[row.ved_class] ?? "gray"} variant="filled" size="sm">
+          <Badge color={vedColors[row.ved_class] ?? "slate"} variant="filled" size="sm">
             {row.ved_class}
           </Badge>
         ) : (
@@ -1385,7 +1386,7 @@ function FsnView() {
     queryFn: () => api.getFsnAnalysis(params),
   });
 
-  const fsnColors: Record<string, string> = { fast: "green", slow: "yellow", non_moving: "red" };
+  const fsnColors: Record<string, string> = { fast: "success", slow: "warning", non_moving: "danger" };
 
   const columns = [
     { key: "item_name", label: "Item", render: (row: FsnAnalysisRow) => row.item_name },
@@ -1403,7 +1404,7 @@ function FsnView() {
       key: "fsn_class",
       label: "Class",
       render: (row: FsnAnalysisRow) => (
-        <Badge color={fsnColors[row.fsn_class] ?? "gray"} variant="filled" size="sm">
+        <Badge color={fsnColors[row.fsn_class] ?? "slate"} variant="filled" size="sm">
           {row.fsn_class.replace(/_/g, " ")}
         </Badge>
       ),
@@ -1504,7 +1505,7 @@ function PurchaseConsumptionView() {
       key: "net_change",
       label: "Net Change",
       render: (row: PurchaseConsumptionTrendRow) => (
-        <Text size="sm" c={row.net_change >= 0 ? "green" : "red"} fw={600}>
+        <Text size="sm" c={row.net_change >= 0 ? "success" : "danger"} fw={600}>
           {row.net_change >= 0 ? "+" : ""}{row.net_change}
         </Text>
       ),
@@ -1574,7 +1575,7 @@ function ComplianceView() {
       key: "status",
       label: "Status",
       render: (row: ComplianceCheckRow) => (
-        <Badge color={row.status === "pass" ? "green" : "red"} variant="filled" size="sm">
+        <Badge color={row.status === "pass" ? "success" : "danger"} variant="filled" size="sm">
           {row.status}
         </Badge>
       ),
@@ -1618,7 +1619,7 @@ function PatientConsumablesPanel() {
       label: "Status",
       render: (row: PatientConsumableIssue) => (
         <Badge
-          color={row.status === "issued" ? "blue" : row.status === "returned" ? "orange" : "green"}
+          color={row.status === "issued" ? "primary" : row.status === "returned" ? "orange" : "success"}
           variant="light"
           size="sm"
         >
@@ -1695,23 +1696,17 @@ function IssueToPatientForm({ onSuccess }: { onSuccess: () => void }) {
       return api.issueToPatient(payload);
     },
     onSuccess: () => {
-      notifications.show({ title: "Issued", message: "Consumable issued to patient", color: "green" });
+      notifications.show({ title: "Issued", message: "Consumable issued to patient", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
   return (
     <Stack>
-      <TextInput
-        label="Patient ID"
-        placeholder="Enter patient ID"
-        value={patientId}
-        onChange={(e) => setPatientId(e.currentTarget.value)}
-        required
-      />
+      <PatientSearchSelect value={patientId} onChange={setPatientId} required />
       <Select
         label="Catalog Item"
         placeholder="Select item"
@@ -1865,11 +1860,11 @@ function CreateImplantForm({ onSuccess }: { onSuccess: () => void }) {
       return api.createImplantEntry(payload);
     },
     onSuccess: () => {
-      notifications.show({ title: "Registered", message: "Implant registered successfully", color: "green" });
+      notifications.show({ title: "Registered", message: "Implant registered successfully", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -1884,13 +1879,7 @@ function CreateImplantForm({ onSuccess }: { onSuccess: () => void }) {
         searchable
         required
       />
-      <TextInput
-        label="Patient ID"
-        placeholder="Enter patient ID"
-        value={patientId}
-        onChange={(e) => setPatientId(e.currentTarget.value)}
-        required
-      />
+      <PatientSearchSelect value={patientId} onChange={setPatientId} required />
       <TextInput
         label="Serial Number"
         value={serialNumber}
@@ -1961,11 +1950,11 @@ function CondemnationsView() {
   });
 
   const condemnationStatusColors: Record<string, string> = {
-    initiated: "blue",
+    initiated: "primary",
     committee_review: "orange",
-    approved: "green",
+    approved: "success",
     condemned: "dark",
-    rejected: "red",
+    rejected: "danger",
   };
 
   const columns = [
@@ -1975,7 +1964,7 @@ function CondemnationsView() {
       key: "status",
       label: "Status",
       render: (row: EquipmentCondemnation) => (
-        <Badge color={condemnationStatusColors[row.status] ?? "gray"} variant="filled" size="sm">
+        <Badge color={condemnationStatusColors[row.status] ?? "slate"} variant="filled" size="sm">
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -2069,11 +2058,11 @@ function CreateCondemnationForm({ onSuccess }: { onSuccess: () => void }) {
       return api.createCondemnation(payload);
     },
     onSuccess: () => {
-      notifications.show({ title: "Created", message: "Condemnation initiated", color: "green" });
+      notifications.show({ title: "Created", message: "Condemnation initiated", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
@@ -2155,18 +2144,18 @@ function UpdateCondemnationStatusForm({
       return api.updateCondemnationStatus(item.id, payload);
     },
     onSuccess: () => {
-      notifications.show({ title: "Updated", message: "Condemnation status updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Condemnation status updated", color: "success" });
       onSuccess();
     },
     onError: (err: Error) => {
-      notifications.show({ title: "Error", message: err.message, color: "red" });
+      notifications.show({ title: "Error", message: err.message, color: "danger" });
     },
   });
 
   return (
     <Stack>
       <Text size="sm" c="dimmed">
-        Current status: <Badge color="blue" size="sm">{item.status.replace(/_/g, " ")}</Badge>
+        Current status: <Badge color="primary" size="sm">{item.status.replace(/_/g, " ")}</Badge>
       </Text>
       <Text size="sm">Condemnation #{item.condemnation_number}</Text>
       <Text size="sm">Reason: {item.reason}</Text>

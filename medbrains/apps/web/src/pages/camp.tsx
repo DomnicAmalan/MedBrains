@@ -71,27 +71,27 @@ const CAMP_TYPES = [
 ];
 
 const CAMP_STATUS_COLORS: Record<string, string> = {
-  planned: "gray",
-  approved: "blue",
-  setup: "indigo",
-  active: "green",
+  planned: "slate",
+  approved: "primary",
+  setup: "primary",
+  active: "success",
   completed: "teal",
-  cancelled: "red",
+  cancelled: "danger",
 };
 
 const REG_STATUS_COLORS: Record<string, string> = {
-  registered: "gray",
-  screened: "blue",
+  registered: "slate",
+  screened: "primary",
   referred: "orange",
-  converted: "green",
-  no_show: "red",
+  converted: "success",
+  no_show: "danger",
 };
 
 const FOLLOWUP_STATUS_COLORS: Record<string, string> = {
-  scheduled: "blue",
-  completed: "green",
-  missed: "red",
-  cancelled: "gray",
+  scheduled: "primary",
+  completed: "success",
+  missed: "danger",
+  cancelled: "slate",
 };
 
 const TEAM_ROLES = [
@@ -200,7 +200,7 @@ function CampsTab() {
       qc.invalidateQueries({ queryKey: ["camps"] });
       createHandlers.close();
       setForm({ name: "", camp_type: "general_health", scheduled_date: "" });
-      notifications.show({ title: "Camp Created", message: "Camp planned successfully", color: "green" });
+      notifications.show({ title: "Camp Created", message: "Camp planned successfully", color: "success" });
     },
   });
 
@@ -208,7 +208,7 @@ function CampsTab() {
     mutationFn: (id: string) => api.approveCamp(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["camps"] });
-      notifications.show({ title: "Approved", message: "Camp approved", color: "green" });
+      notifications.show({ title: "Approved", message: "Camp approved", color: "success" });
     },
   });
 
@@ -216,7 +216,7 @@ function CampsTab() {
     mutationFn: (id: string) => api.activateCamp(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["camps"] });
-      notifications.show({ title: "Activated", message: "Camp is now active", color: "green" });
+      notifications.show({ title: "Activated", message: "Camp is now active", color: "success" });
     },
   });
 
@@ -232,7 +232,7 @@ function CampsTab() {
     mutationFn: (id: string) => api.cancelCamp(id, {}),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["camps"] });
-      notifications.show({ title: "Cancelled", message: "Camp cancelled", color: "red" });
+      notifications.show({ title: "Cancelled", message: "Camp cancelled", color: "danger" });
     },
   });
 
@@ -252,7 +252,7 @@ function CampsTab() {
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge color={CAMP_STATUS_COLORS[r.status] ?? "gray"} variant="filled" size="sm">
+        <Badge color={CAMP_STATUS_COLORS[r.status] ?? "slate"} variant="filled" size="sm">
           {r.status}
         </Badge>
       ),
@@ -285,7 +285,7 @@ function CampsTab() {
             <Tooltip label="Approve">
               <ActionIcon
                 variant="subtle"
-                color="blue"
+                color="primary"
                 size="sm"
                 onClick={() => approveMut.mutate(r.id)}
               >
@@ -297,7 +297,7 @@ function CampsTab() {
             <Tooltip label="Activate">
               <ActionIcon
                 variant="subtle"
-                color="green"
+                color="success"
                 size="sm"
                 onClick={() => activateMut.mutate(r.id)}
               >
@@ -321,7 +321,7 @@ function CampsTab() {
             <Tooltip label="Cancel">
               <ActionIcon
                 variant="subtle"
-                color="red"
+                color="danger"
                 size="sm"
                 onClick={() => cancelMut.mutate(r.id)}
               >
@@ -429,13 +429,13 @@ function CampDetail({ camp }: { camp: Camp }) {
   const teamCols: Column<CampTeamMember>[] = [
     { key: "employee_id", label: "Employee ID", render: (r) => r.employee_id.slice(0, 8) },
     { key: "role_in_camp", label: "Role", render: (r) => TEAM_ROLES.find((t) => t.value === r.role_in_camp)?.label ?? r.role_in_camp },
-    { key: "is_confirmed", label: "Confirmed", render: (r) => r.is_confirmed ? <Badge color="green" size="xs">Yes</Badge> : <Badge color="gray" size="xs">No</Badge> },
+    { key: "is_confirmed", label: "Confirmed", render: (r) => r.is_confirmed ? <Badge color="success" size="xs">Yes</Badge> : <Badge color="slate" size="xs">No</Badge> },
     {
       key: "actions",
       label: "",
       render: (r) =>
         canUpdate ? (
-          <ActionIcon variant="subtle" color="red" size="sm" onClick={() => removeMut.mutate(r.id)}>
+          <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => removeMut.mutate(r.id)}>
             <IconTrash size={14} />
           </ActionIcon>
         ) : null,
@@ -522,7 +522,7 @@ function RegistrationsTab() {
       qc.invalidateQueries({ queryKey: ["camp-registrations"] });
       createHandlers.close();
       setForm({ camp_id: "", person_name: "" });
-      notifications.show({ title: "Registered", message: "Participant registered", color: "green" });
+      notifications.show({ title: "Registered", message: "Participant registered", color: "success" });
     },
   });
 
@@ -536,7 +536,7 @@ function RegistrationsTab() {
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge color={REG_STATUS_COLORS[r.status] ?? "gray"} variant="filled" size="sm">
+        <Badge color={REG_STATUS_COLORS[r.status] ?? "slate"} variant="filled" size="sm">
           {r.status}
         </Badge>
       ),
@@ -630,7 +630,7 @@ function ScreeningsTab() {
       qc.invalidateQueries({ queryKey: ["camp-screenings"] });
       scrHandlers.close();
       setScrForm({ registration_id: "" });
-      notifications.show({ title: "Screening Recorded", message: "Screening saved", color: "green" });
+      notifications.show({ title: "Screening Recorded", message: "Screening saved", color: "success" });
     },
   });
 
@@ -640,7 +640,7 @@ function ScreeningsTab() {
       qc.invalidateQueries({ queryKey: ["camp-lab-samples"] });
       labHandlers.close();
       setLabForm({ registration_id: "", sample_type: "blood" });
-      notifications.show({ title: "Sample Recorded", message: "Lab sample recorded", color: "green" });
+      notifications.show({ title: "Sample Recorded", message: "Lab sample recorded", color: "success" });
     },
   });
 
@@ -674,9 +674,9 @@ function ScreeningsTab() {
       label: "Sent to Lab",
       render: (r) =>
         r.sent_to_lab ? (
-          <Badge color="green" size="sm">Yes</Badge>
+          <Badge color="success" size="sm">Yes</Badge>
         ) : (
-          <Badge color="gray" size="sm">No</Badge>
+          <Badge color="slate" size="sm">No</Badge>
         ),
     },
     { key: "result_summary", label: "Result", render: (r) => r.result_summary ?? "—" },
@@ -816,7 +816,7 @@ function FollowupsTab() {
       qc.invalidateQueries({ queryKey: ["camp-stats"] });
       createHandlers.close();
       setForm({ registration_id: "", followup_date: "", followup_type: "phone_call" });
-      notifications.show({ title: "Follow-up Created", message: "Follow-up scheduled", color: "green" });
+      notifications.show({ title: "Follow-up Created", message: "Follow-up scheduled", color: "success" });
     },
   });
 
@@ -837,7 +837,7 @@ function FollowupsTab() {
       key: "status",
       label: "Status",
       render: (r) => (
-        <Badge color={FOLLOWUP_STATUS_COLORS[r.status] ?? "gray"} variant="filled" size="sm">
+        <Badge color={FOLLOWUP_STATUS_COLORS[r.status] ?? "slate"} variant="filled" size="sm">
           {r.status}
         </Badge>
       ),
@@ -847,7 +847,7 @@ function FollowupsTab() {
       label: "Converted",
       render: (r) =>
         r.converted_to_patient ? (
-          <Badge color="green" size="sm">Yes</Badge>
+          <Badge color="success" size="sm">Yes</Badge>
         ) : (
           <Text size="sm" c="dimmed">No</Text>
         ),
@@ -862,7 +862,7 @@ function FollowupsTab() {
             <Tooltip label="Mark Completed">
               <ActionIcon
                 variant="subtle"
-                color="green"
+                color="success"
                 size="sm"
                 onClick={() =>
                   completeMut.mutate({ id: r.id, data: { status: "completed" } })
@@ -874,7 +874,7 @@ function FollowupsTab() {
             <Tooltip label="Mark Missed">
               <ActionIcon
                 variant="subtle"
-                color="red"
+                color="danger"
                 size="sm"
                 onClick={() =>
                   completeMut.mutate({ id: r.id, data: { status: "missed" } })

@@ -99,17 +99,17 @@ const ENQUIRY_TYPES = [
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const passStatusColors: Record<string, string> = {
-  active: "green",
-  expired: "gray",
-  revoked: "red",
+  active: "success",
+  expired: "slate",
+  revoked: "danger",
 };
 
 const priorityColors: Record<string, string> = {
-  normal: "gray",
+  normal: "slate",
   elderly: "orange",
-  disabled: "blue",
-  pregnant: "pink",
-  emergency_referral: "red",
+  disabled: "primary",
+  pregnant: "danger",
+  emergency_referral: "danger",
   vip: "violet",
 };
 
@@ -180,7 +180,7 @@ function QueueDashboardTab() {
             <Text fw={600} size="sm">{s.department_id ?? "All Departments"}</Text>
             <Group mt="xs" gap="lg">
               <div>
-                <Text size="xl" fw={700} c="blue">{s.waiting_count}</Text>
+                <Text size="xl" fw={700} c="primary">{s.waiting_count}</Text>
                 <Text size="xs" c="dimmed">Waiting</Text>
               </div>
               <div>
@@ -248,7 +248,7 @@ function VisitorManagementTab({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["front-office", "visitors"] });
       visitorDrawerHandlers.close();
-      notifications.show({ message: "Visitor registered", color: "green" });
+      notifications.show({ message: "Visitor registered", color: "success" });
       setVName(""); setVPhone(""); setVIdType(null); setVIdNumber("");
       setVRelationship(""); setVCategory("general"); setVPurpose("");
     },
@@ -259,7 +259,7 @@ function VisitorManagementTab({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["front-office", "passes"] });
       passDrawerHandlers.close();
-      notifications.show({ message: "Pass issued", color: "green" });
+      notifications.show({ message: "Pass issued", color: "success" });
     },
   });
 
@@ -275,7 +275,7 @@ function VisitorManagementTab({
     mutationFn: (passId: string) => api.checkInVisitor(passId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["front-office", "visitor-logs"] });
-      notifications.show({ message: "Visitor checked in", color: "green" });
+      notifications.show({ message: "Visitor checked in", color: "success" });
     },
   });
 
@@ -283,7 +283,7 @@ function VisitorManagementTab({
     mutationFn: (passId: string) => api.checkOutVisitor(passId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["front-office", "visitor-logs"] });
-      notifications.show({ message: "Visitor checked out", color: "blue" });
+      notifications.show({ message: "Visitor checked out", color: "primary" });
     },
   });
 
@@ -304,7 +304,7 @@ function VisitorManagementTab({
           <Tooltip label="Issue Pass">
             <ActionIcon
               variant="light"
-              color="blue"
+              color="primary"
               onClick={() => { setSelectedRegistration(r.id); passDrawerHandlers.open(); }}
             >
               <IconQrcode size={16} />
@@ -318,7 +318,7 @@ function VisitorManagementTab({
     { key: "pass_number", label: "Pass #", render: (r: VisitorPass) => r.pass_number },
     {
       key: "status", label: "Status",
-      render: (r: VisitorPass) => <Badge color={passStatusColors[r.status] ?? "gray"}>{r.status}</Badge>,
+      render: (r: VisitorPass) => <Badge color={passStatusColors[r.status] ?? "slate"}>{r.status}</Badge>,
     },
     { key: "valid_from", label: "Valid From", render: (r: VisitorPass) => new Date(r.valid_from).toLocaleString() },
     { key: "valid_until", label: "Valid Until", render: (r: VisitorPass) => new Date(r.valid_until).toLocaleString() },
@@ -330,17 +330,17 @@ function VisitorManagementTab({
           {r.status === "active" && canManagePasses && (
             <>
               <Tooltip label="Check In">
-                <ActionIcon variant="light" color="green" onClick={() => checkIn.mutate(r.id)}>
+                <ActionIcon variant="light" color="success" onClick={() => checkIn.mutate(r.id)}>
                   <IconCheck size={16} />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="Check Out">
-                <ActionIcon variant="light" color="blue" onClick={() => checkOut.mutate(r.id)}>
+                <ActionIcon variant="light" color="primary" onClick={() => checkOut.mutate(r.id)}>
                   <IconClock size={16} />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="Revoke">
-                <ActionIcon variant="light" color="red" onClick={() => revokePass.mutate(r.id)}>
+                <ActionIcon variant="light" color="danger" onClick={() => revokePass.mutate(r.id)}>
                   <IconX size={16} />
                 </ActionIcon>
               </Tooltip>
@@ -493,7 +493,7 @@ function QueueConfigTab({ canManage, canManageVisitors }: { canManage: boolean; 
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["front-office", "queue-priority"] });
       ruleDrawerHandlers.close();
-      notifications.show({ message: "Priority rule added", color: "green" });
+      notifications.show({ message: "Priority rule added", color: "success" });
     },
   });
 
@@ -502,7 +502,7 @@ function QueueConfigTab({ canManage, canManageVisitors }: { canManage: boolean; 
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["front-office", "display-config"] });
       configDrawerHandlers.close();
-      notifications.show({ message: "Display config saved", color: "green" });
+      notifications.show({ message: "Display config saved", color: "success" });
     },
   });
 
@@ -511,19 +511,19 @@ function QueueConfigTab({ canManage, canManageVisitors }: { canManage: boolean; 
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["front-office", "visiting-hours"] });
       hoursDrawerHandlers.close();
-      notifications.show({ message: "Visiting hours saved", color: "green" });
+      notifications.show({ message: "Visiting hours saved", color: "success" });
     },
   });
 
   const ruleColumns = [
     {
       key: "priority", label: "Priority",
-      render: (r: QueuePriorityRule) => <Badge color={priorityColors[r.priority] ?? "gray"}>{r.priority}</Badge>,
+      render: (r: QueuePriorityRule) => <Badge color={priorityColors[r.priority] ?? "slate"}>{r.priority}</Badge>,
     },
     { key: "weight", label: "Weight", render: (r: QueuePriorityRule) => String(r.weight) },
     {
       key: "is_active", label: "Active",
-      render: (r: QueuePriorityRule) => r.is_active ? <Badge color="green">Yes</Badge> : <Badge color="gray">No</Badge>,
+      render: (r: QueuePriorityRule) => r.is_active ? <Badge color="success">Yes</Badge> : <Badge color="slate">No</Badge>,
     },
   ];
 
@@ -548,7 +548,7 @@ function QueueConfigTab({ canManage, canManageVisitors }: { canManage: boolean; 
     { key: "max_visitors_per_patient", label: "Max Visitors", render: (r: VisitingHours) => String(r.max_visitors_per_patient) },
     {
       key: "is_active", label: "Active",
-      render: (r: VisitingHours) => r.is_active ? <Badge color="green">Yes</Badge> : <Badge color="gray">No</Badge>,
+      render: (r: VisitingHours) => r.is_active ? <Badge color="success">Yes</Badge> : <Badge color="slate">No</Badge>,
     },
   ];
 
@@ -689,7 +689,7 @@ function EnquiryDeskTab({ canCreate, canManage }: { canCreate: boolean; canManag
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["front-office", "enquiries"] });
       drawerHandlers.close();
-      notifications.show({ message: "Enquiry logged", color: "green" });
+      notifications.show({ message: "Enquiry logged", color: "success" });
       setEName(""); setEPhone(""); setEType("general"); setEResponse("");
     },
   });
@@ -698,7 +698,7 @@ function EnquiryDeskTab({ canCreate, canManage }: { canCreate: boolean; canManag
     mutationFn: (id: string) => api.resolveEnquiry(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["front-office", "enquiries"] });
-      notifications.show({ message: "Enquiry resolved", color: "green" });
+      notifications.show({ message: "Enquiry resolved", color: "success" });
     },
   });
 
@@ -712,7 +712,7 @@ function EnquiryDeskTab({ canCreate, canManage }: { canCreate: boolean; canManag
     { key: "response_text", label: "Response", render: (r: FrontOfficeEnquiryLog) => r.response_text ?? "—" },
     {
       key: "resolved", label: "Resolved",
-      render: (r: FrontOfficeEnquiryLog) => r.resolved ? <Badge color="green">Yes</Badge> : <Badge color="orange">No</Badge>,
+      render: (r: FrontOfficeEnquiryLog) => r.resolved ? <Badge color="success">Yes</Badge> : <Badge color="orange">No</Badge>,
     },
     { key: "created_at", label: "Time", render: (r: FrontOfficeEnquiryLog) => new Date(r.created_at).toLocaleString() },
     {
@@ -720,7 +720,7 @@ function EnquiryDeskTab({ canCreate, canManage }: { canCreate: boolean; canManag
       render: (r: FrontOfficeEnquiryLog) =>
         !r.resolved && canManage ? (
           <Tooltip label="Mark Resolved">
-            <ActionIcon variant="light" color="green" onClick={() => resolveEnquiry.mutate(r.id)}>
+            <ActionIcon variant="light" color="success" onClick={() => resolveEnquiry.mutate(r.id)}>
               <IconCheck size={16} />
             </ActionIcon>
           </Tooltip>
@@ -808,7 +808,7 @@ function VisitorAnalyticsTab() {
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <Card withBorder p="md">
               <Text size="xs" c="dimmed">Total Visitors</Text>
-              <Text size="xl" fw={700} c="blue">{analytics.total_visitors}</Text>
+              <Text size="xl" fw={700} c="primary">{analytics.total_visitors}</Text>
             </Card>
             <Card withBorder p="md">
               <Text size="xs" c="dimmed">Avg Visit Duration</Text>
@@ -824,7 +824,7 @@ function VisitorAnalyticsTab() {
                   h={220}
                   data={byDeptChart}
                   dataKey="department"
-                  series={[{ name: "visitors", color: "blue" }]}
+                  series={[{ name: "visitors", color: "primary" }]}
                 />
               ) : (
                 <Text size="sm" c="dimmed">No data</Text>
@@ -864,9 +864,9 @@ function QueueMetricsTab() {
 
   const cols: Column<QueueMetricsRow>[] = [
     { key: "department", label: "Department", render: (r) => <Text size="sm" fw={500}>{r.department}</Text> },
-    { key: "current_waiting", label: "Currently Waiting", render: (r) => <Badge color={r.current_waiting > 10 ? "red" : r.current_waiting > 5 ? "orange" : "green"}>{r.current_waiting}</Badge> },
+    { key: "current_waiting", label: "Currently Waiting", render: (r) => <Badge color={r.current_waiting > 10 ? "danger" : r.current_waiting > 5 ? "orange" : "success"}>{r.current_waiting}</Badge> },
     { key: "avg_wait_minutes", label: "Avg Wait (min)", render: (r) => <Text size="sm">{Math.round(r.avg_wait_minutes)}</Text> },
-    { key: "longest_wait_minutes", label: "Longest Wait (min)", render: (r) => <Text size="sm" c={r.longest_wait_minutes > 30 ? "red" : undefined}>{Math.round(r.longest_wait_minutes)}</Text> },
+    { key: "longest_wait_minutes", label: "Longest Wait (min)", render: (r) => <Text size="sm" c={r.longest_wait_minutes > 30 ? "danger" : undefined}>{Math.round(r.longest_wait_minutes)}</Text> },
     { key: "throughput_per_hour", label: "Throughput/hr", render: (r) => <Text size="sm">{r.throughput_per_hour.toFixed(1)}</Text> },
   ];
 

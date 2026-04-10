@@ -22,3 +22,5 @@ export {
   useClinicalEmit,
 } from "./ClinicalEventProvider";
 export { VitalsRecorder, SOAPNotes, DiagnosisPanel, StructuredHistory, ReviewOfSystems, PhysicalExamPanel, PrescriptionWriter, PrescriptionPrint, VisitSummaryPrint } from "./Clinical";
+export { PatientSearchSelect } from "./PatientSearchSelect";
+export { DoctorSearchSelect } from "./DoctorSearchSelect";

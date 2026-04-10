@@ -79,7 +79,7 @@ function HeaderConfig() {
           />
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             size="xs"
             onClick={() => updateBreadcrumbs(breadcrumbs.filter((_, idx) => idx !== i))}
           >
@@ -89,7 +89,7 @@ function HeaderConfig() {
       ))}
       <Text
         size="xs"
-        c="blue"
+        c="primary"
         style={{ cursor: "pointer" }}
         onClick={() =>
           updateBreadcrumbs([...breadcrumbs, { label: "", path: "" }])

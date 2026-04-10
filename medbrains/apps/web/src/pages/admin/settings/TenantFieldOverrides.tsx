@@ -31,10 +31,10 @@ import type {
 import { DataTable } from "../../../components";
 
 const requirementColors: Record<string, string> = {
-  mandatory: "red",
+  mandatory: "danger",
   conditional: "orange",
-  recommended: "yellow",
-  optional: "gray",
+  recommended: "warning",
+  optional: "slate",
 };
 
 function OverrideEditModal({
@@ -92,7 +92,7 @@ function OverrideEditModal({
       notifications.show({
         title: isEdit ? "Override updated" : "Override created",
         message: "Field override saved",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["tenant-field-overrides"] });
       onClose();
@@ -101,7 +101,7 @@ function OverrideEditModal({
       notifications.show({
         title: "Save failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -121,7 +121,7 @@ function OverrideEditModal({
         notifications.show({
           title: "Invalid JSON",
           message: "Validation override must be valid JSON",
-          color: "red",
+          color: "danger",
         });
         return;
       }
@@ -235,7 +235,7 @@ export function TenantFieldOverrides() {
       notifications.show({
         title: "Override deleted",
         message: "Field override removed",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["tenant-field-overrides"] });
     },
@@ -243,7 +243,7 @@ export function TenantFieldOverrides() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -297,7 +297,7 @@ export function TenantFieldOverrides() {
       render: (row: TenantFieldOverrideRow) =>
         row.requirement_override ? (
           <Badge
-            color={requirementColors[row.requirement_override] ?? "gray"}
+            color={requirementColors[row.requirement_override] ?? "slate"}
             variant="light"
             size="sm"
           >
@@ -324,14 +324,14 @@ export function TenantFieldOverrides() {
         <Group gap="xs">
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color="primary"
             onClick={() => openEdit(row)}
           >
             <IconPencil size={16} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => deleteMutation.mutate(row.field_code)}
           >
             <IconTrash size={16} />

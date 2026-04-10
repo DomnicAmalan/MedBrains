@@ -50,7 +50,7 @@ export function PinCodeInput({ onSelect }: PinCodeInputProps) {
       )}
 
       {isError && (
-        <Alert color="red" variant="light">
+        <Alert color="danger" variant="light">
           Failed to lookup PIN code. Please try again.
         </Alert>
       )}

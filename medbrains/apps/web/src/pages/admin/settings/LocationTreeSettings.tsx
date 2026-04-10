@@ -53,11 +53,11 @@ const buildTree = (locations: LocationRow[]): LocationNode[] => {
 };
 
 const LEVEL_COLORS: Record<string, string> = {
-  campus: "blue",
+  campus: "primary",
   building: "teal",
-  floor: "cyan",
+  floor: "info",
   wing: "violet",
-  room: "grape",
+  room: "violet",
 };
 
 interface LocationNodeItemProps {
@@ -78,12 +78,12 @@ function LocationNodeItem({ node, depth }: LocationNodeItemProps) {
             {node.code}
           </Text>
         </div>
-        <Badge size="sm" color={LEVEL_COLORS[node.level] || "gray"} variant="light">
+        <Badge size="sm" color={LEVEL_COLORS[node.level] || "slate"} variant="light">
           {node.level}
         </Badge>
         <Badge
           size="sm"
-          color={node.is_active ? "green" : "gray"}
+          color={node.is_active ? "success" : "slate"}
           variant="light"
         >
           {node.is_active ? "Active" : "Inactive"}
@@ -104,12 +104,12 @@ function LocationNodeItem({ node, depth }: LocationNodeItemProps) {
               {node.code}
             </Text>
           </div>
-          <Badge size="sm" color={LEVEL_COLORS[node.level] || "gray"} variant="light">
+          <Badge size="sm" color={LEVEL_COLORS[node.level] || "slate"} variant="light">
             {node.level}
           </Badge>
           <Badge
             size="sm"
-            color={node.is_active ? "green" : "gray"}
+            color={node.is_active ? "success" : "slate"}
             variant="light"
           >
             {node.is_active ? "Active" : "Inactive"}
@@ -155,7 +155,7 @@ export function LocationTreeSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load locations:{" "}
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
@@ -170,19 +170,19 @@ export function LocationTreeSettings() {
           Location Hierarchy
         </Text>
         <Group gap="xs">
-          <Badge size="sm" color="blue" variant="light">
+          <Badge size="sm" color="primary" variant="light">
             Campus
           </Badge>
           <Badge size="sm" color="teal" variant="light">
             Building
           </Badge>
-          <Badge size="sm" color="cyan" variant="light">
+          <Badge size="sm" color="info" variant="light">
             Floor
           </Badge>
           <Badge size="sm" color="violet" variant="light">
             Wing
           </Badge>
-          <Badge size="sm" color="grape" variant="light">
+          <Badge size="sm" color="violet" variant="light">
             Room
           </Badge>
         </Group>

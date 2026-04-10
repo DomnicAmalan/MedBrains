@@ -17,6 +17,7 @@ import {
   Textarea,
   Timeline,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { BarChart } from "@mantine/charts";
 import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
@@ -53,27 +54,27 @@ import type { Column } from "../components/DataTable";
 // ── Color maps ─────────────────────────────────────────
 
 const reviewTypeColors: Record<string, string> = {
-  pre_admission: "blue",
-  admission: "green",
+  pre_admission: "primary",
+  admission: "success",
   continued_stay: "orange",
-  retrospective: "gray",
+  retrospective: "slate",
 };
 
 const decisionColors: Record<string, string> = {
-  approved: "green",
-  denied: "red",
-  pending_info: "yellow",
+  approved: "success",
+  denied: "danger",
+  pending_info: "warning",
   modified: "orange",
-  escalated: "pink",
+  escalated: "danger",
 };
 
 const commTypeColors: Record<string, string> = {
-  initial_auth: "blue",
+  initial_auth: "primary",
   continued_stay: "orange",
-  denial_appeal: "red",
+  denial_appeal: "danger",
   peer_review: "violet",
-  info_request: "yellow",
-  response: "green",
+  info_request: "warning",
+  response: "success",
 };
 
 // ── Main page ──────────────────────────────────────────
@@ -150,19 +151,19 @@ function ReviewsTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ur-reviews"] });
       qc.invalidateQueries({ queryKey: ["ur-analytics"] });
-      notifications.show({ title: "Review Created", message: "Utilization review has been created", color: "green" });
+      notifications.show({ title: "Review Created", message: "Utilization review has been created", color: "success" });
       setForm(emptyForm);
       close();
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create review", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create review", color: "danger" }),
   });
 
   const aiMut = useMutation({
     mutationFn: (id: string) => api.aiExtractStub(id),
     onSuccess: (res) => {
-      notifications.show({ title: "AI Extract", message: res.message ?? "AI extraction stub called successfully", color: "blue" });
+      notifications.show({ title: "AI Extract", message: res.message ?? "AI extraction stub called successfully", color: "primary" });
     },
-    onError: () => notifications.show({ title: "Error", message: "AI extraction failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "AI extraction failed", color: "danger" }),
   });
 
   const columns: Column<UtilizationReview>[] = [
@@ -175,7 +176,7 @@ function ReviewsTab() {
       key: "review_type",
       label: "Review Type",
       render: (r) => (
-        <Badge color={reviewTypeColors[r.review_type] ?? "gray"}>{r.review_type.replace(/_/g, " ")}</Badge>
+        <Badge color={reviewTypeColors[r.review_type] ?? "slate"}>{r.review_type.replace(/_/g, " ")}</Badge>
       ),
     },
     {
@@ -187,7 +188,7 @@ function ReviewsTab() {
       key: "decision",
       label: "Decision",
       render: (r) => (
-        <Badge color={decisionColors[r.decision] ?? "gray"}>{r.decision.replace(/_/g, " ")}</Badge>
+        <Badge color={decisionColors[r.decision] ?? "slate"}>{r.decision.replace(/_/g, " ")}</Badge>
       ),
     },
     {
@@ -204,7 +205,7 @@ function ReviewsTab() {
       key: "is_outlier",
       label: "Outlier",
       render: (r) =>
-        r.is_outlier ? <Badge color="red">Outlier</Badge> : <Text size="sm">No</Text>,
+        r.is_outlier ? <Badge color="danger">Outlier</Badge> : <Text size="sm">No</Text>,
     },
     {
       key: "next_review_date",
@@ -314,7 +315,7 @@ function ReviewsTab() {
                       <Text fw={600}>
                         {r.review_type.replace(/_/g, " ")}
                       </Text>
-                      <Badge color={decisionColors[r.decision] ?? "gray"} size="sm">
+                      <Badge color={decisionColors[r.decision] ?? "slate"} size="sm">
                         {r.decision.replace(/_/g, " ")}
                       </Badge>
                     </Group>
@@ -333,10 +334,10 @@ function ReviewsTab() {
                       <Text size="sm">Expected LOS: {r.expected_los_days} days</Text>
                     )}
                     {r.approved_days && (
-                      <Text size="sm" c="green">Approved: {r.approved_days} days</Text>
+                      <Text size="sm" c="success">Approved: {r.approved_days} days</Text>
                     )}
                     {r.decision === "denied" && r.notes && (
-                      <Text size="sm" c="red">Denial Reason: {r.notes}</Text>
+                      <Text size="sm" c="danger">Denial Reason: {r.notes}</Text>
                     )}
                     {r.clinical_summary && (
                       <Text size="xs" c="dimmed" lineClamp={2} mt={4}>
@@ -344,7 +345,7 @@ function ReviewsTab() {
                       </Text>
                     )}
                     {r.next_review_date && (
-                      <Badge color="blue" size="xs" mt={4}>
+                      <Badge color="primary" size="xs" mt={4}>
                         Next Review: {new Date(r.next_review_date).toLocaleDateString()}
                       </Badge>
                     )}
@@ -364,12 +365,7 @@ function ReviewsTab() {
             value={form.admission_id}
             onChange={(e) => setForm({ ...form, admission_id: e.currentTarget.value })}
           />
-          <TextInput
-            label="Patient ID"
-            required
-            value={form.patient_id}
-            onChange={(e) => setForm({ ...form, patient_id: e.currentTarget.value })}
-          />
+          <PatientSearchSelect value={form.patient_id} onChange={(v) => setForm({ ...form, patient_id: v })} required />
           <Select
             label="Review Type"
             required
@@ -467,14 +463,14 @@ function LosMonitoringTab() {
       key: "review_type",
       label: "Review Type",
       render: (r) => (
-        <Badge color={reviewTypeColors[r.review_type] ?? "gray"}>{r.review_type.replace(/_/g, " ")}</Badge>
+        <Badge color={reviewTypeColors[r.review_type] ?? "slate"}>{r.review_type.replace(/_/g, " ")}</Badge>
       ),
     },
     {
       key: "decision",
       label: "Decision",
       render: (r) => (
-        <Badge color={decisionColors[r.decision] ?? "gray"}>{r.decision.replace(/_/g, " ")}</Badge>
+        <Badge color={decisionColors[r.decision] ?? "slate"}>{r.decision.replace(/_/g, " ")}</Badge>
       ),
     },
     {
@@ -578,7 +574,7 @@ function LosMonitoringTab() {
         </Card>
         <Card withBorder padding="sm">
           <Text size="xs" c="dimmed">Outlier Count</Text>
-          <Text fw={700} size="xl" c="red">{summaryLoading ? "..." : s.outlier_count}</Text>
+          <Text fw={700} size="xl" c="danger">{summaryLoading ? "..." : s.outlier_count}</Text>
         </Card>
         <Card withBorder padding="sm">
           <Text size="xs" c="dimmed">Denial Count</Text>
@@ -586,7 +582,7 @@ function LosMonitoringTab() {
         </Card>
         <Card withBorder padding="sm">
           <Text size="xs" c="dimmed">Approval Rate</Text>
-          <Text fw={700} size="xl" c="green">
+          <Text fw={700} size="xl" c="success">
             {summaryLoading ? "..." : `${s.approval_rate.toFixed(1)}%`}
           </Text>
         </Card>
@@ -597,16 +593,16 @@ function LosMonitoringTab() {
         <Card withBorder p="md">
           <Group justify="space-between" mb="md">
             <Text fw={600} size="lg">Denial Management</Text>
-            <Badge color="red" size="lg">{denialData.totalDenials} Denials</Badge>
+            <Badge color="danger" size="lg">{denialData.totalDenials} Denials</Badge>
           </Group>
           <SimpleGrid cols={{ base: 1, sm: 3 }} mb="md">
             <Card withBorder p="sm" bg="red.0">
               <Text size="xs" c="dimmed">Denial Rate</Text>
-              <Text fw={700} size="lg" c="red">{denialData.denialRate.toFixed(1)}%</Text>
+              <Text fw={700} size="lg" c="danger">{denialData.denialRate.toFixed(1)}%</Text>
             </Card>
             <Card withBorder p="sm" bg="green.0">
               <Text size="xs" c="dimmed">Overturn Rate</Text>
-              <Text fw={700} size="lg" c="green">{denialData.overturnRate}%</Text>
+              <Text fw={700} size="lg" c="success">{denialData.overturnRate}%</Text>
             </Card>
             <Card withBorder p="sm" bg="orange.0">
               <Text size="xs" c="dimmed">Pending Appeals</Text>
@@ -620,7 +616,7 @@ function LosMonitoringTab() {
                 h={200}
                 data={denialData.topReasons}
                 dataKey="reason"
-                series={[{ name: "count", color: "red" }]}
+                series={[{ name: "count", color: "danger" }]}
                 tickLine="y"
               />
             </>
@@ -676,11 +672,11 @@ function PayerLogTab() {
     mutationFn: (d: CreateUrCommunicationRequest) => api.createUrCommunication(d),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ur-communications"] });
-      notifications.show({ title: "Communication Logged", message: "Payer communication recorded", color: "green" });
+      notifications.show({ title: "Communication Logged", message: "Payer communication recorded", color: "success" });
       setForm(emptyForm);
       close();
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create communication", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create communication", color: "danger" }),
   });
 
   const columns: Column<UrPayerCommunication>[] = [
@@ -693,7 +689,7 @@ function PayerLogTab() {
       key: "communication_type",
       label: "Type",
       render: (r) => (
-        <Badge color={commTypeColors[r.communication_type] ?? "gray"}>
+        <Badge color={commTypeColors[r.communication_type] ?? "slate"}>
           {r.communication_type.replace(/_/g, " ")}
         </Badge>
       ),
@@ -828,11 +824,11 @@ function StatusTrackingTab() {
     mutationFn: (d: CreateUrConversionRequest) => api.createUrConversion(d),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ur-conversions"] });
-      notifications.show({ title: "Conversion Created", message: "Status conversion recorded", color: "green" });
+      notifications.show({ title: "Conversion Created", message: "Status conversion recorded", color: "success" });
       setForm(emptyForm);
       close();
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create conversion", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create conversion", color: "danger" }),
   });
 
   const columns: Column<UrStatusConversion>[] = [
@@ -849,7 +845,7 @@ function StatusTrackingTab() {
     {
       key: "to_status",
       label: "To Status",
-      render: (r) => <Badge variant="outline" color="blue">{r.to_status}</Badge>,
+      render: (r) => <Badge variant="outline" color="primary">{r.to_status}</Badge>,
     },
     {
       key: "conversion_date",

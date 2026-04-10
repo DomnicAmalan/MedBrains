@@ -31,12 +31,12 @@ const CATEGORY_CONFIG: Record<
   string,
   { label: string; icon: string; color: string }
 > = {
-  metrics: { label: "Metrics", icon: "activity", color: "blue" },
+  metrics: { label: "Metrics", icon: "activity", color: "primary" },
   data: { label: "Data Views", icon: "clipboard", color: "teal" },
   actions: { label: "Actions", icon: "list-check", color: "violet" },
   module: { label: "Modules", icon: "hospital", color: "orange" },
-  system: { label: "System", icon: "settings", color: "gray" },
-  general: { label: "General", icon: "notes", color: "cyan" },
+  system: { label: "System", icon: "settings", color: "slate" },
+  general: { label: "General", icon: "notes", color: "info" },
 };
 
 const WIDGET_TYPE_LABELS: Record<WidgetType, string> = {
@@ -93,7 +93,7 @@ export function WidgetPalette({ templates }: WidgetPaletteProps) {
         <Text size="sm" fw={700} c="var(--mb-text-primary)">
           Widgets
         </Text>
-        <Badge size="xs" variant="light" color="gray" ml="auto">
+        <Badge size="xs" variant="light" color="slate" ml="auto">
           {templates.length}
         </Badge>
       </Group>
@@ -123,7 +123,7 @@ export function WidgetPalette({ templates }: WidgetPaletteProps) {
               const config = CATEGORY_CONFIG[category] ?? {
                 label: category,
                 icon: "notes",
-                color: "gray",
+                color: "slate",
               };
               const items = grouped[category]!;
               return (
@@ -141,7 +141,7 @@ export function WidgetPalette({ templates }: WidgetPaletteProps) {
                       <Text size="xs" fw={600}>
                         {config.label}
                       </Text>
-                      <Badge size="xs" variant="light" color="gray" ml="auto">
+                      <Badge size="xs" variant="light" color="slate" ml="auto">
                         {items.length}
                       </Badge>
                     </Group>
@@ -229,7 +229,7 @@ function DraggableTemplate({ template }: { template: WidgetTemplate }) {
         {template.icon && (
           <ThemeIcon
             variant="light"
-            color={template.color ?? "gray"}
+            color={template.color ?? "slate"}
             size={26}
             radius="md"
           >
@@ -246,7 +246,7 @@ function DraggableTemplate({ template }: { template: WidgetTemplate }) {
             </Text>
           )}
         </div>
-        <Badge size="xs" variant="dot" color={template.color ?? "gray"}>
+        <Badge size="xs" variant="dot" color={template.color ?? "slate"}>
           {template.default_width}x{template.default_height}
         </Badge>
       </UnstyledButton>

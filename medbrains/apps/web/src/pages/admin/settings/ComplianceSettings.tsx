@@ -90,7 +90,7 @@ export function ComplianceSettingsTab() {
           return [...old, { id: "", tenant_id: "", category: "compliance", key: variables.key, value: variables.value, created_at: "", updated_at: "" }];
         },
       );
-      notifications.show({ title: "Updated", message: `${variables.key} updated`, color: "green" });
+      notifications.show({ title: "Updated", message: `${variables.key} updated`, color: "success" });
     },
   });
 
@@ -104,7 +104,7 @@ export function ComplianceSettingsTab() {
 
   return (
     <Stack gap="lg">
-      <Alert icon={<IconShieldCheck size={20} />} color="blue" variant="light">
+      <Alert icon={<IconShieldCheck size={20} />} color="primary" variant="light">
         <Text size="sm">
           Configure which regulatory compliance features are active for your hospital.
           Display settings control visibility of badges and labels. Enforcement settings

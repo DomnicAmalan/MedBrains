@@ -36,7 +36,7 @@ export function CreateRoleModal({
       notifications.show({
         title: "Role created",
         message: "Custom role has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-roles"] });
@@ -50,7 +50,7 @@ export function CreateRoleModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -60,7 +60,7 @@ export function CreateRoleModal({
       notifications.show({
         title: "Missing fields",
         message: "Code and Name are required",
-        color: "red",
+        color: "danger",
       });
       return;
     }

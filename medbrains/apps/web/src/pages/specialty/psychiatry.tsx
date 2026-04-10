@@ -87,7 +87,7 @@ export function PsychiatryPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["psych-patients"] });
       patHandlers.close();
-      notifications.show({ title: "Created", message: "Psychiatric patient registered", color: "green" });
+      notifications.show({ title: "Created", message: "Psychiatric patient registered", color: "success" });
     },
   });
 
@@ -95,7 +95,7 @@ export function PsychiatryPage() {
     mutationFn: (id: string) => api.releaseRestraint(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["psych-restraints"] });
-      notifications.show({ title: "Released", message: "Restraint released", color: "green" });
+      notifications.show({ title: "Released", message: "Restraint released", color: "success" });
     },
   });
 
@@ -103,7 +103,7 @@ export function PsychiatryPage() {
     { key: "patient_id", label: "Patient", render: (r) => <Text size="sm">{r.patient_id.slice(0, 8)}</Text> },
     { key: "category", label: "Category", render: (r) => <Badge>{r.admission_category.replace(/_/g, " ")}</Badge> },
     { key: "substance", label: "Substance Abuse", render: (r) => r.substance_abuse_flag ? <Badge color="orange">Yes</Badge> : <Text size="sm">No</Text> },
-    { key: "restricted", label: "Restricted", render: (r) => r.is_restricted ? <Badge color="red">RESTRICTED</Badge> : <Text size="sm">No</Text> },
+    { key: "restricted", label: "Restricted", render: (r) => r.is_restricted ? <Badge color="danger">RESTRICTED</Badge> : <Text size="sm">No</Text> },
     { key: "nominated", label: "Nominated Rep", render: (r) => <Text size="sm">{r.nominated_rep_name ?? "None"}</Text> },
     {
       key: "actions", label: "", render: (r) => (
@@ -124,20 +124,20 @@ export function PsychiatryPage() {
   const ectCols: Column<PsychEctSession>[] = [
     { key: "session", label: "Session #", render: (r) => <Text size="sm">{r.session_number}</Text> },
     { key: "laterality", label: "Laterality", render: (r) => <Badge>{r.laterality.replace(/_/g, " ")}</Badge> },
-    { key: "consent", label: "Consent", render: (r) => r.consent_obtained ? <Badge color="green">Yes</Badge> : <Badge color="red">No</Badge> },
+    { key: "consent", label: "Consent", render: (r) => r.consent_obtained ? <Badge color="success">Yes</Badge> : <Badge color="danger">No</Badge> },
     { key: "stimulus", label: "Stimulus", render: (r) => <Text size="sm">{r.stimulus_dose ?? "---"}</Text> },
     { key: "seizure", label: "Seizure Duration", render: (r) => <Text size="sm">{r.seizure_duration ?? "---"}</Text> },
     { key: "date", label: "Date", render: (r) => <Text size="sm">{new Date(r.created_at).toLocaleDateString()}</Text> },
   ];
 
   const restraintCols: Column<PsychRestraint>[] = [
-    { key: "type", label: "Type", render: (r) => <Badge color={r.restraint_type === "seclusion" ? "red" : r.restraint_type === "chemical" ? "orange" : "yellow"}>{r.restraint_type}</Badge> },
+    { key: "type", label: "Type", render: (r) => <Badge color={r.restraint_type === "seclusion" ? "danger" : r.restraint_type === "chemical" ? "orange" : "warning"}>{r.restraint_type}</Badge> },
     { key: "start", label: "Start", render: (r) => <Text size="sm">{new Date(r.start_time).toLocaleString()}</Text> },
-    { key: "review_due", label: "Review Due", render: (r) => <Text size="sm" c={new Date(r.review_due_at) < new Date() && !r.reviewed_at ? "red" : undefined}>{new Date(r.review_due_at).toLocaleString()}</Text> },
-    { key: "released", label: "Released", render: (r) => r.released_at ? <Badge color="green">Yes</Badge> : <Badge color="red">Active</Badge> },
+    { key: "review_due", label: "Review Due", render: (r) => <Text size="sm" c={new Date(r.review_due_at) < new Date() && !r.reviewed_at ? "danger" : undefined}>{new Date(r.review_due_at).toLocaleString()}</Text> },
+    { key: "released", label: "Released", render: (r) => r.released_at ? <Badge color="success">Yes</Badge> : <Badge color="danger">Active</Badge> },
     {
       key: "actions", label: "", render: (r) => !r.released_at && canRestraint ? (
-        <ActionIcon variant="subtle" color="green" onClick={() => releaseRestraint.mutate(r.id)}>
+        <ActionIcon variant="subtle" color="success" onClick={() => releaseRestraint.mutate(r.id)}>
           <IconShieldOff size={16} />
         </ActionIcon>
       ) : null,

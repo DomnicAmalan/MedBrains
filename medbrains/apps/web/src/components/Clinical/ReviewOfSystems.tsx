@@ -56,7 +56,7 @@ export function ReviewOfSystems({ data, canUpdate, onUpdate }: ReviewOfSystemsPr
       <Group justify="space-between">
         <Text size="sm" fw={600}>Review of Systems</Text>
         {abnormalCount > 0 && (
-          <Text size="xs" c="red">{abnormalCount} abnormal</Text>
+          <Text size="xs" c="danger">{abnormalCount} abnormal</Text>
         )}
       </Group>
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
@@ -70,7 +70,7 @@ export function ReviewOfSystems({ data, canUpdate, onUpdate }: ReviewOfSystemsPr
                 onChange={() => toggle(sys.key)}
                 size="sm"
                 disabled={!canUpdate}
-                color="red"
+                color="danger"
               />
               {val?.abnormal && (
                 <TextInput

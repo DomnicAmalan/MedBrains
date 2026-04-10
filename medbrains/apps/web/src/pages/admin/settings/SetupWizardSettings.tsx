@@ -104,7 +104,7 @@ export function SetupWizardSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load setup status:{" "}
           {firstError instanceof Error ? firstError.message : "Unknown error"}
         </Text>
@@ -127,7 +127,7 @@ export function SetupWizardSettings() {
         <Progress
           value={progressPercent}
           size="lg"
-          color={progressPercent === 100 ? "green" : "blue"}
+          color={progressPercent === 100 ? "success" : "primary"}
           animated={progressPercent < 100}
         />
         <Text size="sm" c="dimmed" ta="center">
@@ -152,7 +152,7 @@ export function SetupWizardSettings() {
             <ThemeIcon
               size="lg"
               radius="xl"
-              color={step.isComplete ? "green" : "red"}
+              color={step.isComplete ? "success" : "danger"}
               variant="light"
             >
               {step.isComplete ? <IconCheck size={20} /> : <IconX size={20} />}
@@ -168,7 +168,7 @@ export function SetupWizardSettings() {
             <Text
               size="xs"
               fw={500}
-              c={step.isComplete ? "green" : "red"}
+              c={step.isComplete ? "success" : "danger"}
             >
               {step.isComplete ? "Complete" : "Incomplete"}
             </Text>

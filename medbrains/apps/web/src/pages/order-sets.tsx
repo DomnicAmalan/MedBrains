@@ -62,18 +62,18 @@ const ITEM_TYPE_OPTIONS = [
 ];
 
 const CONTEXT_COLORS: Record<string, string> = {
-  general: "gray",
-  admission: "blue",
+  general: "slate",
+  admission: "primary",
   pre_operative: "orange",
   diagnosis_specific: "violet",
   department_specific: "teal",
 };
 
 const ITEM_TYPE_COLORS: Record<string, string> = {
-  lab: "indigo",
-  medication: "green",
+  lab: "primary",
+  medication: "success",
   nursing: "orange",
-  diet: "cyan",
+  diet: "info",
 };
 
 // ── Page ───────────────────────────────────────────────
@@ -179,7 +179,7 @@ function TemplatesTab({
       api.createOrderSetTemplate(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["order-set-templates"] });
-      notifications.show({ title: "Created", message: "Order set template created", color: "green" });
+      notifications.show({ title: "Created", message: "Order set template created", color: "success" });
       close();
       setForm({ name: "", context: "general" });
     },
@@ -189,7 +189,7 @@ function TemplatesTab({
     mutationFn: (id: string) => api.approveOrderSetTemplate(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["order-set-templates"] });
-      notifications.show({ title: "Approved", message: "Template approved for clinical use", color: "green" });
+      notifications.show({ title: "Approved", message: "Template approved for clinical use", color: "success" });
     },
   });
 
@@ -197,7 +197,7 @@ function TemplatesTab({
     mutationFn: (id: string) => api.deleteOrderSetTemplate(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["order-set-templates"] });
-      notifications.show({ title: "Deactivated", message: "Template deactivated", color: "yellow" });
+      notifications.show({ title: "Deactivated", message: "Template deactivated", color: "warning" });
     },
   });
 
@@ -205,7 +205,7 @@ function TemplatesTab({
     mutationFn: (id: string) => api.createOrderSetVersion(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["order-set-templates"] });
-      notifications.show({ title: "New Version", message: "New version created", color: "blue" });
+      notifications.show({ title: "New Version", message: "New version created", color: "primary" });
     },
   });
 
@@ -224,7 +224,7 @@ function TemplatesTab({
       key: "context",
       label: "Context",
       render: (r) => (
-        <Badge color={CONTEXT_COLORS[r.context] ?? "gray"} variant="light" size="sm">
+        <Badge color={CONTEXT_COLORS[r.context] ?? "slate"} variant="light" size="sm">
           {r.context.replace(/_/g, " ")}
         </Badge>
       ),
@@ -239,9 +239,9 @@ function TemplatesTab({
       label: "Approved",
       render: (r) =>
         r.approved_at ? (
-          <Badge color="green" variant="light" size="sm">Approved</Badge>
+          <Badge color="success" variant="light" size="sm">Approved</Badge>
         ) : (
-          <Badge color="yellow" variant="light" size="sm">Pending</Badge>
+          <Badge color="warning" variant="light" size="sm">Pending</Badge>
         ),
     },
     {
@@ -254,7 +254,7 @@ function TemplatesTab({
               <ActionIcon
                 size="sm"
                 variant="subtle"
-                color="green"
+                color="success"
                 onClick={() => approveMut.mutate(r.id)}
               >
                 <IconCheck size={14} />
@@ -266,7 +266,7 @@ function TemplatesTab({
               <ActionIcon
                 size="sm"
                 variant="subtle"
-                color="blue"
+                color="primary"
                 onClick={() => versionMut.mutate(r.id)}
               >
                 <IconCopy size={14} />
@@ -278,7 +278,7 @@ function TemplatesTab({
               <ActionIcon
                 size="sm"
                 variant="subtle"
-                color="red"
+                color="danger"
                 onClick={() => deleteMut.mutate(r.id)}
               >
                 <IconTrash size={14} />
@@ -415,7 +415,7 @@ function BuilderTab({ canUpdate }: { canUpdate: boolean }) {
       api.addOrderSetItem(selectedTemplateId!, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["order-set-template-detail", selectedTemplateId] });
-      notifications.show({ title: "Added", message: "Item added to template", color: "green" });
+      notifications.show({ title: "Added", message: "Item added to template", color: "success" });
       closeItem();
       setItemForm({ item_type: "lab" });
     },
@@ -426,7 +426,7 @@ function BuilderTab({ canUpdate }: { canUpdate: boolean }) {
       api.deleteOrderSetItem(selectedTemplateId!, itemId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["order-set-template-detail", selectedTemplateId] });
-      notifications.show({ title: "Removed", message: "Item removed from template", color: "yellow" });
+      notifications.show({ title: "Removed", message: "Item removed from template", color: "warning" });
     },
   });
 
@@ -445,7 +445,7 @@ function BuilderTab({ canUpdate }: { canUpdate: boolean }) {
       key: "item_type",
       label: "Type",
       render: (r) => (
-        <Badge color={ITEM_TYPE_COLORS[r.item_type] ?? "gray"} variant="light" size="sm">
+        <Badge color={ITEM_TYPE_COLORS[r.item_type] ?? "slate"} variant="light" size="sm">
           {r.item_type}
         </Badge>
       ),
@@ -467,7 +467,7 @@ function BuilderTab({ canUpdate }: { canUpdate: boolean }) {
       label: "Mandatory",
       render: (r) =>
         r.is_mandatory ? (
-          <Badge color="red" variant="light" size="xs">Required</Badge>
+          <Badge color="danger" variant="light" size="xs">Required</Badge>
         ) : (
           <Text size="xs" c="dimmed">Optional</Text>
         ),
@@ -486,7 +486,7 @@ function BuilderTab({ canUpdate }: { canUpdate: boolean }) {
             <ActionIcon
               size="sm"
               variant="subtle"
-              color="red"
+              color="danger"
               onClick={() => deleteItemMut.mutate(r.id)}
             >
               <IconTrash size={14} />
@@ -526,7 +526,7 @@ function BuilderTab({ canUpdate }: { canUpdate: boolean }) {
                 </Text>
               </div>
               <Badge
-                color={CONTEXT_COLORS[templateDetail.template.context] ?? "gray"}
+                color={CONTEXT_COLORS[templateDetail.template.context] ?? "slate"}
                 variant="light"
               >
                 {templateDetail.template.context.replace(/_/g, " ")}
@@ -797,7 +797,7 @@ function ActivationsTab() {
                 <Group justify="space-between">
                   <Group>
                     <Badge
-                      color={ITEM_TYPE_COLORS[item.item_type] ?? "gray"}
+                      color={ITEM_TYPE_COLORS[item.item_type] ?? "slate"}
                       variant="light"
                       size="sm"
                     >

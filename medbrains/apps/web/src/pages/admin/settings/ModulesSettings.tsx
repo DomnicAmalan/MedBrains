@@ -50,7 +50,7 @@ export function ModulesSettings() {
       notifications.show({
         title: `Module ${label}`,
         message: `${updated.name} has been ${label} successfully.`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -58,7 +58,7 @@ export function ModulesSettings() {
       notifications.show({
         title: "Toggle failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -82,7 +82,7 @@ export function ModulesSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load modules:{" "}
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
@@ -126,7 +126,7 @@ export function ModulesSettings() {
                     {mod.name}
                   </Text>
                   <Badge
-                    color={isEnabled ? "green" : "gray"}
+                    color={isEnabled ? "success" : "slate"}
                     variant="light"
                     size="sm"
                   >

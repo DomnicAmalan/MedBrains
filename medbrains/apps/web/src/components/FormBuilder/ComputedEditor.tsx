@@ -127,7 +127,7 @@ export function ComputedEditor({ expression, onChange }: ComputedEditorProps) {
 
       {value && (
         <Alert
-          color={validation.valid ? "green" : "red"}
+          color={validation.valid ? "success" : "danger"}
           icon={validation.valid ? <IconCheck size={14} /> : <IconAlertCircle size={14} />}
           variant="light"
           p="xs"
@@ -204,7 +204,7 @@ export function ComputedEditor({ expression, onChange }: ComputedEditorProps) {
                 Result will be computed at runtime
               </Text>
             ) : (
-              <Text size="sm" c="red">
+              <Text size="sm" c="danger">
                 Fix errors above
               </Text>
             )}

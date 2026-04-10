@@ -1,4 +1,5 @@
 use chrono::{DateTime, NaiveDate, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -168,6 +169,177 @@ pub struct TransfusionRecord {
     pub reaction_details: Option<String>,
     pub reaction_reported_at: Option<DateTime<Utc>>,
     pub notes: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+// ── Phase 2 Enums ──────────────────────────────────────
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "bb_return_status", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
+pub enum BbReturnStatus {
+    Requested,
+    Inspecting,
+    Accepted,
+    Rejected,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "bb_lookback_status", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
+pub enum BbLookbackStatus {
+    Detected,
+    Investigating,
+    Notified,
+    Closed,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "bb_billing_status", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
+pub enum BbBillingStatus {
+    Pending,
+    Invoiced,
+    Paid,
+    Waived,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "bb_cold_chain_alert_level", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
+pub enum BbColdChainAlertLevel {
+    Normal,
+    Warning,
+    Critical,
+}
+
+// ── Phase 2 Structs ────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct BbRecruitmentCampaign {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub campaign_name: String,
+    pub campaign_type: String,
+    pub target_blood_groups: Option<serde_json::Value>,
+    pub target_count: Option<i32>,
+    pub actual_count: Option<i32>,
+    pub start_date: NaiveDate,
+    pub end_date: Option<NaiveDate>,
+    pub status: String,
+    pub notes: Option<String>,
+    pub created_by: Option<Uuid>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct BbColdChainDevice {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub device_name: String,
+    pub device_serial: Option<String>,
+    pub location: Option<String>,
+    pub equipment_type: String,
+    pub min_temp: Option<Decimal>,
+    pub max_temp: Option<Decimal>,
+    pub alert_threshold_minutes: Option<i32>,
+    pub is_active: bool,
+    pub last_reading_at: Option<DateTime<Utc>>,
+    pub last_temp: Option<Decimal>,
+    pub alert_level: Option<BbColdChainAlertLevel>,
+    pub notes: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct BbColdChainReading {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub device_id: Uuid,
+    pub temperature: Decimal,
+    pub humidity: Option<Decimal>,
+    pub alert_level: Option<BbColdChainAlertLevel>,
+    pub recorded_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct BbBloodReturn {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub component_id: Uuid,
+    pub return_code: String,
+    pub returned_by: Option<Uuid>,
+    pub return_reason: Option<String>,
+    pub temperature_at_return: Option<Decimal>,
+    pub temperature_acceptable: Option<bool>,
+    pub time_out_minutes: Option<i32>,
+    pub status: BbReturnStatus,
+    pub inspection_notes: Option<String>,
+    pub inspected_by: Option<Uuid>,
+    pub inspected_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct BbMsbosGuideline {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub procedure_name: String,
+    pub procedure_code: String,
+    pub blood_group: Option<String>,
+    pub component_type: BloodComponentType,
+    pub max_units: i32,
+    pub crossmatch_to_transfusion_ratio: Option<Decimal>,
+    pub is_active: bool,
+    pub notes: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct BbLookbackEvent {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub event_code: String,
+    pub donation_id: Option<Uuid>,
+    pub donor_id: Option<Uuid>,
+    pub infection_type: String,
+    pub detection_date: NaiveDate,
+    pub status: BbLookbackStatus,
+    pub affected_components: Option<serde_json::Value>,
+    pub recipients_notified: Option<i32>,
+    pub investigation_notes: Option<String>,
+    pub reported_to: Option<String>,
+    pub reported_at: Option<DateTime<Utc>>,
+    pub closed_at: Option<DateTime<Utc>>,
+    pub closed_by: Option<Uuid>,
+    pub created_by: Option<Uuid>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct BbBillingItem {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub component_id: Option<Uuid>,
+    pub patient_id: Option<Uuid>,
+    pub billing_code: String,
+    pub component_type: Option<BloodComponentType>,
+    pub blood_group: Option<String>,
+    pub processing_fee: Option<Decimal>,
+    pub component_cost: Option<Decimal>,
+    pub cross_match_fee: Option<Decimal>,
+    pub total_amount: Option<Decimal>,
+    pub status: BbBillingStatus,
+    pub invoice_id: Option<Uuid>,
+    pub waiver_reason: Option<String>,
+    pub billed_by: Option<Uuid>,
+    pub billed_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

@@ -36,9 +36,9 @@ const APPLICABILITY_OPTIONS = [
 ];
 
 const APPLICABILITY_COLORS: Record<string, string> = {
-  taxable: "blue",
-  exempt: "green",
-  zero_rated: "gray",
+  taxable: "primary",
+  exempt: "success",
+  zero_rated: "slate",
 };
 
 // ── Tax Category Form State ──────────────────────────────
@@ -147,7 +147,7 @@ function TaxCategoryModal({
       notifications.show({
         title: "Tax category created",
         message: "Tax category has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-tax-categories"] });
@@ -157,7 +157,7 @@ function TaxCategoryModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -169,7 +169,7 @@ function TaxCategoryModal({
       notifications.show({
         title: "Tax category updated",
         message: "Tax category has been updated successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-tax-categories"] });
@@ -179,7 +179,7 @@ function TaxCategoryModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -189,7 +189,7 @@ function TaxCategoryModal({
       notifications.show({
         title: "Missing fields",
         message: "Code, name, and applicability are required",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -315,7 +315,7 @@ function PaymentMethodModal({
       notifications.show({
         title: "Payment method created",
         message: "Payment method has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-payment-methods"] });
@@ -325,7 +325,7 @@ function PaymentMethodModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -337,7 +337,7 @@ function PaymentMethodModal({
       notifications.show({
         title: "Payment method updated",
         message: "Payment method has been updated successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-payment-methods"] });
@@ -347,7 +347,7 @@ function PaymentMethodModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -357,7 +357,7 @@ function PaymentMethodModal({
       notifications.show({
         title: "Missing fields",
         message: "Code and name are required",
-        color: "red",
+        color: "danger",
       });
       return;
     }
@@ -442,7 +442,7 @@ export function BillingTaxSettings() {
       notifications.show({
         title: "Tax category deleted",
         message: "Tax category has been removed",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-tax-categories"] });
@@ -451,7 +451,7 @@ export function BillingTaxSettings() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -469,7 +469,7 @@ export function BillingTaxSettings() {
       notifications.show({
         title: "Payment method deleted",
         message: "Payment method has been removed",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-payment-methods"] });
@@ -478,7 +478,7 @@ export function BillingTaxSettings() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -538,7 +538,7 @@ export function BillingTaxSettings() {
         <Badge
           size="sm"
           variant="light"
-          color={APPLICABILITY_COLORS[row.applicability] ?? "gray"}
+          color={APPLICABILITY_COLORS[row.applicability] ?? "slate"}
         >
           {row.applicability.replace(/_/g, " ")}
         </Badge>
@@ -552,7 +552,7 @@ export function BillingTaxSettings() {
         <Badge
           size="sm"
           variant="light"
-          color={row.is_active ? "green" : "gray"}
+          color={row.is_active ? "success" : "slate"}
         >
           {row.is_active ? "Active" : "Inactive"}
         </Badge>
@@ -561,14 +561,14 @@ export function BillingTaxSettings() {
         <Group gap={4}>
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color="primary"
             onClick={() => openEditTax(row)}
           >
             <IconPencil size={16} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => handleDeleteTax(row)}
             loading={deleteTaxMutation.isPending}
           >
@@ -593,7 +593,7 @@ export function BillingTaxSettings() {
       </Table.Td>
       <Table.Td>
         {row.is_default ? (
-          <Badge size="sm" variant="light" color="blue">
+          <Badge size="sm" variant="light" color="primary">
             Default
           </Badge>
         ) : (
@@ -604,7 +604,7 @@ export function BillingTaxSettings() {
         <Badge
           size="sm"
           variant="light"
-          color={row.is_active ? "green" : "gray"}
+          color={row.is_active ? "success" : "slate"}
         >
           {row.is_active ? "Active" : "Inactive"}
         </Badge>
@@ -613,14 +613,14 @@ export function BillingTaxSettings() {
         <Group gap={4}>
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color="primary"
             onClick={() => openEditPayment(row)}
           >
             <IconPencil size={16} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => handleDeletePayment(row)}
             loading={deletePaymentMutation.isPending}
           >

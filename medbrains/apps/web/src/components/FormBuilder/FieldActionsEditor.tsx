@@ -98,7 +98,7 @@ function MappingEditor({ mappings, onChange, label, keyPlaceholder, valuePlaceho
             onChange={(e) => updateValue(key, e.currentTarget.value)}
             style={{ flex: 1 }}
           />
-          <ActionIcon size="sm" variant="subtle" color="red" onClick={() => removePair(key)}>
+          <ActionIcon size="sm" variant="subtle" color="danger" onClick={() => removePair(key)}>
             <IconTrash size={12} />
           </ActionIcon>
         </Group>
@@ -147,7 +147,7 @@ function ActionCard({
           <ActionIcon
             size="sm"
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => removeFieldAction(field.id, action.id)}
           >
             <IconTrash size={12} />

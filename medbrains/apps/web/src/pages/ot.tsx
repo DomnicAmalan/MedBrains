@@ -73,11 +73,11 @@ import { DataTable, PageHeader, StatusDot } from "../components";
 import { useRequirePermission } from "../hooks/useRequirePermission";
 
 const bookingStatusColors: Record<string, string> = {
-  requested: "yellow",
-  confirmed: "blue",
-  in_progress: "green",
+  requested: "warning",
+  confirmed: "primary",
+  in_progress: "success",
   completed: "teal",
-  cancelled: "red",
+  cancelled: "danger",
   postponed: "orange",
 };
 
@@ -198,12 +198,12 @@ function ScheduleTab() {
                 <Text size="sm" c="dimmed">{b.patient_id.slice(0, 8)}</Text>
               </Table.Td>
               <Table.Td>
-                <Badge size="sm" variant="light" color={b.priority === "emergency" ? "red" : b.priority === "urgent" ? "orange" : "gray"}>
+                <Badge size="sm" variant="light" color={b.priority === "emergency" ? "danger" : b.priority === "urgent" ? "orange" : "slate"}>
                   {b.priority}
                 </Badge>
               </Table.Td>
               <Table.Td>
-                <StatusDot color={bookingStatusColors[b.status] ?? "gray"} label={b.status} />
+                <StatusDot color={bookingStatusColors[b.status] ?? "slate"} label={b.status} />
               </Table.Td>
             </Table.Tr>
           ))}
@@ -255,7 +255,7 @@ function BookingsTab({ canCreate }: { canCreate: boolean }) {
       key: "priority",
       label: "Priority",
       render: (r: OtBooking) => (
-        <Badge size="sm" variant="light" color={r.priority === "emergency" ? "red" : r.priority === "urgent" ? "orange" : "gray"}>
+        <Badge size="sm" variant="light" color={r.priority === "emergency" ? "danger" : r.priority === "urgent" ? "orange" : "slate"}>
           {r.priority}
         </Badge>
       ),
@@ -263,7 +263,7 @@ function BookingsTab({ canCreate }: { canCreate: boolean }) {
     {
       key: "status",
       label: "Status",
-      render: (r: OtBooking) => <StatusDot color={bookingStatusColors[r.status] ?? "gray"} label={r.status} />,
+      render: (r: OtBooking) => <StatusDot color={bookingStatusColors[r.status] ?? "slate"} label={r.status} />,
     },
     {
       key: "actions",
@@ -329,11 +329,11 @@ function CreateBookingDrawer({ opened, onClose }: { opened: boolean; onClose: ()
     mutationFn: (data: CreateOtBookingRequest) => api.createOtBooking(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-bookings"] });
-      notifications.show({ title: "Created", message: "OT booking created", color: "green" });
+      notifications.show({ title: "Created", message: "OT booking created", color: "success" });
       onClose();
       setForm({});
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create booking", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create booking", color: "danger" }),
   });
 
   return (
@@ -428,18 +428,18 @@ function OverviewTab({ booking: b }: { booking: OtBooking }) {
       queryClient.invalidateQueries({ queryKey: ["ot-booking", b.id] });
       queryClient.invalidateQueries({ queryKey: ["ot-bookings"] });
       queryClient.invalidateQueries({ queryKey: ["ot-schedule"] });
-      notifications.show({ title: "Updated", message: "Booking status updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Booking status updated", color: "success" });
       setShowReason(null);
       setReason("");
     },
-    onError: () => notifications.show({ title: "Error", message: "Status update failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Status update failed", color: "danger" }),
   });
 
   return (
     <Stack>
       <Group justify="space-between">
         <Text fw={700} size="lg">{b.procedure_name}</Text>
-        <Badge color={bookingStatusColors[b.status] ?? "gray"} variant="light" size="lg">
+        <Badge color={bookingStatusColors[b.status] ?? "slate"} variant="light" size="lg">
           {b.status.replace("_", " ")}
         </Badge>
       </Group>
@@ -465,12 +465,12 @@ function OverviewTab({ booking: b }: { booking: OtBooking }) {
 
           {b.status === "requested" && (
             <Group>
-              <Button size="sm" color="blue" leftSection={<IconCheck size={14} />}
+              <Button size="sm" color="primary" leftSection={<IconCheck size={14} />}
                 loading={statusMutation.isPending}
                 onClick={() => statusMutation.mutate({ status: "confirmed" })}>
                 Confirm
               </Button>
-              <Button size="sm" color="red" variant="light" leftSection={<IconX size={14} />}
+              <Button size="sm" color="danger" variant="light" leftSection={<IconX size={14} />}
                 onClick={() => setShowReason("cancel")}>
                 Cancel
               </Button>
@@ -479,7 +479,7 @@ function OverviewTab({ booking: b }: { booking: OtBooking }) {
 
           {b.status === "confirmed" && (
             <Group>
-              <Button size="sm" color="green" leftSection={<IconPlayerPlay size={14} />}
+              <Button size="sm" color="success" leftSection={<IconPlayerPlay size={14} />}
                 loading={statusMutation.isPending}
                 onClick={() => statusMutation.mutate({ status: "in_progress", actual_start: new Date().toISOString() } as Parameters<typeof statusMutation.mutate>[0])}>
                 Start Surgery
@@ -488,7 +488,7 @@ function OverviewTab({ booking: b }: { booking: OtBooking }) {
                 onClick={() => setShowReason("postpone")}>
                 Postpone
               </Button>
-              <Button size="sm" color="red" variant="light" leftSection={<IconX size={14} />}
+              <Button size="sm" color="danger" variant="light" leftSection={<IconX size={14} />}
                 onClick={() => setShowReason("cancel")}>
                 Cancel
               </Button>
@@ -502,7 +502,7 @@ function OverviewTab({ booking: b }: { booking: OtBooking }) {
                 onClick={() => statusMutation.mutate({ status: "completed", actual_end: new Date().toISOString() } as Parameters<typeof statusMutation.mutate>[0])}>
                 Complete Surgery
               </Button>
-              <Button size="sm" color="red" variant="light" leftSection={<IconX size={14} />}
+              <Button size="sm" color="danger" variant="light" leftSection={<IconX size={14} />}
                 onClick={() => setShowReason("cancel")}>
                 Cancel
               </Button>
@@ -517,7 +517,7 @@ function OverviewTab({ booking: b }: { booking: OtBooking }) {
                 onChange={(e) => setReason(e.currentTarget.value)}
               />
               <Group>
-                <Button size="sm" color={showReason === "cancel" ? "red" : "orange"}
+                <Button size="sm" color={showReason === "cancel" ? "danger" : "orange"}
                   loading={statusMutation.isPending}
                   onClick={() => statusMutation.mutate({
                     status: showReason === "cancel" ? "cancelled" : "postponed",
@@ -535,7 +535,7 @@ function OverviewTab({ booking: b }: { booking: OtBooking }) {
           {(b.status === "completed" || b.status === "cancelled" || b.status === "postponed") && (
             <Text size="sm" c="dimmed">No further transitions available.</Text>
           )}
-          {b.cancellation_reason && <Text size="sm" c="red">Cancellation reason: {b.cancellation_reason}</Text>}
+          {b.cancellation_reason && <Text size="sm" c="danger">Cancellation reason: {b.cancellation_reason}</Text>}
           {b.postpone_reason && <Text size="sm" c="orange">Postpone reason: {b.postpone_reason}</Text>}
         </Stack>
       )}
@@ -568,9 +568,9 @@ function PreopTab({ bookingId }: { bookingId: string }) {
     mutationFn: (d: CreatePreopAssessmentRequest) => api.createPreopAssessment(bookingId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-preop", bookingId] });
-      notifications.show({ title: "Saved", message: "Pre-op assessment recorded", color: "green" });
+      notifications.show({ title: "Saved", message: "Pre-op assessment recorded", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to save assessment", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to save assessment", color: "danger" }),
   });
 
   const [updateForm, setUpdateForm] = useState<Partial<UpdatePreopAssessmentRequest>>({});
@@ -579,10 +579,10 @@ function PreopTab({ bookingId }: { bookingId: string }) {
       api.updatePreopAssessment(bookingId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-preop", bookingId] });
-      notifications.show({ title: "Updated", message: "Assessment updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Assessment updated", color: "success" });
       setEditing(false);
     },
-    onError: () => notifications.show({ title: "Error", message: "Update failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Update failed", color: "danger" }),
   });
 
   if (isLoading) return <Text c="dimmed">Loading...</Text>;
@@ -593,7 +593,7 @@ function PreopTab({ bookingId }: { bookingId: string }) {
       <Stack>
         <Group justify="space-between">
           <Text fw={600}>Pre-Operative Assessment</Text>
-          <Badge color={a.clearance_status === "cleared" ? "green" : a.clearance_status === "not_cleared" ? "red" : "yellow"}>
+          <Badge color={a.clearance_status === "cleared" ? "success" : a.clearance_status === "not_cleared" ? "danger" : "warning"}>
             {a.clearance_status.replace("_", " ")}
           </Badge>
         </Group>
@@ -708,9 +708,9 @@ function ChecklistTab({ bookingId }: { bookingId: string }) {
     mutationFn: (d: CreateSafetyChecklistRequest) => api.createSafetyChecklist(bookingId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-checklists", bookingId] });
-      notifications.show({ title: "Created", message: "Checklist phase started", color: "green" });
+      notifications.show({ title: "Created", message: "Checklist phase started", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to create checklist", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to create checklist", color: "danger" }),
   });
 
   const completeMutation = useMutation({
@@ -718,9 +718,9 @@ function ChecklistTab({ bookingId }: { bookingId: string }) {
       api.updateSafetyChecklist(bookingId, id, { completed: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-checklists", bookingId] });
-      notifications.show({ title: "Completed", message: "Phase completed", color: "green" });
+      notifications.show({ title: "Completed", message: "Phase completed", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to complete phase", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to complete phase", color: "danger" }),
   });
 
   if (isLoading) return <Text c="dimmed">Loading...</Text>;
@@ -747,14 +747,14 @@ function ChecklistTab({ bookingId }: { bookingId: string }) {
             <Group justify="space-between">
               <Group gap="sm">
                 <ThemeIcon size="sm" variant="light"
-                  color={completed ? "green" : checklist ? "yellow" : "gray"}>
+                  color={completed ? "success" : checklist ? "warning" : "slate"}>
                   {completed ? <IconCircleCheck size={14} /> : <IconCircleDashed size={14} />}
                 </ThemeIcon>
                 <Text fw={500}>{phaseLabels[phase]}</Text>
               </Group>
-              {completed && <Badge color="green" size="sm">Completed</Badge>}
-              {checklist && !completed && <Badge color="yellow" size="sm">In Progress</Badge>}
-              {!checklist && <Badge color="gray" size="sm">Not Started</Badge>}
+              {completed && <Badge color="success" size="sm">Completed</Badge>}
+              {checklist && !completed && <Badge color="warning" size="sm">In Progress</Badge>}
+              {!checklist && <Badge color="slate" size="sm">Not Started</Badge>}
             </Group>
 
             {checklist?.completed_at && (
@@ -773,7 +773,7 @@ function ChecklistTab({ bookingId }: { bookingId: string }) {
             )}
 
             {canCreate && checklist && !completed && (
-              <Button size="xs" mt="xs" color="green"
+              <Button size="xs" mt="xs" color="success"
                 loading={completeMutation.isPending}
                 onClick={() => completeMutation.mutate({ id: checklist.id })}>
                 Mark Complete
@@ -808,9 +808,9 @@ function CaseRecordTab({ bookingId }: { bookingId: string }) {
     mutationFn: (d: CreateCaseRecordRequest) => api.createCaseRecord(bookingId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-case-record", bookingId] });
-      notifications.show({ title: "Saved", message: "Case record created", color: "green" });
+      notifications.show({ title: "Saved", message: "Case record created", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to save case record", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to save case record", color: "danger" }),
   });
 
   if (isLoading) return <Text c="dimmed">Loading...</Text>;
@@ -828,20 +828,20 @@ function CaseRecordTab({ bookingId }: { bookingId: string }) {
         {record.patient_out_time && <Text size="sm">Patient Out: {new Date(record.patient_out_time).toLocaleTimeString()}</Text>}
         {record.findings && <Text size="sm">Findings: {record.findings}</Text>}
         {record.technique && <Text size="sm">Technique: {record.technique}</Text>}
-        {record.complications && <Text size="sm" c="red">Complications: {record.complications}</Text>}
+        {record.complications && <Text size="sm" c="danger">Complications: {record.complications}</Text>}
         {record.blood_loss_ml != null && <Text size="sm">Blood Loss: {record.blood_loss_ml} ml</Text>}
 
         <Text size="sm" fw={500} mt="xs">Counts</Text>
         <Group gap="md">
           <Checkbox label="Instruments (before)" checked={record.instrument_count_correct_before ?? false} readOnly size="xs"
-            color={record.instrument_count_correct_before ? "green" : "red"} />
+            color={record.instrument_count_correct_before ? "success" : "danger"} />
           <Checkbox label="Instruments (after)" checked={record.instrument_count_correct_after ?? false} readOnly size="xs"
-            color={record.instrument_count_correct_after ? "green" : "red"} />
+            color={record.instrument_count_correct_after ? "success" : "danger"} />
           <Checkbox label="Sponges" checked={record.sponge_count_correct ?? false} readOnly size="xs"
-            color={record.sponge_count_correct ? "green" : "red"} />
+            color={record.sponge_count_correct ? "success" : "danger"} />
         </Group>
         {(record.instrument_count_correct_before === false || record.instrument_count_correct_after === false || record.sponge_count_correct === false) && (
-          <Text size="xs" c="red" fw={600}>WARNING: Count discrepancy detected — verify immediately!</Text>
+          <Text size="xs" c="danger" fw={600}>WARNING: Count discrepancy detected — verify immediately!</Text>
         )}
         {record.notes && <Text size="sm" c="dimmed">{record.notes}</Text>}
       </Stack>
@@ -877,7 +877,7 @@ function CaseRecordTab({ bookingId }: { bookingId: string }) {
       <Checkbox label="Sponges correct" checked={form.sponge_count_correct ?? false}
         onChange={(e) => setForm({ ...form, sponge_count_correct: e.currentTarget.checked })} />
       {(!form.instrument_count_correct_before || !form.instrument_count_correct_after || !form.sponge_count_correct) && (
-        <Text size="xs" c="red" fw={600}>WARNING: Unchecked counts require verification before closure.</Text>
+        <Text size="xs" c="danger" fw={600}>WARNING: Unchecked counts require verification before closure.</Text>
       )}
 
       <Textarea label="Specimens" placeholder="List specimens collected"
@@ -923,9 +923,9 @@ function AnesthesiaTab({ bookingId }: { bookingId: string }) {
     mutationFn: (d: CreateAnesthesiaRecordRequest) => api.createAnesthesiaRecord(bookingId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-anesthesia", bookingId] });
-      notifications.show({ title: "Saved", message: "Anesthesia record created", color: "green" });
+      notifications.show({ title: "Saved", message: "Anesthesia record created", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to save anesthesia record", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to save anesthesia record", color: "danger" }),
   });
 
   if (isLoading) return <Text c="dimmed">Loading...</Text>;
@@ -941,7 +941,7 @@ function AnesthesiaTab({ bookingId }: { bookingId: string }) {
         {record.induction_time && <Text size="sm">Induction: {new Date(record.induction_time).toLocaleTimeString()}</Text>}
         {record.intubation_time && <Text size="sm">Intubation: {new Date(record.intubation_time).toLocaleTimeString()}</Text>}
         {record.extubation_time && <Text size="sm">Extubation: {new Date(record.extubation_time).toLocaleTimeString()}</Text>}
-        {record.complications && <Text size="sm" c="red">Complications: {record.complications}</Text>}
+        {record.complications && <Text size="sm" c="danger">Complications: {record.complications}</Text>}
         {record.notes && <Text size="sm" c="dimmed">{record.notes}</Text>}
       </Stack>
     );
@@ -997,9 +997,9 @@ function PostopTab({ bookingId }: { bookingId: string }) {
     mutationFn: (d: CreatePostopRecordRequest) => api.createPostopRecord(bookingId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-postop", bookingId] });
-      notifications.show({ title: "Saved", message: "Post-op record created", color: "green" });
+      notifications.show({ title: "Saved", message: "Post-op record created", color: "success" });
     },
-    onError: () => notifications.show({ title: "Error", message: "Failed to save post-op record", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Failed to save post-op record", color: "danger" }),
   });
 
   const [editing, setEditing] = useState(false);
@@ -1010,10 +1010,10 @@ function PostopTab({ bookingId }: { bookingId: string }) {
       api.updatePostopRecord(bookingId, d),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-postop", bookingId] });
-      notifications.show({ title: "Updated", message: "Post-op record updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Post-op record updated", color: "success" });
       setEditing(false);
     },
-    onError: () => notifications.show({ title: "Error", message: "Update failed", color: "red" }),
+    onError: () => notifications.show({ title: "Error", message: "Update failed", color: "danger" }),
   });
 
   if (isLoading) return <Text c="dimmed">Loading...</Text>;
@@ -1025,8 +1025,8 @@ function PostopTab({ bookingId }: { bookingId: string }) {
       <Stack>
         <Group justify="space-between">
           <Text fw={600}>Post-Op / PACU Recovery</Text>
-          <Badge color={record.recovery_status === "discharged" || record.recovery_status === "shifted_to_ward" ? "green" :
-            record.recovery_status === "shifted_to_icu" ? "orange" : "blue"}>
+          <Badge color={record.recovery_status === "discharged" || record.recovery_status === "shifted_to_ward" ? "success" :
+            record.recovery_status === "shifted_to_icu" ? "orange" : "primary"}>
             {record.recovery_status.replace(/_/g, " ")}
           </Badge>
         </Group>
@@ -1111,9 +1111,9 @@ function RoomsTab({ canManage }: { canManage: boolean }) {
   });
 
   const roomStatusColors: Record<string, string> = {
-    available: "green",
-    in_use: "blue",
-    cleaning: "yellow",
+    available: "success",
+    in_use: "primary",
+    cleaning: "warning",
     maintenance: "orange",
     reserved: "violet",
   };
@@ -1132,12 +1132,12 @@ function RoomsTab({ canManage }: { canManage: boolean }) {
     {
       key: "status",
       label: "Status",
-      render: (r: OtRoom) => <StatusDot color={roomStatusColors[r.status] ?? "gray"} label={r.status} />,
+      render: (r: OtRoom) => <StatusDot color={roomStatusColors[r.status] ?? "slate"} label={r.status} />,
     },
     {
       key: "is_active",
       label: "Active",
-      render: (r: OtRoom) => <Badge variant="light" color={r.is_active ? "green" : "gray"}>{r.is_active ? "Yes" : "No"}</Badge>,
+      render: (r: OtRoom) => <Badge variant="light" color={r.is_active ? "success" : "slate"}>{r.is_active ? "Yes" : "No"}</Badge>,
     },
   ];
 
@@ -1168,7 +1168,7 @@ function CreateRoomDrawer({ opened, onClose }: { opened: boolean; onClose: () =>
     mutationFn: (data: CreateOtRoomRequest) => api.createOtRoom(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-rooms"] });
-      notifications.show({ title: "Created", message: "OT room created", color: "green" });
+      notifications.show({ title: "Created", message: "OT room created", color: "success" });
       onClose();
       setName("");
       setCode("");
@@ -1245,7 +1245,7 @@ function CreatePreferenceDrawer({ opened, onClose }: { opened: boolean; onClose:
     mutationFn: (data: CreateSurgeonPreferenceRequest) => api.createSurgeonPreference(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-surgeon-preferences"] });
-      notifications.show({ title: "Created", message: "Preference card saved", color: "green" });
+      notifications.show({ title: "Created", message: "Preference card saved", color: "success" });
       onClose();
       setForm({});
     },
@@ -1302,7 +1302,7 @@ function ConsumablesSubTab({ bookingId }: { bookingId: string }) {
     mutationFn: (data: CreateOtConsumableRequest) => api.createOtConsumable(bookingId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-consumables", bookingId] });
-      notifications.show({ title: "Added", message: "Consumable recorded", color: "green" });
+      notifications.show({ title: "Added", message: "Consumable recorded", color: "success" });
       setShowForm(false);
       setItemName("");
       setCategory(null);
@@ -1317,7 +1317,7 @@ function ConsumablesSubTab({ bookingId }: { bookingId: string }) {
     mutationFn: (itemId: string) => api.deleteOtConsumable(bookingId, itemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ot-consumables", bookingId] });
-      notifications.show({ title: "Removed", message: "Consumable removed", color: "green" });
+      notifications.show({ title: "Removed", message: "Consumable removed", color: "success" });
     },
   });
 
@@ -1336,7 +1336,7 @@ function ConsumablesSubTab({ bookingId }: { bookingId: string }) {
       </Group>
 
       {totalCost > 0 && (
-        <Badge size="lg" variant="light" color="blue">Total Cost: {totalCost.toFixed(2)}</Badge>
+        <Badge size="lg" variant="light" color="primary">Total Cost: {totalCost.toFixed(2)}</Badge>
       )}
 
       {showForm && (
@@ -1402,7 +1402,7 @@ function ConsumablesSubTab({ bookingId }: { bookingId: string }) {
                 <Table.Td><Text size="sm">{c.batch_number ?? "—"}</Text></Table.Td>
                 {canManage && (
                   <Table.Td>
-                    <ActionIcon size="sm" variant="light" color="red" onClick={() => deleteMutation.mutate(c.id)}>
+                    <ActionIcon size="sm" variant="light" color="danger" onClick={() => deleteMutation.mutate(c.id)}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Table.Td>

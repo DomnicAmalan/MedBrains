@@ -47,12 +47,12 @@ interface TransformChainProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  string: "blue",
+  string: "primary",
   array: "teal",
   number: "orange",
-  date: "grape",
-  conversion: "pink",
-  merge: "indigo",
+  date: "violet",
+  conversion: "danger",
+  merge: "primary",
 };
 
 export function TransformChain({
@@ -98,7 +98,7 @@ export function TransformChain({
       <Group gap={4} wrap="nowrap">
         {visible.map((step) => {
           const desc = getDescriptor(step.operation);
-          const color = CATEGORY_COLORS[desc?.category ?? ""] ?? "gray";
+          const color = CATEGORY_COLORS[desc?.category ?? ""] ?? "slate";
           const summary = getConfigSummary(
             step.operation,
             step.config as Record<string, unknown>,
@@ -126,12 +126,12 @@ export function TransformChain({
           );
         })}
         {overflow > 0 && (
-          <Badge size="xs" variant="light" color="gray">
+          <Badge size="xs" variant="light" color="slate">
             +{overflow}
           </Badge>
         )}
         <OperationPicker onSelect={handleAddStep}>
-          <ActionIcon variant="subtle" color="blue" size="xs">
+          <ActionIcon variant="subtle" color="primary" size="xs">
             <IconPlus size={12} />
           </ActionIcon>
         </OperationPicker>
@@ -220,7 +220,7 @@ export function TransformChain({
             <Badge
               size="sm"
               variant="light"
-              color="blue"
+              color="primary"
               leftSection={<IconPlus size={10} />}
               style={{ cursor: "pointer" }}
             >
@@ -254,7 +254,7 @@ function SortableStep({
     useSortable({ id: step.id });
 
   const desc = getDescriptor(step.operation);
-  const color = CATEGORY_COLORS[desc?.category ?? ""] ?? "gray";
+  const color = CATEGORY_COLORS[desc?.category ?? ""] ?? "slate";
   const summary = getConfigSummary(
     step.operation,
     step.config as Record<string, unknown>,
@@ -286,7 +286,7 @@ function SortableStep({
             <Tooltip label="Insert step before" withArrow position="right">
               <ActionIcon
                 variant="subtle"
-                color="blue"
+                color="primary"
                 size={14}
                 style={{
                   position: "absolute",
@@ -329,7 +329,7 @@ function SortableStep({
               {desc?.label ?? step.operation}
             </Badge>
             {step.operation === "merge_field" && step.config.mergeFieldPath && (
-              <Badge size="xs" variant="dot" color="indigo">
+              <Badge size="xs" variant="dot" color="primary">
                 {step.config.mergeFieldPath.split(".").pop() ?? step.config.mergeFieldPath}
               </Badge>
             )}
@@ -342,7 +342,7 @@ function SortableStep({
           <Group gap={2} wrap="nowrap">
             <OperationPicker onSelect={(type) => onInsertAfter(step.id, type)}>
               <Tooltip label="Insert step after" withArrow>
-                <ActionIcon variant="subtle" color="blue" size="xs">
+                <ActionIcon variant="subtle" color="primary" size="xs">
                   <IconPlus size={12} />
                 </ActionIcon>
               </Tooltip>
@@ -352,13 +352,13 @@ function SortableStep({
               onUpdate={(cfg) => onUpdateConfig(step.id, cfg)}
               onDelete={() => onDelete(step.id)}
             >
-              <ActionIcon variant="subtle" color="gray" size="xs">
+              <ActionIcon variant="subtle" color="slate" size="xs">
                 <IconPencil size={12} />
               </ActionIcon>
             </StepConfigPopover>
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               size="xs"
               onClick={() => onDelete(step.id)}
             >

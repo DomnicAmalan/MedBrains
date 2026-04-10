@@ -106,18 +106,18 @@ const WATERMARKS: { value: string; label: string }[] = [
 ];
 
 const statusColors: Record<string, string> = {
-  draft: "gray",
-  generated: "blue",
-  printed: "green",
+  draft: "slate",
+  generated: "primary",
+  printed: "success",
   downloaded: "teal",
-  voided: "red",
+  voided: "danger",
   superseded: "orange",
 };
 
 const reviewStatusColors: Record<string, string> = {
-  pending: "yellow",
-  reviewed: "green",
-  overdue: "red",
+  pending: "warning",
+  reviewed: "success",
+  overdue: "danger",
 };
 
 // ── Templates Tab ────────────────────────────────────────
@@ -167,12 +167,12 @@ function TemplatesTab() {
     mutationFn: (data: CreateDocumentTemplateRequest) => api.createDocumentTemplate(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["document-templates"] });
-      notifications.show({ title: "Template Created", message: "Document template created", color: "green" });
+      notifications.show({ title: "Template Created", message: "Document template created", color: "success" });
       closeDrawer();
       resetForm();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create template", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create template", color: "danger" });
     },
   });
 
@@ -181,12 +181,12 @@ function TemplatesTab() {
       api.updateDocumentTemplate(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["document-templates"] });
-      notifications.show({ title: "Template Updated", message: "Document template updated", color: "green" });
+      notifications.show({ title: "Template Updated", message: "Document template updated", color: "success" });
       closeDrawer();
       resetForm();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to update template", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to update template", color: "danger" });
     },
   });
 
@@ -202,7 +202,7 @@ function TemplatesTab() {
     mutationFn: (id: string) => api.setDefaultTemplate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["document-templates"] });
-      notifications.show({ title: "Default Set", message: "Template set as default", color: "green" });
+      notifications.show({ title: "Default Set", message: "Template set as default", color: "success" });
     },
   });
 
@@ -383,7 +383,7 @@ function TemplatesTab() {
       label: "Default",
       render: (row: DocumentTemplate) =>
         row.is_default ? (
-          <Badge size="sm" color="green" variant="light">Default</Badge>
+          <Badge size="sm" color="success" variant="light">Default</Badge>
         ) : (
           <Button
             variant="subtle"
@@ -400,7 +400,7 @@ function TemplatesTab() {
       render: (row: DocumentTemplate) => (
         <Badge
           size="sm"
-          color={row.is_active ? "green" : "gray"}
+          color={row.is_active ? "success" : "slate"}
           variant="light"
         >
           {row.is_active ? "Active" : "Inactive"}
@@ -421,7 +421,7 @@ function TemplatesTab() {
             <ActionIcon
               variant="subtle"
               size="sm"
-              color="red"
+              color="danger"
               onClick={() => deleteMutation.mutate(row.id)}
             >
               <IconTrash size={14} />
@@ -679,7 +679,7 @@ function OutputsTab() {
       key: "status",
       label: "Status",
       render: (row: DocumentOutput) => (
-        <Badge size="sm" color={statusColors[row.status] ?? "gray"} variant="light">
+        <Badge size="sm" color={statusColors[row.status] ?? "slate"} variant="light">
           {row.status}
         </Badge>
       ),
@@ -728,7 +728,7 @@ function OutputsTab() {
             <ActionIcon
               variant="subtle"
               size="sm"
-              color="red"
+              color="danger"
               onClick={() => voidMutation.mutate(row.id)}
               loading={voidMutation.isPending}
             >
@@ -823,11 +823,11 @@ function ReviewScheduleTab() {
     mutationFn: (data: CreateReviewScheduleRequest) => api.createReviewSchedule(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["document-review-schedule"] });
-      notifications.show({ title: "Schedule Created", message: "Review schedule added", color: "green" });
+      notifications.show({ title: "Schedule Created", message: "Review schedule added", color: "success" });
       closeDrawer();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create schedule", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create schedule", color: "danger" });
     },
   });
 
@@ -835,7 +835,7 @@ function ReviewScheduleTab() {
     mutationFn: (id: string) => api.markReviewed(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["document-review-schedule"] });
-      notifications.show({ title: "Reviewed", message: "Schedule marked as reviewed", color: "green" });
+      notifications.show({ title: "Reviewed", message: "Schedule marked as reviewed", color: "success" });
     },
   });
 
@@ -876,7 +876,7 @@ function ReviewScheduleTab() {
         const due = row.next_review_due ? new Date(row.next_review_due) : null;
         const overdue = due && due < new Date();
         return (
-          <Text size="sm" c={overdue ? "red" : undefined} fw={overdue ? 600 : undefined}>
+          <Text size="sm" c={overdue ? "danger" : undefined} fw={overdue ? 600 : undefined}>
             {due ? due.toLocaleDateString() : "—"}
           </Text>
         );
@@ -888,7 +888,7 @@ function ReviewScheduleTab() {
       render: (row: DocumentFormReviewSchedule) => (
         <Badge
           size="sm"
-          color={reviewStatusColors[row.review_status ?? "pending"] ?? "gray"}
+          color={reviewStatusColors[row.review_status ?? "pending"] ?? "slate"}
           variant="light"
         >
           {row.review_status ?? "pending"}

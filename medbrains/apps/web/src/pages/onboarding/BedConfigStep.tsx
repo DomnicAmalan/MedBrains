@@ -120,7 +120,7 @@ export function BedConfigStep({ onNext, onBack }: Props) {
             </Text>
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               onClick={() => removeBedType(bed.local_id)}
             >
               <IconTrash size={16} />

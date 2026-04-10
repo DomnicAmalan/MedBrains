@@ -13,7 +13,7 @@ interface TransformNodeData {
 
 export function TransformNode({ data, selected }: NodeProps) {
   const d = data as TransformNodeData;
-  const color = d.color ?? "grape";
+  const color = d.color ?? "violet";
   const config = (d.config ?? {}) as Record<string, unknown>;
   const mappings = config.mappings as unknown[] | undefined;
   const mapCount = mappings?.length ?? 0;

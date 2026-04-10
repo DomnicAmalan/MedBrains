@@ -23,11 +23,11 @@ interface DocumentHistoryProps {
 }
 
 const statusColors: Record<string, string> = {
-  draft: "gray",
-  generated: "blue",
-  printed: "green",
+  draft: "slate",
+  generated: "primary",
+  printed: "success",
   downloaded: "teal",
-  voided: "red",
+  voided: "danger",
   superseded: "orange",
 };
 
@@ -77,7 +77,7 @@ export function DocumentHistory({
       render: (row: DocumentOutput) => (
         <Badge
           size="sm"
-          color={statusColors[row.status] ?? "gray"}
+          color={statusColors[row.status] ?? "slate"}
           variant="light"
         >
           {row.status}
@@ -113,7 +113,7 @@ export function DocumentHistory({
             <IconEye size={14} />
           </ActionIcon>
           {row.status !== "voided" && (
-            <ActionIcon variant="subtle" size="sm" color="blue">
+            <ActionIcon variant="subtle" size="sm" color="primary">
               <IconPrinter size={14} />
             </ActionIcon>
           )}

@@ -227,7 +227,7 @@ export function MappingRow({
         <Group gap="xs" wrap="nowrap" align="flex-start">
           <ActionIcon
             variant="subtle"
-            color="gray"
+            color="slate"
             size="xs"
             style={{ cursor: "grab", marginTop: 4 }}
             {...listeners}
@@ -235,7 +235,7 @@ export function MappingRow({
             <IconGripVertical size={14} />
           </ActionIcon>
 
-          <Badge size="xs" variant="light" color="gray" w={24} ta="center" mt={4}>
+          <Badge size="xs" variant="light" color="slate" w={24} ta="center" mt={4}>
             {index + 1}
           </Badge>
 
@@ -255,7 +255,7 @@ export function MappingRow({
                     />
                     <ActionIcon
                       variant="subtle"
-                      color="gray"
+                      color="slate"
                       size="xs"
                       onClick={() => handleRemoveSource(si)}
                     >
@@ -266,7 +266,7 @@ export function MappingRow({
                 <Group gap={4}>
                   <ActionIcon
                     variant="light"
-                    color="blue"
+                    color="primary"
                     size="xs"
                     onClick={handleAddSource}
                   >
@@ -351,7 +351,7 @@ export function MappingRow({
           >
             <ActionIcon
               variant={isMultiSource ? "filled" : "subtle"}
-              color={isMultiSource ? "grape" : "gray"}
+              color={isMultiSource ? "violet" : "slate"}
               size="xs"
               onClick={toggleMultiSource}
               mt={4}
@@ -362,7 +362,7 @@ export function MappingRow({
 
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             size="xs"
             onClick={onDelete}
             mt={4}

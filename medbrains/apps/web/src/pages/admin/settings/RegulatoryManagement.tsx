@@ -43,17 +43,17 @@ import { DataTable } from "../../../components";
 // ── Constants ─────────────────────────────────────────────
 
 const LEVEL_COLORS: Record<string, string> = {
-  international: "blue",
-  national: "green",
+  international: "primary",
+  national: "success",
   state: "orange",
   education: "violet",
 };
 
 const REQUIREMENT_COLORS: Record<string, string> = {
-  mandatory: "red",
+  mandatory: "danger",
   conditional: "orange",
-  recommended: "yellow",
-  optional: "gray",
+  recommended: "warning",
+  optional: "slate",
 };
 
 const LEVEL_OPTIONS = [
@@ -113,7 +113,7 @@ function BodyModal({
       notifications.show({
         title: "Body created",
         message: "Regulatory body has been created",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-regulatory-bodies"] });
       onClose();
@@ -122,7 +122,7 @@ function BodyModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -134,7 +134,7 @@ function BodyModal({
       notifications.show({
         title: "Body updated",
         message: "Regulatory body has been updated",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-regulatory-bodies"] });
       onClose();
@@ -143,7 +143,7 @@ function BodyModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -295,7 +295,7 @@ function LinkModal({
       notifications.show({
         title: "Link created",
         message: "Regulatory link has been created",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({
         queryKey: ["admin-regulatory-clauses"],
@@ -306,7 +306,7 @@ function LinkModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -318,7 +318,7 @@ function LinkModal({
       notifications.show({
         title: "Link updated",
         message: "Regulatory link has been updated",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({
         queryKey: ["admin-regulatory-clauses"],
@@ -329,7 +329,7 @@ function LinkModal({
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -347,7 +347,7 @@ function LinkModal({
         notifications.show({
           title: "Missing fields",
           message: "Please select both a field and a regulatory body",
-          color: "red",
+          color: "danger",
         });
         return;
       }
@@ -494,7 +494,7 @@ function BodiesTab() {
         <Badge
           size="sm"
           variant="light"
-          color={LEVEL_COLORS[row.level] ?? "gray"}
+          color={LEVEL_COLORS[row.level] ?? "slate"}
         >
           {row.level}
         </Badge>
@@ -523,7 +523,7 @@ function BodiesTab() {
       key: "actions",
       label: "",
       render: (row: RegulatoryBodyFull) => (
-        <ActionIcon variant="subtle" color="blue" onClick={() => openEdit(row)}>
+        <ActionIcon variant="subtle" color="primary" onClick={() => openEdit(row)}>
           <IconPencil size={16} />
         </ActionIcon>
       ),
@@ -606,7 +606,7 @@ function FieldLinksTab() {
       notifications.show({
         title: "Link deleted",
         message: "Regulatory link has been removed",
-        color: "green",
+        color: "success",
       });
       queryClient.invalidateQueries({
         queryKey: ["admin-regulatory-clauses"],
@@ -616,7 +616,7 @@ function FieldLinksTab() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -667,7 +667,7 @@ function FieldLinksTab() {
         <Badge
           size="sm"
           variant="light"
-          color={REQUIREMENT_COLORS[row.requirement_level] ?? "gray"}
+          color={REQUIREMENT_COLORS[row.requirement_level] ?? "slate"}
         >
           {row.requirement_level}
         </Badge>
@@ -698,14 +698,14 @@ function FieldLinksTab() {
         <Group gap={4}>
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color="primary"
             onClick={() => openEdit(row)}
           >
             <IconPencil size={16} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
-            color="red"
+            color="danger"
             onClick={() => deleteMutation.mutate(row.id)}
             loading={deleteMutation.isPending}
           >

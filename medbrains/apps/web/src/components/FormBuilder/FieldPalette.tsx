@@ -157,7 +157,7 @@ function DraggableMasterField({ field }: { field: FieldMasterFull }) {
     >
       {getIcon(field.data_type)}
       <span className={classes.paletteItemLabel}>{field.name}</span>
-      <Badge size="xs" variant="light" color="gray" ml="auto">
+      <Badge size="xs" variant="light" color="slate" ml="auto">
         {field.data_type}
       </Badge>
     </div>
@@ -260,7 +260,7 @@ export function FieldPalette() {
             <div key={group.label} className={classes.paletteGroup}>
               <div className={classes.paletteGroupLabel}>
                 {group.label}
-                <Badge size="xs" variant="light" color="gray" ml={4}>
+                <Badge size="xs" variant="light" color="slate" ml={4}>
                   {group.fields.length}
                 </Badge>
               </div>

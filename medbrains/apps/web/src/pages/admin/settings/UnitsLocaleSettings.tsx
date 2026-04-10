@@ -68,7 +68,7 @@ export function UnitsLocaleSettings() {
       notifications.show({
         title: "Setting saved",
         message: `${variables.key.replace(/_/g, " ")} updated`,
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
         autoClose: 2000,
       });
@@ -92,7 +92,7 @@ export function UnitsLocaleSettings() {
       notifications.show({
         title: "Save failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });

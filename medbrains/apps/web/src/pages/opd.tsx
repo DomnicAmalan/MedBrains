@@ -130,15 +130,18 @@ import {
   VisitSummaryPrint,
   VitalsRecorder,
   useClinicalEmit,
+  PatientSearchSelect,
+  DoctorSearchSelect,
 } from "../components";
+import { MedicationScheduleCard } from "../components/Clinical/MedicationScheduleCard";
 import { useRequirePermission } from "../hooks/useRequirePermission";
 
 const statusColors: Record<string, string> = {
-  waiting: "blue",
-  called: "yellow",
+  waiting: "primary",
+  called: "warning",
   in_consultation: "orange",
-  completed: "green",
-  no_show: "red",
+  completed: "success",
+  no_show: "danger",
 };
 
 export function OpdPage() {
@@ -210,7 +213,7 @@ function OpdPageInner() {
     mutationFn: (data: CreateEncounterRequest) => api.createEncounter(data),
     onSuccess: (_result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["opd-queue"] });
-      notifications.show({ title: "Visit created", message: "Patient added to queue", color: "green" });
+      notifications.show({ title: "Visit created", message: "Patient added to queue", color: "success" });
       emit("encounter.created", { patient_id: variables.patient_id, department_id: variables.department_id });
       closeCreate();
       setNewPatientId("");
@@ -219,7 +222,7 @@ function OpdPageInner() {
       setNewNotes("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create visit", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create visit", color: "danger" });
     },
   });
 
@@ -269,7 +272,7 @@ function OpdPageInner() {
       key: "status",
       label: "Status",
       render: (row: QueueEntry) => (
-        <StatusDot color={statusColors[row.status] ?? "gray"} label={row.status.replace(/_/g, " ")} />
+        <StatusDot color={statusColors[row.status] ?? "slate"} label={row.status.replace(/_/g, " ")} />
       ),
     },
     {
@@ -295,7 +298,7 @@ function OpdPageInner() {
           </Tooltip>
           {canManageToken && row.status === "waiting" && (
             <Tooltip label="Call patient">
-              <ActionIcon variant="subtle" color="yellow" onClick={() => callMutation.mutate(row.id)}>
+              <ActionIcon variant="subtle" color="warning" onClick={() => callMutation.mutate(row.id)}>
                 <IconPhone size={16} />
               </ActionIcon>
             </Tooltip>
@@ -309,14 +312,14 @@ function OpdPageInner() {
           )}
           {canManageToken && row.status === "in_consultation" && (
             <Tooltip label="Complete">
-              <ActionIcon variant="subtle" color="green" onClick={() => completeMutation.mutate(row.id)}>
+              <ActionIcon variant="subtle" color="success" onClick={() => completeMutation.mutate(row.id)}>
                 <IconCheck size={16} />
               </ActionIcon>
             </Tooltip>
           )}
           {canManageToken && (row.status === "waiting" || row.status === "called") && (
             <Tooltip label="No show">
-              <ActionIcon variant="subtle" color="red" onClick={() => noShowMutation.mutate(row.id)}>
+              <ActionIcon variant="subtle" color="danger" onClick={() => noShowMutation.mutate(row.id)}>
                 <IconUserOff size={16} />
               </ActionIcon>
             </Tooltip>
@@ -332,7 +335,7 @@ function OpdPageInner() {
         title="OPD"
         subtitle="Outpatient department queue"
         icon={<IconStethoscope size={20} stroke={1.5} />}
-        color="blue"
+        color="primary"
         actions={
           canCreate ? (
             <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>
@@ -414,11 +417,9 @@ function OpdPageInner() {
             onChange={setNewVisitType}
             required
           />
-          <TextInput
-            label="Patient ID"
-            placeholder="Enter patient UUID"
+          <PatientSearchSelect
             value={newPatientId}
-            onChange={(e) => setNewPatientId(e.currentTarget.value)}
+            onChange={setNewPatientId}
             required
           />
           <Select
@@ -430,11 +431,9 @@ function OpdPageInner() {
             searchable
             required
           />
-          <TextInput
-            label="Doctor ID"
-            placeholder="Enter doctor UUID (optional)"
+          <DoctorSearchSelect
             value={newDoctorId}
-            onChange={(e) => setNewDoctorId(e.currentTarget.value)}
+            onChange={setNewDoctorId}
           />
           <Textarea
             label="Notes"
@@ -592,7 +591,7 @@ function EncounterDetail({
       {activeAllergies.length > 0 && (
         <Alert
           icon={<IconAlertTriangle size={16} />}
-          color="red"
+          color="danger"
           variant="light"
           mb="sm"
           title="Allergy Alert"
@@ -601,7 +600,7 @@ function EncounterDetail({
             {activeAllergies.map((a) => (
               <Badge
                 key={a.id}
-                color={a.severity === "severe" || a.severity === "life_threatening" ? "red" : a.severity === "moderate" ? "orange" : "yellow"}
+                color={a.severity === "severe" || a.severity === "life_threatening" ? "danger" : a.severity === "moderate" ? "orange" : "warning"}
                 variant="filled"
                 size="sm"
               >
@@ -635,14 +634,14 @@ function EncounterDetail({
       {currentMeds.length > 0 && (
         <Alert
           icon={<IconPill size={16} />}
-          color="blue"
+          color="primary"
           variant="light"
           mb="sm"
           title="Current Medications"
         >
           <Group gap={6} wrap="wrap">
             {currentMeds.map((m) => (
-              <Badge key={m.id} color="blue" variant="light" size="sm">
+              <Badge key={m.id} color="primary" variant="light" size="sm">
                 {m.drug_name} — {m.dosage} {m.frequency}
               </Badge>
             ))}
@@ -813,10 +812,10 @@ function PharmacyDispatchTab({ encounterId }: { encounterId: string }) {
   });
 
   const dispatchStatusColors: Record<string, string> = {
-    pending: "gray",
-    partial: "yellow",
-    dispensed: "green",
-    cancelled: "red",
+    pending: "slate",
+    partial: "warning",
+    dispensed: "success",
+    cancelled: "danger",
   };
 
   const columns = [
@@ -839,7 +838,7 @@ function PharmacyDispatchTab({ encounterId }: { encounterId: string }) {
       key: "status",
       label: "Status",
       render: (row: PharmacyDispatchStatusRow) => (
-        <Badge color={dispatchStatusColors[row.status] ?? "gray"} variant="filled" size="sm">
+        <Badge color={dispatchStatusColors[row.status] ?? "slate"} variant="filled" size="sm">
           {row.status}
         </Badge>
       ),
@@ -1186,18 +1185,18 @@ function DiagnosesTab({ encounterId, canUpdate }: { encounterId: string; canUpda
 // ── Investigations ───────────────────────────────────────
 
 const LAB_STATUS_COLORS: Record<string, string> = {
-  ordered: "blue",
-  sample_collected: "cyan",
+  ordered: "primary",
+  sample_collected: "info",
   processing: "orange",
-  completed: "green",
+  completed: "success",
   verified: "teal",
-  cancelled: "red",
+  cancelled: "danger",
 };
 
 const LAB_PRIORITY_COLORS: Record<string, string> = {
-  routine: "gray",
+  routine: "slate",
   urgent: "orange",
-  stat: "red",
+  stat: "danger",
 };
 
 function InvestigationsTab({
@@ -1239,7 +1238,7 @@ function InvestigationsTab({
     mutationFn: (data: CreateLabOrderRequest) => api.createLabOrder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lab-orders", encounterId] });
-      notifications.show({ title: "Investigation ordered", message: "Lab order placed successfully", color: "green" });
+      notifications.show({ title: "Investigation ordered", message: "Lab order placed successfully", color: "success" });
       emit("lab.ordered", { encounter_id: encounterId, patient_id: patientId });
       setSelectedTestId(null);
       setPriority("routine");
@@ -1248,7 +1247,7 @@ function InvestigationsTab({
       setShowForm(false);
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to place lab order", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to place lab order", color: "danger" });
     },
   });
 
@@ -1256,7 +1255,7 @@ function InvestigationsTab({
     mutationFn: (id: string) => api.cancelLabOrder(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lab-orders", encounterId] });
-      notifications.show({ title: "Order cancelled", message: "Lab order has been cancelled", color: "yellow" });
+      notifications.show({ title: "Order cancelled", message: "Lab order has been cancelled", color: "warning" });
     },
   });
 
@@ -1309,7 +1308,7 @@ function InvestigationsTab({
               required
             />
             {labDupeWarning.length > 0 && (
-              <Alert icon={<IconAlertTriangle size={14} />} color="yellow" variant="light" title="Duplicate Warning">
+              <Alert icon={<IconAlertTriangle size={14} />} color="warning" variant="light" title="Duplicate Warning">
                 <Text size="xs">
                   This test was already ordered {labDupeWarning.length} time(s) in the last 24 hours.
                   ({labDupeWarning.map((d) => d.status).join(", ")})
@@ -1384,12 +1383,12 @@ function InvestigationsTab({
                   )}
                 </Table.Td>
                 <Table.Td>
-                  <Badge size="xs" color={LAB_PRIORITY_COLORS[order.priority] ?? "gray"}>
+                  <Badge size="xs" color={LAB_PRIORITY_COLORS[order.priority] ?? "slate"}>
                     {order.priority.toUpperCase()}
                   </Badge>
                 </Table.Td>
                 <Table.Td>
-                  <Badge size="xs" variant="light" color={LAB_STATUS_COLORS[order.status] ?? "gray"}>
+                  <Badge size="xs" variant="light" color={LAB_STATUS_COLORS[order.status] ?? "slate"}>
                     {order.status.replace(/_/g, " ")}
                   </Badge>
                 </Table.Td>
@@ -1401,7 +1400,7 @@ function InvestigationsTab({
                     <Tooltip label="Cancel order">
                       <ActionIcon
                         variant="subtle"
-                        color="red"
+                        color="danger"
                         size="xs"
                         onClick={() => cancelMutation.mutate(order.id)}
                         loading={cancelMutation.isPending}
@@ -1466,13 +1465,13 @@ function FollowUpTab({
       notifications.show({
         title: "Follow-up scheduled",
         message: `Appointment booked for ${selectedDate}`,
-        color: "green",
+        color: "success",
       });
       emit("followup.scheduled", { patient_id: patientId, date: selectedDate });
       setBooked(true);
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to book follow-up", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to book follow-up", color: "danger" });
     },
   });
 
@@ -1651,6 +1650,13 @@ function PrescriptionsTab({
         onPrint={(rx) => setPrintRx(rx)}
         onSendToPharmacy={handleSendToPharmacy}
       />
+      {/* Visual medication schedule — shows after prescriptions exist */}
+      {(prescriptions as PrescriptionWithItems[]).length > 0 && (
+        <MedicationScheduleCard
+          items={(prescriptions as PrescriptionWithItems[]).flatMap((p) => p.items)}
+          title="Patient Medication Schedule"
+        />
+      )}
       {printRx && (
         <PrescriptionPrint
           opened={Boolean(printRx)}
@@ -1769,12 +1775,12 @@ function CertificatesTab({
     mutationFn: (data: CreateMedicalCertificateRequest) => api.createCertificate(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patient-certificates", patientId] });
-      notifications.show({ title: "Certificate created", message: "Medical certificate generated", color: "green" });
+      notifications.show({ title: "Certificate created", message: "Medical certificate generated", color: "success" });
       closeCreate();
       resetForm();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create certificate", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create certificate", color: "danger" });
     },
   });
 
@@ -2043,7 +2049,7 @@ function TimelineTab({ patientId }: { patientId: string }) {
           v.chief_complaint,
         ].filter(Boolean).join(" · "),
         counts: counts || undefined,
-        color: "blue",
+        color: "primary",
         icon: <IconStethoscope size={12} />,
       });
     }
@@ -2054,7 +2060,7 @@ function TimelineTab({ patientId }: { patientId: string }) {
         type: "prescription",
         title: `Prescription (${rx.items.length} items)`,
         detail: rx.items.map((i) => `${i.drug_name} ${i.dosage} ${i.frequency}`).join(" | "),
-        color: "green",
+        color: "success",
         icon: <IconPill size={12} />,
       });
     }
@@ -2065,7 +2071,7 @@ function TimelineTab({ patientId }: { patientId: string }) {
         type: "lab",
         title: `Lab: ${lo.test_name ?? "Test"}`,
         detail: `${lo.status} · ${lo.priority}`,
-        color: "cyan",
+        color: "info",
         icon: <IconFlask size={12} />,
       });
     }
@@ -2140,7 +2146,7 @@ function TimelineTab({ patientId }: { patientId: string }) {
             {item.counts && (
               <Group gap={4} mt={2}>
                 {item.counts.split(", ").map((c) => (
-                  <Badge key={c} size="xs" variant="dot" color="blue">{c}</Badge>
+                  <Badge key={c} size="xs" variant="dot" color="primary">{c}</Badge>
                 ))}
               </Group>
             )}
@@ -2154,11 +2160,11 @@ function TimelineTab({ patientId }: { patientId: string }) {
 // ── Procedures Tab ──────────────────────────────────────
 
 const PROC_STATUS_COLORS: Record<string, string> = {
-  ordered: "blue",
-  scheduled: "cyan",
+  ordered: "primary",
+  scheduled: "info",
   in_progress: "orange",
-  completed: "green",
-  cancelled: "red",
+  completed: "success",
+  cancelled: "danger",
 };
 
 function ProceduresTab({
@@ -2211,7 +2217,7 @@ function ProceduresTab({
     mutationFn: (data: CreateProcedureOrderRequest) => api.createProcedureOrder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["procedure-orders", encounterId] });
-      notifications.show({ title: "Procedure ordered", message: "Procedure order placed", color: "green" });
+      notifications.show({ title: "Procedure ordered", message: "Procedure order placed", color: "success" });
       emit("procedure.ordered", { encounter_id: encounterId, patient_id: patientId });
       setSelectedProcId(null);
       setPriority("routine");
@@ -2220,7 +2226,7 @@ function ProceduresTab({
       setShowForm(false);
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to order procedure", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to order procedure", color: "danger" });
     },
   });
 
@@ -2228,7 +2234,7 @@ function ProceduresTab({
     mutationFn: (id: string) => api.cancelProcedureOrder(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["procedure-orders", encounterId] });
-      notifications.show({ title: "Cancelled", message: "Procedure order cancelled", color: "yellow" });
+      notifications.show({ title: "Cancelled", message: "Procedure order cancelled", color: "warning" });
     },
   });
 
@@ -2267,7 +2273,7 @@ function ProceduresTab({
               required
             />
             {dupeWarning.length > 0 && (
-              <Alert icon={<IconAlertTriangle size={14} />} color="yellow" variant="light" title="Duplicate Warning">
+              <Alert icon={<IconAlertTriangle size={14} />} color="warning" variant="light" title="Duplicate Warning">
                 <Text size="xs">
                   This procedure was already ordered {dupeWarning.length} time(s) in the last 24 hours.
                   ({dupeWarning.map((d) => d.status).join(", ")})
@@ -2329,12 +2335,12 @@ function ProceduresTab({
                   {order.notes && <Text size="xs" c="dimmed">{order.notes}</Text>}
                 </Table.Td>
                 <Table.Td>
-                  <Badge size="xs" color={LAB_PRIORITY_COLORS[order.priority] ?? "gray"}>
+                  <Badge size="xs" color={LAB_PRIORITY_COLORS[order.priority] ?? "slate"}>
                     {order.priority.toUpperCase()}
                   </Badge>
                 </Table.Td>
                 <Table.Td>
-                  <Badge size="xs" variant="light" color={PROC_STATUS_COLORS[order.status] ?? "gray"}>
+                  <Badge size="xs" variant="light" color={PROC_STATUS_COLORS[order.status] ?? "slate"}>
                     {order.status.replace(/_/g, " ")}
                   </Badge>
                 </Table.Td>
@@ -2344,7 +2350,7 @@ function ProceduresTab({
                 <Table.Td>
                   {canUpdate && (order.status === "ordered" || order.status === "scheduled") && (
                     <Tooltip label="Cancel">
-                      <ActionIcon variant="subtle" color="red" size="xs" onClick={() => cancelMutation.mutate(order.id)}>
+                      <ActionIcon variant="subtle" color="danger" size="xs" onClick={() => cancelMutation.mutate(order.id)}>
                         <IconX size={12} />
                       </ActionIcon>
                     </Tooltip>
@@ -2368,17 +2374,17 @@ function ProceduresTab({
 // ── Referrals Tab ───────────────────────────────────────
 
 const URGENCY_COLORS: Record<string, string> = {
-  routine: "blue",
+  routine: "primary",
   urgent: "orange",
-  emergency: "red",
+  emergency: "danger",
 };
 
 const REFERRAL_STATUS_COLORS: Record<string, string> = {
-  pending: "yellow",
-  accepted: "green",
-  declined: "red",
+  pending: "warning",
+  accepted: "success",
+  declined: "danger",
   completed: "teal",
-  cancelled: "gray",
+  cancelled: "slate",
 };
 
 function ReferralsTab({
@@ -2418,7 +2424,7 @@ function ReferralsTab({
     mutationFn: (data: CreateReferralRequest) => api.createReferral(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patient-referrals", patientId] });
-      notifications.show({ title: "Referral created", message: "Patient referred successfully", color: "green" });
+      notifications.show({ title: "Referral created", message: "Patient referred successfully", color: "success" });
       closeCreate();
       setToDeptId(null);
       setUrgency("routine");
@@ -2426,7 +2432,7 @@ function ReferralsTab({
       setClinicalNotes("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create referral", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create referral", color: "danger" });
     },
   });
 
@@ -2464,10 +2470,10 @@ function ReferralsTab({
               <Text size="sm" fw={500}>
                 {ref.from_department_name ?? "—"} → {ref.to_department_name ?? "—"}
               </Text>
-              <Badge size="xs" color={URGENCY_COLORS[ref.urgency] ?? "gray"}>
+              <Badge size="xs" color={URGENCY_COLORS[ref.urgency] ?? "slate"}>
                 {ref.urgency}
               </Badge>
-              <Badge size="xs" variant="light" color={REFERRAL_STATUS_COLORS[ref.status] ?? "gray"}>
+              <Badge size="xs" variant="light" color={REFERRAL_STATUS_COLORS[ref.status] ?? "slate"}>
                 {ref.status}
               </Badge>
             </Group>
@@ -2478,7 +2484,7 @@ function ReferralsTab({
           {ref.to_doctor_name && <Text size="xs" c="dimmed">To: Dr. {ref.to_doctor_name}</Text>}
           {ref.clinical_notes && <Text size="xs" c="dimmed" mt={4}>{ref.clinical_notes}</Text>}
           {ref.response_notes && (
-            <Alert color="green" variant="light" mt="xs" title="Response">
+            <Alert color="success" variant="light" mt="xs" title="Response">
               <Text size="xs">{ref.response_notes}</Text>
             </Alert>
           )}
@@ -2584,14 +2590,14 @@ function RemindersTab({
     mutationFn: (data: CreateReminderRequest) => api.createReminder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reminders", patientId] });
-      notifications.show({ title: "Reminder created", message: title, color: "green" });
+      notifications.show({ title: "Reminder created", message: title, color: "success" });
       setShowForm(false);
       setTitle("");
       setDescription("");
       setReminderDate("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create reminder", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create reminder", color: "danger" });
     },
   });
 
@@ -2619,19 +2625,19 @@ function RemindersTab({
   };
 
   const priorityColors: Record<string, string> = {
-    low: "gray",
-    normal: "blue",
+    low: "slate",
+    normal: "primary",
     high: "orange",
-    urgent: "red",
+    urgent: "danger",
   };
 
   const statusColors: Record<string, string> = {
-    pending: "blue",
-    sent: "cyan",
+    pending: "primary",
+    sent: "info",
     acknowledged: "teal",
-    completed: "green",
-    cancelled: "gray",
-    overdue: "red",
+    completed: "success",
+    cancelled: "slate",
+    overdue: "danger",
   };
 
   return (
@@ -2664,8 +2670,8 @@ function RemindersTab({
                 <Table.Td>{r.title}</Table.Td>
                 <Table.Td><Badge variant="light" size="sm">{r.reminder_type.replace(/_/g, " ")}</Badge></Table.Td>
                 <Table.Td>{r.reminder_date}</Table.Td>
-                <Table.Td><Badge color={priorityColors[r.priority] ?? "blue"} size="sm">{r.priority}</Badge></Table.Td>
-                <Table.Td><Badge color={statusColors[r.status] ?? "gray"} size="sm">{r.status}</Badge></Table.Td>
+                <Table.Td><Badge color={priorityColors[r.priority] ?? "primary"} size="sm">{r.priority}</Badge></Table.Td>
+                <Table.Td><Badge color={statusColors[r.status] ?? "slate"} size="sm">{r.status}</Badge></Table.Td>
                 <Table.Td>
                   {r.status === "pending" && canUpdate && (
                     <Group gap={4}>
@@ -2673,7 +2679,7 @@ function RemindersTab({
                         <ActionIcon
                           size="sm"
                           variant="subtle"
-                          color="green"
+                          color="success"
                           onClick={() => completeMutation.mutate(r.id)}
                         >
                           <IconCheck size={14} />
@@ -2683,7 +2689,7 @@ function RemindersTab({
                         <ActionIcon
                           size="sm"
                           variant="subtle"
-                          color="red"
+                          color="danger"
                           onClick={() => cancelMutation.mutate(r.id)}
                         >
                           <IconX size={14} />
@@ -2786,7 +2792,7 @@ function FeedbackTab({
     mutationFn: (data: CreateFeedbackRequest) => api.createFeedback(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feedback", patientId] });
-      notifications.show({ title: "Feedback recorded", message: "Thank you for the feedback", color: "green" });
+      notifications.show({ title: "Feedback recorded", message: "Thank you for the feedback", color: "success" });
       setShowForm(false);
       setRating(null);
       setWaitTimeRating(null);
@@ -2796,7 +2802,7 @@ function FeedbackTab({
       setSuggestions("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to submit feedback", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to submit feedback", color: "danger" });
     },
   });
 
@@ -2815,9 +2821,9 @@ function FeedbackTab({
 
   const ratingColor = (val: number | null) => {
     if (!val) return "gray";
-    if (val >= 4) return "green";
-    if (val >= 3) return "yellow";
-    return "red";
+    if (val >= 4) return "success";
+    if (val >= 3) return "warning";
+    return "danger";
   };
 
   return (
@@ -2941,7 +2947,7 @@ function ConsentsTab({
     mutationFn: (data: CreateConsentRequest) => api.createProcedureConsent(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["consents", patientId] });
-      notifications.show({ title: "Consent created", message: procedureName, color: "green" });
+      notifications.show({ title: "Consent created", message: procedureName, color: "success" });
       setShowForm(false);
       setProcedureName("");
       setRisks("");
@@ -2952,7 +2958,7 @@ function ConsentsTab({
       setWitnessName("");
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create consent", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create consent", color: "danger" });
     },
   });
 
@@ -2960,7 +2966,7 @@ function ConsentsTab({
     mutationFn: (id: string) => api.signProcedureConsent(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["consents", patientId] });
-      notifications.show({ title: "Consent signed", message: "Consent has been signed", color: "green" });
+      notifications.show({ title: "Consent signed", message: "Consent has been signed", color: "success" });
     },
   });
 
@@ -2981,10 +2987,10 @@ function ConsentsTab({
   };
 
   const consentStatusColors: Record<string, string> = {
-    pending: "yellow",
-    signed: "green",
-    refused: "red",
-    withdrawn: "gray",
+    pending: "warning",
+    signed: "success",
+    refused: "danger",
+    withdrawn: "slate",
     expired: "orange",
   };
 
@@ -3018,7 +3024,7 @@ function ConsentsTab({
                 <Table.Td>{c.procedure_name}</Table.Td>
                 <Table.Td><Badge variant="light" size="sm">{c.consent_type.replace(/_/g, " ")}</Badge></Table.Td>
                 <Table.Td>
-                  <Badge color={consentStatusColors[c.status] ?? "gray"} size="sm">
+                  <Badge color={consentStatusColors[c.status] ?? "slate"} size="sm">
                     {c.status}
                   </Badge>
                 </Table.Td>
@@ -3030,7 +3036,7 @@ function ConsentsTab({
                       <ActionIcon
                         size="sm"
                         variant="subtle"
-                        color="green"
+                        color="success"
                         onClick={() => signMutation.mutate(c.id)}
                       >
                         <IconFileCheck size={14} />
@@ -3129,10 +3135,10 @@ function DocketTab() {
     mutationFn: (date?: string) => api.generateDoctorDocket(date),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["docket", selectedDate] });
-      notifications.show({ title: "Docket generated", message: `Summary for ${selectedDate}`, color: "green" });
+      notifications.show({ title: "Docket generated", message: `Summary for ${selectedDate}`, color: "success" });
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to generate docket", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to generate docket", color: "danger" });
     },
   });
 
@@ -3174,7 +3180,7 @@ function DocketTab() {
               </Table.Tr>
               <Table.Tr>
                 <Table.Td fw={500}>New Patients</Table.Td>
-                <Table.Td><Badge color="blue" size="lg">{d.new_patients}</Badge></Table.Td>
+                <Table.Td><Badge color="primary" size="lg">{d.new_patients}</Badge></Table.Td>
               </Table.Tr>
               <Table.Tr>
                 <Table.Td fw={500}>Follow-ups</Table.Td>
@@ -3186,7 +3192,7 @@ function DocketTab() {
               </Table.Tr>
               <Table.Tr>
                 <Table.Td fw={500}>Procedures Done</Table.Td>
-                <Table.Td><Badge color="grape" size="lg">{d.procedures_done}</Badge></Table.Td>
+                <Table.Td><Badge color="violet" size="lg">{d.procedures_done}</Badge></Table.Td>
               </Table.Tr>
             </Table.Tbody>
           </Table>
@@ -3232,7 +3238,7 @@ function PreAuthTab({
     mutationFn: (data: CreatePreAuthRequest) => api.createPreAuthRequest(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pre-auth", patientId] });
-      notifications.show({ title: "Submitted", message: "Pre-authorization request submitted", color: "green" });
+      notifications.show({ title: "Submitted", message: "Pre-authorization request submitted", color: "success" });
       close();
       setInsurer("");
       setPolicyNo("");
@@ -3259,11 +3265,11 @@ function PreAuthTab({
 
   const statusColor = (s: string) => {
     switch (s) {
-      case "approved": return "green";
-      case "denied": return "red";
-      case "submitted": return "blue";
+      case "approved": return "success";
+      case "denied": return "danger";
+      case "submitted": return "primary";
       case "expired": return "gray";
-      default: return "yellow";
+      default: return "warning";
     }
   };
 
@@ -3345,11 +3351,11 @@ function ReferralTrackingTab() {
   });
 
   const refStatusColors: Record<string, string> = {
-    pending: "yellow",
-    acknowledged: "blue",
+    pending: "warning",
+    acknowledged: "primary",
     in_progress: "orange",
-    completed: "green",
-    cancelled: "red",
+    completed: "success",
+    cancelled: "danger",
   };
 
   const columns = [
@@ -3377,7 +3383,7 @@ function ReferralTrackingTab() {
       key: "status",
       label: "Status",
       render: (row: ReferralTrackingRow) => (
-        <Badge color={refStatusColors[row.status] ?? "gray"} variant="filled" size="sm">
+        <Badge color={refStatusColors[row.status] ?? "slate"} variant="filled" size="sm">
           {row.status.replace(/_/g, " ")}
         </Badge>
       ),
@@ -3459,7 +3465,7 @@ function FollowupComplianceTab() {
       key: "days_overdue",
       label: "Days Overdue",
       render: (row: FollowupComplianceRow) => (
-        <Badge color={row.days_overdue > 14 ? "red" : row.days_overdue > 7 ? "orange" : "yellow"} variant="filled" size="sm">
+        <Badge color={row.days_overdue > 14 ? "danger" : row.days_overdue > 7 ? "orange" : "warning"} variant="filled" size="sm">
           {row.days_overdue} days
         </Badge>
       ),
@@ -3538,12 +3544,12 @@ function AdmitToIpdButton({ encounterId, patientName }: { encounterId: string; p
       notifications.show({
         title: "Patient admitted to IPD",
         message: `${patientName} admitted. ${result.vitals_copied} vitals, ${result.diagnoses_copied} diagnoses, ${result.prescriptions_copied} prescriptions copied.`,
-        color: "green",
+        color: "success",
       });
       close();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to admit patient", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to admit patient", color: "danger" });
     },
   });
 
@@ -3674,7 +3680,7 @@ function GroupAppointmentModal({ patientId }: { patientId: string }) {
       notifications.show({
         title: "Group appointment booked",
         message: `${(result as unknown[]).length} appointments created`,
-        color: "green",
+        color: "success",
       });
       close();
       setRows([
@@ -3683,7 +3689,7 @@ function GroupAppointmentModal({ patientId }: { patientId: string }) {
       ]);
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to book group appointment", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to book group appointment", color: "danger" });
     },
   });
 
@@ -3776,7 +3782,7 @@ function GroupAppointmentModal({ patientId }: { patientId: string }) {
                   size="xs"
                 />
                 {rows.length > 2 && (
-                  <ActionIcon variant="subtle" color="red" size="sm" onClick={() => removeRow(idx)} mt={18}>
+                  <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => removeRow(idx)} mt={18}>
                     <IconTrash size={14} />
                   </ActionIcon>
                 )}

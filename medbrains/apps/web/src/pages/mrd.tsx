@@ -16,6 +16,7 @@ import {
   Textarea,
   Tooltip,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -54,8 +55,8 @@ import type { Column } from "../components/DataTable";
 // ── Helpers ──────────────────────────────────────────────
 
 const STATUS_COLORS: Record<string, string> = {
-  active: "green", archived: "blue", destroyed: "gray", missing: "red",
-  issued: "yellow", returned: "green", overdue: "red",
+  active: "success", archived: "primary", destroyed: "slate", missing: "danger",
+  issued: "warning", returned: "success", overdue: "danger",
 };
 
 function fmt(d: string | null) {
@@ -116,14 +117,14 @@ function RecordsTab() {
   const [createForm, setCreateForm] = useState<CreateMrdRecordRequest>({ patient_id: "" });
   const createMut = useMutation({
     mutationFn: (body: CreateMrdRecordRequest) => api.createMrdRecord(body),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-records"] }); closeCreate(); notifications.show({ title: "Created", message: "Medical record indexed", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-records"] }); closeCreate(); notifications.show({ title: "Created", message: "Medical record indexed", color: "success" }); },
   });
 
   // Issue
   const [issueForm, setIssueForm] = useState<IssueMrdRecordRequest>({});
   const issueMut = useMutation({
     mutationFn: (body: IssueMrdRecordRequest) => api.issueMrdRecord(selectedRecord?.id ?? "", body),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-records"] }); closeIssue(); notifications.show({ title: "Issued", message: "Record issued", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-records"] }); closeIssue(); notifications.show({ title: "Issued", message: "Record issued", color: "success" }); },
   });
 
   // Movements
@@ -135,7 +136,7 @@ function RecordsTab() {
 
   const returnMut = useMutation({
     mutationFn: (movementId: string) => api.returnMrdRecord(selectedRecord?.id ?? "", movementId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-movements"] }); qc.invalidateQueries({ queryKey: ["mrd-records"] }); notifications.show({ title: "Returned", message: "Record returned", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-movements"] }); qc.invalidateQueries({ queryKey: ["mrd-records"] }); notifications.show({ title: "Returned", message: "Record returned", color: "success" }); },
   });
 
   const columns: Column<MrdMedicalRecord>[] = [
@@ -143,7 +144,7 @@ function RecordsTab() {
     { key: "record_type", label: "Type", render: (r) => <Badge variant="light">{r.record_type.toUpperCase()}</Badge> },
     { key: "volume_number", label: "Vol", render: (r) => <Text>{r.volume_number}</Text> },
     { key: "shelf_location", label: "Shelf", render: (r) => <Text>{r.shelf_location ?? "—"}</Text> },
-    { key: "status", label: "Status", render: (r) => <Badge color={STATUS_COLORS[r.status] ?? "gray"}>{r.status}</Badge> },
+    { key: "status", label: "Status", render: (r) => <Badge color={STATUS_COLORS[r.status] ?? "slate"}>{r.status}</Badge> },
     { key: "last_accessed_at", label: "Last Accessed", render: (r) => <Text size="sm">{fmt(r.last_accessed_at)}</Text> },
     {
       key: "actions", label: "", render: (r) => (
@@ -156,7 +157,7 @@ function RecordsTab() {
             </Tooltip>
           )}
           <Tooltip label="Movements">
-            <ActionIcon variant="light" color="blue" onClick={() => { setSelectedRecord(r); openMovements(); }}>
+            <ActionIcon variant="light" color="primary" onClick={() => { setSelectedRecord(r); openMovements(); }}>
               <IconArrowBack size={16} />
             </ActionIcon>
           </Tooltip>
@@ -176,7 +177,7 @@ function RecordsTab() {
       {/* Create Drawer */}
       <Drawer opened={createOpen} onClose={closeCreate} title="Index Medical Record" position="right" size="md">
         <Stack>
-          <TextInput label="Patient ID" required value={createForm.patient_id} onChange={(e) => setCreateForm({ ...createForm, patient_id: e.currentTarget.value })} />
+          <PatientSearchSelect value={createForm.patient_id} onChange={(v) => setCreateForm({ ...createForm, patient_id: v })} required />
           <Select label="Record Type" data={["opd", "ipd", "emergency"]} value={createForm.record_type ?? "opd"} onChange={(v) => setCreateForm({ ...createForm, record_type: v ?? "opd" })} />
           <NumberInput label="Volume" value={createForm.volume_number ?? 1} onChange={(v) => setCreateForm({ ...createForm, volume_number: Number(v) })} min={1} />
           <TextInput label="Shelf Location" value={createForm.shelf_location ?? ""} onChange={(e) => setCreateForm({ ...createForm, shelf_location: e.currentTarget.value })} />
@@ -204,7 +205,7 @@ function RecordsTab() {
             { key: "issued_at", label: "Issued", render: (m: MrdRecordMovement) => <Text size="sm">{fmt(m.issued_at)}</Text> },
             { key: "due_date", label: "Due", render: (m: MrdRecordMovement) => <Text size="sm">{fmt(m.due_date)}</Text> },
             { key: "returned_at", label: "Returned", render: (m: MrdRecordMovement) => <Text size="sm">{fmt(m.returned_at)}</Text> },
-            { key: "status", label: "Status", render: (m: MrdRecordMovement) => <Badge color={STATUS_COLORS[m.status] ?? "gray"}>{m.status}</Badge> },
+            { key: "status", label: "Status", render: (m: MrdRecordMovement) => <Badge color={STATUS_COLORS[m.status] ?? "slate"}>{m.status}</Badge> },
             { key: "purpose", label: "Purpose", render: (m: MrdRecordMovement) => <Text size="sm">{m.purpose ?? "—"}</Text> },
             {
               key: "action", label: "", render: (m: MrdRecordMovement) =>
@@ -242,7 +243,7 @@ function BirthsTab() {
 
   const createMut = useMutation({
     mutationFn: (body: CreateMrdBirthRequest) => api.createMrdBirth(body),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-births"] }); closeCreate(); notifications.show({ title: "Registered", message: "Birth registered", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-births"] }); closeCreate(); notifications.show({ title: "Registered", message: "Birth registered", color: "success" }); },
   });
 
   const columns: Column<MrdBirthRegister>[] = [
@@ -252,7 +253,7 @@ function BirthsTab() {
     { key: "baby_weight_grams", label: "Weight (g)", render: (r) => <Text>{r.baby_weight_grams ?? "—"}</Text> },
     { key: "birth_type", label: "Type", render: (r) => <Text>{r.birth_type}</Text> },
     { key: "apgar", label: "APGAR", render: (r) => <Text>{r.apgar_1min != null ? `${r.apgar_1min}/${r.apgar_5min}` : "—"}</Text> },
-    { key: "cert", label: "Certificate", render: (r) => r.certificate_issued ? <Badge color="green">Issued</Badge> : <Badge color="gray">Pending</Badge> },
+    { key: "cert", label: "Certificate", render: (r) => r.certificate_issued ? <Badge color="success">Issued</Badge> : <Badge color="slate">Pending</Badge> },
   ];
 
   return (
@@ -303,7 +304,7 @@ function DeathsTab() {
 
   const createMut = useMutation({
     mutationFn: (body: CreateMrdDeathRequest) => api.createMrdDeath(body),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-deaths"] }); closeCreate(); notifications.show({ title: "Registered", message: "Death registered", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-deaths"] }); closeCreate(); notifications.show({ title: "Registered", message: "Death registered", color: "success" }); },
   });
 
   const columns: Column<MrdDeathRegister>[] = [
@@ -311,9 +312,9 @@ function DeathsTab() {
     { key: "death_date", label: "Date", render: (r) => <Text>{fmt(r.death_date)}</Text> },
     { key: "cause_of_death", label: "Cause", render: (r) => <Text lineClamp={1}>{r.cause_of_death ?? "—"}</Text> },
     { key: "manner_of_death", label: "Manner", render: (r) => <Badge variant="light">{r.manner_of_death}</Badge> },
-    { key: "is_medico_legal", label: "MLC", render: (r) => r.is_medico_legal ? <Badge color="red">MLC</Badge> : <Text size="sm">No</Text> },
-    { key: "cert", label: "Certificate", render: (r) => r.certificate_issued ? <Badge color="green">Issued</Badge> : <Badge color="gray">Pending</Badge> },
-    { key: "municipality", label: "Reported", render: (r) => r.reported_to_municipality ? <Badge color="green">Yes</Badge> : <Badge color="orange">No</Badge> },
+    { key: "is_medico_legal", label: "MLC", render: (r) => r.is_medico_legal ? <Badge color="danger">MLC</Badge> : <Text size="sm">No</Text> },
+    { key: "cert", label: "Certificate", render: (r) => r.certificate_issued ? <Badge color="success">Issued</Badge> : <Badge color="slate">Pending</Badge> },
+    { key: "municipality", label: "Reported", render: (r) => r.reported_to_municipality ? <Badge color="success">Yes</Badge> : <Badge color="orange">No</Badge> },
   ];
 
   return (
@@ -325,7 +326,7 @@ function DeathsTab() {
 
       <Drawer opened={createOpen} onClose={closeCreate} title="Register Death" position="right" size="md">
         <Stack>
-          <TextInput label="Patient ID" required value={form.patient_id} onChange={(e) => setForm({ ...form, patient_id: e.currentTarget.value })} />
+          <PatientSearchSelect value={form.patient_id} onChange={(v) => setForm({ ...form, patient_id: v })} required />
           <TextInput label="Death Date" required placeholder="YYYY-MM-DD" value={form.death_date} onChange={(e) => setForm({ ...form, death_date: e.currentTarget.value })} />
           <TextInput label="Cause of Death" value={form.cause_of_death ?? ""} onChange={(e) => setForm({ ...form, cause_of_death: e.currentTarget.value })} />
           <TextInput label="Immediate Cause" value={form.immediate_cause ?? ""} onChange={(e) => setForm({ ...form, immediate_cause: e.currentTarget.value })} />
@@ -378,7 +379,7 @@ function StatsTab() {
         <SimpleGrid cols={{ base: 2, md: 4 }}>
           <Card withBorder><Text size="sm" c="dimmed">Admitted</Text><Text size="xl" fw={700}>{admDisch.total_admitted}</Text></Card>
           <Card withBorder><Text size="sm" c="dimmed">Discharged</Text><Text size="xl" fw={700}>{admDisch.total_discharged}</Text></Card>
-          <Card withBorder><Text size="sm" c="dimmed">Deaths</Text><Text size="xl" fw={700} c="red">{admDisch.total_deaths}</Text></Card>
+          <Card withBorder><Text size="sm" c="dimmed">Deaths</Text><Text size="xl" fw={700} c="danger">{admDisch.total_deaths}</Text></Card>
           <Card withBorder><Text size="sm" c="dimmed">Avg LOS (days)</Text><Text size="xl" fw={700}>{admDisch.overall_avg_los_days?.toFixed(1) ?? "—"}</Text></Card>
         </SimpleGrid>
       )}
@@ -402,7 +403,7 @@ function StatsTab() {
         columns={[
           { key: "cause_of_death", label: "Cause", render: (r: NonNullable<MrdMorbidityMortalityResponse>["mortality"][number]) => <Text>{r.cause_of_death ?? "Unknown"}</Text> },
           { key: "manner_of_death", label: "Manner", render: (r: NonNullable<MrdMorbidityMortalityResponse>["mortality"][number]) => <Badge variant="light">{r.manner_of_death}</Badge> },
-          { key: "count", label: "Deaths", render: (r: NonNullable<MrdMorbidityMortalityResponse>["mortality"][number]) => <Text fw={600} c="red">{r.count}</Text> },
+          { key: "count", label: "Deaths", render: (r: NonNullable<MrdMorbidityMortalityResponse>["mortality"][number]) => <Text fw={600} c="danger">{r.count}</Text> },
         ]}
         data={morbMort?.mortality ?? []}
         loading={false}
@@ -416,7 +417,7 @@ function StatsTab() {
           { key: "department_name", label: "Department", render: (r: NonNullable<MrdAdmissionDischargeSummary>["rows"][number]) => <Text>{r.department_name ?? "Unknown"}</Text> },
           { key: "total_admitted", label: "Admitted", render: (r: NonNullable<MrdAdmissionDischargeSummary>["rows"][number]) => <Text>{r.total_admitted}</Text> },
           { key: "total_discharged", label: "Discharged", render: (r: NonNullable<MrdAdmissionDischargeSummary>["rows"][number]) => <Text>{r.total_discharged}</Text> },
-          { key: "total_deaths", label: "Deaths", render: (r: NonNullable<MrdAdmissionDischargeSummary>["rows"][number]) => <Text c="red">{r.total_deaths}</Text> },
+          { key: "total_deaths", label: "Deaths", render: (r: NonNullable<MrdAdmissionDischargeSummary>["rows"][number]) => <Text c="danger">{r.total_deaths}</Text> },
           { key: "avg_los_days", label: "Avg LOS", render: (r: NonNullable<MrdAdmissionDischargeSummary>["rows"][number]) => <Text>{r.avg_los_days?.toFixed(1) ?? "—"}</Text> },
         ]}
         data={admDisch?.rows ?? []}
@@ -447,7 +448,7 @@ function RetentionTab() {
 
   const createMut = useMutation({
     mutationFn: (body: CreateMrdRetentionPolicyRequest) => api.createMrdRetentionPolicy(body),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-retention"] }); closeCreate(); notifications.show({ title: "Created", message: "Retention policy created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mrd-retention"] }); closeCreate(); notifications.show({ title: "Created", message: "Retention policy created", color: "success" }); },
   });
 
   const columns: Column<MrdRetentionPolicy>[] = [
@@ -456,7 +457,7 @@ function RetentionTab() {
     { key: "retention_years", label: "Years", render: (r) => <Text fw={600}>{r.retention_years}</Text> },
     { key: "legal_reference", label: "Legal Ref", render: (r) => <Text size="sm">{r.legal_reference ?? "—"}</Text> },
     { key: "destruction_method", label: "Destruction", render: (r) => <Text size="sm">{r.destruction_method ?? "—"}</Text> },
-    { key: "is_active", label: "Active", render: (r) => r.is_active ? <Badge color="green">Yes</Badge> : <Badge color="gray">No</Badge> },
+    { key: "is_active", label: "Active", render: (r) => r.is_active ? <Badge color="success">Yes</Badge> : <Badge color="slate">No</Badge> },
   ];
 
   return (

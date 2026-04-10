@@ -20,13 +20,16 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
+  IconCheck,
   IconDroplet,
   IconEye,
   IconPlus,
+  IconSnowflake,
   IconTrash,
 } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,6 +37,12 @@ import { api } from "@medbrains/api";
 import { useHasPermission } from "@medbrains/stores";
 import type {
   AdverseReaction,
+  BbColdChainDeviceRow,
+  BbColdChainReadingRow,
+  BbLookbackEventRow,
+  BbMsbosGuidelineRow,
+  BbRecruitmentCampaignRow,
+  BbSbtcReport,
   BloodComponent,
   BloodDonation,
   BloodDonor,
@@ -53,26 +62,26 @@ import { DataTable, PageHeader, StatusDot } from "../components";
 import { useRequirePermission } from "../hooks/useRequirePermission";
 
 const bagStatusColors: Record<string, string> = {
-  collected: "gray",
-  processing: "blue",
-  tested: "cyan",
-  available: "green",
-  reserved: "yellow",
+  collected: "slate",
+  processing: "primary",
+  tested: "info",
+  available: "success",
+  reserved: "warning",
   crossmatched: "orange",
   issued: "teal",
   transfused: "violet",
-  returned: "pink",
-  expired: "red",
+  returned: "danger",
+  expired: "danger",
   discarded: "dark",
 };
 
 const crossmatchStatusColors: Record<string, string> = {
-  requested: "blue",
-  testing: "yellow",
-  compatible: "green",
-  incompatible: "red",
+  requested: "primary",
+  testing: "warning",
+  compatible: "success",
+  incompatible: "danger",
   issued: "teal",
-  cancelled: "gray",
+  cancelled: "slate",
 };
 
 // ══════════════════════════════════════════════════════════
@@ -92,12 +101,18 @@ export function BloodBankPage() {
           <Tabs.Tab value="crossmatch">Crossmatch</Tabs.Tab>
           <Tabs.Tab value="transfusions">Transfusions</Tabs.Tab>
           <Tabs.Tab value="reports">Reports</Tabs.Tab>
+          <Tabs.Tab value="returns">Returns & MSBOS</Tabs.Tab>
+          <Tabs.Tab value="coldchain">Cold Chain</Tabs.Tab>
+          <Tabs.Tab value="compliance">Compliance</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="donors"><DonorsTab /></Tabs.Panel>
         <Tabs.Panel value="inventory"><InventoryTab /></Tabs.Panel>
         <Tabs.Panel value="crossmatch"><CrossmatchTab /></Tabs.Panel>
         <Tabs.Panel value="transfusions"><TransfusionsTab /></Tabs.Panel>
         <Tabs.Panel value="reports"><ReportsTab /></Tabs.Panel>
+        <Tabs.Panel value="returns"><ReturnsAndMsbosTab /></Tabs.Panel>
+        <Tabs.Panel value="coldchain"><ColdChainTab /></Tabs.Panel>
+        <Tabs.Panel value="compliance"><ComplianceTab /></Tabs.Panel>
       </Tabs>
     </div>
   );
@@ -128,16 +143,16 @@ function DonorsTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["blood-bank", "donors"] });
       closeCreate();
-      notifications.show({ title: "Donor registered", message: "New blood donor added", color: "green" });
+      notifications.show({ title: "Donor registered", message: "New blood donor added", color: "success" });
     },
   });
 
   const columns = [
     { key: "donor_number" as const, label: "Donor #", render: (d: BloodDonor) => d.donor_number },
     { key: "first_name" as const, label: "Name", render: (d: BloodDonor) => `${d.first_name} ${d.last_name}` },
-    { key: "blood_group" as const, label: "Blood Group", render: (d: BloodDonor) => <Badge variant="light" color="red">{d.blood_group}</Badge> },
+    { key: "blood_group" as const, label: "Blood Group", render: (d: BloodDonor) => <Badge variant="light" color="danger">{d.blood_group}</Badge> },
     { key: "total_donations" as const, label: "Donations", render: (d: BloodDonor) => String(d.total_donations) },
-    { key: "is_deferred" as const, label: "Status", render: (d: BloodDonor) => d.is_deferred ? <Badge color="orange">Deferred</Badge> : <Badge color="green">Active</Badge> },
+    { key: "is_deferred" as const, label: "Status", render: (d: BloodDonor) => d.is_deferred ? <Badge color="orange">Deferred</Badge> : <Badge color="success">Active</Badge> },
     {
       key: "id" as const,
       label: "",
@@ -267,7 +282,7 @@ function DonorDetail({ donor }: { donor: BloodDonor }) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["blood-bank"] });
       closeDonate();
-      notifications.show({ title: "Donation recorded", message: "Blood donation has been recorded", color: "green" });
+      notifications.show({ title: "Donation recorded", message: "Blood donation has been recorded", color: "success" });
     },
   });
 
@@ -285,7 +300,7 @@ function DonorDetail({ donor }: { donor: BloodDonor }) {
     <Stack>
       <Group>
         <Text fw={700}>{donor.first_name} {donor.last_name}</Text>
-        <Badge color="red" variant="light">{donor.blood_group}</Badge>
+        <Badge color="danger" variant="light">{donor.blood_group}</Badge>
         {donor.is_deferred && <Badge color="orange">Deferred until {donor.deferral_until}</Badge>}
       </Group>
       <Table>
@@ -328,7 +343,7 @@ function DonorDetail({ donor }: { donor: BloodDonor }) {
                   <Table.Td>
                     {reaction ? (
                       <Tooltip label={`${reactionTypeLabels[reaction.reaction_type] ?? reaction.reaction_type} — ${reaction.severity} — ${reaction.outcome}`}>
-                        <Badge color="red" variant="light" leftSection={<IconAlertTriangle size={12} />}>
+                        <Badge color="danger" variant="light" leftSection={<IconAlertTriangle size={12} />}>
                           Adverse Reaction
                         </Badge>
                       </Tooltip>
@@ -342,7 +357,7 @@ function DonorDetail({ donor }: { donor: BloodDonor }) {
                         <Button
                           size="compact-xs"
                           variant="light"
-                          color="red"
+                          color="danger"
                           leftSection={<IconAlertTriangle size={12} />}
                           onClick={() => setReactionDonation(d)}
                         >
@@ -503,7 +518,7 @@ function AdverseReactionForm({
         onChange={setOutcome}
       />
       <Button
-        color="red"
+        color="danger"
         onClick={() => {
           if (!reactionType || !severity || !description || !treatmentGiven || !outcome) return;
           onSubmit({
@@ -582,7 +597,7 @@ function InventoryTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["blood-bank", "components"] });
       setDiscardComponent(null);
-      notifications.show({ title: "Status updated", message: "Component status changed", color: "green" });
+      notifications.show({ title: "Status updated", message: "Component status changed", color: "success" });
     },
   });
 
@@ -592,9 +607,9 @@ function InventoryTab() {
   const columns = [
     { key: "bag_number" as const, label: "Bag #", render: (c: BloodComponent) => c.bag_number },
     { key: "component_type" as const, label: "Component", render: (c: BloodComponent) => c.component_type.toUpperCase() },
-    { key: "blood_group" as const, label: "Group", render: (c: BloodComponent) => <Badge variant="light" color="red">{c.blood_group}</Badge> },
+    { key: "blood_group" as const, label: "Group", render: (c: BloodComponent) => <Badge variant="light" color="danger">{c.blood_group}</Badge> },
     { key: "volume_ml" as const, label: "Volume", render: (c: BloodComponent) => `${c.volume_ml} ml` },
-    { key: "status" as const, label: "Status", render: (c: BloodComponent) => <StatusDot label={c.status} color={bagStatusColors[c.status] ?? "gray"} /> },
+    { key: "status" as const, label: "Status", render: (c: BloodComponent) => <StatusDot label={c.status} color={bagStatusColors[c.status] ?? "slate"} /> },
     { key: "expiry_at" as const, label: "Expiry", render: (c: BloodComponent) => new Date(c.expiry_at).toLocaleDateString() },
     ...(canManage ? [{
       key: "id" as const,
@@ -613,7 +628,7 @@ function InventoryTab() {
           )}
           {canDiscard(c) && (
             <Tooltip label="Discard component">
-              <ActionIcon variant="subtle" color="red" size="sm" onClick={() => setDiscardComponent(c)}>
+              <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => setDiscardComponent(c)}>
                 <IconTrash size={14} />
               </ActionIcon>
             </Tooltip>
@@ -626,7 +641,7 @@ function InventoryTab() {
   const discardColumns = [
     { key: "bag_number" as const, label: "Bag #", render: (c: BloodComponent) => c.bag_number },
     { key: "component_type" as const, label: "Component", render: (c: BloodComponent) => c.component_type.toUpperCase() },
-    { key: "blood_group" as const, label: "Group", render: (c: BloodComponent) => <Badge variant="light" color="red">{c.blood_group}</Badge> },
+    { key: "blood_group" as const, label: "Group", render: (c: BloodComponent) => <Badge variant="light" color="danger">{c.blood_group}</Badge> },
     { key: "volume_ml" as const, label: "Volume", render: (c: BloodComponent) => `${c.volume_ml} ml` },
     { key: "discard_reason" as const, label: "Reason", render: (c: BloodComponent) => <Badge color="dark" variant="light">{discardReasonLabels[c.discard_reason ?? ""] ?? c.discard_reason ?? "—"}</Badge> },
     { key: "discarded_at" as const, label: "Discarded On", render: (c: BloodComponent) => c.discarded_at ? new Date(c.discarded_at).toLocaleDateString() : "—" },
@@ -684,7 +699,7 @@ function InventoryTab() {
               ))}
               <Paper p="sm" withBorder>
                 <Text size="xs" c="dimmed">Total Discarded</Text>
-                <Title order={4} c="red">{discardedComponents.length}</Title>
+                <Title order={4} c="danger">{discardedComponents.length}</Title>
               </Paper>
             </SimpleGrid>
           )}
@@ -707,7 +722,7 @@ function InventoryTab() {
             api.createBloodComponent(d).then(() => {
               qc.invalidateQueries({ queryKey: ["blood-bank", "components"] });
               closeCreate();
-              notifications.show({ title: "Component added", message: "Blood component registered", color: "green" });
+              notifications.show({ title: "Component added", message: "Blood component registered", color: "success" });
             });
           }}
         />
@@ -831,7 +846,7 @@ function DiscardComponentForm({
         minRows={3}
       />
       <Button
-        color="red"
+        color="danger"
         leftSection={<IconTrash size={16} />}
         onClick={() => {
           if (!reason) return;
@@ -864,7 +879,7 @@ function CrossmatchTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["blood-bank", "crossmatch"] });
       closeCreate();
-      notifications.show({ title: "Request created", message: "Crossmatch request submitted", color: "green" });
+      notifications.show({ title: "Request created", message: "Crossmatch request submitted", color: "success" });
     },
   });
 
@@ -873,15 +888,15 @@ function CrossmatchTab() {
       api.updateCrossmatchRequest(id, { status: status as CrossmatchRequest["status"], result }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["blood-bank", "crossmatch"] });
-      notifications.show({ title: "Updated", message: "Crossmatch request updated", color: "green" });
+      notifications.show({ title: "Updated", message: "Crossmatch request updated", color: "success" });
     },
   });
 
   const columns = [
-    { key: "blood_group" as const, label: "Group", render: (r: CrossmatchRequest) => <Badge variant="light" color="red">{r.blood_group}</Badge> },
+    { key: "blood_group" as const, label: "Group", render: (r: CrossmatchRequest) => <Badge variant="light" color="danger">{r.blood_group}</Badge> },
     { key: "component_type" as const, label: "Component", render: (r: CrossmatchRequest) => r.component_type.toUpperCase() },
     { key: "units_requested" as const, label: "Units", render: (r: CrossmatchRequest) => String(r.units_requested) },
-    { key: "status" as const, label: "Status", render: (r: CrossmatchRequest) => <StatusDot label={r.status} color={crossmatchStatusColors[r.status] ?? "gray"} /> },
+    { key: "status" as const, label: "Status", render: (r: CrossmatchRequest) => <StatusDot label={r.status} color={crossmatchStatusColors[r.status] ?? "slate"} /> },
     { key: "result" as const, label: "Result", render: (r: CrossmatchRequest) => r.result ?? "—" },
     { key: "created_at" as const, label: "Requested", render: (r: CrossmatchRequest) => new Date(r.created_at).toLocaleDateString() },
     ...(canCreate ? [{
@@ -896,10 +911,10 @@ function CrossmatchTab() {
           )}
           {r.status === "testing" && (
             <>
-              <Button size="compact-xs" variant="light" color="green" onClick={() => updateMut.mutate({ id: r.id, status: "compatible", result: "compatible" })}>
+              <Button size="compact-xs" variant="light" color="success" onClick={() => updateMut.mutate({ id: r.id, status: "compatible", result: "compatible" })}>
                 Compatible
               </Button>
-              <Button size="compact-xs" variant="light" color="red" onClick={() => updateMut.mutate({ id: r.id, status: "incompatible", result: "incompatible" })}>
+              <Button size="compact-xs" variant="light" color="danger" onClick={() => updateMut.mutate({ id: r.id, status: "incompatible", result: "incompatible" })}>
                 Incompatible
               </Button>
             </>
@@ -942,7 +957,7 @@ function CreateCrossmatchForm({ onSubmit, loading }: { onSubmit: (d: CreateCross
 
   return (
     <Stack>
-      <TextInput label="Patient ID" required value={patientId} onChange={(e) => setPatientId(e.currentTarget.value)} placeholder="Patient UUID" />
+      <PatientSearchSelect value={patientId} onChange={setPatientId} required />
       <Select label="Blood Group" required data={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]} value={bloodGroup} onChange={setBloodGroup} />
       <Select label="Component Type" data={[
         { value: "prbc", label: "PRBC" },
@@ -991,7 +1006,7 @@ function TransfusionsTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["blood-bank"] });
       closeCreate();
-      notifications.show({ title: "Transfusion recorded", message: "Blood transfusion started", color: "green" });
+      notifications.show({ title: "Transfusion recorded", message: "Blood transfusion started", color: "success" });
     },
   });
 
@@ -1013,7 +1028,7 @@ function TransfusionsTab() {
     { key: "started_at" as const, label: "Started", render: (t: TransfusionRecord) => new Date(t.started_at).toLocaleString() },
     { key: "component_id" as const, label: "Component", render: (t: TransfusionRecord) => t.component_id.slice(0, 8) },
     { key: "patient_id" as const, label: "Patient", render: (t: TransfusionRecord) => t.patient_id.slice(0, 8) },
-    { key: "has_reaction" as const, label: "Reaction", render: (t: TransfusionRecord) => t.has_reaction ? <Badge color="red">Yes — {t.reaction_severity}</Badge> : <Badge color="green">None</Badge> },
+    { key: "has_reaction" as const, label: "Reaction", render: (t: TransfusionRecord) => t.has_reaction ? <Badge color="danger">Yes — {t.reaction_severity}</Badge> : <Badge color="success">None</Badge> },
     { key: "completed_at" as const, label: "Completed", render: (t: TransfusionRecord) => t.completed_at ? new Date(t.completed_at).toLocaleString() : "In progress" },
     ...(canCreate ? [{
       key: "id" as const,
@@ -1021,7 +1036,7 @@ function TransfusionsTab() {
       render: (t: TransfusionRecord) => (
         <Group gap={4}>
           {!t.has_reaction && (
-            <Button size="compact-xs" variant="light" color="red" onClick={() => setReactionId(t.id)}>
+            <Button size="compact-xs" variant="light" color="danger" onClick={() => setReactionId(t.id)}>
               Report Reaction
             </Button>
           )}
@@ -1065,7 +1080,7 @@ function CreateTransfusionForm({ onSubmit, loading }: { onSubmit: (d: CreateTran
 
   return (
     <Stack>
-      <TextInput label="Patient ID" required value={patientId} onChange={(e) => setPatientId(e.currentTarget.value)} placeholder="Patient UUID" />
+      <PatientSearchSelect value={patientId} onChange={setPatientId} required />
       <TextInput label="Component ID" required value={componentId} onChange={(e) => setComponentId(e.currentTarget.value)} placeholder="Blood component UUID" />
       <TextInput label="Crossmatch ID" value={crossmatchId} onChange={(e) => setCrossmatchId(e.currentTarget.value)} placeholder="Optional crossmatch UUID" />
       <Button
@@ -1101,7 +1116,7 @@ function RecordReactionForm({ onSubmit, loading }: { onSubmit: (data: { reaction
       ]} value={severity} onChange={setSeverity} />
       <Textarea label="Details" value={details} onChange={(e) => setDetails(e.currentTarget.value)} />
       <Button
-        color="red"
+        color="danger"
         onClick={() => {
           if (!reactionType || !severity) return;
           onSubmit({
@@ -1123,9 +1138,9 @@ function RecordReactionForm({ onSubmit, loading }: { onSubmit: (data: { reaction
 // ══════════════════════════════════════════════════════════
 
 const ttiStatusColors: Record<string, string> = {
-  tested: "green",
-  pending: "yellow",
-  reactive: "red",
+  tested: "success",
+  pending: "warning",
+  reactive: "danger",
   non_reactive: "teal",
 };
 
@@ -1166,7 +1181,7 @@ function TtiReportView() {
     : "0.00";
 
   const columns = [
-    { key: "tti_status" as const, label: "TTI Status", render: (r: TtiReportRow) => <Badge color={ttiStatusColors[r.tti_status] ?? "gray"}>{r.tti_status.replace(/_/g, " ")}</Badge> },
+    { key: "tti_status" as const, label: "TTI Status", render: (r: TtiReportRow) => <Badge color={ttiStatusColors[r.tti_status] ?? "slate"}>{r.tti_status.replace(/_/g, " ")}</Badge> },
     { key: "count" as const, label: "Count", render: (r: TtiReportRow) => String(r.count) },
   ];
 
@@ -1179,11 +1194,11 @@ function TtiReportView() {
         </Paper>
         <Paper p="md" withBorder>
           <Text size="xs" c="dimmed">Reactive</Text>
-          <Title order={3} c="red">{reactiveCount}</Title>
+          <Title order={3} c="danger">{reactiveCount}</Title>
         </Paper>
         <Paper p="md" withBorder>
           <Text size="xs" c="dimmed">Reactive Rate</Text>
-          <Title order={3} c={Number(reactivePct) > 0 ? "red" : "green"}>{reactivePct}%</Title>
+          <Title order={3} c={Number(reactivePct) > 0 ? "danger" : "success"}>{reactivePct}%</Title>
         </Paper>
       </SimpleGrid>
 
@@ -1207,7 +1222,7 @@ function HemovigilanceView() {
 
   const columns = [
     { key: "reaction_type" as const, label: "Reaction Type", render: (r: HemovigilanceRow) => r.reaction_type ?? "Unknown" },
-    { key: "severity" as const, label: "Severity", render: (r: HemovigilanceRow) => r.severity ? <Badge color={r.severity === "severe" || r.severity === "fatal" ? "red" : r.severity === "moderate" ? "orange" : "yellow"}>{r.severity}</Badge> : <Text size="sm" c="dimmed">N/A</Text> },
+    { key: "severity" as const, label: "Severity", render: (r: HemovigilanceRow) => r.severity ? <Badge color={r.severity === "severe" || r.severity === "fatal" ? "danger" : r.severity === "moderate" ? "orange" : "warning"}>{r.severity}</Badge> : <Text size="sm" c="dimmed">N/A</Text> },
     { key: "count" as const, label: "Count", render: (r: HemovigilanceRow) => String(r.count) },
   ];
 
@@ -1224,11 +1239,11 @@ function HemovigilanceView() {
         </Paper>
         <Paper p="md" withBorder>
           <Text size="xs" c="dimmed">Total Reactions</Text>
-          <Title order={3} c="red">{data?.total_reactions ?? 0}</Title>
+          <Title order={3} c="danger">{data?.total_reactions ?? 0}</Title>
         </Paper>
         <Paper p="md" withBorder>
           <Text size="xs" c="dimmed">Reaction Rate</Text>
-          <Title order={3} c={data?.reaction_rate_percent && data.reaction_rate_percent > 0 ? "orange" : "green"}>
+          <Title order={3} c={data?.reaction_rate_percent && data.reaction_rate_percent > 0 ? "orange" : "success"}>
             {data?.reaction_rate_percent?.toFixed(2) ?? "0.00"}%
           </Title>
         </Paper>
@@ -1242,6 +1257,624 @@ function HemovigilanceView() {
         loading={isLoading}
         rowKey={(r) => `${r.reaction_type ?? "unknown"}-${r.severity ?? "unknown"}`}
       />
+    </Stack>
+  );
+}
+
+// ══════════════════════════════════════════════════════════
+//  Returns & MSBOS Tab
+// ══════════════════════════════════════════════════════════
+
+function ReturnsAndMsbosTab() {
+  const qc = useQueryClient();
+  const canManage = useHasPermission(P.BLOOD_BANK.INVENTORY_MANAGE);
+  const canCreateXm = useHasPermission(P.BLOOD_BANK.CROSSMATCH_CREATE);
+  const [returnOpen, { open: openReturn, close: closeReturn }] = useDisclosure(false);
+  const [msbosOpen, { open: openMsbos, close: closeMsbos }] = useDisclosure(false);
+  const [returnView, setReturnView] = useState("returns");
+
+  const { data: msbos, isLoading: msbosLoading } = useQuery({
+    queryKey: ["blood-bank", "msbos"],
+    queryFn: () => api.listBbMsbos(),
+  });
+
+  const [returnComponentId, setReturnComponentId] = useState("");
+  const [returnReason, setReturnReason] = useState("");
+  const [returnTemp, setReturnTemp] = useState<number | undefined>();
+  const [returnTimeOut, setReturnTimeOut] = useState<number | undefined>();
+
+  const createReturnMut = useMutation({
+    mutationFn: (d: any) => api.createBbReturn(d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["blood-bank"] });
+      closeReturn();
+      notifications.show({ title: "Return created", message: "Blood return recorded", color: "success" });
+    },
+  });
+
+  const [msbosName, setMsbosName] = useState("");
+  const [msbosCode, setMsbosCode] = useState("");
+  const [msbosGroup, setMsbosGroup] = useState<string | null>(null);
+  const [msbosType, setMsbosType] = useState<string | null>("prbc");
+  const [msbosUnits, setMsbosUnits] = useState<number>(2);
+  const [msbosNotes, setMsbosNotes] = useState("");
+
+  const createMsbosMut = useMutation({
+    mutationFn: (d: any) => api.createBbMsbos(d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["blood-bank", "msbos"] });
+      closeMsbos();
+      notifications.show({ title: "MSBOS added", message: "Guideline saved", color: "success" });
+    },
+  });
+
+  const msbosColumns = [
+    { key: "procedure_name" as const, label: "Procedure", render: (r: BbMsbosGuidelineRow) => r.procedure_name },
+    { key: "procedure_code" as const, label: "Code", render: (r: BbMsbosGuidelineRow) => r.procedure_code },
+    { key: "component_type" as const, label: "Component", render: (r: BbMsbosGuidelineRow) => r.component_type.toUpperCase() },
+    { key: "max_units" as const, label: "Max Units", render: (r: BbMsbosGuidelineRow) => String(r.max_units) },
+    { key: "is_active" as const, label: "Active", render: (r: BbMsbosGuidelineRow) => r.is_active ? <Badge color="success">Yes</Badge> : <Badge color="slate">No</Badge> },
+  ];
+
+  return (
+    <Stack mt="md">
+      <SegmentedControl
+        value={returnView}
+        onChange={setReturnView}
+        data={[
+          { value: "returns", label: "Blood Returns" },
+          { value: "msbos", label: "MSBOS Guidelines" },
+        ]}
+        w={340}
+      />
+
+      {returnView === "returns" && (
+        <Stack>
+          <Group>
+            {canManage && (
+              <Button leftSection={<IconPlus size={16} />} onClick={openReturn}>
+                New Return
+              </Button>
+            )}
+          </Group>
+          <Text c="dimmed" size="sm">Returns are tracked per component. Use the drawer to log a blood return.</Text>
+
+          <Drawer opened={returnOpen} onClose={closeReturn} title="Create Blood Return" position="right" size="md">
+            <Stack>
+              <TextInput label="Component ID" required value={returnComponentId} onChange={(e) => setReturnComponentId(e.currentTarget.value)} placeholder="UUID of blood component" />
+              <Textarea label="Return Reason" value={returnReason} onChange={(e) => setReturnReason(e.currentTarget.value)} />
+              <NumberInput label="Temperature at Return" value={returnTemp} onChange={(v) => setReturnTemp(v === "" ? undefined : Number(v))} suffix=" C" />
+              <NumberInput label="Time Out (minutes)" value={returnTimeOut} onChange={(v) => setReturnTimeOut(v === "" ? undefined : Number(v))} />
+              <Button
+                onClick={() => {
+                  if (!returnComponentId) return;
+                  createReturnMut.mutate({
+                    component_id: returnComponentId,
+                    return_reason: returnReason || undefined,
+                    temperature_at_return: returnTemp,
+                    time_out_minutes: returnTimeOut,
+                  });
+                }}
+                loading={createReturnMut.isPending}
+              >
+                Submit Return
+              </Button>
+            </Stack>
+          </Drawer>
+        </Stack>
+      )}
+
+      {returnView === "msbos" && (
+        <Stack>
+          <Group>
+            {canCreateXm && (
+              <Button leftSection={<IconPlus size={16} />} onClick={openMsbos}>
+                Add MSBOS Guideline
+              </Button>
+            )}
+          </Group>
+          <DataTable
+            columns={msbosColumns}
+            data={msbos ?? []}
+            loading={msbosLoading}
+            rowKey={(r) => r.id}
+          />
+
+          <Drawer opened={msbosOpen} onClose={closeMsbos} title="Add MSBOS Guideline" position="right" size="md">
+            <Stack>
+              <TextInput label="Procedure Name" required value={msbosName} onChange={(e) => setMsbosName(e.currentTarget.value)} />
+              <TextInput label="Procedure Code" required value={msbosCode} onChange={(e) => setMsbosCode(e.currentTarget.value)} />
+              <Select label="Blood Group" data={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]} clearable value={msbosGroup} onChange={setMsbosGroup} />
+              <Select label="Component Type" required data={[
+                { value: "prbc", label: "PRBC" },
+                { value: "ffp", label: "FFP" },
+                { value: "platelets", label: "Platelets" },
+                { value: "whole_blood", label: "Whole Blood" },
+              ]} value={msbosType} onChange={setMsbosType} />
+              <NumberInput label="Max Units" required value={msbosUnits} onChange={(v) => setMsbosUnits(Number(v))} min={1} max={20} />
+              <Textarea label="Notes" value={msbosNotes} onChange={(e) => setMsbosNotes(e.currentTarget.value)} />
+              <Button
+                onClick={() => {
+                  if (!msbosName || !msbosCode || !msbosType) return;
+                  createMsbosMut.mutate({
+                    procedure_name: msbosName,
+                    procedure_code: msbosCode,
+                    blood_group: msbosGroup ?? undefined,
+                    component_type: msbosType,
+                    max_units: msbosUnits,
+                    notes: msbosNotes || undefined,
+                  });
+                }}
+                loading={createMsbosMut.isPending}
+              >
+                Save Guideline
+              </Button>
+            </Stack>
+          </Drawer>
+        </Stack>
+      )}
+    </Stack>
+  );
+}
+
+// ══════════════════════════════════════════════════════════
+//  Cold Chain Tab
+// ══════════════════════════════════════════════════════════
+
+const alertLevelColors: Record<string, string> = {
+  normal: "success", warning: "orange", critical: "danger",
+};
+
+function ColdChainTab() {
+  const qc = useQueryClient();
+  const canManage = useHasPermission(P.BLOOD_BANK.INVENTORY_MANAGE);
+  const [deviceOpen, { open: openDevice, close: closeDevice }] = useDisclosure(false);
+  const [readingOpen, { open: openReading, close: closeReading }] = useDisclosure(false);
+  const [selectedDevice, setSelectedDevice] = useState<BbColdChainDeviceRow | null>(null);
+
+  const { data: devices, isLoading } = useQuery({
+    queryKey: ["blood-bank", "cold-chain-devices"],
+    queryFn: () => api.listBbDevices(),
+  });
+
+  const { data: readings } = useQuery({
+    queryKey: ["blood-bank", "cold-chain-readings", selectedDevice?.id],
+    queryFn: () => api.listBbReadings(selectedDevice?.id ?? ""),
+    enabled: !!selectedDevice,
+  });
+
+  const [devName, setDevName] = useState("");
+  const [devSerial, setDevSerial] = useState("");
+  const [devLocation, setDevLocation] = useState("");
+  const [devType, setDevType] = useState<string | null>("refrigerator");
+  const [devMinTemp, setDevMinTemp] = useState<number | undefined>();
+  const [devMaxTemp, setDevMaxTemp] = useState<number | undefined>();
+
+  const createDeviceMut = useMutation({
+    mutationFn: (d: any) => api.createBbDevice(d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["blood-bank", "cold-chain-devices"] });
+      closeDevice();
+      notifications.show({ title: "Device added", message: "Cold chain device registered", color: "success" });
+    },
+  });
+
+  const [readingDeviceId, setReadingDeviceId] = useState<string | null>(null);
+  const [readingTemp, setReadingTemp] = useState<number>(4);
+  const [readingHumidity, setReadingHumidity] = useState<number | undefined>();
+
+  const addReadingMut = useMutation({
+    mutationFn: (d: any) => api.addBbReading(d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["blood-bank", "cold-chain"] });
+      closeReading();
+      notifications.show({ title: "Reading logged", message: "Temperature reading recorded", color: "success" });
+    },
+  });
+
+  const deviceColumns = [
+    { key: "device_name" as const, label: "Device", render: (d: BbColdChainDeviceRow) => d.device_name },
+    { key: "equipment_type" as const, label: "Type", render: (d: BbColdChainDeviceRow) => d.equipment_type },
+    { key: "location" as const, label: "Location", render: (d: BbColdChainDeviceRow) => d.location ?? "—" },
+    { key: "last_temp" as const, label: "Last Temp", render: (d: BbColdChainDeviceRow) => d.last_temp ? `${d.last_temp} C` : "—" },
+    { key: "alert_level" as const, label: "Alert", render: (d: BbColdChainDeviceRow) => d.alert_level ? <Badge color={alertLevelColors[d.alert_level] ?? "slate"}>{d.alert_level}</Badge> : <Badge color="slate">N/A</Badge> },
+    { key: "is_active" as const, label: "Active", render: (d: BbColdChainDeviceRow) => d.is_active ? <IconCheck size={16} color="green" /> : <Text c="dimmed">No</Text> },
+    {
+      key: "id" as const,
+      label: "",
+      render: (d: BbColdChainDeviceRow) => (
+        <Button size="compact-xs" variant="light" onClick={() => setSelectedDevice(d)}>
+          Readings
+        </Button>
+      ),
+    },
+  ];
+
+  const readingColumns = [
+    { key: "recorded_at" as const, label: "Time", render: (r: BbColdChainReadingRow) => new Date(r.recorded_at).toLocaleString() },
+    { key: "temperature" as const, label: "Temp (C)", render: (r: BbColdChainReadingRow) => r.temperature },
+    { key: "humidity" as const, label: "Humidity", render: (r: BbColdChainReadingRow) => r.humidity ?? "—" },
+    { key: "alert_level" as const, label: "Alert", render: (r: BbColdChainReadingRow) => r.alert_level ? <Badge color={alertLevelColors[r.alert_level] ?? "slate"}>{r.alert_level}</Badge> : <Text size="sm" c="dimmed">—</Text> },
+  ];
+
+  return (
+    <Stack mt="md">
+      <Group>
+        {canManage && (
+          <>
+            <Button leftSection={<IconSnowflake size={16} />} onClick={openDevice}>
+              Add Device
+            </Button>
+            <Button leftSection={<IconPlus size={16} />} variant="light" onClick={openReading}>
+              Log Reading
+            </Button>
+          </>
+        )}
+      </Group>
+
+      <DataTable
+        columns={deviceColumns}
+        data={devices ?? []}
+        loading={isLoading}
+        rowKey={(d) => d.id}
+      />
+
+      {selectedDevice && (
+        <Drawer opened onClose={() => setSelectedDevice(null)} title={`Readings: ${selectedDevice.device_name}`} position="right" size="lg">
+          <DataTable
+            columns={readingColumns}
+            data={readings ?? []}
+            loading={false}
+            rowKey={(r) => r.id}
+          />
+        </Drawer>
+      )}
+
+      <Drawer opened={deviceOpen} onClose={closeDevice} title="Add Cold Chain Device" position="right" size="md">
+        <Stack>
+          <TextInput label="Device Name" required value={devName} onChange={(e) => setDevName(e.currentTarget.value)} />
+          <TextInput label="Serial Number" value={devSerial} onChange={(e) => setDevSerial(e.currentTarget.value)} />
+          <TextInput label="Location" value={devLocation} onChange={(e) => setDevLocation(e.currentTarget.value)} />
+          <Select label="Equipment Type" required data={[
+            { value: "refrigerator", label: "Blood Bank Refrigerator" },
+            { value: "freezer", label: "Plasma Freezer" },
+            { value: "platelet_agitator", label: "Platelet Agitator" },
+            { value: "transport_box", label: "Transport Box" },
+          ]} value={devType} onChange={setDevType} />
+          <NumberInput label="Min Temp (C)" value={devMinTemp} onChange={(v) => setDevMinTemp(v === "" ? undefined : Number(v))} />
+          <NumberInput label="Max Temp (C)" value={devMaxTemp} onChange={(v) => setDevMaxTemp(v === "" ? undefined : Number(v))} />
+          <Button
+            onClick={() => {
+              if (!devName || !devType) return;
+              createDeviceMut.mutate({
+                device_name: devName,
+                device_serial: devSerial || undefined,
+                location: devLocation || undefined,
+                equipment_type: devType,
+                min_temp: devMinTemp,
+                max_temp: devMaxTemp,
+              });
+            }}
+            loading={createDeviceMut.isPending}
+          >
+            Register Device
+          </Button>
+        </Stack>
+      </Drawer>
+
+      <Drawer opened={readingOpen} onClose={closeReading} title="Log Temperature Reading" position="right" size="md">
+        <Stack>
+          <Select
+            label="Device"
+            required
+            data={(devices ?? []).map((d) => ({ value: d.id, label: d.device_name }))}
+            value={readingDeviceId}
+            onChange={setReadingDeviceId}
+          />
+          <NumberInput label="Temperature (C)" required value={readingTemp} onChange={(v) => setReadingTemp(Number(v))} step={0.1} />
+          <NumberInput label="Humidity (%)" value={readingHumidity} onChange={(v) => setReadingHumidity(v === "" ? undefined : Number(v))} />
+          <Button
+            onClick={() => {
+              if (!readingDeviceId) return;
+              addReadingMut.mutate({
+                device_id: readingDeviceId,
+                temperature: readingTemp,
+                humidity: readingHumidity,
+              });
+            }}
+            loading={addReadingMut.isPending}
+          >
+            Log Reading
+          </Button>
+        </Stack>
+      </Drawer>
+    </Stack>
+  );
+}
+
+// ══════════════════════════════════════════════════════════
+//  Compliance Tab (Lookback, SBTC, Recruitment)
+// ══════════════════════════════════════════════════════════
+
+const lookbackStatusColors: Record<string, string> = {
+  detected: "danger", investigating: "warning", notified: "info", closed: "success",
+};
+
+function ComplianceTab() {
+  const [compView, setCompView] = useState("lookback");
+
+  return (
+    <Stack mt="md">
+      <SegmentedControl
+        value={compView}
+        onChange={setCompView}
+        data={[
+          { value: "lookback", label: "Lookback Events" },
+          { value: "sbtc", label: "SBTC Report" },
+          { value: "recruitment", label: "Recruitment Campaigns" },
+        ]}
+        w={460}
+      />
+      {compView === "lookback" && <LookbackSection />}
+      {compView === "sbtc" && <SbtcSection />}
+      {compView === "recruitment" && <RecruitmentSection />}
+    </Stack>
+  );
+}
+
+function LookbackSection() {
+  const qc = useQueryClient();
+  const canCreate = useHasPermission(P.BLOOD_BANK.TRANSFUSION_CREATE);
+  const [createOpen, { open: openCreate, close: closeCreate }] = useDisclosure(false);
+
+  const { data: events, isLoading } = useQuery({
+    queryKey: ["blood-bank", "lookback"],
+    queryFn: () => api.listBbLookback(),
+  });
+
+  const [infectionType, setInfectionType] = useState("");
+  const [detectionDate, setDetectionDate] = useState("");
+  const [donationId, setDonationId] = useState("");
+  const [donorId, setDonorId] = useState("");
+  const [invNotes, setInvNotes] = useState("");
+
+  const createMut = useMutation({
+    mutationFn: (d: any) => api.createBbLookback(d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["blood-bank", "lookback"] });
+      closeCreate();
+      notifications.show({ title: "Lookback created", message: "Lookback event recorded", color: "success" });
+    },
+  });
+
+  const updateMut = useMutation({
+    mutationFn: ({ id, ...data }: any) => api.updateBbLookback(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["blood-bank", "lookback"] });
+      notifications.show({ title: "Updated", message: "Lookback event updated", color: "success" });
+    },
+  });
+
+  const columns = [
+    { key: "event_code" as const, label: "Code", render: (r: BbLookbackEventRow) => r.event_code },
+    { key: "infection_type" as const, label: "Infection", render: (r: BbLookbackEventRow) => r.infection_type },
+    { key: "detection_date" as const, label: "Detected", render: (r: BbLookbackEventRow) => r.detection_date },
+    { key: "status" as const, label: "Status", render: (r: BbLookbackEventRow) => <Badge color={lookbackStatusColors[r.status] ?? "slate"}>{r.status}</Badge> },
+    { key: "recipients_notified" as const, label: "Notified", render: (r: BbLookbackEventRow) => String(r.recipients_notified ?? 0) },
+    ...(canCreate ? [{
+      key: "id" as const,
+      label: "Actions",
+      render: (r: BbLookbackEventRow) => (
+        <Group gap={4}>
+          {r.status === "detected" && (
+            <Button size="compact-xs" variant="light" onClick={() => updateMut.mutate({ id: r.id, status: "investigating" })}>
+              Investigate
+            </Button>
+          )}
+          {r.status === "investigating" && (
+            <Button size="compact-xs" variant="light" color="info" onClick={() => updateMut.mutate({ id: r.id, status: "notified" })}>
+              Mark Notified
+            </Button>
+          )}
+          {r.status === "notified" && (
+            <Button size="compact-xs" variant="light" color="success" onClick={() => updateMut.mutate({ id: r.id, status: "closed" })}>
+              Close
+            </Button>
+          )}
+        </Group>
+      ),
+    }] : []),
+  ];
+
+  return (
+    <Stack>
+      <Group>
+        {canCreate && (
+          <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>
+            New Lookback Event
+          </Button>
+        )}
+      </Group>
+
+      <DataTable columns={columns} data={events ?? []} loading={isLoading} rowKey={(r) => r.id} />
+
+      <Drawer opened={createOpen} onClose={closeCreate} title="Create Lookback Event" position="right" size="md">
+        <Stack>
+          <TextInput label="Infection Type" required value={infectionType} onChange={(e) => setInfectionType(e.currentTarget.value)} placeholder="e.g. HIV, HBV, HCV" />
+          <TextInput label="Detection Date" required value={detectionDate} onChange={(e) => setDetectionDate(e.currentTarget.value)} placeholder="YYYY-MM-DD" />
+          <TextInput label="Donation ID" value={donationId} onChange={(e) => setDonationId(e.currentTarget.value)} placeholder="Optional UUID" />
+          <TextInput label="Donor ID" value={donorId} onChange={(e) => setDonorId(e.currentTarget.value)} placeholder="Optional UUID" />
+          <Textarea label="Investigation Notes" value={invNotes} onChange={(e) => setInvNotes(e.currentTarget.value)} />
+          <Button
+            onClick={() => {
+              if (!infectionType || !detectionDate) return;
+              createMut.mutate({
+                infection_type: infectionType,
+                detection_date: detectionDate,
+                donation_id: donationId || undefined,
+                donor_id: donorId || undefined,
+                investigation_notes: invNotes || undefined,
+              });
+            }}
+            loading={createMut.isPending}
+          >
+            Create Event
+          </Button>
+        </Stack>
+      </Drawer>
+    </Stack>
+  );
+}
+
+function SbtcSection() {
+  const [report, setReport] = useState<BbSbtcReport | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchReport = () => {
+    setLoading(true);
+    api.getBbSbtcReport().then((data) => {
+      setReport(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  };
+
+  return (
+    <Stack>
+      <Button onClick={fetchReport} loading={loading} w={200}>
+        Generate SBTC Report
+      </Button>
+      {report && (
+        <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }}>
+          <Paper p="md" withBorder>
+            <Text size="xs" c="dimmed">Donations</Text>
+            <Title order={3}>{report.donation_count}</Title>
+          </Paper>
+          <Paper p="md" withBorder>
+            <Text size="xs" c="dimmed">Components</Text>
+            <Title order={3}>{report.component_count}</Title>
+          </Paper>
+          <Paper p="md" withBorder>
+            <Text size="xs" c="dimmed">Discards</Text>
+            <Title order={3} c="danger">{report.discard_count}</Title>
+          </Paper>
+          <Paper p="md" withBorder>
+            <Text size="xs" c="dimmed">Reactions</Text>
+            <Title order={3} c="orange">{report.reaction_count}</Title>
+          </Paper>
+          <Paper p="md" withBorder>
+            <Text size="xs" c="dimmed">Lookback Events</Text>
+            <Title order={3}>{report.lookback_count}</Title>
+          </Paper>
+        </SimpleGrid>
+      )}
+    </Stack>
+  );
+}
+
+function RecruitmentSection() {
+  const qc = useQueryClient();
+  const canCreate = useHasPermission(P.BLOOD_BANK.DONORS_CREATE);
+  const [createOpen, { open: openCreate, close: closeCreate }] = useDisclosure(false);
+
+  const { data: campaigns, isLoading } = useQuery({
+    queryKey: ["blood-bank", "campaigns"],
+    queryFn: () => api.listBbCampaigns(),
+  });
+
+  const [campName, setCampName] = useState("");
+  const [campType, setCampType] = useState<string | null>("drive");
+  const [targetCount, setTargetCount] = useState<number>(50);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [campNotes, setCampNotes] = useState("");
+
+  const createMut = useMutation({
+    mutationFn: (d: any) => api.createBbCampaign(d),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["blood-bank", "campaigns"] });
+      closeCreate();
+      notifications.show({ title: "Campaign created", message: "Recruitment campaign added", color: "success" });
+    },
+  });
+
+  const updateMut = useMutation({
+    mutationFn: ({ id, ...data }: any) => api.updateBbCampaign(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["blood-bank", "campaigns"] });
+      notifications.show({ title: "Updated", message: "Campaign status updated", color: "success" });
+    },
+  });
+
+  const columns = [
+    { key: "campaign_name" as const, label: "Campaign", render: (r: BbRecruitmentCampaignRow) => r.campaign_name },
+    { key: "campaign_type" as const, label: "Type", render: (r: BbRecruitmentCampaignRow) => r.campaign_type },
+    { key: "start_date" as const, label: "Start", render: (r: BbRecruitmentCampaignRow) => r.start_date },
+    { key: "target_count" as const, label: "Target", render: (r: BbRecruitmentCampaignRow) => String(r.target_count ?? "—") },
+    { key: "actual_count" as const, label: "Actual", render: (r: BbRecruitmentCampaignRow) => String(r.actual_count ?? "—") },
+    { key: "status" as const, label: "Status", render: (r: BbRecruitmentCampaignRow) => <Badge color={r.status === "completed" ? "success" : r.status === "active" ? "primary" : "slate"}>{r.status}</Badge> },
+    ...(canCreate ? [{
+      key: "id" as const,
+      label: "Actions",
+      render: (r: BbRecruitmentCampaignRow) => (
+        <Group gap={4}>
+          {r.status === "planned" && (
+            <Button size="compact-xs" variant="light" onClick={() => updateMut.mutate({ id: r.id, status: "active" })}>
+              Activate
+            </Button>
+          )}
+          {r.status === "active" && (
+            <Button size="compact-xs" variant="light" color="success" onClick={() => updateMut.mutate({ id: r.id, status: "completed" })}>
+              Complete
+            </Button>
+          )}
+        </Group>
+      ),
+    }] : []),
+  ];
+
+  return (
+    <Stack>
+      <Group>
+        {canCreate && (
+          <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>
+            New Campaign
+          </Button>
+        )}
+      </Group>
+
+      <DataTable columns={columns} data={campaigns ?? []} loading={isLoading} rowKey={(r) => r.id} />
+
+      <Drawer opened={createOpen} onClose={closeCreate} title="New Recruitment Campaign" position="right" size="md">
+        <Stack>
+          <TextInput label="Campaign Name" required value={campName} onChange={(e) => setCampName(e.currentTarget.value)} />
+          <Select label="Campaign Type" required data={[
+            { value: "drive", label: "Blood Drive" },
+            { value: "awareness", label: "Awareness Campaign" },
+            { value: "recall", label: "Donor Recall" },
+            { value: "corporate", label: "Corporate Drive" },
+          ]} value={campType} onChange={setCampType} />
+          <NumberInput label="Target Donor Count" value={targetCount} onChange={(v) => setTargetCount(Number(v))} min={1} />
+          <TextInput label="Start Date" required placeholder="YYYY-MM-DD" value={startDate} onChange={(e) => setStartDate(e.currentTarget.value)} />
+          <TextInput label="End Date" placeholder="YYYY-MM-DD" value={endDate} onChange={(e) => setEndDate(e.currentTarget.value)} />
+          <Textarea label="Notes" value={campNotes} onChange={(e) => setCampNotes(e.currentTarget.value)} />
+          <Button
+            onClick={() => {
+              if (!campName || !campType || !startDate) return;
+              createMut.mutate({
+                campaign_name: campName,
+                campaign_type: campType,
+                target_count: targetCount,
+                start_date: startDate,
+                end_date: endDate || undefined,
+                notes: campNotes || undefined,
+              });
+            }}
+            loading={createMut.isPending}
+          >
+            Create Campaign
+          </Button>
+        </Stack>
+      </Drawer>
     </Stack>
   );
 }

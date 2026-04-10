@@ -60,7 +60,7 @@ export function ModulesStep({ onNext, onBack }: Props) {
           notifications.show({
             title: "Dependencies enabled",
             message: `Also enabled: ${missingDeps.join(", ")}`,
-            color: "blue",
+            color: "primary",
           });
         }
       }
@@ -92,20 +92,20 @@ export function ModulesStep({ onNext, onBack }: Props) {
         notifications.show({
           title: "Master data seeded",
           message: `Seeded: ${result.seeded.join(", ")}`,
-          color: "green",
+          color: "success",
         });
       } else {
         notifications.show({
           title: "No templates",
           message: result.message ?? "No master data templates for this module",
-          color: "yellow",
+          color: "warning",
         });
       }
     } catch {
       notifications.show({
         title: "Error",
         message: "Failed to seed master data. You can configure it later from settings.",
-        color: "red",
+        color: "danger",
       });
     } finally {
       setSeeding(null);
@@ -149,7 +149,7 @@ export function ModulesStep({ onNext, onBack }: Props) {
                         <IconDatabase size={14} />
                       )
                     }
-                    color={isSeeded ? "green" : "blue"}
+                    color={isSeeded ? "success" : "primary"}
                     loading={seeding === mod.code}
                     disabled={isSeeded}
                     onClick={() => handleSeedMasters(mod.code)}
@@ -157,7 +157,7 @@ export function ModulesStep({ onNext, onBack }: Props) {
                     {isSeeded ? (
                       <>
                         Defaults seeded{" "}
-                        <Badge size="xs" ml={4} color="green">
+                        <Badge size="xs" ml={4} color="success">
                           done
                         </Badge>
                       </>

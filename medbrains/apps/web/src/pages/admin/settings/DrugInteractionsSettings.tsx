@@ -21,10 +21,10 @@ import { P } from "@medbrains/types";
 import type { DrugInteraction, CreateDrugInteractionRequest } from "@medbrains/types";
 
 const SEVERITY_COLORS: Record<string, string> = {
-  minor: "yellow",
+  minor: "warning",
   moderate: "orange",
-  major: "red",
-  contraindicated: "grape",
+  major: "danger",
+  contraindicated: "violet",
 };
 
 export function DrugInteractionsSettings() {
@@ -47,11 +47,11 @@ export function DrugInteractionsSettings() {
     mutationFn: (data: CreateDrugInteractionRequest) => api.createDrugInteraction(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drug-interactions"] });
-      notifications.show({ title: "Created", message: "Drug interaction rule added", color: "green" });
+      notifications.show({ title: "Created", message: "Drug interaction rule added", color: "success" });
       handleClose();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to create interaction rule", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to create interaction rule", color: "danger" });
     },
   });
 
@@ -59,7 +59,7 @@ export function DrugInteractionsSettings() {
     mutationFn: (id: string) => api.deleteDrugInteraction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drug-interactions"] });
-      notifications.show({ title: "Deleted", message: "Interaction rule removed", color: "yellow" });
+      notifications.show({ title: "Deleted", message: "Interaction rule removed", color: "warning" });
     },
   });
 
@@ -113,13 +113,13 @@ export function DrugInteractionsSettings() {
               <Table.Td><Text size="sm" fw={500}>{row.drug_a_name}</Text></Table.Td>
               <Table.Td><Text size="sm" fw={500}>{row.drug_b_name}</Text></Table.Td>
               <Table.Td>
-                <Badge size="sm" color={SEVERITY_COLORS[row.severity] ?? "gray"}>{row.severity}</Badge>
+                <Badge size="sm" color={SEVERITY_COLORS[row.severity] ?? "slate"}>{row.severity}</Badge>
               </Table.Td>
               <Table.Td><Text size="xs" lineClamp={2}>{row.description}</Text></Table.Td>
               <Table.Td><Text size="xs" c="dimmed" lineClamp={1}>{row.management ?? "—"}</Text></Table.Td>
               {canManage && (
                 <Table.Td>
-                  <ActionIcon variant="subtle" color="red" size="sm" onClick={() => deleteMutation.mutate(row.id)}>
+                  <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => deleteMutation.mutate(row.id)}>
                     <IconTrash size={14} />
                   </ActionIcon>
                 </Table.Td>

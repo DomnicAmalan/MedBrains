@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Badge, Button, Drawer, Group, JsonInput, NumberInput, Select, Stack, Switch, Tabs, Text, TextInput } from "@mantine/core";
+import { PatientSearchSelect } from "../../components/PatientSearchSelect";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconPlus } from "@tabler/icons-react";
@@ -42,22 +43,22 @@ export function OtherSpecialtiesPage() {
 
   const createTmpl = useMutation({
     mutationFn: (data: CreateSpecialtyTemplateRequest) => api.createSpecialtyTemplate(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["specialty-templates"] }); tmplHandlers.close(); notifications.show({ title: "Created", message: "Template created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["specialty-templates"] }); tmplHandlers.close(); notifications.show({ title: "Created", message: "Template created", color: "success" }); },
   });
 
   const createRec = useMutation({
     mutationFn: (data: CreateSpecialtyRecordRequest) => api.createSpecialtyRecord(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["specialty-records"] }); recHandlers.close(); notifications.show({ title: "Created", message: "Record created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["specialty-records"] }); recHandlers.close(); notifications.show({ title: "Created", message: "Record created", color: "success" }); },
   });
 
   const createDial = useMutation({
     mutationFn: (data: CreateDialysisSessionRequest) => api.createDialysisSession(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["dialysis-sessions"] }); dialHandlers.close(); notifications.show({ title: "Created", message: "Session created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["dialysis-sessions"] }); dialHandlers.close(); notifications.show({ title: "Created", message: "Session created", color: "success" }); },
   });
 
   const createChemo = useMutation({
     mutationFn: (data: CreateChemoProtocolRequest) => api.createChemoProtocol(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["chemo-protocols"] }); chemoHandlers.close(); notifications.show({ title: "Created", message: "Protocol created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["chemo-protocols"] }); chemoHandlers.close(); notifications.show({ title: "Created", message: "Protocol created", color: "success" }); },
   });
 
   const tmplCols: Column<SpecialtyTemplate>[] = [
@@ -93,7 +94,7 @@ export function OtherSpecialtiesPage() {
     { key: "cycle", label: "Cycle #", render: (r) => <Text size="sm">{r.cycle_number}</Text> },
     { key: "toxicity", label: "Toxicity", render: (r) => <Text size="sm">{r.toxicity_grade != null ? `Grade ${r.toxicity_grade}` : "—"}</Text> },
     { key: "recist", label: "RECIST", render: (r) => <Text size="sm">{r.recist_response ?? "—"}</Text> },
-    { key: "tumor_board", label: "Tumor Board", render: (r) => r.tumor_board_reviewed ? <Badge color="green">Reviewed</Badge> : <Badge color="gray">Pending</Badge> },
+    { key: "tumor_board", label: "Tumor Board", render: (r) => r.tumor_board_reviewed ? <Badge color="success">Reviewed</Badge> : <Badge color="slate">Pending</Badge> },
   ];
 
   return (
@@ -137,7 +138,7 @@ export function OtherSpecialtiesPage() {
       </Drawer>
       <Drawer opened={recOpen} onClose={recHandlers.close} title="New Specialty Record" size="lg" position="right">
         <Stack>
-          <TextInput label="Patient ID" required value={recForm.patient_id} onChange={(e) => setRecForm((p) => ({ ...p, patient_id: e.currentTarget.value }))} />
+          <PatientSearchSelect value={recForm.patient_id} onChange={(v) => setRecForm((p) => ({ ...p, patient_id: v }))} required />
           <TextInput label="Specialty" required value={recForm.specialty} onChange={(e) => setRecForm((p) => ({ ...p, specialty: e.currentTarget.value }))} />
           <Select label="Template" data={templates.map((t) => ({ value: t.id, label: `${t.specialty} — ${t.template_name}` }))} value={recForm.template_id ?? null} onChange={(v) => setRecForm((p) => ({ ...p, template_id: v ?? undefined }))} />
           <JsonInput label="Form Data (JSON)" minRows={4} value={JSON.stringify(recForm.form_data, null, 2)} onChange={(v) => { try { setRecForm((p) => ({ ...p, form_data: JSON.parse(v) })); } catch { /* ignore */ } }} />
@@ -146,7 +147,7 @@ export function OtherSpecialtiesPage() {
       </Drawer>
       <Drawer opened={dialOpen} onClose={dialHandlers.close} title="New Dialysis Session" size="lg" position="right">
         <Stack>
-          <TextInput label="Patient ID" required value={dialForm.patient_id} onChange={(e) => setDialForm((p) => ({ ...p, patient_id: e.currentTarget.value }))} />
+          <PatientSearchSelect value={dialForm.patient_id} onChange={(v) => setDialForm((p) => ({ ...p, patient_id: v }))} required />
           <TextInput label="Machine #" value={dialForm.machine_number ?? ""} onChange={(e) => setDialForm((p) => ({ ...p, machine_number: e.currentTarget.value }))} />
           <TextInput label="Access Type" value={dialForm.access_type ?? ""} onChange={(e) => setDialForm((p) => ({ ...p, access_type: e.currentTarget.value }))} />
           <NumberInput label="Pre Weight (kg)" value={dialForm.pre_weight_kg ?? ""} onChange={(v) => setDialForm((p) => ({ ...p, pre_weight_kg: typeof v === "number" ? v : undefined }))} />
@@ -156,7 +157,7 @@ export function OtherSpecialtiesPage() {
       </Drawer>
       <Drawer opened={chemoOpen} onClose={chemoHandlers.close} title="New Chemo Protocol" size="lg" position="right">
         <Stack>
-          <TextInput label="Patient ID" required value={chemoForm.patient_id} onChange={(e) => setChemoForm((p) => ({ ...p, patient_id: e.currentTarget.value }))} />
+          <PatientSearchSelect value={chemoForm.patient_id} onChange={(v) => setChemoForm((p) => ({ ...p, patient_id: v }))} required />
           <TextInput label="Protocol Name" required value={chemoForm.protocol_name} onChange={(e) => setChemoForm((p) => ({ ...p, protocol_name: e.currentTarget.value }))} />
           <TextInput label="Cancer Type" value={chemoForm.cancer_type ?? ""} onChange={(e) => setChemoForm((p) => ({ ...p, cancer_type: e.currentTarget.value }))} />
           <TextInput label="Staging" value={chemoForm.staging ?? ""} onChange={(e) => setChemoForm((p) => ({ ...p, staging: e.currentTarget.value }))} />

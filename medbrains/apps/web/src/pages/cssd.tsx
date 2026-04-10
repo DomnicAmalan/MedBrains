@@ -59,20 +59,20 @@ import { useRequirePermission } from "../hooks/useRequirePermission";
 // ── Label Maps ──────────────────────────────────────────
 
 const statusColors: Record<string, string> = {
-  available: "green",
-  in_use: "blue",
-  decontaminating: "yellow",
+  available: "success",
+  in_use: "primary",
+  decontaminating: "warning",
   sterilizing: "orange",
   sterile: "teal",
-  damaged: "red",
-  condemned: "gray",
+  damaged: "danger",
+  condemned: "slate",
 };
 
 const loadStatusColors: Record<string, string> = {
-  loading: "gray",
-  running: "blue",
-  completed: "green",
-  failed: "red",
+  loading: "slate",
+  running: "primary",
+  completed: "success",
+  failed: "danger",
 };
 
 const methodLabels: Record<SterilizationMethod, string> = {
@@ -107,7 +107,7 @@ function InstrumentsTab() {
     mutationFn: (data: CreateCssdInstrumentRequest) => api.createCssdInstrument(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cssd-instruments"] });
-      notifications.show({ title: "Instrument added", message: "", color: "green" });
+      notifications.show({ title: "Instrument added", message: "", color: "success" });
       closeInstr();
       setInstrForm({ barcode: "", name: "" });
     },
@@ -118,7 +118,7 @@ function InstrumentsTab() {
     mutationFn: (data: CreateCssdSetRequest) => api.createCssdSet(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cssd-sets"] });
-      notifications.show({ title: "Set created", message: "", color: "green" });
+      notifications.show({ title: "Set created", message: "", color: "success" });
       closeSet();
       setSetForm({ set_code: "", set_name: "" });
     },
@@ -128,7 +128,7 @@ function InstrumentsTab() {
     { key: "barcode" as const, label: "Barcode", render: (i: CssdInstrument) => i.barcode },
     { key: "name" as const, label: "Name", render: (i: CssdInstrument) => i.name },
     { key: "category" as const, label: "Category", render: (i: CssdInstrument) => i.category ?? "—" },
-    { key: "status" as const, label: "Status", render: (i: CssdInstrument) => <Badge color={statusColors[i.status] ?? "gray"}>{i.status}</Badge> },
+    { key: "status" as const, label: "Status", render: (i: CssdInstrument) => <Badge color={statusColors[i.status] ?? "slate"}>{i.status}</Badge> },
     { key: "lifecycle_uses" as const, label: "Uses", render: (i: CssdInstrument) => i.max_uses ? `${i.lifecycle_uses}/${i.max_uses}` : String(i.lifecycle_uses) },
   ];
 
@@ -166,7 +166,7 @@ function InstrumentsTab() {
                   <Table.Td>{s.set_code}</Table.Td>
                   <Table.Td>{s.set_name}</Table.Td>
                   <Table.Td>{s.department ?? "—"}</Table.Td>
-                  <Table.Td>{s.is_active ? <Badge color="green">Active</Badge> : <Badge color="gray">Inactive</Badge>}</Table.Td>
+                  <Table.Td>{s.is_active ? <Badge color="success">Active</Badge> : <Badge color="slate">Inactive</Badge>}</Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>
@@ -223,7 +223,7 @@ function SterilizationTab() {
     mutationFn: (data: CreateCssdLoadRequest) => api.createCssdLoad(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cssd-loads"] });
-      notifications.show({ title: "Load created", message: "", color: "green" });
+      notifications.show({ title: "Load created", message: "", color: "success" });
       closeLoad();
       setLoadForm({ sterilizer_id: "", method: "steam" });
     },
@@ -234,7 +234,7 @@ function SterilizationTab() {
       api.updateCssdLoadStatus(id, { status }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cssd-loads"] });
-      notifications.show({ title: "Load status updated", message: "", color: "blue" });
+      notifications.show({ title: "Load status updated", message: "", color: "primary" });
     },
   });
 
@@ -254,7 +254,7 @@ function SterilizationTab() {
       api.recordCssdIndicator(selectedLoad?.id ?? "", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cssd-indicators", selectedLoad?.id] });
-      notifications.show({ title: "Indicator recorded", message: "", color: "green" });
+      notifications.show({ title: "Indicator recorded", message: "", color: "success" });
       setIndicatorForm({ indicator_type: "chemical", result_pass: true });
     },
   });
@@ -262,7 +262,7 @@ function SterilizationTab() {
   const columns = [
     { key: "load_number" as const, label: "Load #", render: (l: CssdSterilizationLoad) => l.load_number },
     { key: "method" as const, label: "Method", render: (l: CssdSterilizationLoad) => methodLabels[l.method] ?? l.method },
-    { key: "status" as const, label: "Status", render: (l: CssdSterilizationLoad) => <Badge color={loadStatusColors[l.status] ?? "gray"}>{l.status}</Badge> },
+    { key: "status" as const, label: "Status", render: (l: CssdSterilizationLoad) => <Badge color={loadStatusColors[l.status] ?? "slate"}>{l.status}</Badge> },
     { key: "is_flash" as const, label: "Flash", render: (l: CssdSterilizationLoad) => l.is_flash ? <Badge color="orange">Flash</Badge> : "—" },
     { key: "created_at" as const, label: "Created", render: (l: CssdSterilizationLoad) => new Date(l.created_at).toLocaleString() },
     {
@@ -277,14 +277,14 @@ function SterilizationTab() {
           </Tooltip>
           {canCreate && l.status === "loading" && (
             <Tooltip label="Start Cycle">
-              <ActionIcon variant="subtle" color="blue" onClick={() => updateStatusMut.mutate({ id: l.id, status: "running" })}>
+              <ActionIcon variant="subtle" color="primary" onClick={() => updateStatusMut.mutate({ id: l.id, status: "running" })}>
                 <IconFlame size={16} />
               </ActionIcon>
             </Tooltip>
           )}
           {canCreate && l.status === "running" && (
             <Tooltip label="Complete">
-              <ActionIcon variant="subtle" color="green" onClick={() => updateStatusMut.mutate({ id: l.id, status: "completed" })}>
+              <ActionIcon variant="subtle" color="success" onClick={() => updateStatusMut.mutate({ id: l.id, status: "completed" })}>
                 <IconPencil size={16} />
               </ActionIcon>
             </Tooltip>
@@ -354,7 +354,7 @@ function SterilizationTab() {
                           <Badge variant="light">{ind.indicator_type === "biological" ? "BI" : "CI"}</Badge>
                           <Text size="sm">{ind.indicator_type === "biological" ? "Biological" : "Chemical"}</Text>
                         </Group>
-                        <Badge color={ind.result_pass ? "green" : "red"}>
+                        <Badge color={ind.result_pass ? "success" : "danger"}>
                           {ind.result_pass ? "Pass" : "Fail"}
                         </Badge>
                       </Group>
@@ -378,7 +378,7 @@ function SterilizationTab() {
                     {indicators.map((ind: CssdIndicatorResult) => (
                       <Table.Tr key={ind.id}>
                         <Table.Td>{ind.indicator_type}</Table.Td>
-                        <Table.Td>{ind.result_pass ? <Badge color="green">Pass</Badge> : <Badge color="red">Fail</Badge>}</Table.Td>
+                        <Table.Td>{ind.result_pass ? <Badge color="success">Pass</Badge> : <Badge color="danger">Fail</Badge>}</Table.Td>
                         <Table.Td>{[ind.indicator_brand, ind.indicator_lot].filter(Boolean).join(" / ") || "—"}</Table.Td>
                         <Table.Td>{new Date(ind.read_at).toLocaleString()}</Table.Td>
                       </Table.Tr>
@@ -429,7 +429,7 @@ function IssuanceTab() {
     mutationFn: (data: CreateCssdIssuanceRequest) => api.createCssdIssuance(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cssd-issuances"] });
-      notifications.show({ title: "Pack issued", message: "", color: "green" });
+      notifications.show({ title: "Pack issued", message: "", color: "success" });
       close();
       setForm({ issued_to_department: "" });
     },
@@ -439,7 +439,7 @@ function IssuanceTab() {
     mutationFn: (id: string) => api.returnCssdIssuance(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cssd-issuances"] });
-      notifications.show({ title: "Pack returned", message: "", color: "blue" });
+      notifications.show({ title: "Pack returned", message: "", color: "primary" });
     },
   });
 
@@ -456,9 +456,9 @@ function IssuanceTab() {
     { key: "issued_at" as const, label: "Issued At", render: (i: CssdIssuance) => new Date(i.issued_at).toLocaleString() },
     { key: "returned_at" as const, label: "Returned", render: (i: CssdIssuance) => i.returned_at ? new Date(i.returned_at).toLocaleString() : "—" },
     { key: "is_recalled" as const, label: "Status", render: (i: CssdIssuance) => {
-      if (i.is_recalled) return <Badge color="red">Recalled</Badge>;
-      if (i.returned_at) return <Badge color="gray">Returned</Badge>;
-      return <Badge color="green">Issued</Badge>;
+      if (i.is_recalled) return <Badge color="danger">Recalled</Badge>;
+      if (i.returned_at) return <Badge color="slate">Returned</Badge>;
+      return <Badge color="success">Issued</Badge>;
     }},
     {
       key: "id" as const,
@@ -468,12 +468,12 @@ function IssuanceTab() {
           {canCreate && !i.returned_at && !i.is_recalled && (
             <>
               <Tooltip label="Return">
-                <ActionIcon variant="subtle" color="blue" onClick={() => returnMut.mutate(i.id)}>
+                <ActionIcon variant="subtle" color="primary" onClick={() => returnMut.mutate(i.id)}>
                   <IconArrowBack size={16} />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="Recall">
-                <ActionIcon variant="subtle" color="red" onClick={() => recallMut.mutate({ id: i.id, reason: "Quality concern" })}>
+                <ActionIcon variant="subtle" color="danger" onClick={() => recallMut.mutate({ id: i.id, reason: "Quality concern" })}>
                   <IconAlertTriangle size={16} />
                 </ActionIcon>
               </Tooltip>
@@ -525,7 +525,7 @@ function EquipmentTab() {
     mutationFn: (data: CreateCssdSterilizerRequest) => api.createCssdSterilizer(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cssd-sterilizers"] });
-      notifications.show({ title: "Sterilizer added", message: "", color: "green" });
+      notifications.show({ title: "Sterilizer added", message: "", color: "success" });
       close();
       setForm({ name: "" });
     },
@@ -545,7 +545,7 @@ function EquipmentTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cssd-maintenance", selectedSterilizer?.id] });
       qc.invalidateQueries({ queryKey: ["cssd-sterilizers"] });
-      notifications.show({ title: "Maintenance logged", message: "", color: "green" });
+      notifications.show({ title: "Maintenance logged", message: "", color: "success" });
       setMaintForm({ maintenance_type: "" });
     },
   });
@@ -554,7 +554,7 @@ function EquipmentTab() {
     { key: "name" as const, label: "Name", render: (s: CssdSterilizer) => s.name },
     { key: "model" as const, label: "Model", render: (s: CssdSterilizer) => s.model ?? "—" },
     { key: "method" as const, label: "Method", render: (s: CssdSterilizer) => methodLabels[s.method] ?? s.method },
-    { key: "is_active" as const, label: "Status", render: (s: CssdSterilizer) => s.is_active ? <Badge color="green">Active</Badge> : <Badge color="gray">Inactive</Badge> },
+    { key: "is_active" as const, label: "Status", render: (s: CssdSterilizer) => s.is_active ? <Badge color="success">Active</Badge> : <Badge color="slate">Inactive</Badge> },
     { key: "next_maintenance_at" as const, label: "Next Maint.", render: (s: CssdSterilizer) => s.next_maintenance_at ? new Date(s.next_maintenance_at).toLocaleDateString() : "—" },
     {
       key: "id" as const,

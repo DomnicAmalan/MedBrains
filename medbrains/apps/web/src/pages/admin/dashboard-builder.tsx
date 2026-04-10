@@ -287,14 +287,14 @@ export function DashboardBuilderPage() {
       notifications.show({
         title: "Saved",
         message: "Dashboard saved successfully",
-        color: "green",
+        color: "success",
       });
     },
     onError: () => {
       notifications.show({
         title: "Error",
         message: "Failed to save dashboard",
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -373,7 +373,7 @@ export function DashboardBuilderPage() {
                   Preview
                 </Badge>
               )}
-              <Badge size="xs" variant="light" color="gray">
+              <Badge size="xs" variant="light" color="slate">
                 {widgetCount} widgets
               </Badge>
             </Group>
@@ -542,14 +542,14 @@ export function DashboardBuilderPage() {
                     })
                   }
                 />
-                <Badge size="xs" variant="light" color="gray">
+                <Badge size="xs" variant="light" color="slate">
                   {widgetCount} widgets
                 </Badge>
                 {dashboard.user_id && (
                   <Badge size="xs" variant="light" color="violet">Personal</Badge>
                 )}
                 {dashboard.cloned_from && (
-                  <Badge size="xs" variant="outline" color="gray">Cloned</Badge>
+                  <Badge size="xs" variant="outline" color="slate">Cloned</Badge>
                 )}
               </Group>
             </Stack>

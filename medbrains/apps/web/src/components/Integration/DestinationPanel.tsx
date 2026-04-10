@@ -79,7 +79,7 @@ function DraggableDestField({
         {suggestion.path}
       </Text>
       {suggestion.type && suggestion.type !== "unknown" && (
-        <Badge size="xs" variant="light" color={TYPE_COLORS[suggestion.type as MappingFieldType] ?? "gray"} style={{ flexShrink: 0 }}>
+        <Badge size="xs" variant="light" color={TYPE_COLORS[suggestion.type as MappingFieldType] ?? "slate"} style={{ flexShrink: 0 }}>
           {TYPE_LABELS[suggestion.type as MappingFieldType] ?? suggestion.type}
         </Badge>
       )}

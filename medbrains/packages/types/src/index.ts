@@ -2994,6 +2994,18 @@ export interface Prescription {
   updated_at: string;
 }
 
+// ── Medication Timing (structured instructions) ──────────────
+export type FoodTiming = "before_food" | "with_food" | "after_food" | "empty_stomach" | "any";
+export type TimeOfDay = "morning" | "afternoon" | "evening" | "bedtime";
+
+export interface MedicationTiming {
+  _v: 1;
+  food_timing?: FoodTiming;
+  time_slots?: TimeOfDay[];
+  specific_times?: string[];
+  custom_instruction?: string;
+}
+
 export interface PrescriptionItem {
   id: string;
   tenant_id: string;
@@ -15739,4 +15751,887 @@ export interface BedOccupancyRow {
   occupied: number;
   vacant: number;
   occupancy_pct: number;
+}
+
+// ── Print Data ─────────────────────────────────────────
+
+export interface MedicationLine {
+  drug_name: string;
+  dosage: string;
+  route: string | null;
+  frequency: string;
+  duration: string;
+  instructions: string | null;
+}
+
+export interface PrescriptionPrintData {
+  patient_name: string;
+  uhid: string;
+  age: string | null;
+  gender: string;
+  phone: string;
+  doctor_name: string;
+  department: string | null;
+  diagnosis: string | null;
+  date: string;
+  medications: MedicationLine[];
+  advice: string | null;
+  follow_up: string | null;
+}
+
+export interface LabResultLine {
+  parameter_name: string;
+  value: string;
+  unit: string | null;
+  normal_range: string | null;
+  flag: string | null;
+}
+
+export interface LabReportPrintData {
+  patient_name: string;
+  uhid: string;
+  age: string | null;
+  gender: string;
+  order_number: string | null;
+  test_name: string;
+  sample_type: string | null;
+  collected_at: string | null;
+  reported_at: string | null;
+  referring_doctor: string | null;
+  results: LabResultLine[];
+  pathologist_name: string | null;
+}
+
+export interface RadiologyReportPrintData {
+  patient_name: string;
+  uhid: string;
+  age: string | null;
+  gender: string;
+  modality: string;
+  body_part: string | null;
+  clinical_indication: string | null;
+  findings: string;
+  impression: string | null;
+  recommendations: string | null;
+  reported_by: string | null;
+  verified_by: string | null;
+  date: string;
+}
+
+export interface PatientCardPrintData {
+  patient_name: string;
+  uhid: string;
+  date_of_birth: string | null;
+  age: string | null;
+  gender: string;
+  phone: string;
+  email: string | null;
+  address: Record<string, unknown> | null;
+  category: string;
+  registered_at: string;
+}
+
+export interface WristbandPrintData {
+  patient_name: string;
+  uhid: string;
+  age: string | null;
+  gender: string;
+  date_of_birth: string | null;
+  blood_group: string | null;
+  admission_date: string;
+  bed_number: string | null;
+  ward_name: string | null;
+  doctor_name: string | null;
+  allergies: string[];
+}
+
+export interface AppointmentSlipPrintData {
+  patient_name: string;
+  uhid: string;
+  phone: string;
+  doctor_name: string;
+  department: string;
+  appointment_date: string;
+  slot_start: string;
+  slot_end: string;
+  token_number: number | null;
+  reason: string | null;
+}
+
+export interface DeathCertificatePrintData {
+  patient_name: string;
+  uhid: string;
+  age: string | null;
+  gender: string;
+  date_of_birth: string | null;
+  admission_date: string;
+  death_date: string | null;
+  doctor_name: string | null;
+  department: string | null;
+  diagnosis: string | null;
+  cause_of_death: string | null;
+}
+
+export interface DischargeSummaryPrintData {
+  patient_name: string;
+  uhid: string;
+  age: string | null;
+  gender: string;
+  admission_date: string;
+  discharge_date: string | null;
+  department: string | null;
+  doctor_name: string | null;
+  bed_number: string | null;
+  ward_name: string | null;
+  discharge_type: string | null;
+  discharge_summary: string | null;
+  diagnosis: string | null;
+}
+
+export interface ReceiptPrintData {
+  receipt_number: string | null;
+  patient_name: string;
+  uhid: string;
+  invoice_number: string;
+  amount: string;
+  payment_mode: string;
+  reference_number: string | null;
+  received_by: string | null;
+  paid_at: string;
+  hospital_name: string | null;
+}
+
+export interface EstimateItemLine {
+  description: string;
+  quantity: number;
+  unit_price: string;
+  total_price: string;
+}
+
+export interface EstimatePrintData {
+  invoice_number: string;
+  patient_name: string;
+  uhid: string;
+  subtotal: string;
+  tax_amount: string;
+  discount_amount: string;
+  total_amount: string;
+  items: EstimateItemLine[];
+  hospital_name: string | null;
+  date: string;
+}
+
+export interface CreditNotePrintData {
+  credit_note_number: string;
+  invoice_number: string;
+  patient_name: string;
+  uhid: string;
+  amount: string;
+  reason: string;
+  status: string;
+  created_at: string;
+  hospital_name: string | null;
+}
+
+export interface TdsCertificatePrintData {
+  deductee_name: string;
+  deductee_pan: string;
+  tds_section: string;
+  tds_rate: string;
+  base_amount: string;
+  tds_amount: string;
+  deducted_date: string;
+  certificate_number: string | null;
+  certificate_date: string | null;
+  financial_year: string;
+  quarter: string;
+  hospital_name: string | null;
+}
+
+export interface GstInvoiceItemLine {
+  description: string;
+  hsn_code: string | null;
+  quantity: number;
+  unit_price: string;
+  tax_percent: string;
+  total_price: string;
+}
+
+export interface GstInvoicePrintData {
+  invoice_number: string;
+  patient_name: string;
+  uhid: string;
+  subtotal: string;
+  tax_amount: string;
+  total_amount: string;
+  hospital_gstin: string | null;
+  hospital_name: string | null;
+  hospital_address: string | null;
+  items: GstInvoiceItemLine[];
+  date: string;
+}
+
+// ── Ambulance Fleet Management ──────────────────────────
+
+export type AmbulanceType = "bls" | "als" | "patient_transport" | "mortuary" | "neonatal";
+export type AmbulanceStatusType = "available" | "on_trip" | "maintenance" | "off_duty" | "decommissioned";
+export type AmbulanceTripType = "emergency" | "scheduled" | "inter_facility" | "discharge";
+export type AmbulanceTripStatus = "requested" | "dispatched" | "en_route_pickup" | "at_pickup" | "en_route_drop" | "at_drop" | "completed" | "cancelled";
+export type AmbulanceTripPriority = "critical" | "urgent" | "routine";
+export type AmbulanceMaintenanceStatus = "scheduled" | "in_progress" | "completed" | "overdue" | "cancelled";
+
+export interface AmbulanceRow {
+  id: string;
+  tenant_id: string;
+  vehicle_number: string;
+  ambulance_code: string;
+  ambulance_type: AmbulanceType;
+  status: AmbulanceStatusType;
+  make: string | null;
+  model: string | null;
+  year_of_manufacture: number | null;
+  chassis_number: string | null;
+  engine_number: string | null;
+  fitness_certificate_expiry: string | null;
+  insurance_expiry: string | null;
+  pollution_certificate_expiry: string | null;
+  permit_expiry: string | null;
+  equipment_checklist: unknown | null;
+  has_ventilator: boolean;
+  has_defibrillator: boolean;
+  has_oxygen: boolean;
+  seating_capacity: number | null;
+  gps_device_id: string | null;
+  last_latitude: number | null;
+  last_longitude: number | null;
+  last_location_at: string | null;
+  default_driver_id: string | null;
+  current_driver_id: string | null;
+  odometer_km: number | null;
+  fuel_type: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AmbulanceDriverRow {
+  id: string;
+  tenant_id: string;
+  employee_id: string;
+  license_number: string;
+  license_type: string;
+  license_expiry: string;
+  is_active: boolean;
+  bls_certified: boolean;
+  bls_expiry: string | null;
+  defensive_driving: boolean;
+  shift_pattern: string | null;
+  phone: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AmbulanceTripRow {
+  id: string;
+  tenant_id: string;
+  trip_code: string;
+  ambulance_id: string | null;
+  driver_id: string | null;
+  trip_type: AmbulanceTripType;
+  status: AmbulanceTripStatus;
+  priority: AmbulanceTripPriority;
+  patient_id: string | null;
+  patient_name: string | null;
+  patient_phone: string | null;
+  pickup_address: string;
+  pickup_latitude: number | null;
+  pickup_longitude: number | null;
+  pickup_landmark: string | null;
+  drop_address: string | null;
+  drop_latitude: number | null;
+  drop_longitude: number | null;
+  drop_landmark: string | null;
+  requested_at: string;
+  dispatched_at: string | null;
+  pickup_arrived_at: string | null;
+  patient_loaded_at: string | null;
+  drop_arrived_at: string | null;
+  completed_at: string | null;
+  cancelled_at: string | null;
+  vitals_at_pickup: unknown | null;
+  vitals_at_drop: unknown | null;
+  clinical_notes: string | null;
+  oxygen_administered: boolean | null;
+  iv_started: boolean | null;
+  odometer_start: number | null;
+  odometer_end: number | null;
+  distance_km: number | null;
+  cancellation_reason: string | null;
+  is_billable: boolean;
+  base_charge: number | null;
+  per_km_charge: number | null;
+  total_amount: number | null;
+  billing_invoice_id: string | null;
+  er_visit_id: string | null;
+  transport_request_id: string | null;
+  requested_by: string | null;
+  dispatched_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AmbulanceTripLogRow {
+  id: string;
+  tenant_id: string;
+  trip_id: string;
+  event_type: string;
+  latitude: number | null;
+  longitude: number | null;
+  speed_kmh: number | null;
+  heading: number | null;
+  event_data: unknown | null;
+  recorded_by: string | null;
+  recorded_at: string;
+}
+
+export interface AmbulanceMaintenanceRow {
+  id: string;
+  tenant_id: string;
+  ambulance_id: string;
+  maintenance_type: string;
+  status: AmbulanceMaintenanceStatus;
+  scheduled_date: string;
+  started_at: string | null;
+  completed_at: string | null;
+  description: string | null;
+  vendor_name: string | null;
+  cost: number | null;
+  odometer_at_service: number | null;
+  next_service_km: number | null;
+  next_service_date: string | null;
+  findings: string | null;
+  parts_replaced: unknown | null;
+  performed_by: string | null;
+  approved_by: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateAmbulanceRequest {
+  vehicle_number: string;
+  ambulance_type: AmbulanceType;
+  make?: string;
+  model?: string;
+  year_of_manufacture?: number;
+  chassis_number?: string;
+  engine_number?: string;
+  fitness_certificate_expiry?: string;
+  insurance_expiry?: string;
+  pollution_certificate_expiry?: string;
+  permit_expiry?: string;
+  equipment_checklist?: unknown;
+  has_ventilator?: boolean;
+  has_defibrillator?: boolean;
+  has_oxygen?: boolean;
+  seating_capacity?: number;
+  gps_device_id?: string;
+  default_driver_id?: string;
+  fuel_type?: string;
+  notes?: string;
+}
+
+export interface UpdateAmbulanceRequest {
+  vehicle_number?: string;
+  ambulance_type?: AmbulanceType;
+  status?: AmbulanceStatusType;
+  make?: string;
+  model?: string;
+  year_of_manufacture?: number;
+  chassis_number?: string;
+  engine_number?: string;
+  fitness_certificate_expiry?: string;
+  insurance_expiry?: string;
+  pollution_certificate_expiry?: string;
+  permit_expiry?: string;
+  equipment_checklist?: unknown;
+  has_ventilator?: boolean;
+  has_defibrillator?: boolean;
+  has_oxygen?: boolean;
+  seating_capacity?: number;
+  gps_device_id?: string;
+  default_driver_id?: string;
+  odometer_km?: number;
+  fuel_type?: string;
+  notes?: string;
+}
+
+export interface UpdateAmbulanceLocationRequest {
+  latitude: number;
+  longitude: number;
+}
+
+export interface CreateAmbulanceDriverRequest {
+  employee_id: string;
+  license_number: string;
+  license_type: string;
+  license_expiry: string;
+  bls_certified?: boolean;
+  bls_expiry?: string;
+  defensive_driving?: boolean;
+  shift_pattern?: string;
+  phone?: string;
+  notes?: string;
+}
+
+export interface UpdateAmbulanceDriverRequest {
+  license_number?: string;
+  license_type?: string;
+  license_expiry?: string;
+  is_active?: boolean;
+  bls_certified?: boolean;
+  bls_expiry?: string;
+  defensive_driving?: boolean;
+  shift_pattern?: string;
+  phone?: string;
+  notes?: string;
+}
+
+export interface CreateAmbulanceTripRequest {
+  trip_type: AmbulanceTripType;
+  priority?: AmbulanceTripPriority;
+  ambulance_id?: string;
+  driver_id?: string;
+  patient_id?: string;
+  patient_name?: string;
+  patient_phone?: string;
+  pickup_address: string;
+  pickup_latitude?: number;
+  pickup_longitude?: number;
+  pickup_landmark?: string;
+  drop_address?: string;
+  drop_latitude?: number;
+  drop_longitude?: number;
+  drop_landmark?: string;
+  er_visit_id?: string;
+  transport_request_id?: string;
+  is_billable?: boolean;
+}
+
+export interface UpdateAmbulanceTripRequest {
+  ambulance_id?: string;
+  driver_id?: string;
+  patient_id?: string;
+  patient_name?: string;
+  patient_phone?: string;
+  pickup_address?: string;
+  drop_address?: string;
+  vitals_at_pickup?: unknown;
+  vitals_at_drop?: unknown;
+  clinical_notes?: string;
+  oxygen_administered?: boolean;
+  iv_started?: boolean;
+  odometer_start?: number;
+  odometer_end?: number;
+  base_charge?: number;
+  per_km_charge?: number;
+  total_amount?: number;
+}
+
+export interface UpdateAmbulanceTripStatusRequest {
+  status: AmbulanceTripStatus;
+  cancellation_reason?: string;
+}
+
+export interface AddAmbulanceTripLogRequest {
+  event_type: string;
+  latitude?: number;
+  longitude?: number;
+  speed_kmh?: number;
+  event_data?: unknown;
+}
+
+export interface CreateAmbulanceMaintenanceRequest {
+  ambulance_id: string;
+  maintenance_type: string;
+  scheduled_date: string;
+  description?: string;
+  vendor_name?: string;
+  cost?: number;
+  odometer_at_service?: number;
+  next_service_km?: number;
+  next_service_date?: string;
+  notes?: string;
+}
+
+export interface UpdateAmbulanceMaintenanceRequest {
+  maintenance_type?: string;
+  status?: AmbulanceMaintenanceStatus;
+  scheduled_date?: string;
+  description?: string;
+  vendor_name?: string;
+  cost?: number;
+  odometer_at_service?: number;
+  next_service_km?: number;
+  next_service_date?: string;
+  findings?: string;
+  parts_replaced?: unknown;
+  performed_by?: string;
+  notes?: string;
+}
+
+// ── Communication Hub ───────────────────────────────────
+
+export type CommChannel = "sms" | "whatsapp" | "email" | "push" | "ivr" | "portal";
+export type CommMessageStatus = "queued" | "sent" | "delivered" | "failed" | "read";
+export type CommTemplateType = "appointment_reminder" | "lab_result" | "discharge_summary" | "billing" | "medication_reminder" | "follow_up" | "generic" | "marketing";
+export type CommClinicalPriority = "routine" | "urgent" | "critical" | "stat";
+export type CommAlertStatus = "triggered" | "acknowledged" | "escalated" | "resolved" | "expired";
+export type CommComplaintStatus = "open" | "assigned" | "in_progress" | "pending_review" | "resolved" | "closed" | "reopened";
+export type CommComplaintSource = "walk_in" | "phone" | "email" | "portal" | "kiosk" | "social_media" | "google_review";
+export type CommFeedbackType = "bedside" | "post_discharge" | "nps" | "department" | "kiosk";
+
+export interface CommTemplateRow {
+  id: string; tenant_id: string; template_name: string; template_code: string;
+  channel: CommChannel; template_type: CommTemplateType; subject: string | null;
+  body_template: string; placeholders: unknown | null; language: string | null;
+  is_active: boolean; requires_approval: boolean; approved_by: string | null;
+  approved_at: string | null; external_template_id: string | null; notes: string | null;
+  created_by: string | null; created_at: string; updated_at: string;
+}
+
+export interface CommMessageRow {
+  id: string; tenant_id: string; message_code: string; template_id: string | null;
+  channel: CommChannel; status: CommMessageStatus; recipient_type: string | null;
+  recipient_id: string | null; recipient_name: string | null; recipient_contact: string;
+  subject: string | null; body: string; scheduled_at: string | null;
+  sent_at: string | null; delivered_at: string | null; read_at: string | null;
+  failed_at: string | null; failure_reason: string | null; external_message_id: string | null;
+  context_type: string | null; context_id: string | null; retry_count: number | null;
+  sent_by: string | null; cost: number | null; created_at: string; updated_at: string;
+}
+
+export interface CommClinicalMessageRow {
+  id: string; tenant_id: string; message_code: string; sender_id: string;
+  recipient_id: string; recipient_department_id: string | null; patient_id: string | null;
+  priority: CommClinicalPriority; message_type: string; subject: string | null;
+  body: string; sbar_data: unknown | null; is_read: boolean; read_at: string | null;
+  is_urgent: boolean; acknowledged_at: string | null; acknowledged_by: string | null;
+  parent_message_id: string | null; attachments: unknown | null;
+  created_at: string; updated_at: string;
+}
+
+export interface CommCriticalAlertRow {
+  id: string; tenant_id: string; alert_code: string; alert_source: string;
+  source_id: string | null; patient_id: string; department_id: string | null;
+  priority: CommClinicalPriority; status: CommAlertStatus; title: string;
+  description: string; alert_value: string | null; normal_range: string | null;
+  triggered_at: string; acknowledged_at: string | null; acknowledged_by: string | null;
+  resolved_at: string | null; resolved_by: string | null; resolution_notes: string | null;
+  escalation_level: number | null; escalated_at: string | null; escalated_to: string | null;
+  notification_log: unknown | null; created_at: string; updated_at: string;
+}
+
+export interface CommComplaintRow {
+  id: string; tenant_id: string; complaint_code: string; source: CommComplaintSource;
+  status: CommComplaintStatus; patient_id: string | null; complainant_name: string;
+  complainant_phone: string | null; complainant_email: string | null;
+  department_id: string | null; category: string | null; subcategory: string | null;
+  subject: string; description: string; severity: string | null;
+  assigned_to: string | null; assigned_at: string | null;
+  sla_hours: number | null; sla_deadline: string | null;
+  sla_breached: boolean; sla_breached_at: string | null;
+  resolution_notes: string | null; resolved_at: string | null; resolved_by: string | null;
+  closed_at: string | null; closed_by: string | null;
+  satisfaction_score: number | null; service_recovery_action: string | null;
+  service_recovery_cost: number | null; escalation_level: number | null;
+  escalation_history: unknown | null; google_review_id: string | null;
+  external_reference: string | null; attachments: unknown | null;
+  created_by: string | null; created_at: string; updated_at: string;
+}
+
+export interface CommFeedbackSurveyRow {
+  id: string; tenant_id: string; feedback_code: string; feedback_type: CommFeedbackType;
+  patient_id: string | null; department_id: string | null; doctor_id: string | null;
+  overall_rating: number | null; nps_score: number | null; wait_time_rating: number | null;
+  staff_rating: number | null; cleanliness_rating: number | null; food_rating: number | null;
+  communication_rating: number | null; discharge_rating: number | null;
+  would_recommend: boolean | null; comments: string | null; suggestions: string | null;
+  is_anonymous: boolean; channel: string | null; survey_data: unknown | null;
+  submitted_at: string; waiting_time_minutes: number | null; collection_point: string | null;
+  created_at: string;
+}
+
+export interface FeedbackStatsResponse {
+  total_responses: number; avg_overall: number; avg_nps: number; nps_score: number;
+  avg_wait_time: number; avg_staff: number; avg_cleanliness: number; would_recommend_pct: number;
+}
+
+export interface CreateCommTemplateRequest {
+  template_name: string; template_code: string; channel: CommChannel; template_type: CommTemplateType;
+  subject?: string; body_template: string; placeholders?: unknown; language?: string;
+  is_active?: boolean; requires_approval?: boolean; external_template_id?: string; notes?: string;
+}
+export interface UpdateCommTemplateRequest {
+  template_name?: string; channel?: CommChannel; template_type?: CommTemplateType;
+  subject?: string; body_template?: string; placeholders?: unknown; language?: string;
+  is_active?: boolean; requires_approval?: boolean; external_template_id?: string; notes?: string;
+}
+export interface CreateCommMessageRequest {
+  template_id?: string; channel: CommChannel; recipient_type?: string; recipient_id?: string;
+  recipient_name?: string; recipient_contact: string; subject?: string; body: string;
+  context_type?: string; context_id?: string;
+}
+export interface UpdateCommMessageStatusRequest {
+  status: CommMessageStatus; failure_reason?: string; external_message_id?: string;
+}
+export interface CreateCommClinicalRequest {
+  recipient_id: string; recipient_department_id?: string; patient_id?: string;
+  priority?: CommClinicalPriority; message_type: string; subject?: string; body: string;
+  sbar_data?: unknown; is_urgent?: boolean; parent_message_id?: string; attachments?: unknown;
+}
+export interface CreateCommAlertRequest {
+  alert_source: string; source_id?: string; patient_id: string; department_id?: string;
+  priority?: CommClinicalPriority; title: string; description: string;
+  alert_value?: string; normal_range?: string;
+}
+export interface ResolveCommAlertRequest { resolution_notes?: string; }
+export interface CreateCommComplaintRequest {
+  source: CommComplaintSource; patient_id?: string; complainant_name: string;
+  complainant_phone?: string; complainant_email?: string; department_id?: string;
+  category?: string; subcategory?: string; subject: string; description: string;
+  severity?: string; sla_hours?: number;
+}
+export interface UpdateCommComplaintRequest {
+  status?: CommComplaintStatus; assigned_to?: string; category?: string; severity?: string;
+}
+export interface ResolveCommComplaintRequest {
+  resolution_notes?: string; satisfaction_score?: number;
+  service_recovery_action?: string; service_recovery_cost?: number;
+}
+export interface CreateCommFeedbackRequest {
+  feedback_type: CommFeedbackType; patient_id?: string; department_id?: string; doctor_id?: string;
+  overall_rating?: number; nps_score?: number; wait_time_rating?: number; staff_rating?: number;
+  cleanliness_rating?: number; food_rating?: number; communication_rating?: number;
+  discharge_rating?: number; would_recommend?: boolean; comments?: string; suggestions?: string;
+  is_anonymous?: boolean; channel?: string; survey_data?: unknown;
+  waiting_time_minutes?: number; collection_point?: string;
+}
+
+// ── Blood Bank Phase 2 ─────────────────────────────────
+
+export type BbReturnStatus = "requested" | "inspecting" | "accepted" | "rejected";
+export type BbLookbackStatus = "detected" | "investigating" | "notified" | "closed";
+export type BbBillingStatus = "pending" | "invoiced" | "paid" | "waived";
+export type BbColdChainAlertLevel = "normal" | "warning" | "critical";
+
+export interface BbRecruitmentCampaignRow {
+  id: string; tenant_id: string; campaign_name: string; campaign_type: string;
+  target_blood_groups: unknown | null; target_count: number | null; actual_count: number | null;
+  start_date: string; end_date: string | null; status: string; notes: string | null;
+  created_by: string | null; created_at: string; updated_at: string;
+}
+
+export interface BbColdChainDeviceRow {
+  id: string; tenant_id: string; device_name: string; device_serial: string | null;
+  location: string | null; equipment_type: string; min_temp: string | null; max_temp: string | null;
+  alert_threshold_minutes: number | null; is_active: boolean; last_reading_at: string | null;
+  last_temp: string | null; alert_level: BbColdChainAlertLevel | null; notes: string | null;
+  created_at: string; updated_at: string;
+}
+
+export interface BbColdChainReadingRow {
+  id: string; tenant_id: string; device_id: string; temperature: string;
+  humidity: string | null; alert_level: BbColdChainAlertLevel | null; recorded_at: string;
+}
+
+export interface BbBloodReturnRow {
+  id: string; tenant_id: string; component_id: string; return_code: string;
+  returned_by: string | null; return_reason: string | null; temperature_at_return: string | null;
+  temperature_acceptable: boolean | null; time_out_minutes: number | null; status: BbReturnStatus;
+  inspection_notes: string | null; inspected_by: string | null; inspected_at: string | null;
+  created_at: string; updated_at: string;
+}
+
+export interface BbMsbosGuidelineRow {
+  id: string; tenant_id: string; procedure_name: string; procedure_code: string;
+  blood_group: string | null; component_type: string; max_units: number;
+  crossmatch_to_transfusion_ratio: string | null; is_active: boolean; notes: string | null;
+  created_at: string; updated_at: string;
+}
+
+export interface BbLookbackEventRow {
+  id: string; tenant_id: string; event_code: string; donation_id: string | null;
+  donor_id: string | null; infection_type: string; detection_date: string;
+  status: BbLookbackStatus; affected_components: unknown | null;
+  recipients_notified: number | null; investigation_notes: string | null;
+  reported_to: string | null; reported_at: string | null;
+  closed_at: string | null; closed_by: string | null;
+  created_by: string | null; created_at: string; updated_at: string;
+}
+
+export interface BbBillingItemRow {
+  id: string; tenant_id: string; component_id: string | null; patient_id: string | null;
+  billing_code: string; component_type: string | null; blood_group: string | null;
+  processing_fee: string | null; component_cost: string | null; cross_match_fee: string | null;
+  total_amount: string | null; status: BbBillingStatus; invoice_id: string | null;
+  waiver_reason: string | null; billed_by: string | null; billed_at: string | null;
+  created_at: string; updated_at: string;
+}
+
+export interface CreateBbCampaignRequest {
+  campaign_name: string; campaign_type: string; target_blood_groups?: unknown;
+  target_count?: number; start_date: string; end_date?: string; notes?: string;
+}
+export interface UpdateBbCampaignRequest {
+  status?: string; actual_count?: number; notes?: string;
+}
+export interface CreateBbDeviceRequest {
+  device_name: string; device_serial?: string; location?: string; equipment_type: string;
+  min_temp?: number; max_temp?: number; alert_threshold_minutes?: number; notes?: string;
+}
+export interface AddBbReadingRequest {
+  device_id: string; temperature: number; humidity?: number;
+}
+export interface CreateBbReturnRequest {
+  component_id: string; return_reason?: string; temperature_at_return?: number; time_out_minutes?: number;
+}
+export interface InspectBbReturnRequest {
+  status: BbReturnStatus; inspection_notes?: string; temperature_acceptable?: boolean;
+}
+export interface CreateBbMsbosRequest {
+  procedure_name: string; procedure_code: string; blood_group?: string; component_type: string;
+  max_units: number; crossmatch_to_transfusion_ratio?: number; notes?: string;
+}
+export interface CreateBbLookbackRequest {
+  donation_id?: string; donor_id?: string; infection_type: string; detection_date: string;
+  affected_components?: unknown; investigation_notes?: string;
+}
+export interface UpdateBbLookbackRequest {
+  status?: BbLookbackStatus; recipients_notified?: number; investigation_notes?: string; reported_to?: string;
+}
+export interface CreateBbBillingRequest {
+  component_id?: string; patient_id?: string; component_type?: string; blood_group?: string;
+  processing_fee?: number; component_cost?: number; cross_match_fee?: number; total_amount?: number;
+}
+export interface BbSbtcReport {
+  donation_count: number; component_count: number; discard_count: number;
+  reaction_count: number; lookback_count: number;
+}
+
+// ══════════════════════════════════════════════════════════
+//  Bedside Portal
+// ══════════════════════════════════════════════════════════
+
+export type BedsideRequestType =
+  | "nurse_call" | "pain_management" | "bathroom_assist"
+  | "water_food" | "blanket_pillow" | "position_change" | "other";
+
+export type BedsideRequestStatus =
+  | "pending" | "acknowledged" | "in_progress" | "completed" | "cancelled";
+
+export interface BedsideSessionRow {
+  id: string; tenant_id: string; admission_id: string; patient_id: string;
+  bed_location: string | null; device_id: string | null;
+  started_at: string; ended_at: string | null; is_active: boolean;
+  created_at: string;
+}
+
+export interface BedsideNurseRequestRow {
+  id: string; tenant_id: string; admission_id: string; patient_id: string;
+  request_type: BedsideRequestType; status: BedsideRequestStatus;
+  notes: string | null;
+  acknowledged_by: string | null; acknowledged_at: string | null;
+  completed_by: string | null; completed_at: string | null;
+  created_at: string; updated_at: string;
+}
+
+export interface BedsideEducationVideoRow {
+  id: string; tenant_id: string; title: string; description: string | null;
+  video_url: string; thumbnail_url: string | null; category: string;
+  condition_codes: unknown | null; language: string | null;
+  duration_seconds: number | null; is_active: boolean; sort_order: number | null;
+  created_by: string | null; created_at: string; updated_at: string;
+}
+
+export interface BedsideEducationViewRow {
+  id: string; tenant_id: string; video_id: string; patient_id: string;
+  admission_id: string; watched_seconds: number | null; completed: boolean;
+  viewed_at: string;
+}
+
+export interface BedsideRealtimeFeedbackRow {
+  id: string; tenant_id: string; admission_id: string; patient_id: string;
+  pain_level: number | null; comfort_level: number | null;
+  cleanliness_level: number | null; noise_level: number | null;
+  staff_response: number | null; comments: string | null;
+  submitted_at: string;
+}
+
+export interface BedsideDailyScheduleItem {
+  event_type: string; scheduled_at: string | null;
+  description: string; status: string | null;
+}
+
+export interface BedsideMedicationItem {
+  id: string; drug_name: string | null; dose: string | null;
+  route: string | null; frequency: string | null;
+  scheduled_at: string | null; status: string | null;
+}
+
+export interface BedsideVitalReading {
+  id: string; vital_type: string | null; value_numeric: number | null;
+  value_text: string | null; unit: string | null; recorded_at: string | null;
+}
+
+export interface BedsideLabResultItem {
+  id: string; test_name: string | null; result_value: string | null;
+  unit: string | null; reference_range: string | null;
+  is_abnormal: boolean | null; completed_at: string | null;
+}
+
+export interface BedsideDietOrderItem {
+  id: string; diet_type: string | null; meal_type: string | null;
+  instructions: string | null; status: string | null;
+}
+
+export interface CreateBedsideSessionRequest {
+  admission_id: string; patient_id: string;
+  bed_location?: string; device_id?: string;
+}
+
+export interface CreateBedsideNurseRequestPayload {
+  patient_id: string; request_type: BedsideRequestType; notes?: string;
+}
+
+export interface UpdateBedsideRequestStatusPayload {
+  status: BedsideRequestStatus;
+}
+
+export interface CreateBedsideVideoRequest {
+  title: string; description?: string; video_url: string;
+  thumbnail_url?: string; category: string;
+  condition_codes?: unknown; language?: string;
+  duration_seconds?: number; sort_order?: number;
+}
+
+export interface UpdateBedsideVideoRequest {
+  title?: string; description?: string; video_url?: string;
+  thumbnail_url?: string; category?: string;
+  condition_codes?: unknown; language?: string;
+  duration_seconds?: number; is_active?: boolean; sort_order?: number;
+}
+
+export interface RecordBedsideVideoViewRequest {
+  video_id: string; patient_id: string;
+  watched_seconds?: number; completed?: boolean;
+}
+
+export interface SubmitBedsideFeedbackRequest {
+  patient_id: string; pain_level?: number; comfort_level?: number;
+  cleanliness_level?: number; noise_level?: number;
+  staff_response?: number; comments?: string;
 }

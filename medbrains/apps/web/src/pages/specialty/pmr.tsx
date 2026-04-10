@@ -41,7 +41,7 @@ export function PmrPage() {
 
   const createPlan = useMutation({
     mutationFn: (data: CreateRehabPlanRequest) => api.createRehabPlan(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["rehab-plans"] }); planHandlers.close(); notifications.show({ title: "Created", message: "Rehab plan created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["rehab-plans"] }); planHandlers.close(); notifications.show({ title: "Created", message: "Rehab plan created", color: "success" }); },
   });
 
   const planCols: Column<RehabPlan>[] = [
@@ -64,7 +64,7 @@ export function PmrPage() {
   const audioCols: Column<AudiologyTest>[] = [
     { key: "patient_id", label: "Patient", render: (r) => <Text size="sm">{r.patient_id.slice(0, 8)}</Text> },
     { key: "test_type", label: "Test", render: (r) => <Badge>{r.test_type.toUpperCase()}</Badge> },
-    { key: "nhsp", label: "NHSP", render: (r) => r.is_nhsp ? <Badge color="blue">NHSP</Badge> : <Text size="sm">No</Text> },
+    { key: "nhsp", label: "NHSP", render: (r) => r.is_nhsp ? <Badge color="primary">NHSP</Badge> : <Text size="sm">No</Text> },
     { key: "referral", label: "Referral Needed", render: (r) => r.nhsp_referral_needed ? <Badge color="orange">Yes</Badge> : <Text size="sm">No</Text> },
     { key: "date", label: "Date", render: (r) => <Text size="sm">{new Date(r.created_at).toLocaleDateString()}</Text> },
   ];

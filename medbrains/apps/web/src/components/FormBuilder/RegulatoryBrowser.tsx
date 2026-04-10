@@ -18,10 +18,10 @@ import { useMemo, useState } from "react";
 // ── Requirement Level Colors ─────────────────────────────
 
 const REQUIREMENT_COLORS: Record<string, string> = {
-  mandatory: "red",
+  mandatory: "danger",
   conditional: "orange",
-  recommended: "yellow",
-  optional: "gray",
+  recommended: "warning",
+  optional: "slate",
 };
 
 // ── Types ────────────────────────────────────────────────
@@ -222,7 +222,7 @@ export function RegulatoryBrowser({
                           </Text>
                         </div>
                       </Group>
-                      <Badge size="sm" variant="light" color="blue" circle>
+                      <Badge size="sm" variant="light" color="primary" circle>
                         {body.clauses.length}
                       </Badge>
                     </Group>
@@ -259,7 +259,7 @@ export function RegulatoryBrowser({
                               color={
                                 REQUIREMENT_COLORS[
                                   clause.requirement_level
-                                ] ?? "gray"
+                                ] ?? "slate"
                               }
                             >
                               {clause.requirement_level}
@@ -286,7 +286,7 @@ export function RegulatoryBrowser({
                             <>
                               <Divider
                                 my={6}
-                                color="gray.2"
+                                color="slate.2"
                               />
                               <Group gap={6}>
                                 {clause.fields.map((f) => (
@@ -294,7 +294,7 @@ export function RegulatoryBrowser({
                                     key={f.field_code}
                                     size="xs"
                                     variant="outline"
-                                    color="gray"
+                                    color="slate"
                                     leftSection="📎"
                                   >
                                     {f.field_code}

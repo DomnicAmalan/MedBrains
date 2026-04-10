@@ -43,7 +43,7 @@ export function DashboardList() {
       notifications.show({
         title: "Deleted",
         message: "Dashboard deleted",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -55,7 +55,7 @@ export function DashboardList() {
       notifications.show({
         title: "Duplicated",
         message: "Dashboard duplicated",
-        color: "green",
+        color: "success",
       });
     },
   });
@@ -119,7 +119,7 @@ export function DashboardList() {
       label: "Default",
       render: (row: DashboardSummary) =>
         row.is_default ? (
-          <Badge color="blue" size="xs" variant="light">
+          <Badge color="primary" size="xs" variant="light">
             Default
           </Badge>
         ) : null,
@@ -129,7 +129,7 @@ export function DashboardList() {
       label: "Active",
       render: (row: DashboardSummary) => (
         <Badge
-          color={row.is_active ? "green" : "gray"}
+          color={row.is_active ? "success" : "slate"}
           size="xs"
           variant="light"
         >
@@ -165,7 +165,7 @@ export function DashboardList() {
           <Tooltip label="Delete">
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               size="sm"
               onClick={() => deleteMutation.mutate(row.id)}
             >
@@ -228,7 +228,7 @@ function CreateDashboardModal({
       notifications.show({
         title: "Error",
         message: "Failed to create dashboard",
-        color: "red",
+        color: "danger",
       });
     },
   });

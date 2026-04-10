@@ -147,7 +147,7 @@ export function MasterDataStatusSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load master data status:{" "}
           {firstError instanceof Error ? firstError.message : "Unknown error"}
         </Text>
@@ -168,7 +168,7 @@ export function MasterDataStatusSettings() {
         )}
       </Group>
 
-      <Grid gutter="md">
+      <Grid gap="md">
         {masterItems.map((item) => (
           <Grid.Col key={item.key} span={{ base: 12, sm: 6, md: 4 }}>
             <Card
@@ -186,19 +186,19 @@ export function MasterDataStatusSettings() {
                     size="xl"
                     radius="xl"
                     variant="light"
-                    color={item.needsSetup ? "red" : "blue"}
+                    color={item.needsSetup ? "danger" : "primary"}
                   >
                     {item.icon}
                   </ThemeIcon>
                   {item.needsSetup ? (
-                    <Badge color="red" variant="light" size="sm">
+                    <Badge color="danger" variant="light" size="sm">
                       Needs setup
                     </Badge>
                   ) : (
                     <ThemeIcon
                       size="sm"
                       radius="xl"
-                      color="green"
+                      color="success"
                       variant="light"
                     >
                       <IconCheck size={14} />
@@ -218,7 +218,7 @@ export function MasterDataStatusSettings() {
                 {item.needsSetup && (
                   <Group gap="xs">
                     <IconAlertCircle size={14} color="var(--mantine-color-red-6)" />
-                    <Text size="xs" c="red">
+                    <Text size="xs" c="danger">
                       No items configured
                     </Text>
                   </Group>
@@ -238,7 +238,7 @@ export function MasterDataStatusSettings() {
           style={{ backgroundColor: "#f8f9fa" }}
         >
           <Group gap="md">
-            <ThemeIcon size="xl" radius="xl" color="green" variant="light">
+            <ThemeIcon size="xl" radius="xl" color="success" variant="light">
               <IconCheck size={28} />
             </ThemeIcon>
             <div style={{ flex: 1 }}>

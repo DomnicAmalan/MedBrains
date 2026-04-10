@@ -110,7 +110,7 @@ function PermissionGroupNode({
             size="sm"
           />
           <Text size="sm" fw={500}>{group.label}</Text>
-          <Badge size="xs" variant="light" color={checked === total ? "green" : "gray"}>
+          <Badge size="xs" variant="light" color={checked === total ? "success" : "slate"}>
             {checked}/{total}
           </Badge>
         </Group>
@@ -481,7 +481,7 @@ function PermissionEditor({
                       <Text size="sm" fw={500} tt="capitalize">
                         {module}
                       </Text>
-                      <Badge size="xs" variant="light" color="gray">
+                      <Badge size="xs" variant="light" color="slate">
                         {fields.length} field{fields.length !== 1 ? "s" : ""}
                       </Badge>
                     </Group>
@@ -578,7 +578,7 @@ function PermissionEditor({
                       <Text size="sm" fw={500} tt="capitalize">
                         {category}
                       </Text>
-                      <Badge size="xs" variant="light" color="gray">
+                      <Badge size="xs" variant="light" color="slate">
                         {templates.length} widget{templates.length !== 1 ? "s" : ""}
                       </Badge>
                     </Group>
@@ -694,7 +694,7 @@ function EditRoleModal({
         />
 
         {updateMutation.isError && (
-          <Text size="sm" c="red">
+          <Text size="sm" c="danger">
             {updateMutation.error.message}
           </Text>
         )}
@@ -800,7 +800,7 @@ function CreateRoleModal({
         />
 
         {createMutation.isError && (
-          <Text size="sm" c="red">
+          <Text size="sm" c="danger">
             {createMutation.error.message}
           </Text>
         )}
@@ -910,7 +910,7 @@ export function RolesPage() {
                 <Group gap="xs">
                   <Text size="sm">{role.name}</Text>
                   {role.is_system && (
-                    <Badge size="xs" variant="light" color="blue">System</Badge>
+                    <Badge size="xs" variant="light" color="primary">System</Badge>
                   )}
                 </Group>
               </Table.Td>
@@ -923,7 +923,7 @@ export function RolesPage() {
                 <Badge
                   size="sm"
                   variant="light"
-                  color={getPermissionCount(role) > 0 ? "green" : "gray"}
+                  color={getPermissionCount(role) > 0 ? "success" : "slate"}
                   style={{ cursor: canUpdate ? "pointer" : "default" }}
                   onClick={() => canUpdate && handleEditPermissions(role)}
                 >
@@ -934,7 +934,7 @@ export function RolesPage() {
                 <Badge
                   size="sm"
                   variant="light"
-                  color={role.is_active ? "green" : "red"}
+                  color={role.is_active ? "success" : "danger"}
                 >
                   {role.is_active ? "Active" : "Inactive"}
                 </Badge>
@@ -942,7 +942,7 @@ export function RolesPage() {
               <Table.Td>
                 <Menu shadow="md" width={160}>
                   <Menu.Target>
-                    <ActionIcon variant="subtle" color="gray" size="sm">
+                    <ActionIcon variant="subtle" color="slate" size="sm">
                       <IconDots size={16} />
                     </ActionIcon>
                   </Menu.Target>
@@ -964,7 +964,7 @@ export function RolesPage() {
                     {!role.is_system && (
                       <Menu.Item
                         leftSection={<IconTrash size={14} />}
-                        color="red"
+                        color="danger"
                         onClick={() => deleteMutation.mutate(role.id)}
                         disabled={!canDelete}
                       >

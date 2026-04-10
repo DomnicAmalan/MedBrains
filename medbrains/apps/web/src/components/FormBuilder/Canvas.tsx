@@ -114,7 +114,7 @@ function SortableSection({ sectionId, children, isLocked = false }: SortableSect
             classNames={{ input: classes.sectionNameInput }}
             autoFocus
             rightSection={
-              <ActionIcon size="xs" variant="subtle" color="blue" onClick={commitName}>
+              <ActionIcon size="xs" variant="subtle" color="primary" onClick={commitName}>
                 <IconCheck size={12} />
               </ActionIcon>
             }
@@ -132,7 +132,7 @@ function SortableSection({ sectionId, children, isLocked = false }: SortableSect
           </Text>
         )}
 
-        <Badge size="xs" variant="light" color="gray">
+        <Badge size="xs" variant="light" color="slate">
           {section.layout}
         </Badge>
         {!isLocked && (
@@ -141,7 +141,7 @@ function SortableSection({ sectionId, children, isLocked = false }: SortableSect
               <ActionIcon
                 size="xs"
                 variant="subtle"
-                color="red"
+                color="danger"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeSection(sectionId);
@@ -245,7 +245,7 @@ function AddSectionButton({ variant }: { variant: "empty" | "bottom" }) {
             <ActionIcon
               size="sm"
               variant="filled"
-              color="blue"
+              color="primary"
               onMouseDown={(e) => {
                 e.preventDefault(); // prevent blur before click
                 handleCommit();
@@ -277,7 +277,7 @@ function AddSectionButton({ variant }: { variant: "empty" | "bottom" }) {
   return (
     <Button
       variant="subtle"
-      color="gray"
+      color="slate"
       leftSection={<IconPlus size={14} />}
       onClick={(e) => {
         e.stopPropagation();

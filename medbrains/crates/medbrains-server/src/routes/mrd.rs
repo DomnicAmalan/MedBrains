@@ -769,7 +769,7 @@ pub async fn stats_morbidity_mortality(
 
     // Morbidity — top 20 diagnoses by ICD code
     let morbidity = sqlx::query_as::<_, MorbidityRow>(
-        "SELECT d.icd_code, d.name AS diagnosis_name, COUNT(*) AS count \
+        "SELECT d.icd_code, d.description AS diagnosis_name, COUNT(*) AS count \
          FROM diagnoses d \
          WHERE ($1::date IS NULL OR d.created_at::date >= $1) \
            AND ($2::date IS NULL OR d.created_at::date <= $2) \
@@ -783,11 +783,13 @@ pub async fn stats_morbidity_mortality(
 
     // Mortality — top causes from death register
     let mortality = sqlx::query_as::<_, MortalityRow>(
-        "SELECT cause_of_death, manner_of_death, COUNT(*) AS count \
-         FROM mrd_death_register \
-         WHERE ($1::date IS NULL OR death_date >= $1) \
-           AND ($2::date IS NULL OR death_date <= $2) \
-         GROUP BY cause_of_death, manner_of_death \
+        "SELECT COALESCE(a.discharge_summary, 'Unknown') AS cause_of_death, \
+         'natural' AS manner_of_death, COUNT(*) AS count \
+         FROM admissions a \
+         WHERE a.discharge_type = 'death' \
+           AND ($1::date IS NULL OR a.discharged_at::date >= $1) \
+           AND ($2::date IS NULL OR a.discharged_at::date <= $2) \
+         GROUP BY a.discharge_summary \
          ORDER BY count DESC LIMIT 20",
     )
     .bind(q.from_date)
@@ -830,7 +832,8 @@ pub async fn stats_admission_discharge(
            AVG(EXTRACT(EPOCH FROM (COALESCE(a.discharged_at, now()) - a.admitted_at)) / 86400) \
              AS avg_los_days \
          FROM admissions a \
-         LEFT JOIN departments dep ON dep.id = a.department_id \
+         JOIN encounters enc ON enc.id = a.encounter_id \
+         LEFT JOIN departments dep ON dep.id = enc.department_id \
          WHERE ($1::date IS NULL OR a.admitted_at::date >= $1) \
            AND ($2::date IS NULL OR a.admitted_at::date <= $2) \
          GROUP BY dep.name \

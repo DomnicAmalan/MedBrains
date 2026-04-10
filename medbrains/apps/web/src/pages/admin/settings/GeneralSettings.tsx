@@ -142,7 +142,7 @@ export function GeneralSettings() {
       notifications.show({
         title: "Settings saved",
         message: "General settings have been updated successfully.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -150,7 +150,7 @@ export function GeneralSettings() {
       notifications.show({
         title: "Save failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -176,7 +176,7 @@ export function GeneralSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load settings: {error instanceof Error ? error.message : "Unknown error"}
         </Text>
       </Stack>

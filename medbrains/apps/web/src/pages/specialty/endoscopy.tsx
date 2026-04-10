@@ -30,10 +30,10 @@ import { useRequirePermission } from "../../hooks/useRequirePermission";
 import type { Column } from "../../components/DataTable";
 
 const SCOPE_STATUS_COLORS: Record<string, string> = {
-  available: "green", in_use: "blue", reprocessing: "orange", quarantine: "red", decommissioned: "gray",
+  available: "success", in_use: "primary", reprocessing: "orange", quarantine: "danger", decommissioned: "slate",
 };
 
-const HLD_COLORS: Record<string, string> = { pass: "green", fail: "red", pending: "yellow" };
+const HLD_COLORS: Record<string, string> = { pass: "success", fail: "danger", pending: "warning" };
 
 export function EndoscopyPage() {
   useRequirePermission(P.SPECIALTY.ENDOSCOPY.PROCEDURES_LIST);
@@ -70,7 +70,7 @@ export function EndoscopyPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["endo-procedures"] });
       procHandlers.close();
-      notifications.show({ title: "Created", message: "Procedure recorded", color: "green" });
+      notifications.show({ title: "Created", message: "Procedure recorded", color: "success" });
     },
   });
 
@@ -82,7 +82,7 @@ export function EndoscopyPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["endo-scopes"] });
       scopeHandlers.close();
-      notifications.show({ title: "Created", message: "Scope registered", color: "green" });
+      notifications.show({ title: "Created", message: "Scope registered", color: "success" });
     },
   });
 
@@ -99,7 +99,7 @@ export function EndoscopyPage() {
     { key: "serial_number", label: "Serial #", render: (r) => <Text size="sm" fw={500}>{r.serial_number}</Text> },
     { key: "model", label: "Model", render: (r) => <Text size="sm">{r.model ?? "—"}</Text> },
     { key: "scope_type", label: "Type", render: (r) => <Text size="sm">{r.scope_type ?? "—"}</Text> },
-    { key: "status", label: "Status", render: (r) => <Badge color={SCOPE_STATUS_COLORS[r.status] ?? "gray"}>{r.status}</Badge> },
+    { key: "status", label: "Status", render: (r) => <Badge color={SCOPE_STATUS_COLORS[r.status] ?? "slate"}>{r.status}</Badge> },
     { key: "total_uses", label: "Uses", render: (r) => <Text size="sm">{r.total_uses}</Text> },
     { key: "last_hld", label: "Last HLD", render: (r) => <Text size="sm">{r.last_hld_at ? new Date(r.last_hld_at).toLocaleDateString() : "Never"}</Text> },
     { key: "culture", label: "Last Culture", render: (r) => <Text size="sm">{r.last_culture_result ?? "—"}</Text> },
@@ -107,10 +107,10 @@ export function EndoscopyPage() {
 
   const reprocCols: Column<EndoscopyReprocessing>[] = [
     { key: "scope_id", label: "Scope", render: (r) => <Text size="sm">{r.scope_id.slice(0, 8)}</Text> },
-    { key: "leak_test", label: "Leak Test", render: (r) => r.leak_test_passed ? <Badge color="green">Pass</Badge> : <Badge color="red">Fail</Badge> },
+    { key: "leak_test", label: "Leak Test", render: (r) => r.leak_test_passed ? <Badge color="success">Pass</Badge> : <Badge color="danger">Fail</Badge> },
     { key: "chemical", label: "Chemical", render: (r) => <Text size="sm">{r.hld_chemical ?? "—"}</Text> },
     { key: "soak", label: "Soak (min)", render: (r) => <Text size="sm">{r.hld_soak_minutes ?? "—"}</Text> },
-    { key: "result", label: "HLD Result", render: (r) => <Badge color={HLD_COLORS[r.hld_result] ?? "gray"}>{r.hld_result}</Badge> },
+    { key: "result", label: "HLD Result", render: (r) => <Badge color={HLD_COLORS[r.hld_result] ?? "slate"}>{r.hld_result}</Badge> },
     { key: "date", label: "Date", render: (r) => <Text size="sm">{new Date(r.created_at).toLocaleDateString()}</Text> },
   ];
 

@@ -79,7 +79,7 @@ export function FieldAuditLog({ fieldId, fieldName, opened, onClose }: Props) {
                   <Badge
                     size="sm"
                     variant="light"
-                    color={entry.action === "created" ? "green" : "blue"}
+                    color={entry.action === "created" ? "success" : "primary"}
                   >
                     {entry.action}
                   </Badge>
@@ -126,12 +126,12 @@ export function FieldAuditLog({ fieldId, fieldName, opened, onClose }: Props) {
                         <Group gap="xs">
                           <Text
                             size="xs"
-                            c="red"
+                            c="danger"
                             td="line-through"
                           >
                             {formatValue(oldVal)}
                           </Text>
-                          <Text size="xs" c="green">
+                          <Text size="xs" c="success">
                             {formatValue(newVal)}
                           </Text>
                         </Group>

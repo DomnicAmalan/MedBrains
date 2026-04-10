@@ -18,6 +18,7 @@ import {
   Textarea,
   Tooltip,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -76,19 +77,19 @@ const PROGRAM_TYPES = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  active: "green",
+  active: "success",
   completed: "teal",
   discontinued: "orange",
-  transferred: "blue",
-  lost_to_followup: "red",
+  transferred: "primary",
+  lost_to_followup: "danger",
   deceased: "dark",
 };
 
 const EVENT_COLORS: Record<string, string> = {
-  started: "green",
-  dose_changed: "blue",
+  started: "success",
+  dose_changed: "primary",
   switched: "violet",
-  discontinued: "red",
+  discontinued: "danger",
   resumed: "teal",
   held: "orange",
 };
@@ -196,7 +197,7 @@ function ProgramsTab({ canCreate }: { canCreate: boolean }) {
       qc.invalidateQueries({ queryKey: ["chronic-programs"] });
       close();
       setEditing(null);
-      notifications.show({ title: "Program saved", message: "Chronic program created", color: "green" });
+      notifications.show({ title: "Program saved", message: "Chronic program created", color: "success" });
     },
   });
 
@@ -226,7 +227,7 @@ function ProgramsTab({ canCreate }: { canCreate: boolean }) {
     {
       key: "is_active",
       label: "Status",
-      render: (r) => <Badge color={r.is_active ? "green" : "gray"}>{r.is_active ? "Active" : "Inactive"}</Badge>,
+      render: (r) => <Badge color={r.is_active ? "success" : "slate"}>{r.is_active ? "Active" : "Inactive"}</Badge>,
     },
     {
       key: "actions",
@@ -247,7 +248,7 @@ function ProgramsTab({ canCreate }: { canCreate: boolean }) {
               </ActionIcon>
             </Tooltip>
             <Tooltip label="Delete">
-              <ActionIcon variant="subtle" size="sm" color="red" onClick={() => deleteMut.mutate(r.id)}>
+              <ActionIcon variant="subtle" size="sm" color="danger" onClick={() => deleteMut.mutate(r.id)}>
                 <IconTrash size={14} />
               </ActionIcon>
             </Tooltip>
@@ -411,7 +412,7 @@ function EnrollmentsTab({ canCreate }: { canCreate: boolean }) {
     {
       key: "status",
       label: "Status",
-      render: (r) => <Badge color={STATUS_COLORS[r.status] ?? "gray"}>{r.status.replace(/_/g, " ")}</Badge>,
+      render: (r) => <Badge color={STATUS_COLORS[r.status] ?? "slate"}>{r.status.replace(/_/g, " ")}</Badge>,
     },
     {
       key: "doctor",
@@ -496,20 +497,14 @@ function EnrollDrawer({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["chronic-enrollments"] });
       onClose();
-      notifications.show({ title: "Enrolled", message: "Patient enrolled in program", color: "green" });
+      notifications.show({ title: "Enrolled", message: "Patient enrolled in program", color: "success" });
     },
   });
 
   return (
     <Drawer opened={opened} onClose={onClose} title="Enroll Patient" position="right" size="md">
       <Stack gap="sm">
-        <TextInput
-          label="Patient ID"
-          required
-          value={patientId}
-          onChange={(e) => setPatientId(e.currentTarget.value)}
-          placeholder="Enter patient UUID"
-        />
+        <PatientSearchSelect value={patientId} onChange={setPatientId} required />
         <Select
           label="Program"
           required
@@ -590,31 +585,31 @@ function AdherenceSummaryCards({ summary }: { summary: AdherenceSummaryResponse 
           </Text>
           <Progress
             value={totalDoses > 0 ? Number(summary.dose_adherence_pct) : 0}
-            color={Number(summary.dose_adherence_pct) >= 80 ? "green" : "red"}
+            color={Number(summary.dose_adherence_pct) >= 80 ? "success" : "danger"}
             mt="xs"
           />
         </Card>
         <Card withBorder padding="md">
           <Text size="xs" c="dimmed" tt="uppercase">Doses</Text>
           <Group gap="xs" mt="xs">
-            <Badge color="green" variant="light">{summary.doses_taken} taken</Badge>
-            <Badge color="red" variant="light">{summary.doses_missed} missed</Badge>
-            <Badge color="yellow" variant="light">{summary.doses_late} late</Badge>
+            <Badge color="success" variant="light">{summary.doses_taken} taken</Badge>
+            <Badge color="danger" variant="light">{summary.doses_missed} missed</Badge>
+            <Badge color="warning" variant="light">{summary.doses_late} late</Badge>
           </Group>
         </Card>
         <Card withBorder padding="md">
           <Text size="xs" c="dimmed" tt="uppercase">Refills</Text>
           <Group gap="xs" mt="xs">
-            <Badge color="green" variant="light">{summary.refills_on_time} on time</Badge>
+            <Badge color="success" variant="light">{summary.refills_on_time} on time</Badge>
             <Badge color="orange" variant="light">{summary.refills_late} late</Badge>
-            <Badge color="red" variant="light">{summary.refills_missed} missed</Badge>
+            <Badge color="danger" variant="light">{summary.refills_missed} missed</Badge>
           </Group>
         </Card>
         <Card withBorder padding="md">
           <Text size="xs" c="dimmed" tt="uppercase">Appointments</Text>
           <Group gap="xs" mt="xs">
-            <Badge color="green" variant="light">{summary.appointments_attended} attended</Badge>
-            <Badge color="red" variant="light">{summary.appointments_missed} missed</Badge>
+            <Badge color="success" variant="light">{summary.appointments_attended} attended</Badge>
+            <Badge color="danger" variant="light">{summary.appointments_missed} missed</Badge>
           </Group>
         </Card>
       </SimpleGrid>
@@ -628,7 +623,7 @@ function AdherenceSummaryCards({ summary }: { summary: AdherenceSummaryResponse 
             return (
               <Group key={m.month} mb="xs">
                 <Text size="sm" w={80}>{m.month}</Text>
-                <Progress value={pct} color={pct >= 80 ? "green" : "red"} style={{ flex: 1 }} />
+                <Progress value={pct} color={pct >= 80 ? "success" : "danger"} style={{ flex: 1 }} />
                 <Text size="sm" w={40}>{pct}%</Text>
               </Group>
             );
@@ -713,8 +708,8 @@ function OutcomesTab() {
 }
 
 function TrendArrow({ atTarget }: { atTarget: boolean | null }) {
-  if (atTarget === null) return <IconMinus size={14} color="gray" />;
-  return atTarget ? <IconArrowUp size={14} color="green" /> : <IconArrowDown size={14} color="red" />;
+  if (atTarget === null) return <IconMinus size={14} color="slate" />;
+  return atTarget ? <IconArrowUp size={14} color="success" /> : <IconArrowDown size={14} color="danger" />;
 }
 
 function OutcomeDetailCards({ dashboard }: { dashboard: OutcomeDashboardResponse }) {
@@ -723,7 +718,7 @@ function OutcomeDetailCards({ dashboard }: { dashboard: OutcomeDashboardResponse
       {dashboard.adherence_rate !== null && (
         <Card withBorder padding="md">
           <Text size="xs" c="dimmed" tt="uppercase">Overall Adherence</Text>
-          <Progress value={dashboard.adherence_rate} color={dashboard.adherence_rate >= 80 ? "green" : "red"} mt="xs" />
+          <Progress value={dashboard.adherence_rate} color={dashboard.adherence_rate >= 80 ? "success" : "danger"} mt="xs" />
           <Text size="sm" mt={4}>{Math.round(dashboard.adherence_rate)}%</Text>
         </Card>
       )}
@@ -739,7 +734,7 @@ function OutcomeDetailCards({ dashboard }: { dashboard: OutcomeDashboardResponse
             </Group>
             <Group gap="xs" mt={4}>
               <Text size="sm">Actual: {t.latest_value !== null ? `${t.latest_value} ${t.target.unit}` : "—"}</Text>
-              <Badge color={t.at_target ? "green" : t.at_target === false ? "red" : "gray"} size="xs">
+              <Badge color={t.at_target ? "success" : t.at_target === false ? "danger" : "slate"} size="xs">
                 {t.at_target ? "At target" : t.at_target === false ? "Off target" : "No data"}
               </Badge>
             </Group>
@@ -846,7 +841,7 @@ function DrugOgramView({ data }: { data: DrugTimelineWithLabsResponse }) {
           <Text fw={500} size="sm" mb="xs">Active Medications</Text>
           <Group gap="xs">
             {data.active_drugs.map((d) => (
-              <Badge key={d.drug_name} variant="light" color="blue" size="sm">
+              <Badge key={d.drug_name} variant="light" color="primary" size="sm">
                 {d.drug_name} {d.dosage ? `(${d.dosage})` : ""}
               </Badge>
             ))}
@@ -870,7 +865,7 @@ function DrugOgramView({ data }: { data: DrugTimelineWithLabsResponse }) {
                     >
                       <Badge
                         variant="filled"
-                        color={EVENT_COLORS[ev.event_type] ?? "gray"}
+                        color={EVENT_COLORS[ev.event_type] ?? "slate"}
                         size="xs"
                         style={{ cursor: "pointer" }}
                       >
@@ -898,7 +893,7 @@ function DrugOgramView({ data }: { data: DrugTimelineWithLabsResponse }) {
             h={180}
             data={chart.data}
             dataKey="date"
-            series={[{ name: "value", color: "blue" }]}
+            series={[{ name: "value", color: "primary" }]}
             curveType="monotone"
             referenceLines={chart.targetValue !== null ? [{ y: chart.targetValue, color: "red.5", label: "Target" }] : undefined}
           />
@@ -1039,7 +1034,7 @@ function TreatmentSummaryView({ summary }: { summary: TreatmentSummaryResponse }
                 <Group justify="space-between">
                   <Text size="sm" fw={500}>{t.target.parameter_name}</Text>
                   <Badge
-                    color={t.at_target ? "green" : t.at_target === false ? "red" : "gray"}
+                    color={t.at_target ? "success" : t.at_target === false ? "danger" : "slate"}
                     size="xs"
                   >
                     {t.at_target ? "At target" : t.at_target === false ? "Off target" : "No data"}
@@ -1072,7 +1067,7 @@ function TreatmentSummaryView({ summary }: { summary: TreatmentSummaryResponse }
                     value: p.numeric_value ?? 0,
                   }))}
                   dataKey="date"
-                  series={[{ name: "value", color: "blue" }]}
+                  series={[{ name: "value", color: "primary" }]}
                   curveType="monotone"
                   withDots={false}
                   referenceLines={
@@ -1093,7 +1088,7 @@ function TreatmentSummaryView({ summary }: { summary: TreatmentSummaryResponse }
           <Text fw={500} mb="xs">Overall Adherence Rate</Text>
           <Progress
             value={summary.adherence_rate}
-            color={summary.adherence_rate >= 80 ? "green" : "red"}
+            color={summary.adherence_rate >= 80 ? "success" : "danger"}
             size="lg"
           />
           <Text size="sm" mt={4}>{Math.round(summary.adherence_rate)}%</Text>
@@ -1109,7 +1104,7 @@ function TreatmentSummaryView({ summary }: { summary: TreatmentSummaryResponse }
               <Group key={i} gap="xs">
                 <Text size="sm">{e.program_name}</Text>
                 <Text size="xs" c="dimmed">Enrolled: {e.enrollment_date}</Text>
-                <Badge color={STATUS_COLORS[e.status] ?? "gray"} size="xs">
+                <Badge color={STATUS_COLORS[e.status] ?? "slate"} size="xs">
                   {e.status.replace(/_/g, " ")}
                 </Badge>
               </Group>

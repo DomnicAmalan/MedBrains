@@ -77,7 +77,7 @@ export function SystemHealthSettings() {
       notifications.show({
         title: "Config Exported",
         message: "Configuration JSON downloaded successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -85,7 +85,7 @@ export function SystemHealthSettings() {
       notifications.show({
         title: "Export Failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -102,7 +102,7 @@ export function SystemHealthSettings() {
       notifications.show({
         title: "Config Imported",
         message: "Configuration imported successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       setImportFile(null);
@@ -113,7 +113,7 @@ export function SystemHealthSettings() {
       notifications.show({
         title: "Import Failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -139,7 +139,7 @@ export function SystemHealthSettings() {
           <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
             <Card withBorder p="md">
               <Group gap="sm">
-                <ThemeIcon variant="light" color="blue" size="lg">
+                <ThemeIcon variant="light" color="primary" size="lg">
                   <IconUsers size={18} />
                 </ThemeIcon>
                 <div>
@@ -161,7 +161,7 @@ export function SystemHealthSettings() {
             </Card>
             <Card withBorder p="md">
               <Group gap="sm">
-                <ThemeIcon variant="light" color="grape" size="lg">
+                <ThemeIcon variant="light" color="violet" size="lg">
                   <IconDatabase size={18} />
                 </ThemeIcon>
                 <div>
@@ -234,7 +234,7 @@ export function SystemHealthSettings() {
                       )}
                       <Text size="sm" fw={500}>{item.label}</Text>
                     </Group>
-                    <Badge color={ok ? "green" : "red"} variant="light" size="sm">
+                    <Badge color={ok ? "success" : "danger"} variant="light" size="sm">
                       {count} {item.min > 0 ? `(min: ${item.min})` : ""}
                     </Badge>
                   </Group>
@@ -252,7 +252,7 @@ export function SystemHealthSettings() {
         <Text fw={600} size="lg" mb="sm">
           Configuration Backup
         </Text>
-        <Alert icon={<IconInfoCircle size={16} />} variant="light" color="blue" mb="md">
+        <Alert icon={<IconInfoCircle size={16} />} variant="light" color="primary" mb="md">
           <Text size="xs">
             Export your system configuration (departments, roles, services, settings) as JSON.
             Import a previously exported config to restore or replicate a setup.

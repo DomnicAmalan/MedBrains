@@ -12,6 +12,7 @@ import { theme, cssVariableResolver } from "./theme";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/charts/styles.css";
+import "@mantine/schedule/styles.css";
 import "./styles/global.scss";
 
 setApiBase(import.meta.env.VITE_API_BASE || "/api");

@@ -203,7 +203,7 @@ export function UsersStep({ onNext, onBack }: Props) {
               </div>
               <ActionIcon
                 variant="subtle"
-                color="red"
+                color="danger"
                 onClick={() => removeRole(r.local_id)}
               >
                 <IconTrash size={16} />
@@ -232,7 +232,7 @@ export function UsersStep({ onNext, onBack }: Props) {
             <Badge variant="light">{u.role.replace(/_/g, " ")}</Badge>
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               onClick={() => removeUser(u.local_id)}
             >
               <IconTrash size={16} />

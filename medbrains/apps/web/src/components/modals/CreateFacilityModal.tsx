@@ -47,7 +47,7 @@ export function CreateFacilityModal({
       notifications.show({
         title: "Facility created",
         message: "Facility has been created successfully",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-facilities"] });
@@ -61,7 +61,7 @@ export function CreateFacilityModal({
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -71,7 +71,7 @@ export function CreateFacilityModal({
       notifications.show({
         title: "Missing fields",
         message: "Code, Name, and Type are required",
-        color: "red",
+        color: "danger",
       });
       return;
     }

@@ -23,7 +23,7 @@ export function SourceFieldNode({ data, selected }: NodeProps) {
         {nodeData.fieldPath}
       </Text>
       {nodeData.fieldType && (
-        <Badge size="xs" variant="light" color="gray" mt={4}>
+        <Badge size="xs" variant="light" color="slate" mt={4}>
           {nodeData.fieldType}
         </Badge>
       )}

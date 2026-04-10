@@ -1,5 +1,34 @@
 import type {
+  AddAmbulanceTripLogRequest,
   AddFieldToFormRequest,
+  BedsideDailyScheduleItem,
+  BedsideDietOrderItem,
+  BedsideEducationVideoRow,
+  BedsideEducationViewRow,
+  BedsideLabResultItem,
+  BedsideMedicationItem,
+  BedsideNurseRequestRow,
+  BedsideRealtimeFeedbackRow,
+  BedsideSessionRow,
+  BedsideVitalReading,
+  CreateBedsideNurseRequestPayload,
+  CreateBedsideSessionRequest,
+  CreateBedsideVideoRequest,
+  RecordBedsideVideoViewRequest,
+  SubmitBedsideFeedbackRequest,
+  UpdateBedsideRequestStatusPayload,
+  UpdateBedsideVideoRequest,
+  CommClinicalMessageRow,
+  CommComplaintRow,
+  CommCriticalAlertRow,
+  CommFeedbackSurveyRow,
+  CommMessageRow,
+  CommTemplateRow,
+  AmbulanceDriverRow,
+  AmbulanceMaintenanceRow,
+  AmbulanceRow,
+  AmbulanceTripLogRow,
+  AmbulanceTripRow,
   Appointment,
   AppointmentWithPatient,
   AvailableSlot,
@@ -8,6 +37,16 @@ import type {
   BookAppointmentRequest,
   CancelAppointmentRequest,
   ClinicalIndicatorRow,
+  CreateAmbulanceDriverRequest,
+  CreateAmbulanceMaintenanceRequest,
+  CreateAmbulanceRequest,
+  CreateAmbulanceTripRequest,
+  CreateCommAlertRequest,
+  CreateCommClinicalRequest,
+  CreateCommComplaintRequest,
+  CreateCommFeedbackRequest,
+  CreateCommMessageRequest,
+  CreateCommTemplateRequest,
   CreateFieldRequest,
   CreateFormRequest,
   CreateModuleLinkRequest,
@@ -51,6 +90,18 @@ import type {
   CreateScheduleRequest,
   DoctorSchedule,
   DoctorScheduleException,
+  FeedbackStatsResponse,
+  ResolveCommAlertRequest,
+  ResolveCommComplaintRequest,
+  UpdateAmbulanceDriverRequest,
+  UpdateAmbulanceLocationRequest,
+  UpdateAmbulanceMaintenanceRequest,
+  UpdateAmbulanceRequest,
+  UpdateAmbulanceTripRequest,
+  UpdateAmbulanceTripStatusRequest,
+  UpdateCommComplaintRequest,
+  UpdateCommMessageStatusRequest,
+  UpdateCommTemplateRequest,
   UpdateMasterItemRequest,
   UpdateScheduleRequest,
   RescheduleAppointmentRequest,
@@ -450,6 +501,25 @@ import type {
   RecordReactionRequest,
   TtiReport,
   HemovigilanceReport,
+  // Blood Bank Phase 2
+  BbRecruitmentCampaignRow,
+  CreateBbCampaignRequest,
+  UpdateBbCampaignRequest,
+  BbColdChainDeviceRow,
+  CreateBbDeviceRequest,
+  BbColdChainReadingRow,
+  AddBbReadingRequest,
+  BbBloodReturnRow,
+  CreateBbReturnRequest,
+  InspectBbReturnRequest,
+  BbMsbosGuidelineRow,
+  CreateBbMsbosRequest,
+  BbLookbackEventRow,
+  CreateBbLookbackRequest,
+  UpdateBbLookbackRequest,
+  BbBillingItemRow,
+  CreateBbBillingRequest,
+  BbSbtcReport,
   // Consent Management
   ConsentTemplate,
   ConsentAuditEntry,
@@ -1271,6 +1341,20 @@ import type {
   AccessLogQuery,
   AuditStats,
   LogAccessRequest,
+  // Print Data
+  PrescriptionPrintData,
+  LabReportPrintData,
+  RadiologyReportPrintData,
+  PatientCardPrintData,
+  WristbandPrintData,
+  AppointmentSlipPrintData,
+  DeathCertificatePrintData,
+  DischargeSummaryPrintData,
+  ReceiptPrintData,
+  EstimatePrintData,
+  CreditNotePrintData,
+  TdsCertificatePrintData,
+  GstInvoicePrintData,
 } from "@medbrains/types";
 import { getApiBase } from "./config.js";
 
@@ -2612,6 +2696,10 @@ export const api = {
   listPrescriptions: (encounterId: string) =>
     request<PrescriptionWithItems[]>(
       `/opd/encounters/${encounterId}/prescriptions`,
+    ),
+  getPrescription: (prescriptionId: string) =>
+    request<PrescriptionWithItems>(
+      `/opd/prescriptions/${prescriptionId}`,
     ),
   createPrescription: (
     encounterId: string,
@@ -4311,6 +4399,58 @@ export const api = {
   getHemovigilanceReport: () =>
     request<HemovigilanceReport>("/blood-bank/hemovigilance"),
 
+  // ── Blood Bank Phase 2 ──────────────────────────────────
+
+  listBbCampaigns: (params?: { status?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.status) sp.set("status", params.status);
+    const qs = sp.toString();
+    return request<BbRecruitmentCampaignRow[]>(`/blood-bank/recruitment${qs ? `?${qs}` : ""}`);
+  },
+  createBbCampaign: (data: CreateBbCampaignRequest) =>
+    request<BbRecruitmentCampaignRow>("/blood-bank/recruitment", { method: "POST", body: JSON.stringify(data) }),
+  updateBbCampaign: (id: string, data: UpdateBbCampaignRequest) =>
+    request<BbRecruitmentCampaignRow>(`/blood-bank/recruitment/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listBbDevices: () =>
+    request<BbColdChainDeviceRow[]>("/blood-bank/cold-chain/devices"),
+  createBbDevice: (data: CreateBbDeviceRequest) =>
+    request<BbColdChainDeviceRow>("/blood-bank/cold-chain/devices", { method: "POST", body: JSON.stringify(data) }),
+  addBbReading: (data: AddBbReadingRequest) =>
+    request<BbColdChainReadingRow>("/blood-bank/cold-chain/readings", { method: "POST", body: JSON.stringify(data) }),
+  listBbReadings: (deviceId: string) =>
+    request<BbColdChainReadingRow[]>(`/blood-bank/cold-chain/readings?device_id=${deviceId}`),
+
+  createBbReturn: (data: CreateBbReturnRequest) =>
+    request<BbBloodReturnRow>("/blood-bank/returns", { method: "POST", body: JSON.stringify(data) }),
+  inspectBbReturn: (id: string, data: InspectBbReturnRequest) =>
+    request<BbBloodReturnRow>(`/blood-bank/returns/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listBbMsbos: () =>
+    request<BbMsbosGuidelineRow[]>("/blood-bank/msbos"),
+  createBbMsbos: (data: CreateBbMsbosRequest) =>
+    request<BbMsbosGuidelineRow>("/blood-bank/msbos", { method: "POST", body: JSON.stringify(data) }),
+
+  listBbLookback: () =>
+    request<BbLookbackEventRow[]>("/blood-bank/lookback"),
+  createBbLookback: (data: CreateBbLookbackRequest) =>
+    request<BbLookbackEventRow>("/blood-bank/lookback", { method: "POST", body: JSON.stringify(data) }),
+  updateBbLookback: (id: string, data: UpdateBbLookbackRequest) =>
+    request<BbLookbackEventRow>(`/blood-bank/lookback/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listBbBilling: (params?: { status?: string; patient_id?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.status) sp.set("status", params.status);
+    if (params?.patient_id) sp.set("patient_id", params.patient_id);
+    const qs = sp.toString();
+    return request<BbBillingItemRow[]>(`/blood-bank/billing${qs ? `?${qs}` : ""}`);
+  },
+  createBbBilling: (data: CreateBbBillingRequest) =>
+    request<BbBillingItemRow>("/blood-bank/billing", { method: "POST", body: JSON.stringify(data) }),
+
+  getBbSbtcReport: () =>
+    request<BbSbtcReport>("/blood-bank/sbtc-report"),
+
   // ── ICU / Critical Care ────────────────────────────────
 
   listIcuFlowsheets: (admissionId: string) =>
@@ -4371,6 +4511,161 @@ export const api = {
     request<IcuLosAnalytics>("/icu/analytics/los"),
   getIcuDeviceInfectionRates: () =>
     request<DeviceInfectionRate[]>("/icu/analytics/device-infections"),
+
+  // ── Ambulance Fleet Management ─────────────────────────
+
+  listAmbulances: (params?: { status?: string; ambulance_type?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.status) sp.set("status", params.status);
+    if (params?.ambulance_type) sp.set("ambulance_type", params.ambulance_type);
+    const qs = sp.toString();
+    return request<AmbulanceRow[]>(`/ambulance/fleet${qs ? `?${qs}` : ""}`);
+  },
+  getAmbulance: (id: string) => request<AmbulanceRow>(`/ambulance/fleet/${id}`),
+  createAmbulance: (data: CreateAmbulanceRequest) =>
+    request<AmbulanceRow>("/ambulance/fleet", { method: "POST", body: JSON.stringify(data) }),
+  updateAmbulance: (id: string, data: UpdateAmbulanceRequest) =>
+    request<AmbulanceRow>(`/ambulance/fleet/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  updateAmbulanceLocation: (id: string, data: UpdateAmbulanceLocationRequest) =>
+    request<AmbulanceRow>(`/ambulance/fleet/${id}/location`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listAmbulanceDrivers: (params?: { is_active?: boolean }) => {
+    const sp = new URLSearchParams();
+    if (params?.is_active !== undefined) sp.set("is_active", String(params.is_active));
+    const qs = sp.toString();
+    return request<AmbulanceDriverRow[]>(`/ambulance/drivers${qs ? `?${qs}` : ""}`);
+  },
+  createAmbulanceDriver: (data: CreateAmbulanceDriverRequest) =>
+    request<AmbulanceDriverRow>("/ambulance/drivers", { method: "POST", body: JSON.stringify(data) }),
+  updateAmbulanceDriver: (id: string, data: UpdateAmbulanceDriverRequest) =>
+    request<AmbulanceDriverRow>(`/ambulance/drivers/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listAmbulanceTrips: (params?: { status?: string; trip_type?: string; ambulance_id?: string; priority?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.status) sp.set("status", params.status);
+    if (params?.trip_type) sp.set("trip_type", params.trip_type);
+    if (params?.ambulance_id) sp.set("ambulance_id", params.ambulance_id);
+    if (params?.priority) sp.set("priority", params.priority);
+    const qs = sp.toString();
+    return request<AmbulanceTripRow[]>(`/ambulance/trips${qs ? `?${qs}` : ""}`);
+  },
+  getAmbulanceTrip: (id: string) => request<AmbulanceTripRow>(`/ambulance/trips/${id}`),
+  createAmbulanceTrip: (data: CreateAmbulanceTripRequest) =>
+    request<AmbulanceTripRow>("/ambulance/trips", { method: "POST", body: JSON.stringify(data) }),
+  updateAmbulanceTrip: (id: string, data: UpdateAmbulanceTripRequest) =>
+    request<AmbulanceTripRow>(`/ambulance/trips/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  updateAmbulanceTripStatus: (id: string, data: UpdateAmbulanceTripStatusRequest) =>
+    request<AmbulanceTripRow>(`/ambulance/trips/${id}/status`, { method: "PUT", body: JSON.stringify(data) }),
+  listAmbulanceTripLogs: (tripId: string) =>
+    request<AmbulanceTripLogRow[]>(`/ambulance/trips/${tripId}/logs`),
+  addAmbulanceTripLog: (tripId: string, data: AddAmbulanceTripLogRequest) =>
+    request<AmbulanceTripLogRow>(`/ambulance/trips/${tripId}/logs`, { method: "POST", body: JSON.stringify(data) }),
+
+  listAmbulanceMaintenance: (params?: { ambulance_id?: string; status?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.ambulance_id) sp.set("ambulance_id", params.ambulance_id);
+    if (params?.status) sp.set("status", params.status);
+    const qs = sp.toString();
+    return request<AmbulanceMaintenanceRow[]>(`/ambulance/maintenance${qs ? `?${qs}` : ""}`);
+  },
+  createAmbulanceMaintenance: (data: CreateAmbulanceMaintenanceRequest) =>
+    request<AmbulanceMaintenanceRow>("/ambulance/maintenance", { method: "POST", body: JSON.stringify(data) }),
+  updateAmbulanceMaintenance: (id: string, data: UpdateAmbulanceMaintenanceRequest) =>
+    request<AmbulanceMaintenanceRow>(`/ambulance/maintenance/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  // ── Communication Hub ──────────────────────────────────
+
+  listCommTemplates: (params?: { channel?: string; template_type?: string; is_active?: boolean }) => {
+    const sp = new URLSearchParams();
+    if (params?.channel) sp.set("channel", params.channel);
+    if (params?.template_type) sp.set("template_type", params.template_type);
+    if (params?.is_active !== undefined) sp.set("is_active", String(params.is_active));
+    const qs = sp.toString();
+    return request<CommTemplateRow[]>(`/communications/templates${qs ? `?${qs}` : ""}`);
+  },
+  createCommTemplate: (data: CreateCommTemplateRequest) =>
+    request<CommTemplateRow>("/communications/templates", { method: "POST", body: JSON.stringify(data) }),
+  updateCommTemplate: (id: string, data: UpdateCommTemplateRequest) =>
+    request<CommTemplateRow>(`/communications/templates/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listCommMessages: (params?: { channel?: string; status?: string; recipient_type?: string; context_type?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.channel) sp.set("channel", params.channel);
+    if (params?.status) sp.set("status", params.status);
+    if (params?.recipient_type) sp.set("recipient_type", params.recipient_type);
+    if (params?.context_type) sp.set("context_type", params.context_type);
+    const qs = sp.toString();
+    return request<CommMessageRow[]>(`/communications/messages${qs ? `?${qs}` : ""}`);
+  },
+  getCommMessage: (id: string) => request<CommMessageRow>(`/communications/messages/${id}`),
+  createCommMessage: (data: CreateCommMessageRequest) =>
+    request<CommMessageRow>("/communications/messages", { method: "POST", body: JSON.stringify(data) }),
+  updateCommMessageStatus: (id: string, data: UpdateCommMessageStatusRequest) =>
+    request<CommMessageRow>(`/communications/messages/${id}/status`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listClinicalMessages: (params?: { sender_id?: string; recipient_id?: string; patient_id?: string; priority?: string; message_type?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.sender_id) sp.set("sender_id", params.sender_id);
+    if (params?.recipient_id) sp.set("recipient_id", params.recipient_id);
+    if (params?.patient_id) sp.set("patient_id", params.patient_id);
+    if (params?.priority) sp.set("priority", params.priority);
+    if (params?.message_type) sp.set("message_type", params.message_type);
+    const qs = sp.toString();
+    return request<CommClinicalMessageRow[]>(`/communications/clinical${qs ? `?${qs}` : ""}`);
+  },
+  getClinicalMessage: (id: string) => request<CommClinicalMessageRow>(`/communications/clinical/${id}`),
+  createClinicalMessage: (data: CreateCommClinicalRequest) =>
+    request<CommClinicalMessageRow>("/communications/clinical", { method: "POST", body: JSON.stringify(data) }),
+  acknowledgeClinicalMessage: (id: string) =>
+    request<CommClinicalMessageRow>(`/communications/clinical/${id}/acknowledge`, { method: "PUT", body: "{}" }),
+
+  listCommAlerts: (params?: { status?: string; priority?: string; alert_source?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.status) sp.set("status", params.status);
+    if (params?.priority) sp.set("priority", params.priority);
+    if (params?.alert_source) sp.set("alert_source", params.alert_source);
+    const qs = sp.toString();
+    return request<CommCriticalAlertRow[]>(`/communications/alerts${qs ? `?${qs}` : ""}`);
+  },
+  createCommAlert: (data: CreateCommAlertRequest) =>
+    request<CommCriticalAlertRow>("/communications/alerts", { method: "POST", body: JSON.stringify(data) }),
+  acknowledgeCommAlert: (id: string) =>
+    request<CommCriticalAlertRow>(`/communications/alerts/${id}/acknowledge`, { method: "PUT", body: "{}" }),
+  resolveCommAlert: (id: string, data: ResolveCommAlertRequest) =>
+    request<CommCriticalAlertRow>(`/communications/alerts/${id}/resolve`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listComplaints: (params?: { status?: string; source?: string; severity?: string; department_id?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.status) sp.set("status", params.status);
+    if (params?.source) sp.set("source", params.source);
+    if (params?.severity) sp.set("severity", params.severity);
+    if (params?.department_id) sp.set("department_id", params.department_id);
+    const qs = sp.toString();
+    return request<CommComplaintRow[]>(`/communications/complaints${qs ? `?${qs}` : ""}`);
+  },
+  createComplaint: (data: CreateCommComplaintRequest) =>
+    request<CommComplaintRow>("/communications/complaints", { method: "POST", body: JSON.stringify(data) }),
+  updateComplaint: (id: string, data: UpdateCommComplaintRequest) =>
+    request<CommComplaintRow>(`/communications/complaints/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  resolveComplaint: (id: string, data: ResolveCommComplaintRequest) =>
+    request<CommComplaintRow>(`/communications/complaints/${id}/resolve`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listCommFeedback: (params?: { feedback_type?: string; department_id?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.feedback_type) sp.set("feedback_type", params.feedback_type);
+    if (params?.department_id) sp.set("department_id", params.department_id);
+    const qs = sp.toString();
+    return request<CommFeedbackSurveyRow[]>(`/communications/feedback${qs ? `?${qs}` : ""}`);
+  },
+  createCommFeedback: (data: CreateCommFeedbackRequest) =>
+    request<CommFeedbackSurveyRow>("/communications/feedback", { method: "POST", body: JSON.stringify(data) }),
+  getCommFeedbackStats: (params?: { feedback_type?: string; department_id?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.feedback_type) sp.set("feedback_type", params.feedback_type);
+    if (params?.department_id) sp.set("department_id", params.department_id);
+    const qs = sp.toString();
+    return request<FeedbackStatsResponse>(`/communications/feedback/stats${qs ? `?${qs}` : ""}`);
+  },
 
   // ── Camp Management ────────────────────────────────────
 
@@ -8714,4 +9009,110 @@ export const api = {
     if (params.to) sp.set("to", params.to);
     return request<string>(`/analytics/export?${sp.toString()}`);
   },
+
+  // ══════════════════════════════════════════════════════════
+  //  Print Data
+  // ══════════════════════════════════════════════════════════
+
+  getPrescriptionPrintData: (encounterId: string) =>
+    request<PrescriptionPrintData>(`/print-data/prescription/${encounterId}`),
+
+  getLabReportPrintData: (orderId: string) =>
+    request<LabReportPrintData>(`/print-data/lab-report/${orderId}`),
+
+  getRadiologyPrintData: (orderId: string) =>
+    request<RadiologyReportPrintData>(`/print-data/radiology-report/${orderId}`),
+
+  getPatientCardPrintData: (patientId: string) =>
+    request<PatientCardPrintData>(`/print-data/patient-card/${patientId}`),
+
+  getWristbandPrintData: (admissionId: string) =>
+    request<WristbandPrintData>(`/print-data/wristband/${admissionId}`),
+
+  getAppointmentSlipPrintData: (appointmentId: string) =>
+    request<AppointmentSlipPrintData>(`/print-data/appointment-slip/${appointmentId}`),
+
+  getDeathCertPrintData: (admissionId: string) =>
+    request<DeathCertificatePrintData>(`/print-data/death-certificate/${admissionId}`),
+
+  getDischargePrintData: (admissionId: string) =>
+    request<DischargeSummaryPrintData>(`/print-data/discharge/${admissionId}`),
+
+  getReceiptPrintData: (paymentId: string) =>
+    request<ReceiptPrintData>(`/print-data/receipt/${paymentId}`),
+
+  getEstimatePrintData: (invoiceId: string) =>
+    request<EstimatePrintData>(`/print-data/estimate/${invoiceId}`),
+
+  getCreditNotePrintData: (id: string) =>
+    request<CreditNotePrintData>(`/print-data/credit-note/${id}`),
+
+  getTdsCertPrintData: (id: string) =>
+    request<TdsCertificatePrintData>(`/print-data/tds-certificate/${id}`),
+
+  getGstInvoicePrintData: (invoiceId: string) =>
+    request<GstInvoicePrintData>(`/print-data/gst-invoice/${invoiceId}`),
+
+  // ══════════════════════════════════════════════════════════
+  //  Bedside Portal
+  // ══════════════════════════════════════════════════════════
+
+  listBedsideSessions: () =>
+    request<BedsideSessionRow[]>("/bedside/sessions"),
+
+  createBedsideSession: (data: CreateBedsideSessionRequest) =>
+    request<BedsideSessionRow>("/bedside/sessions", { method: "POST", body: JSON.stringify(data) }),
+
+  endBedsideSession: (id: string) =>
+    request<BedsideSessionRow>(`/bedside/sessions/${id}/end`, { method: "PUT" }),
+
+  getBedsideDailySchedule: (admissionId: string) =>
+    request<BedsideDailyScheduleItem[]>(`/bedside/${admissionId}/schedule`),
+
+  getBedsideMedications: (admissionId: string) =>
+    request<BedsideMedicationItem[]>(`/bedside/${admissionId}/medications`),
+
+  getBedsideVitals: (admissionId: string) =>
+    request<BedsideVitalReading[]>(`/bedside/${admissionId}/vitals`),
+
+  getBedsideLabResults: (admissionId: string) =>
+    request<BedsideLabResultItem[]>(`/bedside/${admissionId}/lab-results`),
+
+  getBedsideDietOrder: (admissionId: string) =>
+    request<BedsideDietOrderItem[]>(`/bedside/${admissionId}/diet-order`),
+
+  createBedsideNurseRequest: (admissionId: string, data: CreateBedsideNurseRequestPayload) =>
+    request<BedsideNurseRequestRow>(`/bedside/${admissionId}/nurse-request`, { method: "POST", body: JSON.stringify(data) }),
+
+  listBedsideNurseRequests: (admissionId: string, params?: { status?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.status) sp.set("status", params.status);
+    const qs = sp.toString();
+    return request<BedsideNurseRequestRow[]>(`/bedside/${admissionId}/nurse-requests${qs ? `?${qs}` : ""}`);
+  },
+
+  updateBedsideRequestStatus: (id: string, data: UpdateBedsideRequestStatusPayload) =>
+    request<BedsideNurseRequestRow>(`/bedside/nurse-requests/${id}/status`, { method: "PUT", body: JSON.stringify(data) }),
+
+  listBedsideVideos: (params?: { category?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.category) sp.set("category", params.category);
+    const qs = sp.toString();
+    return request<BedsideEducationVideoRow[]>(`/bedside/videos${qs ? `?${qs}` : ""}`);
+  },
+
+  createBedsideVideo: (data: CreateBedsideVideoRequest) =>
+    request<BedsideEducationVideoRow>("/bedside/videos", { method: "POST", body: JSON.stringify(data) }),
+
+  updateBedsideVideo: (id: string, data: UpdateBedsideVideoRequest) =>
+    request<BedsideEducationVideoRow>(`/bedside/videos/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+
+  recordBedsideVideoView: (admissionId: string, data: RecordBedsideVideoViewRequest) =>
+    request<BedsideEducationViewRow>(`/bedside/${admissionId}/video-view`, { method: "POST", body: JSON.stringify(data) }),
+
+  submitBedsideFeedback: (admissionId: string, data: SubmitBedsideFeedbackRequest) =>
+    request<BedsideRealtimeFeedbackRow>(`/bedside/${admissionId}/feedback`, { method: "POST", body: JSON.stringify(data) }),
+
+  listBedsideFeedback: (admissionId: string) =>
+    request<BedsideRealtimeFeedbackRow[]>(`/bedside/${admissionId}/feedback`),
 };

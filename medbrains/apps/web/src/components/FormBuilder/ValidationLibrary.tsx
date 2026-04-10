@@ -61,10 +61,10 @@ const TEMPLATES: ValidationTemplate[] = [
 const CATEGORIES = [...new Set(TEMPLATES.map((t) => t.category))];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Text: "blue",
+  Text: "primary",
   Format: "violet",
-  Number: "green",
-  Clinical: "red",
+  Number: "success",
+  Clinical: "danger",
 };
 
 // ── Component ────────────────────────────────────────────
@@ -164,7 +164,7 @@ export function ValidationLibrary({
                 <div key={category}>
                   <Group justify="space-between" mb="xs">
                     <Group gap="xs">
-                      <Badge size="sm" variant="light" color={CATEGORY_COLORS[category] ?? "gray"}>
+                      <Badge size="sm" variant="light" color={CATEGORY_COLORS[category] ?? "slate"}>
                         {category}
                       </Badge>
                       <Text size="xs" c="dimmed">
@@ -212,13 +212,13 @@ export function ValidationLibrary({
                             </Text>
                           </div>
 
-                          <Badge size="xs" variant="light" color="gray">
+                          <Badge size="xs" variant="light" color="slate">
                             {template.rule.type}
                           </Badge>
 
                           {isApplied ? (
                             <Tooltip label="Already applied">
-                              <ActionIcon size="sm" variant="subtle" color="green" disabled>
+                              <ActionIcon size="sm" variant="subtle" color="success" disabled>
                                 <IconCheck size={14} />
                               </ActionIcon>
                             </Tooltip>
@@ -227,7 +227,7 @@ export function ValidationLibrary({
                               <ActionIcon
                                 size="sm"
                                 variant="light"
-                                color="blue"
+                                color="primary"
                                 onClick={() => handleApply(template)}
                               >
                                 <IconPlus size={14} />

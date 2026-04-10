@@ -100,7 +100,7 @@ export function GeoSettings() {
       notifications.show({
         title: "Geography saved",
         message: "Tenant geography settings have been updated",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["setup-tenant"] });
@@ -125,7 +125,7 @@ export function GeoSettings() {
         notifications.show({
           title: "Defaults auto-configured",
           message: "Measurement units, date format, timezone, and currency have been set based on the selected country. You can override them in the Units & Locale tab.",
-          color: "blue",
+          color: "primary",
           icon: <IconInfoCircle size={16} />,
           autoClose: 6000,
         });
@@ -135,7 +135,7 @@ export function GeoSettings() {
       notifications.show({
         title: "Save failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });

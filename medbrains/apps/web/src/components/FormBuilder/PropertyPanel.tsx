@@ -254,19 +254,19 @@ const SECTION_ICON_OPTIONS = [
 ];
 
 const SECTION_COLOR_OPTIONS = [
-  { value: "blue", label: "Blue" },
-  { value: "cyan", label: "Cyan" },
+  { value: "primary", label: "Blue" },
+  { value: "info", label: "Cyan" },
   { value: "teal", label: "Teal" },
-  { value: "green", label: "Green" },
+  { value: "success", label: "Green" },
   { value: "lime", label: "Lime" },
-  { value: "yellow", label: "Yellow" },
+  { value: "warning", label: "Yellow" },
   { value: "orange", label: "Orange" },
-  { value: "red", label: "Red" },
-  { value: "pink", label: "Pink" },
-  { value: "grape", label: "Grape" },
-  { value: "violet", label: "Violet" },
-  { value: "indigo", label: "Indigo" },
-  { value: "gray", label: "Gray" },
+  { value: "danger", label: "Red" },
+  { value: "violet", label: "Purple" },
+  { value: "primary", label: "Blue" },
+  { value: "info", label: "Sky Blue" },
+  { value: "teal", label: "Teal" },
+  { value: "slate", label: "Gray" },
 ];
 
 const VALIDATION_TYPE_OPTIONS = [
@@ -392,12 +392,12 @@ function SectionProperties({ section }: { section: FormBuilderSectionNode }) {
       >
         Visibility Condition
         {section.condition && (
-          <Badge size="xs" variant="dot" color="blue" ml="xs" maw={140} style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+          <Badge size="xs" variant="dot" color="primary" ml="xs" maw={140} style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
             {sectionConditionSummary ?? "Active"}
           </Badge>
         )}
       </Button>
-      <Collapse in={conditionOpen}>
+      <Collapse expanded={conditionOpen}>
         <ConditionBuilder
           condition={section.condition}
           onChange={(condition) => updateSection(section.id, { condition })}
@@ -446,7 +446,7 @@ function OptionsEditor({
             onChange={(e) => updateOption(index, e.currentTarget.value)}
             style={{ flex: 1 }}
           />
-          <ActionIcon size="sm" variant="subtle" color="red" onClick={() => removeOption(index)}>
+          <ActionIcon size="sm" variant="subtle" color="danger" onClick={() => removeOption(index)}>
             <IconTrash size={12} />
           </ActionIcon>
         </Group>
@@ -462,7 +462,7 @@ function OptionsEditor({
           }}
           style={{ flex: 1 }}
         />
-        <ActionIcon size="sm" variant="light" color="blue" onClick={addOption}>
+        <ActionIcon size="sm" variant="light" color="primary" onClick={addOption}>
           <IconPlus size={12} />
         </ActionIcon>
       </Group>
@@ -477,7 +477,7 @@ function TabLabel({ label, count, color }: { label: string; count?: number; colo
     <Group gap={4} wrap="nowrap">
       <Text size="xs">{label}</Text>
       {count !== undefined && count > 0 && (
-        <Badge size="xs" variant="filled" color={color ?? "blue"} circle>
+        <Badge size="xs" variant="filled" color={color ?? "primary"} circle>
           {count}
         </Badge>
       )}
@@ -537,7 +537,7 @@ function FieldProperties({ field }: { field: FormBuilderFieldNode }) {
             withArrow
             position="left"
           >
-            <ActionIcon variant="subtle" size="xs" color="blue">
+            <ActionIcon variant="subtle" size="xs" color="primary">
               <IconInfoCircle size={16} />
             </ActionIcon>
           </Tooltip>
@@ -694,10 +694,10 @@ function FieldProperties({ field }: { field: FormBuilderFieldNode }) {
             </Tabs.Tab>
           )}
           <Tabs.Tab value="visibility" fz="xs" p="xs">
-            <TabLabel label="Visibility" count={hasCondition ? 1 : 0} color="blue" />
+            <TabLabel label="Visibility" count={hasCondition ? 1 : 0} color="primary" />
           </Tabs.Tab>
           <Tabs.Tab value="validation" fz="xs" p="xs">
-            <TabLabel label="Validation" count={validationCount} color="blue" />
+            <TabLabel label="Validation" count={validationCount} color="primary" />
           </Tabs.Tab>
           <Tabs.Tab value="regulatory" fz="xs" p="xs">
             <TabLabel label="Regulatory" count={regulatoryCount} color="orange" />
@@ -707,7 +707,7 @@ function FieldProperties({ field }: { field: FormBuilderFieldNode }) {
           </Tabs.Tab>
           {field.dataType === "computed" && (
             <Tabs.Tab value="computed" fz="xs" p="xs">
-              <TabLabel label="Computed" count={hasComputed ? 1 : 0} color="green" />
+              <TabLabel label="Computed" count={hasComputed ? 1 : 0} color="success" />
             </Tabs.Tab>
           )}
         </Tabs.List>
@@ -884,7 +884,7 @@ function ValidationRuleRow({
         onChange={(e) => updateRule({ message: e.currentTarget.value })}
         style={{ flex: 2 }}
       />
-      <ActionIcon size="sm" variant="subtle" color="red" onClick={onRemove}>
+      <ActionIcon size="sm" variant="subtle" color="danger" onClick={onRemove}>
         <IconTrash size={12} />
       </ActionIcon>
     </Group>

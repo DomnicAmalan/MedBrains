@@ -79,7 +79,7 @@ export function BedTypesSettings() {
       notifications.show({
         title: "Bed type created",
         message: "The new bed type has been added successfully.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -87,7 +87,7 @@ export function BedTypesSettings() {
       notifications.show({
         title: "Create failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -106,7 +106,7 @@ export function BedTypesSettings() {
       notifications.show({
         title: "Bed type updated",
         message: "The bed type has been updated successfully.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -114,7 +114,7 @@ export function BedTypesSettings() {
       notifications.show({
         title: "Update failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -127,7 +127,7 @@ export function BedTypesSettings() {
       notifications.show({
         title: "Bed type deleted",
         message: "The bed type has been removed.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -136,7 +136,7 @@ export function BedTypesSettings() {
       notifications.show({
         title: "Delete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -220,7 +220,7 @@ export function BedTypesSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load bed types:{" "}
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>
@@ -279,7 +279,7 @@ export function BedTypesSettings() {
                 </Table.Td>
                 <Table.Td>
                   <Badge
-                    color={bt.is_active ? "green" : "gray"}
+                    color={bt.is_active ? "success" : "slate"}
                     variant="light"
                     size="sm"
                   >
@@ -290,7 +290,7 @@ export function BedTypesSettings() {
                   <Group gap="xs" wrap="nowrap">
                     <ActionIcon
                       variant="subtle"
-                      color="blue"
+                      color="primary"
                       size="sm"
                       onClick={() => openEditModal(bt)}
                       title="Edit bed type"
@@ -299,7 +299,7 @@ export function BedTypesSettings() {
                     </ActionIcon>
                     <ActionIcon
                       variant="subtle"
-                      color="red"
+                      color="danger"
                       size="sm"
                       onClick={() => setDeleteConfirmId(bt.id)}
                       title="Delete bed type"
@@ -397,7 +397,7 @@ export function BedTypesSettings() {
               Cancel
             </Button>
             <Button
-              color="red"
+              color="danger"
               onClick={() => {
                 if (deleteConfirmId) {
                   handleDelete(deleteConfirmId);

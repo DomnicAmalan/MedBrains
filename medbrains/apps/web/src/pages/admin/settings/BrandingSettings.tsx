@@ -110,7 +110,7 @@ export function BrandingSettings() {
       notifications.show({
         title: "Branding saved",
         message: "Your branding settings have been updated successfully.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
     },
@@ -118,7 +118,7 @@ export function BrandingSettings() {
       notifications.show({
         title: "Save failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -149,7 +149,7 @@ export function BrandingSettings() {
   if (isError) {
     return (
       <Stack align="center" py="xl">
-        <Text c="red">
+        <Text c="danger">
           Failed to load branding settings:{" "}
           {error instanceof Error ? error.message : "Unknown error"}
         </Text>

@@ -170,12 +170,12 @@ export function BillingTaxStep({ onNext, onBack }: Props) {
               <Text size="sm" c="dimmed">{cat.code}</Text>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Badge variant="light" color={cat.applicability === "exempt" ? "gray" : "blue"}>
+              <Badge variant="light" color={cat.applicability === "exempt" ? "slate" : "primary"}>
                 {cat.rate_percent}% &middot; {cat.applicability.replace(/_/g, " ")}
               </Badge>
               <ActionIcon
                 variant="subtle"
-                color="red"
+                color="danger"
                 onClick={() => removeTaxCategory(cat.local_id)}
               >
                 <IconTrash size={16} />
@@ -218,7 +218,7 @@ export function BillingTaxStep({ onNext, onBack }: Props) {
               {pm.is_default && <Badge variant="filled" size="xs" color="teal">Default</Badge>}
               <ActionIcon
                 variant="subtle"
-                color="red"
+                color="danger"
                 onClick={() => removePaymentMethod(pm.local_id)}
               >
                 <IconTrash size={16} />

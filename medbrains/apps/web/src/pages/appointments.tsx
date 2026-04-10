@@ -41,13 +41,13 @@ import type {
 // ── Helpers ────────────────────────────────────────────────
 
 const STATUS_COLORS: Record<string, string> = {
-  scheduled: "blue",
-  confirmed: "cyan",
-  checked_in: "yellow",
+  scheduled: "primary",
+  confirmed: "info",
+  checked_in: "warning",
   in_consultation: "orange",
-  completed: "green",
-  cancelled: "red",
-  no_show: "gray",
+  completed: "success",
+  cancelled: "danger",
+  no_show: "slate",
 };
 
 const APPT_TYPE_LABELS: Record<string, string> = {
@@ -163,7 +163,7 @@ function BookAppointmentModal({
         message: recurrencePattern
           ? `${recurrenceCount} recurring appointments scheduled.`
           : "Appointment has been scheduled successfully.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
@@ -173,7 +173,7 @@ function BookAppointmentModal({
       notifications.show({
         title: "Booking failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -389,7 +389,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Checked in",
         message: "Patient has been checked in.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
@@ -398,7 +398,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Check-in failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -409,7 +409,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Completed",
         message: "Appointment marked as completed.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
@@ -418,7 +418,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Complete failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -429,7 +429,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Marked No-Show",
         message: "Appointment marked as no-show.",
-        color: "yellow",
+        color: "warning",
       });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
     },
@@ -437,7 +437,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -451,7 +451,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Cancelled",
         message: "Appointment has been cancelled.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
@@ -462,7 +462,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Cancel failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -480,7 +480,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Rescheduled",
         message: "Appointment has been rescheduled.",
-        color: "green",
+        color: "success",
         icon: <IconCheck size={16} />,
       });
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
@@ -492,7 +492,7 @@ export function AppointmentsPage() {
       notifications.show({
         title: "Reschedule failed",
         message: err.message,
-        color: "red",
+        color: "danger",
       });
     },
   });
@@ -575,7 +575,7 @@ export function AppointmentsPage() {
                   </Table.Td>
                   <Table.Td>
                     <Badge
-                      color={STATUS_COLORS[appt.status] ?? "gray"}
+                      color={STATUS_COLORS[appt.status] ?? "slate"}
                       variant="light"
                       size="sm"
                     >
@@ -596,7 +596,7 @@ export function AppointmentsPage() {
                             <>
                               <ActionIcon
                                 variant="subtle"
-                                color="green"
+                                color="success"
                                 title="Check In"
                                 onClick={() =>
                                   checkInMutation.mutate(appt.id)
@@ -606,7 +606,7 @@ export function AppointmentsPage() {
                               </ActionIcon>
                               <ActionIcon
                                 variant="subtle"
-                                color="gray"
+                                color="slate"
                                 title="No Show"
                                 onClick={() =>
                                   noShowMutation.mutate(appt.id)
@@ -621,7 +621,7 @@ export function AppointmentsPage() {
                             appt.status === "confirmed") && (
                             <ActionIcon
                               variant="subtle"
-                              color="blue"
+                              color="primary"
                               title="Reschedule"
                               onClick={() => {
                                 setRescheduleTarget(appt);
@@ -637,7 +637,7 @@ export function AppointmentsPage() {
                             appt.status === "in_consultation") && (
                             <ActionIcon
                               variant="subtle"
-                              color="green"
+                              color="success"
                               title="Complete"
                               onClick={() =>
                                 completeMutation.mutate(appt.id)
@@ -651,7 +651,7 @@ export function AppointmentsPage() {
                           appt.status !== "cancelled" && (
                             <ActionIcon
                               variant="subtle"
-                              color="red"
+                              color="danger"
                               title="Cancel"
                               onClick={() => setCancelTarget(appt)}
                             >
@@ -707,7 +707,7 @@ export function AppointmentsPage() {
               Keep
             </Button>
             <Button
-              color="red"
+              color="danger"
               onClick={() => cancelMutation.mutate()}
               loading={cancelMutation.isPending}
             >

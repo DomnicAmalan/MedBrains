@@ -67,7 +67,7 @@ function FormZone({ zone, onEmit }: ZoneRendererProps) {
 
   if (!cfg.form_code) {
     return (
-      <Alert icon={<IconAlertCircle size={16} />} color="yellow">
+      <Alert icon={<IconAlertCircle size={16} />} color="warning">
         Form zone &quot;{zone.key}&quot; has no form_code configured.
       </Alert>
     );
@@ -433,7 +433,7 @@ function KanbanZone({ zone, context, onEmit }: ZoneRendererProps) {
                 <Text size="sm" fw={600}>
                   {col.label}
                 </Text>
-                <Badge size="xs" variant="light" color="gray">
+                <Badge size="xs" variant="light" color="slate">
                   {colItems.length}
                 </Badge>
               </Group>
@@ -504,7 +504,7 @@ function CalendarZone({ zone, context }: ZoneRendererProps) {
         <Stack gap="xs">
           {events.slice(0, 20).map((ev, i) => (
             <Group key={String(ev["id"] ?? i)} gap="sm" wrap="nowrap">
-              <Badge size="xs" variant="dot" color="blue" style={{ flexShrink: 0 }}>
+              <Badge size="xs" variant="dot" color="primary" style={{ flexShrink: 0 }}>
                 {String(ev[dateField] ?? "").slice(0, 10)}
               </Badge>
               <Text size="sm" lineClamp={1}>
@@ -548,7 +548,7 @@ function WidgetGridZone({ zone, context }: ZoneRendererProps) {
             {String(w["value"] ?? "—")}
           </Text>
           {w["trend"] !== undefined && (
-            <Text size="xs" c={Number(w["trend"]) >= 0 ? "teal" : "red"}>
+            <Text size="xs" c={Number(w["trend"]) >= 0 ? "teal" : "danger"}>
               {Number(w["trend"]) >= 0 ? "+" : ""}
               {String(w["trend"])}%
             </Text>
@@ -563,7 +563,7 @@ function WidgetGridZone({ zone, context }: ZoneRendererProps) {
 
 function FallbackZone({ zone }: ZoneRendererProps) {
   return (
-    <Alert icon={<IconAlertCircle size={16} />} color="gray">
+    <Alert icon={<IconAlertCircle size={16} />} color="slate">
       Unknown zone type: &quot;{zone.type}&quot; (key: {zone.key})
     </Alert>
   );

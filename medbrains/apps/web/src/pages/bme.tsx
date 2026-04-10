@@ -117,49 +117,49 @@ const BREAKDOWN_PRIORITIES = [
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
-    active: "green", under_maintenance: "yellow", out_of_service: "orange",
-    condemned: "red", disposed: "gray",
+    active: "success", under_maintenance: "warning", out_of_service: "orange",
+    condemned: "danger", disposed: "slate",
   };
-  return <Badge color={map[status] ?? "gray"} variant="light" size="sm">{status.replace(/_/g, " ")}</Badge>;
+  return <Badge color={map[status] ?? "slate"} variant="light" size="sm">{status.replace(/_/g, " ")}</Badge>;
 }
 
 function riskBadge(risk: string) {
-  const map: Record<string, string> = { critical: "red", high: "orange", medium: "yellow", low: "green" };
-  return <Badge color={map[risk] ?? "gray"} variant="light" size="sm">{risk}</Badge>;
+  const map: Record<string, string> = { critical: "danger", high: "orange", medium: "warning", low: "success" };
+  return <Badge color={map[risk] ?? "slate"} variant="light" size="sm">{risk}</Badge>;
 }
 
 function priorityBadge(p: string) {
-  const map: Record<string, string> = { critical: "red", high: "orange", medium: "yellow", low: "blue" };
-  return <Badge color={map[p] ?? "gray"} variant="light" size="sm">{p}</Badge>;
+  const map: Record<string, string> = { critical: "danger", high: "orange", medium: "warning", low: "primary" };
+  return <Badge color={map[p] ?? "slate"} variant="light" size="sm">{p}</Badge>;
 }
 
 function calStatusBadge(s: string) {
   const map: Record<string, string> = {
-    calibrated: "green", due: "yellow", overdue: "red",
-    out_of_tolerance: "red", exempted: "gray",
+    calibrated: "success", due: "warning", overdue: "danger",
+    out_of_tolerance: "danger", exempted: "slate",
   };
-  return <Badge color={map[s] ?? "gray"} variant="light" size="sm">{s.replace(/_/g, " ")}</Badge>;
+  return <Badge color={map[s] ?? "slate"} variant="light" size="sm">{s.replace(/_/g, " ")}</Badge>;
 }
 
 function breakdownStatusBadge(s: string) {
   const map: Record<string, string> = {
-    reported: "red", acknowledged: "yellow", in_progress: "blue",
-    parts_awaited: "orange", resolved: "green", closed: "gray",
+    reported: "danger", acknowledged: "warning", in_progress: "primary",
+    parts_awaited: "orange", resolved: "success", closed: "slate",
   };
-  return <Badge color={map[s] ?? "gray"} variant="light" size="sm">{s.replace(/_/g, " ")}</Badge>;
+  return <Badge color={map[s] ?? "slate"} variant="light" size="sm">{s.replace(/_/g, " ")}</Badge>;
 }
 
 function contractTypeBadge(t: string) {
-  const map: Record<string, string> = { amc: "blue", cmc: "violet", warranty: "green", camc: "teal" };
-  return <Badge color={map[t] ?? "gray"} variant="light" size="sm">{t.toUpperCase()}</Badge>;
+  const map: Record<string, string> = { amc: "primary", cmc: "violet", warranty: "success", camc: "teal" };
+  return <Badge color={map[t] ?? "slate"} variant="light" size="sm">{t.toUpperCase()}</Badge>;
 }
 
 function woStatusBadge(s: string) {
   const map: Record<string, string> = {
-    open: "blue", assigned: "yellow", in_progress: "orange",
-    completed: "green", cancelled: "gray",
+    open: "primary", assigned: "warning", in_progress: "orange",
+    completed: "success", cancelled: "slate",
   };
-  return <Badge color={map[s] ?? "gray"} variant="light" size="sm">{s.replace(/_/g, " ")}</Badge>;
+  return <Badge color={map[s] ?? "slate"} variant="light" size="sm">{s.replace(/_/g, " ")}</Badge>;
 }
 
 // ── Helpers ────────────────────────────────────────────
@@ -314,10 +314,10 @@ function PmTab() {
     { key: "frequency", label: "Frequency", render: (r) => <Badge variant="light" size="sm">{r.frequency.replace(/_/g, " ")}</Badge> },
     { key: "next_due", label: "Next Due", render: (r) => {
       const overdue = r.next_due_date && new Date(r.next_due_date) < new Date();
-      return <Text size="sm" c={overdue ? "red" : undefined} fw={overdue ? 700 : undefined}>{fmtDate(r.next_due_date)}</Text>;
+      return <Text size="sm" c={overdue ? "danger" : undefined} fw={overdue ? 700 : undefined}>{fmtDate(r.next_due_date)}</Text>;
     }},
     { key: "last_completed", label: "Last Done", render: (r) => <Text size="sm">{fmtDate(r.last_completed_date)}</Text> },
-    { key: "active", label: "Active", render: (r) => r.is_active ? <Badge color="green" size="sm">Yes</Badge> : <Badge color="gray" size="sm">No</Badge> },
+    { key: "active", label: "Active", render: (r) => r.is_active ? <Badge color="success" size="sm">Yes</Badge> : <Badge color="slate" size="sm">No</Badge> },
   ];
 
   const woColumns: Column<BmeWorkOrder>[] = [
@@ -329,7 +329,7 @@ function PmTab() {
     { key: "scheduled", label: "Scheduled", render: (r) => <Text size="sm">{fmtDate(r.scheduled_date)}</Text> },
     { key: "actions", label: "", render: (r) => canManage && r.status !== "completed" && r.status !== "cancelled" ? (
       <Tooltip label="Mark Completed">
-        <ActionIcon variant="subtle" color="green" size="sm" onClick={() => updateWoMut.mutate({ id: r.id, body: { status: "completed" } })}>
+        <ActionIcon variant="subtle" color="success" size="sm" onClick={() => updateWoMut.mutate({ id: r.id, body: { status: "completed" } })}>
           <IconCheck size={16} />
         </ActionIcon>
       </Tooltip>
@@ -361,9 +361,9 @@ function PmTab() {
     <Stack>
       {stats && (
         <SimpleGrid cols={{ base: 2, sm: 3 }}>
-          <Card withBorder p="sm"><Text size="xs" c="dimmed">PM Overdue</Text><Text size="xl" fw={700} c={stats.pm_overdue > 0 ? "red" : "green"}>{stats.pm_overdue}</Text></Card>
-          <Card withBorder p="sm"><Text size="xs" c="dimmed">Open Breakdowns</Text><Text size="xl" fw={700} c={stats.open_breakdowns > 0 ? "orange" : "green"}>{stats.open_breakdowns}</Text></Card>
-          <Card withBorder p="sm"><Text size="xs" c="dimmed">Expiring Contracts</Text><Text size="xl" fw={700} c={stats.expiring_contracts > 0 ? "yellow" : "green"}>{stats.expiring_contracts}</Text></Card>
+          <Card withBorder p="sm"><Text size="xs" c="dimmed">PM Overdue</Text><Text size="xl" fw={700} c={stats.pm_overdue > 0 ? "danger" : "success"}>{stats.pm_overdue}</Text></Card>
+          <Card withBorder p="sm"><Text size="xs" c="dimmed">Open Breakdowns</Text><Text size="xl" fw={700} c={stats.open_breakdowns > 0 ? "orange" : "success"}>{stats.open_breakdowns}</Text></Card>
+          <Card withBorder p="sm"><Text size="xs" c="dimmed">Expiring Contracts</Text><Text size="xl" fw={700} c={stats.expiring_contracts > 0 ? "warning" : "success"}>{stats.expiring_contracts}</Text></Card>
         </SimpleGrid>
       )}
 
@@ -376,18 +376,18 @@ function PmTab() {
           </Card>
           <Card withBorder p="sm" bg="green.0">
             <Text size="xs" c="dimmed">Completed On Time</Text>
-            <Text size="xl" fw={700} c="green">{pmCompliance.completedOnTime}</Text>
+            <Text size="xl" fw={700} c="success">{pmCompliance.completedOnTime}</Text>
           </Card>
           <Card withBorder p="sm" bg="red.0">
             <Text size="xs" c="dimmed">Overdue</Text>
-            <Text size="xl" fw={700} c="red">{pmCompliance.overdue}</Text>
+            <Text size="xl" fw={700} c="danger">{pmCompliance.overdue}</Text>
           </Card>
           <Card withBorder p="sm">
             <Text size="xs" c="dimmed">Compliance Rate</Text>
-            <Text size="xl" fw={700} c={pmCompliance.complianceRate >= 80 ? "green" : pmCompliance.complianceRate >= 50 ? "yellow" : "red"}>
+            <Text size="xl" fw={700} c={pmCompliance.complianceRate >= 80 ? "success" : pmCompliance.complianceRate >= 50 ? "warning" : "danger"}>
               {pmCompliance.complianceRate}%
             </Text>
-            <Progress value={pmCompliance.complianceRate} color={pmCompliance.complianceRate >= 80 ? "green" : pmCompliance.complianceRate >= 50 ? "yellow" : "red"} size="sm" mt={4} />
+            <Progress value={pmCompliance.complianceRate} color={pmCompliance.complianceRate >= 80 ? "success" : pmCompliance.complianceRate >= 50 ? "warning" : "danger"} size="sm" mt={4} />
           </Card>
         </SimpleGrid>
         {pmCompliance.months.some((m) => m.scheduled > 0 || m.completed > 0) && (
@@ -489,11 +489,11 @@ function CalibrationTab() {
     { key: "last_cal", label: "Last Calibrated", render: (r) => <Text size="sm">{fmtDate(r.last_calibrated_date)}</Text> },
     { key: "next_due", label: "Next Due", render: (r) => {
       const overdue = r.next_due_date && new Date(r.next_due_date) < new Date();
-      return <Text size="sm" c={overdue ? "red" : undefined} fw={overdue ? 700 : undefined}>{fmtDate(r.next_due_date)}</Text>;
+      return <Text size="sm" c={overdue ? "danger" : undefined} fw={overdue ? 700 : undefined}>{fmtDate(r.next_due_date)}</Text>;
     }},
-    { key: "tolerance", label: "In Tolerance", render: (r) => r.is_in_tolerance === true ? <Badge color="green" size="sm">Yes</Badge> : r.is_in_tolerance === false ? <Badge color="red" size="sm">No</Badge> : <Text size="sm">—</Text> },
+    { key: "tolerance", label: "In Tolerance", render: (r) => r.is_in_tolerance === true ? <Badge color="success" size="sm">Yes</Badge> : r.is_in_tolerance === false ? <Badge color="danger" size="sm">No</Badge> : <Text size="sm">—</Text> },
     { key: "certificate", label: "Certificate #", render: (r) => <Text size="sm">{r.certificate_number ?? "—"}</Text> },
-    { key: "locked", label: "Locked", render: (r) => r.is_locked ? <Badge color="red" size="sm">Locked</Badge> : null },
+    { key: "locked", label: "Locked", render: (r) => r.is_locked ? <Badge color="danger" size="sm">Locked</Badge> : null },
   ];
 
   return (
@@ -501,7 +501,7 @@ function CalibrationTab() {
       {calibrationAlerts.length > 0 && (
         <Alert
           variant="light"
-          color={calibrationAlerts.some((a) => a.daysLeft < 0) ? "red" : "yellow"}
+          color={calibrationAlerts.some((a) => a.daysLeft < 0) ? "danger" : "warning"}
           title={`${calibrationAlerts.length} Calibration${calibrationAlerts.length > 1 ? "s" : ""} Due Soon`}
           icon={<IconAlertTriangle size={20} />}
         >
@@ -510,9 +510,9 @@ function CalibrationTab() {
               <Group key={a.id} gap="xs">
                 <Text size="sm" fw={500}>{a.equipName}</Text>
                 {a.daysLeft < 0 ? (
-                  <Badge color="red" size="sm" variant="filled">OVERDUE by {Math.abs(a.daysLeft)}d</Badge>
+                  <Badge color="danger" size="sm" variant="filled">OVERDUE by {Math.abs(a.daysLeft)}d</Badge>
                 ) : (
-                  <Badge color="yellow" size="sm" leftSection={<IconClock size={12} />}>Due in {a.daysLeft}d</Badge>
+                  <Badge color="warning" size="sm" leftSection={<IconClock size={12} />}>Due in {a.daysLeft}d</Badge>
                 )}
                 <Text size="xs" c="dimmed">({fmtDate(a.next_due_date)})</Text>
               </Group>
@@ -623,12 +623,12 @@ function ContractsTab() {
     { key: "value", label: "Value", render: (r) => <Text size="sm">{r.contract_value ? `₹${Number(r.contract_value).toLocaleString()}` : "—"}</Text> },
     { key: "expiry", label: "Expiry", render: (r) => {
       const daysLeft = Math.ceil((new Date(r.end_date).getTime() - Date.now()) / 86400000);
-      if (daysLeft < 0) return <Badge color="red" size="sm">Expired</Badge>;
-      if (daysLeft <= 30) return <Badge color="red" size="sm">{daysLeft}d left</Badge>;
-      if (daysLeft <= 90) return <Badge color="yellow" size="sm">{daysLeft}d left</Badge>;
-      return <Badge color="green" size="sm">{daysLeft}d left</Badge>;
+      if (daysLeft < 0) return <Badge color="danger" size="sm">Expired</Badge>;
+      if (daysLeft <= 30) return <Badge color="danger" size="sm">{daysLeft}d left</Badge>;
+      if (daysLeft <= 90) return <Badge color="warning" size="sm">{daysLeft}d left</Badge>;
+      return <Badge color="success" size="sm">{daysLeft}d left</Badge>;
     }},
-    { key: "active", label: "Active", render: (r) => r.is_active ? <Badge color="green" size="sm">Yes</Badge> : <Badge color="gray" size="sm">No</Badge> },
+    { key: "active", label: "Active", render: (r) => r.is_active ? <Badge color="success" size="sm">Yes</Badge> : <Badge color="slate" size="sm">No</Badge> },
   ];
 
   const evalColumns: Column<BmeVendorEvaluation>[] = [
@@ -648,7 +648,7 @@ function ContractsTab() {
       {contractRenewalAlerts.length > 0 && (
         <Alert
           variant="light"
-          color={contractRenewalAlerts.some((c) => c.daysLeft < 0) ? "red" : "yellow"}
+          color={contractRenewalAlerts.some((c) => c.daysLeft < 0) ? "danger" : "warning"}
           title={`${contractRenewalAlerts.length} Contract${contractRenewalAlerts.length > 1 ? "s" : ""} Expiring Soon`}
           icon={<IconAlertTriangle size={20} />}
         >
@@ -659,9 +659,9 @@ function ContractsTab() {
                 <Badge variant="light" size="sm">{c.contract_type.toUpperCase()}</Badge>
                 <Text size="xs" c="dimmed">#{c.contract_number}</Text>
                 {c.daysLeft < 0 ? (
-                  <Badge color="red" size="sm" variant="filled">EXPIRED {Math.abs(c.daysLeft)}d ago</Badge>
+                  <Badge color="danger" size="sm" variant="filled">EXPIRED {Math.abs(c.daysLeft)}d ago</Badge>
                 ) : (
-                  <Badge color="yellow" size="sm" leftSection={<IconClock size={12} />}>Expires in {c.daysLeft}d</Badge>
+                  <Badge color="warning" size="sm" leftSection={<IconClock size={12} />}>Expires in {c.daysLeft}d</Badge>
                 )}
               </Group>
             ))}
@@ -692,7 +692,7 @@ function ContractsTab() {
                   <Table.Td ta="right"><Text size="sm">{`\u20B9${row.contractValue.toLocaleString()}`}</Text></Table.Td>
                   <Table.Td ta="right"><Text size="sm">{`\u20B9${row.totalWoCost.toLocaleString()}`}</Text></Table.Td>
                   <Table.Td ta="right">
-                    <Badge color={row.utilization > 100 ? "red" : row.utilization > 80 ? "yellow" : "green"} variant="light" size="sm">
+                    <Badge color={row.utilization > 100 ? "danger" : row.utilization > 80 ? "warning" : "success"} variant="light" size="sm">
                       {row.utilization}%
                     </Badge>
                   </Table.Td>
@@ -814,7 +814,7 @@ function BreakdownsTab() {
       if (!canManage || !ns) return null;
       return (
         <Tooltip label={`Move to ${ns.replace(/_/g, " ")}`}>
-          <ActionIcon variant="subtle" color="blue" size="sm" onClick={() => updateMut.mutate({ id: r.id, body: { status: ns as UpdateBmeBreakdownStatusRequest["status"] } })}>
+          <ActionIcon variant="subtle" color="primary" size="sm" onClick={() => updateMut.mutate({ id: r.id, body: { status: ns as UpdateBmeBreakdownStatusRequest["status"] } })}>
             <IconCheck size={16} />
           </ActionIcon>
         </Tooltip>
@@ -849,9 +849,9 @@ function BreakdownsTab() {
 
 function uptimeColor(pct: number | null): string {
   if (pct == null) return "gray";
-  if (pct < 90) return "red";
-  if (pct < 95) return "yellow";
-  return "green";
+  if (pct < 90) return "danger";
+  if (pct < 95) return "warning";
+  return "success";
 }
 
 function AnalyticsTab() {
@@ -879,7 +879,7 @@ function AnalyticsTab() {
     { key: "equipment_name", label: "Equipment Name", render: (r) => <Text size="sm" fw={500}>{r.equipment_name}</Text> },
     { key: "equipment_id", label: "Equipment ID", render: (r) => <Text size="sm" c="dimmed">{r.equipment_id.slice(0, 8)}</Text> },
     { key: "total_days", label: "Total Days", render: (r) => <Text size="sm">{r.total_days != null ? r.total_days.toFixed(1) : "—"}</Text> },
-    { key: "downtime_days", label: "Downtime Days", render: (r) => <Text size="sm" c={r.downtime_days != null && r.downtime_days > 0 ? "red" : undefined}>{r.downtime_days != null ? r.downtime_days.toFixed(1) : "—"}</Text> },
+    { key: "downtime_days", label: "Downtime Days", render: (r) => <Text size="sm" c={r.downtime_days != null && r.downtime_days > 0 ? "danger" : undefined}>{r.downtime_days != null ? r.downtime_days.toFixed(1) : "—"}</Text> },
     { key: "uptime_percent", label: "Uptime %", render: (r) => (
       <Badge color={uptimeColor(r.uptime_percent)} variant="light" size="lg">
         {r.uptime_percent != null ? `${r.uptime_percent.toFixed(1)}%` : "—"}

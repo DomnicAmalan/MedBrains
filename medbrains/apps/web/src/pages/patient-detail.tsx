@@ -69,38 +69,38 @@ import type {
 // ── Helpers ────────────────────────────────────────────────
 
 const STATUS_COLORS: Record<string, string> = {
-  open: "blue",
-  in_progress: "yellow",
-  completed: "green",
-  cancelled: "red",
+  open: "primary",
+  in_progress: "warning",
+  completed: "success",
+  cancelled: "danger",
 };
 
 const LAB_STATUS_COLORS: Record<string, string> = {
-  ordered: "blue",
-  sample_collected: "cyan",
-  processing: "yellow",
-  completed: "green",
+  ordered: "primary",
+  sample_collected: "info",
+  processing: "warning",
+  completed: "success",
   verified: "teal",
-  cancelled: "red",
+  cancelled: "danger",
 };
 
 const INVOICE_STATUS_COLORS: Record<string, string> = {
-  draft: "gray",
-  issued: "blue",
-  partially_paid: "yellow",
-  paid: "green",
-  cancelled: "red",
+  draft: "slate",
+  issued: "primary",
+  partially_paid: "warning",
+  paid: "success",
+  cancelled: "danger",
   refunded: "orange",
 };
 
 const APPT_STATUS_COLORS: Record<string, string> = {
-  scheduled: "blue",
-  confirmed: "cyan",
-  checked_in: "yellow",
+  scheduled: "primary",
+  confirmed: "info",
+  checked_in: "warning",
   in_consultation: "orange",
-  completed: "green",
-  cancelled: "red",
-  no_show: "gray",
+  completed: "success",
+  cancelled: "danger",
+  no_show: "slate",
 };
 
 function formatDate(d: string | null): string {
@@ -206,10 +206,10 @@ function OverviewTab({ patient }: { patient: Patient }) {
                   <Badge
                     color={
                       a.severity === "severe" || a.severity === "life_threatening"
-                        ? "red"
+                        ? "danger"
                         : a.severity === "moderate"
                           ? "orange"
-                          : "yellow"
+                          : "warning"
                     }
                     variant="light"
                     size="sm"
@@ -241,12 +241,12 @@ function OverviewTab({ patient }: { patient: Patient }) {
                 </Badge>
               )}
               {patient.is_medico_legal && (
-                <Badge color="red" variant="light">
+                <Badge color="danger" variant="light">
                   Medico-Legal
                 </Badge>
               )}
               {patient.is_deceased && (
-                <Badge color="gray" variant="filled">
+                <Badge color="slate" variant="filled">
                   Deceased
                 </Badge>
               )}
@@ -345,7 +345,7 @@ function VisitsTab({ patientId }: { patientId: string }) {
             </Table.Td>
             <Table.Td>
               <Badge
-                color={STATUS_COLORS[v.status] ?? "gray"}
+                color={STATUS_COLORS[v.status] ?? "slate"}
                 variant="light"
                 size="sm"
               >
@@ -400,7 +400,7 @@ function LabOrdersTab({ patientId }: { patientId: string }) {
             </Table.Td>
             <Table.Td>
               <Badge
-                color={LAB_STATUS_COLORS[o.status] ?? "gray"}
+                color={LAB_STATUS_COLORS[o.status] ?? "slate"}
                 variant="light"
                 size="sm"
               >
@@ -409,7 +409,7 @@ function LabOrdersTab({ patientId }: { patientId: string }) {
             </Table.Td>
             <Table.Td>
               <Badge
-                color={o.priority === "stat" ? "red" : o.priority === "urgent" ? "orange" : "gray"}
+                color={o.priority === "stat" ? "danger" : o.priority === "urgent" ? "orange" : "slate"}
                 variant="light"
                 size="sm"
               >
@@ -482,7 +482,7 @@ function BillingTab({ patientId }: { patientId: string }) {
           <Text size="xs" c="dimmed">
             Paid
           </Text>
-          <Text size="lg" fw={700} c="green">
+          <Text size="lg" fw={700} c="success">
             {"\u20B9"}{totals.paid.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </Text>
         </Card>
@@ -490,7 +490,7 @@ function BillingTab({ patientId }: { patientId: string }) {
           <Text size="xs" c="dimmed">
             Balance
           </Text>
-          <Text size="lg" fw={700} c={totals.balance > 0 ? "red" : "green"}>
+          <Text size="lg" fw={700} c={totals.balance > 0 ? "danger" : "success"}>
             {"\u20B9"}{totals.balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </Text>
         </Card>
@@ -518,7 +518,7 @@ function BillingTab({ patientId }: { patientId: string }) {
               </Table.Td>
               <Table.Td>
                 <Badge
-                  color={INVOICE_STATUS_COLORS[inv.status] ?? "gray"}
+                  color={INVOICE_STATUS_COLORS[inv.status] ?? "slate"}
                   variant="light"
                   size="sm"
                 >
@@ -536,14 +536,14 @@ function BillingTab({ patientId }: { patientId: string }) {
                 </Text>
               </Table.Td>
               <Table.Td ta="right">
-                <Text size="sm" c="green">
+                <Text size="sm" c="success">
                   {"\u20B9"}{parseFloat(inv.paid_amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </Text>
               </Table.Td>
               <Table.Td ta="right">
                 <Text
                   size="sm"
-                  c={parseFloat(inv.balance) > 0 ? "red" : undefined}
+                  c={parseFloat(inv.balance) > 0 ? "danger" : undefined}
                 >
                   {"\u20B9"}{parseFloat(inv.balance).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                 </Text>
@@ -624,7 +624,7 @@ function AppointmentsTab({ patientId }: { patientId: string }) {
             </Table.Td>
             <Table.Td>
               <Badge
-                color={APPT_STATUS_COLORS[a.status] ?? "gray"}
+                color={APPT_STATUS_COLORS[a.status] ?? "slate"}
                 variant="light"
                 size="sm"
               >
@@ -671,7 +671,7 @@ function DetailFamilyLinksTab({ patientId }: { patientId: string }) {
       api.createFamilyLink(patientId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patient-family-links", patientId] });
-      notifications.show({ title: "Linked", message: "Family member linked", color: "green" });
+      notifications.show({ title: "Linked", message: "Family member linked", color: "success" });
       handleClose();
     },
   });
@@ -737,7 +737,7 @@ function DetailFamilyLinksTab({ patientId }: { patientId: string }) {
                 <Table.Td><Text size="sm">{l.related_gender ?? "—"}</Text></Table.Td>
                 {canUpdate && (
                   <Table.Td>
-                    <ActionIcon variant="light" color="red" size="sm" onClick={() => deleteMutation.mutate(l.id)}>
+                    <ActionIcon variant="light" color="danger" size="sm" onClick={() => deleteMutation.mutate(l.id)}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Table.Td>
@@ -768,7 +768,7 @@ function DetailFamilyLinksTab({ patientId }: { patientId: string }) {
             </Table>
           )}
           {selectedRelated && (
-            <Alert color="blue">Selected: {selectedRelated.uhid} — {selectedRelated.first_name} {selectedRelated.last_name}</Alert>
+            <Alert color="primary">Selected: {selectedRelated.uhid} — {selectedRelated.first_name} {selectedRelated.last_name}</Alert>
           )}
           <Select label="Relationship" data={RELATIONSHIP_OPTIONS} value={relationship} onChange={setRelationship} required />
           <Group justify="flex-end">
@@ -813,7 +813,7 @@ function DetailDocumentsTab({ patientId }: { patientId: string }) {
     mutationFn: (data: CreateDocumentRequest) => api.createPatientDocument(patientId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patient-documents", patientId] });
-      notifications.show({ title: "Added", message: "Document added", color: "green" });
+      notifications.show({ title: "Added", message: "Document added", color: "success" });
       handleClose();
     },
   });
@@ -870,7 +870,7 @@ function DetailDocumentsTab({ patientId }: { patientId: string }) {
                 <Table.Td><Text size="xs" c="dimmed">{formatDate(d.created_at)}</Text></Table.Td>
                 {canUpdate && (
                   <Table.Td>
-                    <ActionIcon variant="light" color="red" size="sm" onClick={() => deleteMutation.mutate(d.id)}>
+                    <ActionIcon variant="light" color="danger" size="sm" onClick={() => deleteMutation.mutate(d.id)}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Table.Td>
@@ -918,7 +918,7 @@ function MergeTab({ patient }: { patient: Patient }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patient-merge-history", patient.id] });
       queryClient.invalidateQueries({ queryKey: ["patients"] });
-      notifications.show({ title: "Merged", message: "Patient records merged", color: "green" });
+      notifications.show({ title: "Merged", message: "Patient records merged", color: "success" });
       confirmHandlers.close();
       setSelectedTarget(null);
       setMergeReason("");
@@ -931,7 +931,7 @@ function MergeTab({ patient }: { patient: Patient }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patient-merge-history", patient.id] });
       queryClient.invalidateQueries({ queryKey: ["patients"] });
-      notifications.show({ title: "Unmerged", message: "Patient records separated", color: "green" });
+      notifications.show({ title: "Unmerged", message: "Patient records separated", color: "success" });
     },
   });
 
@@ -980,7 +980,7 @@ function MergeTab({ patient }: { patient: Patient }) {
                   <Table.Td><Text size="sm">{h.merged_patient_id.slice(0, 8)}...</Text></Table.Td>
                   <Table.Td><Text size="sm">{h.merge_reason}</Text></Table.Td>
                   <Table.Td>
-                    <Badge size="sm" color={h.unmerged_at ? "gray" : "green"}>
+                    <Badge size="sm" color={h.unmerged_at ? "slate" : "success"}>
                       {h.unmerged_at ? "Unmerged" : "Active"}
                     </Badge>
                   </Table.Td>
@@ -1043,12 +1043,12 @@ function MergeTab({ patient }: { patient: Patient }) {
 
       {/* Confirmation Modal */}
       <Modal opened={confirmOpen} onClose={confirmHandlers.close} title="Confirm Merge">
-        <Alert color="red" icon={<IconAlertTriangle size={16} />} mb="md">
+        <Alert color="danger" icon={<IconAlertTriangle size={16} />} mb="md">
           This will deactivate {selectedTarget?.uhid} and merge its data into {patient.uhid}. This can be undone later.
         </Alert>
         <Group justify="flex-end">
           <Button variant="subtle" onClick={confirmHandlers.close}>Cancel</Button>
-          <Button color="red" loading={mergeMutation.isPending} onClick={() => {
+          <Button color="danger" loading={mergeMutation.isPending} onClick={() => {
             if (selectedTarget) {
               mergeMutation.mutate({
                 surviving_patient_id: patient.id,
@@ -1119,11 +1119,11 @@ const EVENT_COLORS: Record<string, string> = {
 };
 
 const ENROLLMENT_STATUS_COLORS: Record<string, string> = {
-  active: "green",
+  active: "success",
   completed: "teal",
   discontinued: "orange",
-  transferred: "blue",
-  lost_to_followup: "red",
+  transferred: "primary",
+  lost_to_followup: "danger",
   deceased: "dark",
 };
 
@@ -1237,11 +1237,11 @@ function DrugOGramSegment({
 
       {/* Polypharmacy Alerts */}
       {activeAlerts.length > 0 && (
-        <Alert color="red" title={`${activeAlerts.length} Drug Interaction Alert(s)`} icon={<IconAlertTriangle size={16} />}>
+        <Alert color="danger" title={`${activeAlerts.length} Drug Interaction Alert(s)`} icon={<IconAlertTriangle size={16} />}>
           <Stack gap={4}>
             {activeAlerts.map((a) => (
               <Group key={a.id} gap="xs">
-                <Badge color={a.severity === "contraindicated" ? "red" : a.severity === "major" ? "orange" : "yellow"} size="sm">
+                <Badge color={a.severity === "contraindicated" ? "danger" : a.severity === "major" ? "orange" : "warning"} size="sm">
                   {a.severity}
                 </Badge>
                 <Text size="sm">{a.drug_a_name} + {a.drug_b_name}</Text>
@@ -1417,7 +1417,7 @@ function DrugSwimLane({ data }: { data: DrugTimelineWithLabsResponse }) {
                   <Group justify="space-between">
                     <Text size="sm" fw={500}>{series.parameter_name}</Text>
                     {atTarget !== null && (
-                      <Badge color={atTarget ? "green" : "red"} size="xs">
+                      <Badge color={atTarget ? "success" : "danger"} size="xs">
                         {atTarget ? "At Target" : "Off Target"}
                       </Badge>
                     )}
@@ -1480,7 +1480,7 @@ function OutcomesSegment({ patientId }: { patientId: string }) {
                 <Group justify="space-between">
                   <Text size="sm" fw={500}>{t.target.parameter_name}</Text>
                   {t.at_target !== null && (
-                    <Badge color={t.at_target ? "green" : "red"} size="xs">
+                    <Badge color={t.at_target ? "success" : "danger"} size="xs">
                       {t.at_target ? "At Target" : "Off Target"}
                     </Badge>
                   )}
@@ -1539,7 +1539,7 @@ function AdherenceSegment({ patientId }: { patientId: string }) {
                 <Text size="sm" fw={500}>{e.program_name}</Text>
                 <Text size="xs" c="dimmed">Enrolled: {e.enrollment_date}</Text>
               </div>
-              <Badge color={ENROLLMENT_STATUS_COLORS[e.status] ?? "gray"}>{e.status.replace(/_/g, " ")}</Badge>
+              <Badge color={ENROLLMENT_STATUS_COLORS[e.status] ?? "slate"}>{e.status.replace(/_/g, " ")}</Badge>
             </Group>
           ))}
         </Stack>
@@ -1554,23 +1554,23 @@ function AdherenceSegment({ patientId }: { patientId: string }) {
               <Text fw={700} size="xl">{Math.round(Number(summary.dose_adherence_pct))}%</Text>
               <Progress
                 value={Number(summary.dose_adherence_pct)}
-                color={Number(summary.dose_adherence_pct) >= 80 ? "green" : "red"}
+                color={Number(summary.dose_adherence_pct) >= 80 ? "success" : "danger"}
                 mt="xs"
               />
             </Card>
             <Card withBorder padding="md">
               <Text size="xs" c="dimmed" tt="uppercase">Doses</Text>
               <Group gap="xs" mt="xs">
-                <Badge color="green" variant="light">{summary.doses_taken} taken</Badge>
-                <Badge color="red" variant="light">{summary.doses_missed} missed</Badge>
-                <Badge color="yellow" variant="light">{summary.doses_late} late</Badge>
+                <Badge color="success" variant="light">{summary.doses_taken} taken</Badge>
+                <Badge color="danger" variant="light">{summary.doses_missed} missed</Badge>
+                <Badge color="warning" variant="light">{summary.doses_late} late</Badge>
               </Group>
             </Card>
             <Card withBorder padding="md">
               <Text size="xs" c="dimmed" tt="uppercase">Appointments</Text>
               <Group gap="xs" mt="xs">
-                <Badge color="green" variant="light">{summary.appointments_attended} attended</Badge>
-                <Badge color="red" variant="light">{summary.appointments_missed} missed</Badge>
+                <Badge color="success" variant="light">{summary.appointments_attended} attended</Badge>
+                <Badge color="danger" variant="light">{summary.appointments_missed} missed</Badge>
               </Group>
             </Card>
           </SimpleGrid>
@@ -1584,7 +1584,7 @@ function AdherenceSegment({ patientId }: { patientId: string }) {
                 return (
                   <Group key={m.month} mb="xs">
                     <Text size="sm" w={80}>{m.month}</Text>
-                    <Progress value={pct} color={pct >= 80 ? "green" : "red"} style={{ flex: 1 }} />
+                    <Progress value={pct} color={pct >= 80 ? "success" : "danger"} style={{ flex: 1 }} />
                     <Text size="sm" w={40}>{pct}%</Text>
                   </Group>
                 );
@@ -1686,11 +1686,11 @@ export function PatientDetailPage() {
         <Badge color="primary" variant="light">
           {patient.category}
         </Badge>
-        <Badge color="gray" variant="light">
+        <Badge color="slate" variant="light">
           {patient.financial_class}
         </Badge>
         {patient.blood_group && (
-          <Badge color="red" variant="light">
+          <Badge color="danger" variant="light">
             {patient.blood_group}
           </Badge>
         )}
@@ -1700,7 +1700,7 @@ export function PatientDetailPage() {
           </Badge>
         )}
         {patient.is_medico_legal && (
-          <Badge color="red" variant="filled">
+          <Badge color="danger" variant="filled">
             MLC
           </Badge>
         )}

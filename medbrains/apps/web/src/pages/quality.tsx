@@ -23,6 +23,7 @@ import {
   Textarea,
   Tooltip,
 } from "@mantine/core";
+import { PatientSearchSelect } from "../components/PatientSearchSelect";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { LineChart, DonutChart, BarChart } from "@mantine/charts";
@@ -91,53 +92,53 @@ import { useRequirePermission } from "../hooks/useRequirePermission";
 // ── Color Maps ──────────────────────────────────────────
 
 const severityColors: Record<string, string> = {
-  sentinel: "red",
+  sentinel: "danger",
   major: "orange",
-  moderate: "yellow",
-  minor: "blue",
-  near_miss: "gray",
+  moderate: "warning",
+  minor: "primary",
+  near_miss: "slate",
 };
 
 const incidentStatusColors: Record<string, string> = {
-  reported: "gray",
-  acknowledged: "blue",
-  investigating: "indigo",
+  reported: "slate",
+  acknowledged: "primary",
+  investigating: "primary",
   rca_complete: "violet",
   capa_assigned: "orange",
   capa_in_progress: "teal",
-  closed: "green",
-  reopened: "red",
+  closed: "success",
+  reopened: "danger",
 };
 
 const docStatusColors: Record<string, string> = {
-  draft: "gray",
-  under_review: "blue",
+  draft: "slate",
+  under_review: "primary",
   approved: "teal",
-  released: "green",
+  released: "success",
   revised: "orange",
-  obsolete: "red",
+  obsolete: "danger",
 };
 
 const capaStatusColors: Record<string, string> = {
-  open: "gray",
-  in_progress: "blue",
+  open: "slate",
+  in_progress: "primary",
   completed: "teal",
-  verified: "green",
-  overdue: "red",
+  verified: "success",
+  overdue: "danger",
 };
 
 const complianceColors: Record<string, string> = {
-  compliant: "green",
-  partially_compliant: "yellow",
-  non_compliant: "red",
-  not_applicable: "gray",
+  compliant: "success",
+  partially_compliant: "warning",
+  non_compliant: "danger",
+  not_applicable: "slate",
 };
 
 const auditStatusColors: Record<string, string> = {
-  planned: "gray",
-  in_progress: "blue",
-  completed: "green",
-  cancelled: "red",
+  planned: "slate",
+  in_progress: "primary",
+  completed: "success",
+  cancelled: "danger",
 };
 
 // ── Indicators Tab ──────────────────────────────────────
@@ -217,7 +218,7 @@ function IndicatorsTab() {
     mutationFn: (data: CreateQualityIndicatorRequest) => api.createQualityIndicator(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-indicators"] });
-      notifications.show({ title: "Indicator created", message: "", color: "green" });
+      notifications.show({ title: "Indicator created", message: "", color: "success" });
       close();
       setForm({ code: "", name: "", category: "", frequency: "monthly" });
     },
@@ -231,7 +232,7 @@ function IndicatorsTab() {
       notifications.show({ title: "Indicator calculated", message: "Value auto-computed", color: "teal" });
     },
     onError: () => {
-      notifications.show({ title: "Calculation failed", message: "Could not auto-calculate indicator", color: "red" });
+      notifications.show({ title: "Calculation failed", message: "Could not auto-calculate indicator", color: "danger" });
     },
   });
 
@@ -257,7 +258,7 @@ function IndicatorsTab() {
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-indicator-values"] });
-      notifications.show({ title: "Value recorded", message: "", color: "green" });
+      notifications.show({ title: "Value recorded", message: "", color: "success" });
       closeRecord();
     },
   });
@@ -268,7 +269,7 @@ function IndicatorsTab() {
     { key: "category" as const, label: "Category", render: (i: QualityIndicator) => <Badge variant="light">{i.category}</Badge> },
     { key: "frequency" as const, label: "Frequency", render: (i: QualityIndicator) => i.frequency },
     { key: "target" as const, label: "Target", render: (i: QualityIndicator) => i.target_value != null ? `${i.target_value}${i.unit ? ` ${i.unit}` : ""}` : "---" },
-    { key: "status" as const, label: "Status", render: (i: QualityIndicator) => i.is_active ? <Badge color="green">Active</Badge> : <Badge color="gray">Inactive</Badge> },
+    { key: "status" as const, label: "Status", render: (i: QualityIndicator) => i.is_active ? <Badge color="success">Active</Badge> : <Badge color="slate">Inactive</Badge> },
     {
       key: "actions" as const,
       label: "Actions",
@@ -297,7 +298,7 @@ function IndicatorsTab() {
           )}
           {canManage && (
             <Tooltip label="Record Value">
-              <ActionIcon variant="subtle" color="blue" onClick={() => {
+              <ActionIcon variant="subtle" color="primary" onClick={() => {
                 setSelectedIndicator(i);
                 setRecordForm({ ...recordForm, indicator_id: i.id });
                 openRecord();
@@ -378,7 +379,7 @@ function IndicatorsTab() {
                           </div>
                         </Table.Td>
                         <Table.Td>
-                          <Badge color={meetsTarget ? "green" : "red"}>
+                          <Badge color={meetsTarget ? "success" : "danger"}>
                             {current.toFixed(2)}{i.unit ? ` ${i.unit}` : ""}
                           </Badge>
                         </Table.Td>
@@ -386,12 +387,12 @@ function IndicatorsTab() {
                           {target.toFixed(2)}{i.unit ? ` ${i.unit}` : ""}
                         </Table.Td>
                         <Table.Td>
-                          <Text c={variance >= 0 ? "green" : "red"} fw={500}>
+                          <Text c={variance >= 0 ? "success" : "danger"} fw={500}>
                             {variance > 0 ? "+" : ""}{variance.toFixed(1)}%
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          <Progress value={progress} color={meetsTarget ? "green" : "red"} size="lg" />
+                          <Progress value={progress} color={meetsTarget ? "success" : "danger"} size="lg" />
                         </Table.Td>
                       </Table.Tr>
                     );
@@ -407,7 +408,7 @@ function IndicatorsTab() {
           <Stack>
             <Group justify="space-between">
               <Text fw={600}>Trend Analysis: {trendIndicator.name}</Text>
-              <Button variant="subtle" size="compact-sm" color="gray" onClick={() => setTrendIndicator(null)}>
+              <Button variant="subtle" size="compact-sm" color="slate" onClick={() => setTrendIndicator(null)}>
                 Close
               </Button>
             </Group>
@@ -429,12 +430,12 @@ function IndicatorsTab() {
             )}
             {trendIndicator.target_value != null && (
               <Group gap="lg">
-                <Badge color="green" variant="dot" size="lg">Target: {trendIndicator.target_value}{trendIndicator.unit ? ` ${trendIndicator.unit}` : ""}</Badge>
+                <Badge color="success" variant="dot" size="lg">Target: {trendIndicator.target_value}{trendIndicator.unit ? ` ${trendIndicator.unit}` : ""}</Badge>
                 {trendIndicator.threshold_warning != null && (
                   <Badge color="orange" variant="dot" size="lg">Warning Threshold: {trendIndicator.threshold_warning}{trendIndicator.unit ? ` ${trendIndicator.unit}` : ""}</Badge>
                 )}
                 {trendIndicator.threshold_critical != null && (
-                  <Badge color="red" variant="dot" size="lg">Critical Threshold: {trendIndicator.threshold_critical}{trendIndicator.unit ? ` ${trendIndicator.unit}` : ""}</Badge>
+                  <Badge color="danger" variant="dot" size="lg">Critical Threshold: {trendIndicator.threshold_critical}{trendIndicator.unit ? ` ${trendIndicator.unit}` : ""}</Badge>
                 )}
               </Group>
             )}
@@ -528,7 +529,7 @@ function DocumentsTab() {
     mutationFn: (data: CreateQualityDocumentRequest) => api.createQualityDocument(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-documents"] });
-      notifications.show({ title: "Document created", message: "", color: "green" });
+      notifications.show({ title: "Document created", message: "", color: "success" });
       close();
       setForm({ document_number: "", title: "", category: "" });
     },
@@ -538,14 +539,14 @@ function DocumentsTab() {
     mutationFn: ({ id, status }: { id: string; status: string }) => api.updateDocumentStatus(id, { status }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-documents"] });
-      notifications.show({ title: "Status updated", message: "", color: "green" });
+      notifications.show({ title: "Status updated", message: "", color: "success" });
     },
   });
 
   const acknowledgeMut = useMutation({
     mutationFn: (id: string) => api.acknowledgeDocument(id),
     onSuccess: () => {
-      notifications.show({ title: "Document acknowledged", message: "", color: "green" });
+      notifications.show({ title: "Document acknowledged", message: "", color: "success" });
     },
   });
 
@@ -562,7 +563,7 @@ function DocumentsTab() {
     { key: "title" as const, label: "Title", render: (d: QualityDocument) => d.title },
     { key: "category" as const, label: "Category", render: (d: QualityDocument) => d.category },
     { key: "version" as const, label: "Version", render: (d: QualityDocument) => `v${d.current_version}` },
-    { key: "status" as const, label: "Status", render: (d: QualityDocument) => <Badge color={docStatusColors[d.status] ?? "gray"}>{d.status.replace(/_/g, " ")}</Badge> },
+    { key: "status" as const, label: "Status", render: (d: QualityDocument) => <Badge color={docStatusColors[d.status] ?? "slate"}>{d.status.replace(/_/g, " ")}</Badge> },
     { key: "review_date" as const, label: "Next Review", render: (d: QualityDocument) => d.next_review_date ? new Date(d.next_review_date).toLocaleDateString() : "---" },
     { key: "training" as const, label: "Training", render: (d: QualityDocument) => d.is_training_required ? <Badge color="orange" size="sm">Required</Badge> : "---" },
     {
@@ -575,7 +576,7 @@ function DocumentsTab() {
               <Button
                 size="compact-xs"
                 variant="light"
-                color={docStatusColors[nextStatus] ?? "gray"}
+                color={docStatusColors[nextStatus] ?? "slate"}
                 loading={statusMut.isPending}
                 onClick={() => statusMut.mutate({ id: d.id, status: nextStatus })}
               >
@@ -721,10 +722,10 @@ function DocumentsTab() {
                     return (
                       <Table.Tr key={doc.id}>
                         <Table.Td>
-                          <Badge color="blue">v{doc.current_version}</Badge>
+                          <Badge color="primary">v{doc.current_version}</Badge>
                         </Table.Td>
                         <Table.Td>
-                          <Badge color={docStatusColors[doc.status] ?? "gray"}>{doc.status.replace(/_/g, " ")}</Badge>
+                          <Badge color={docStatusColors[doc.status] ?? "slate"}>{doc.status.replace(/_/g, " ")}</Badge>
                         </Table.Td>
                         <Table.Td>{new Date(doc.created_at).toLocaleDateString()}</Table.Td>
                         <Table.Td>
@@ -787,7 +788,7 @@ function IncidentsTab() {
     mutationFn: (data: CreateQualityIncidentRequest) => api.createQualityIncident(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-incidents"] });
-      notifications.show({ title: "Incident reported", message: "", color: "green" });
+      notifications.show({ title: "Incident reported", message: "", color: "success" });
       closeCreate();
       setForm({ title: "", incident_type: "", severity: "minor", incident_date: new Date().toISOString().slice(0, 10) });
     },
@@ -807,7 +808,7 @@ function IncidentsTab() {
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => api.updateQualityIncident(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-incidents"] });
-      notifications.show({ title: "Incident updated", message: "", color: "green" });
+      notifications.show({ title: "Incident updated", message: "", color: "success" });
     },
   });
 
@@ -823,7 +824,7 @@ function IncidentsTab() {
     mutationFn: (data: CreateMortalityReviewRequest) => api.createMortalityReview(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-incidents"] });
-      notifications.show({ title: "Mortality review created", message: "", color: "green" });
+      notifications.show({ title: "Mortality review created", message: "", color: "success" });
       closeMortality();
       setMortalityForm({ patient_id: "", death_date: "", primary_diagnosis: "" });
     },
@@ -840,7 +841,7 @@ function IncidentsTab() {
     mutationFn: (data: CreateCapaRequest) => api.createCapa(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-capa"] });
-      notifications.show({ title: "CAPA created", message: "", color: "green" });
+      notifications.show({ title: "CAPA created", message: "", color: "success" });
       setCapaForm({ incident_id: "", capa_type: "corrective", assigned_to: "", due_date: "" });
     },
   });
@@ -849,8 +850,8 @@ function IncidentsTab() {
     { key: "incident_number" as const, label: "Incident #", render: (i: QualityIncident) => <Text fw={500}>{i.incident_number}</Text> },
     { key: "title" as const, label: "Title", render: (i: QualityIncident) => i.title },
     { key: "incident_type" as const, label: "Type", render: (i: QualityIncident) => i.incident_type },
-    { key: "severity" as const, label: "Severity", render: (i: QualityIncident) => <Badge color={severityColors[i.severity] ?? "gray"}>{i.severity.replace(/_/g, " ")}</Badge> },
-    { key: "status" as const, label: "Status", render: (i: QualityIncident) => <Badge color={incidentStatusColors[i.status] ?? "gray"}>{i.status.replace(/_/g, " ")}</Badge> },
+    { key: "severity" as const, label: "Severity", render: (i: QualityIncident) => <Badge color={severityColors[i.severity] ?? "slate"}>{i.severity.replace(/_/g, " ")}</Badge> },
+    { key: "status" as const, label: "Status", render: (i: QualityIncident) => <Badge color={incidentStatusColors[i.status] ?? "slate"}>{i.status.replace(/_/g, " ")}</Badge> },
     { key: "incident_date" as const, label: "Date", render: (i: QualityIncident) => new Date(i.incident_date).toLocaleDateString() },
     { key: "anonymous" as const, label: "Anon", render: (i: QualityIncident) => i.is_anonymous ? <Badge size="sm" color="violet">Yes</Badge> : "---" },
     {
@@ -859,7 +860,7 @@ function IncidentsTab() {
       render: (i: QualityIncident) => (
         <Group gap="xs">
           <Tooltip label="View Details">
-            <ActionIcon variant="subtle" color="blue" onClick={() => { setSelectedIncident(i); openDetail(); }}>
+            <ActionIcon variant="subtle" color="primary" onClick={() => { setSelectedIncident(i); openDetail(); }}>
               <IconEye size={16} />
             </ActionIcon>
           </Tooltip>
@@ -892,10 +893,10 @@ function IncidentsTab() {
         </Group>
         {canCreate && (
           <Group>
-            <Button variant="light" color="grape" leftSection={<IconFileDescription size={16} />} onClick={openMortality}>
+            <Button variant="light" color="violet" leftSection={<IconFileDescription size={16} />} onClick={openMortality}>
               Mortality Review
             </Button>
-            <Button variant="light" color="gray" leftSection={<IconAlertTriangle size={16} />} onClick={openNearMissReport}>
+            <Button variant="light" color="slate" leftSection={<IconAlertTriangle size={16} />} onClick={openNearMissReport}>
               Report Near Miss
             </Button>
             <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>Report Incident</Button>
@@ -927,8 +928,8 @@ function IncidentsTab() {
         {selectedIncident && (
           <Stack>
             <Group>
-              <Badge color={severityColors[selectedIncident.severity] ?? "gray"} size="lg">{selectedIncident.severity.replace(/_/g, " ")}</Badge>
-              <Badge color={incidentStatusColors[selectedIncident.status] ?? "gray"} size="lg">{selectedIncident.status.replace(/_/g, " ")}</Badge>
+              <Badge color={severityColors[selectedIncident.severity] ?? "slate"} size="lg">{selectedIncident.severity.replace(/_/g, " ")}</Badge>
+              <Badge color={incidentStatusColors[selectedIncident.status] ?? "slate"} size="lg">{selectedIncident.status.replace(/_/g, " ")}</Badge>
             </Group>
             <Text fw={600}>{selectedIncident.title}</Text>
             {selectedIncident.description && <Text size="sm" c="dimmed">{selectedIncident.description}</Text>}
@@ -990,11 +991,11 @@ function IncidentsTab() {
                           <Text size="xs" c="dimmed">{capaAgeInDays} days old</Text>
                         </Table.Td>
                         <Table.Td>{c.capa_type}</Table.Td>
-                        <Table.Td><Badge color={capaStatusColors[c.status] ?? "gray"}>{c.status.replace(/_/g, " ")}</Badge></Table.Td>
+                        <Table.Td><Badge color={capaStatusColors[c.status] ?? "slate"}>{c.status.replace(/_/g, " ")}</Badge></Table.Td>
                         <Table.Td>{new Date(c.due_date).toLocaleDateString()}</Table.Td>
                         <Table.Td>
                           <Tooltip label="View Effectiveness">
-                            <ActionIcon variant="subtle" color="blue" onClick={() => setSelectedCapa(c)}>
+                            <ActionIcon variant="subtle" color="primary" onClick={() => setSelectedCapa(c)}>
                               <IconEye size={16} />
                             </ActionIcon>
                           </Tooltip>
@@ -1011,7 +1012,7 @@ function IncidentsTab() {
                 <Stack gap="sm">
                   <Group justify="space-between">
                     <Text fw={600}>CAPA Effectiveness Review: {selectedCapa.capa_number}</Text>
-                    <Button variant="subtle" size="compact-sm" color="gray" onClick={() => setSelectedCapa(null)}>
+                    <Button variant="subtle" size="compact-sm" color="slate" onClick={() => setSelectedCapa(null)}>
                       Close
                     </Button>
                   </Group>
@@ -1040,17 +1041,17 @@ function IncidentsTab() {
                             <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Effectiveness Review</Text>
                             {effectivenessReview ? (
                               <>
-                                <Text fw={600} mt={4} c="green">Completed</Text>
+                                <Text fw={600} mt={4} c="success">Completed</Text>
                                 {effectivenessReview.effectiveness_check_date && (
                                   <Text size="xs" c="dimmed">{new Date(effectivenessReview.effectiveness_check_date).toLocaleDateString()}</Text>
                                 )}
                               </>
                             ) : reviewOverdue ? (
-                              <Badge color="red" mt={4}>Overdue</Badge>
+                              <Badge color="danger" mt={4}>Overdue</Badge>
                             ) : selectedCapa.completed_at ? (
-                              <Badge color="yellow" mt={4}>Due Soon</Badge>
+                              <Badge color="warning" mt={4}>Due Soon</Badge>
                             ) : (
-                              <Badge color="gray" mt={4}>Pending</Badge>
+                              <Badge color="slate" mt={4}>Pending</Badge>
                             )}
                           </Card>
                         </SimpleGrid>
@@ -1065,10 +1066,10 @@ function IncidentsTab() {
                             )}
                           </Card>
                         ) : (
-                          <Badge color="gray" size="lg">Pending Review</Badge>
+                          <Badge color="slate" size="lg">Pending Review</Badge>
                         )}
                         {reviewOverdue && (
-                          <Badge color="red" size="lg">Review overdue by {daysOverdueSinceCompletion - 90} days (90-day threshold exceeded)</Badge>
+                          <Badge color="danger" size="lg">Review overdue by {daysOverdueSinceCompletion - 90} days (90-day threshold exceeded)</Badge>
                         )}
                       </>
                     );
@@ -1101,7 +1102,7 @@ function IncidentsTab() {
       {/* Mortality Review Drawer */}
       <Drawer opened={mortalityOpened} onClose={closeMortality} title="Mortality Review" position="right" size="md">
         <Stack>
-          <TextInput label="Patient ID" required value={mortalityForm.patient_id} onChange={(e) => setMortalityForm({ ...mortalityForm, patient_id: e.currentTarget.value })} />
+          <PatientSearchSelect value={mortalityForm.patient_id} onChange={(v) => setMortalityForm({ ...mortalityForm, patient_id: v })} required />
           <TextInput label="Death Date" type="date" required value={mortalityForm.death_date} onChange={(e) => setMortalityForm({ ...mortalityForm, death_date: e.currentTarget.value })} />
           <TextInput label="Primary Diagnosis" required value={mortalityForm.primary_diagnosis} onChange={(e) => setMortalityForm({ ...mortalityForm, primary_diagnosis: e.currentTarget.value })} />
           <Textarea label="Review Findings" value={mortalityForm.review_findings ?? ""} onChange={(e) => setMortalityForm({ ...mortalityForm, review_findings: e.currentTarget.value || undefined })} />
@@ -1198,7 +1199,7 @@ function CommitteesTab() {
     mutationFn: (data: CreateQualityCommitteeRequest) => api.createQualityCommittee(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-committees"] });
-      notifications.show({ title: "Committee created", message: "", color: "green" });
+      notifications.show({ title: "Committee created", message: "", color: "success" });
       closeCommittee();
       setCommitteeForm({ name: "", code: "", committee_type: "", meeting_frequency: "monthly" });
     },
@@ -1213,7 +1214,7 @@ function CommitteesTab() {
     mutationFn: (data: CreateMeetingRequest) => api.createCommitteeMeeting(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-meetings"] });
-      notifications.show({ title: "Meeting scheduled", message: "", color: "green" });
+      notifications.show({ title: "Meeting scheduled", message: "", color: "success" });
       closeMeeting();
       setMeetingForm({ committee_id: "", scheduled_date: "" });
     },
@@ -1226,7 +1227,7 @@ function CommitteesTab() {
       notifications.show({ title: "Meetings auto-scheduled", message: "Scheduled for the next 6 months", color: "teal" });
     },
     onError: () => {
-      notifications.show({ title: "Auto-schedule failed", message: "Could not generate meeting schedule", color: "red" });
+      notifications.show({ title: "Auto-schedule failed", message: "Could not generate meeting schedule", color: "danger" });
     },
   });
 
@@ -1235,15 +1236,15 @@ function CommitteesTab() {
     { key: "name" as const, label: "Name", render: (c: QualityCommittee) => c.name },
     { key: "type" as const, label: "Type", render: (c: QualityCommittee) => c.committee_type },
     { key: "frequency" as const, label: "Meeting Frequency", render: (c: QualityCommittee) => c.meeting_frequency.replace(/_/g, " ") },
-    { key: "mandatory" as const, label: "Mandatory", render: (c: QualityCommittee) => c.is_mandatory ? <Badge color="red" size="sm">Mandatory</Badge> : "---" },
-    { key: "active" as const, label: "Status", render: (c: QualityCommittee) => c.is_active ? <Badge color="green">Active</Badge> : <Badge color="gray">Inactive</Badge> },
+    { key: "mandatory" as const, label: "Mandatory", render: (c: QualityCommittee) => c.is_mandatory ? <Badge color="danger" size="sm">Mandatory</Badge> : "---" },
+    { key: "active" as const, label: "Status", render: (c: QualityCommittee) => c.is_active ? <Badge color="success">Active</Badge> : <Badge color="slate">Inactive</Badge> },
     {
       key: "actions" as const,
       label: "Actions",
       render: (c: QualityCommittee) => (
         <Group gap="xs">
           <Tooltip label="View Meetings">
-            <ActionIcon variant="subtle" color="blue" onClick={() => { setSelectedCommittee(c); }}>
+            <ActionIcon variant="subtle" color="primary" onClick={() => { setSelectedCommittee(c); }}>
               <IconCalendarEvent size={16} />
             </ActionIcon>
           </Tooltip>
@@ -1262,7 +1263,7 @@ function CommitteesTab() {
             <Tooltip label="Auto-Schedule 6 Months">
               <ActionIcon
                 variant="subtle"
-                color="indigo"
+                color="primary"
                 loading={autoScheduleMut.isPending}
                 onClick={() => autoScheduleMut.mutate(c.id)}
               >
@@ -1381,7 +1382,7 @@ function CommitteesTab() {
                   <Table.Td>{a.source_type}</Table.Td>
                   <Table.Td>{a.description ?? "---"}</Table.Td>
                   <Table.Td>{new Date(a.due_date).toLocaleDateString()}</Table.Td>
-                  <Table.Td><Badge color={a.status === "completed" ? "green" : a.status === "overdue" ? "red" : "blue"}>{a.status}</Badge></Table.Td>
+                  <Table.Td><Badge color={a.status === "completed" ? "success" : a.status === "overdue" ? "danger" : "primary"}>{a.status}</Badge></Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>
@@ -1436,7 +1437,7 @@ function AccreditationTab() {
       openEvidenceModal();
     },
     onError: () => {
-      notifications.show({ title: "Error", message: "Failed to compile evidence", color: "red" });
+      notifications.show({ title: "Error", message: "Failed to compile evidence", color: "danger" });
     },
   });
 
@@ -1462,7 +1463,7 @@ function AccreditationTab() {
     mutationFn: (data: CreateAccreditationStandardRequest) => api.createAccreditationStandard(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-standards"] });
-      notifications.show({ title: "Standard added", message: "", color: "green" });
+      notifications.show({ title: "Standard added", message: "", color: "success" });
       closeStandard();
       setStandardForm({ body: "nabh", standard_code: "", standard_name: "" });
     },
@@ -1477,7 +1478,7 @@ function AccreditationTab() {
     mutationFn: (data: UpdateComplianceRequest) => api.updateAccreditationCompliance(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-compliance"] });
-      notifications.show({ title: "Compliance updated", message: "", color: "green" });
+      notifications.show({ title: "Compliance updated", message: "", color: "success" });
       closeCompliance();
     },
   });
@@ -1507,8 +1508,8 @@ function AccreditationTab() {
       label: "Compliance",
       render: (s: QualityAccreditationStandard) => {
         const c = complianceMap.get(s.id);
-        if (!c) return <Badge color="gray">Not Assessed</Badge>;
-        return <Badge color={complianceColors[c.compliance] ?? "gray"}>{c.compliance.replace(/_/g, " ")}</Badge>;
+        if (!c) return <Badge color="slate">Not Assessed</Badge>;
+        return <Badge color={complianceColors[c.compliance] ?? "slate"}>{c.compliance.replace(/_/g, " ")}</Badge>;
       },
     },
     {
@@ -1516,7 +1517,7 @@ function AccreditationTab() {
       label: "Gap",
       render: (s: QualityAccreditationStandard) => {
         const c = complianceMap.get(s.id);
-        return c?.gap_description ? <Text size="xs" c="red" lineClamp={1}>{c.gap_description}</Text> : "---";
+        return c?.gap_description ? <Text size="xs" c="danger" lineClamp={1}>{c.gap_description}</Text> : "---";
       },
     },
     {
@@ -1526,7 +1527,7 @@ function AccreditationTab() {
         <Group gap="xs">
           {canManage && (
             <Tooltip label="Update Compliance">
-              <ActionIcon variant="subtle" color="blue" onClick={() => {
+              <ActionIcon variant="subtle" color="primary" onClick={() => {
                 setSelectedStandard(s);
                 const existing = complianceMap.get(s.id);
                 setComplianceForm({
@@ -1559,7 +1560,7 @@ function AccreditationTab() {
         </Card>
         <Card withBorder shadow="sm" p="md">
           <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Compliant</Text>
-          <Text size="xl" fw={700} mt={4} c="green">{compliantCount}</Text>
+          <Text size="xl" fw={700} mt={4} c="success">{compliantCount}</Text>
         </Card>
         <Card withBorder shadow="sm" p="md">
           <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Partially Compliant</Text>
@@ -1567,7 +1568,7 @@ function AccreditationTab() {
         </Card>
         <Card withBorder shadow="sm" p="md">
           <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Non-Compliant</Text>
-          <Text size="xl" fw={700} mt={4} c="red">{nonCompliantCount}</Text>
+          <Text size="xl" fw={700} mt={4} c="danger">{nonCompliantCount}</Text>
         </Card>
       </SimpleGrid>
 
@@ -1595,9 +1596,9 @@ function AccreditationTab() {
             clearable
             w={160}
           />
-          <Badge color="green" variant="light">Compliant: {compliantCount}</Badge>
-          <Badge color="yellow" variant="light">Partial: {partialCount}</Badge>
-          <Badge color="red" variant="light">Non-Compliant: {nonCompliantCount}</Badge>
+          <Badge color="success" variant="light">Compliant: {compliantCount}</Badge>
+          <Badge color="warning" variant="light">Partial: {partialCount}</Badge>
+          <Badge color="danger" variant="light">Non-Compliant: {nonCompliantCount}</Badge>
         </Group>
         <Group>
           {canManage && (
@@ -1659,14 +1660,14 @@ function AccreditationTab() {
               </Card>
               <Card withBorder p="sm">
                 <Text size="xs" c="dimmed" tt="uppercase" fw={700}>Compliance Rate</Text>
-                <Text fw={600} mt={4} c={evidenceData.compliance_rate >= 80 ? "green" : evidenceData.compliance_rate >= 50 ? "yellow" : "red"}>
+                <Text fw={600} mt={4} c={evidenceData.compliance_rate >= 80 ? "success" : evidenceData.compliance_rate >= 50 ? "warning" : "danger"}>
                   {evidenceData.compliance_rate.toFixed(1)}%
                 </Text>
               </Card>
             </SimpleGrid>
             <Group>
-              <Badge color="green" variant="light">Compliant: {evidenceData.compliant_count}</Badge>
-              <Badge color="red" variant="light">Non-Compliant: {evidenceData.non_compliant_items.length}</Badge>
+              <Badge color="success" variant="light">Compliant: {evidenceData.compliant_count}</Badge>
+              <Badge color="danger" variant="light">Non-Compliant: {evidenceData.non_compliant_items.length}</Badge>
             </Group>
             {evidenceData.non_compliant_items.length > 0 && (
               <>
@@ -1723,7 +1724,7 @@ function AuditsTab() {
     mutationFn: (data: CreateQualityAuditRequest) => api.createQualityAudit(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-audits"] });
-      notifications.show({ title: "Audit created", message: "", color: "green" });
+      notifications.show({ title: "Audit created", message: "", color: "success" });
       closeCreate();
       setForm({ audit_type: "internal", title: "", audit_date: new Date().toISOString().slice(0, 10) });
     },
@@ -1766,7 +1767,7 @@ function AuditsTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quality-audit-findings", selectedAudit?.id] });
       qc.invalidateQueries({ queryKey: ["quality-audits"] });
-      notifications.show({ title: "Finding added", message: "", color: "green" });
+      notifications.show({ title: "Finding added", message: "", color: "success" });
       closeFinding();
       setFindingForm({ finding_type: "non_conformity", description: "", severity: "minor" });
     },
@@ -1788,14 +1789,14 @@ function AuditsTab() {
     { key: "audit_date" as const, label: "Date", render: (a: QualityAudit) => new Date(a.audit_date).toLocaleDateString() },
     { key: "score" as const, label: "Score", render: (a: QualityAudit) => a.overall_score != null ? `${a.overall_score}%` : "---" },
     { key: "nc" as const, label: "NC / Obs / Opp", render: (a: QualityAudit) => `${a.non_conformities} / ${a.observations} / ${a.opportunities}` },
-    { key: "status" as const, label: "Status", render: (a: QualityAudit) => <Badge color={auditStatusColors[a.status] ?? "gray"}>{a.status.replace(/_/g, " ")}</Badge> },
+    { key: "status" as const, label: "Status", render: (a: QualityAudit) => <Badge color={auditStatusColors[a.status] ?? "slate"}>{a.status.replace(/_/g, " ")}</Badge> },
     {
       key: "actions" as const,
       label: "Actions",
       render: (a: QualityAudit) => (
         <Group gap="xs">
           <Tooltip label="View Details">
-            <ActionIcon variant="subtle" color="blue" onClick={() => { setSelectedAudit(a); openDetail(); }}>
+            <ActionIcon variant="subtle" color="primary" onClick={() => { setSelectedAudit(a); openDetail(); }}>
               <IconEye size={16} />
             </ActionIcon>
           </Tooltip>
@@ -1813,7 +1814,7 @@ function AuditsTab() {
         </Group>
         {canCreate && (
           <Group>
-            <Button variant="light" color="indigo" leftSection={<IconCalendarEvent size={16} />} onClick={openSchedule}>
+            <Button variant="light" color="primary" leftSection={<IconCalendarEvent size={16} />} onClick={openSchedule}>
               Schedule Audits
             </Button>
             <Button variant="light" color="violet" leftSection={<IconShieldCheck size={16} />} onClick={openMockInspection}>
@@ -1845,20 +1846,20 @@ function AuditsTab() {
             <Text fw={600} size="lg">{selectedAudit.title}</Text>
             <Group>
               <Badge variant="light">{selectedAudit.audit_type}</Badge>
-              <Badge color={auditStatusColors[selectedAudit.status] ?? "gray"}>{selectedAudit.status.replace(/_/g, " ")}</Badge>
+              <Badge color={auditStatusColors[selectedAudit.status] ?? "slate"}>{selectedAudit.status.replace(/_/g, " ")}</Badge>
             </Group>
             <Text size="sm">Date: {new Date(selectedAudit.audit_date).toLocaleDateString()}</Text>
             {selectedAudit.scope && <Text size="sm">Scope: {selectedAudit.scope}</Text>}
             {selectedAudit.report_date && <Text size="sm">Report Date: {new Date(selectedAudit.report_date).toLocaleDateString()}</Text>}
 
             <Group mt="md">
-              <Badge color="red" size="lg">Non-Conformities: {selectedAudit.non_conformities}</Badge>
+              <Badge color="danger" size="lg">Non-Conformities: {selectedAudit.non_conformities}</Badge>
               <Badge color="orange" size="lg">Observations: {selectedAudit.observations}</Badge>
-              <Badge color="blue" size="lg">Opportunities: {selectedAudit.opportunities}</Badge>
+              <Badge color="primary" size="lg">Opportunities: {selectedAudit.opportunities}</Badge>
             </Group>
 
             {selectedAudit.overall_score != null && (
-              <Text fw={600} size="xl" c={selectedAudit.overall_score >= 80 ? "green" : selectedAudit.overall_score >= 60 ? "yellow" : "red"}>
+              <Text fw={600} size="xl" c={selectedAudit.overall_score >= 80 ? "success" : selectedAudit.overall_score >= 60 ? "warning" : "danger"}>
                 Score: {selectedAudit.overall_score}%
               </Text>
             )}
@@ -1908,9 +1909,9 @@ function AuditsTab() {
                     <Table.Tr key={f.id}>
                       <Table.Td><Badge variant="light">{f.finding_type.replace(/_/g, " ")}</Badge></Table.Td>
                       <Table.Td><Text size="sm" lineClamp={2}>{f.description}</Text></Table.Td>
-                      <Table.Td><Badge color={severityColors[f.severity] ?? "gray"}>{f.severity}</Badge></Table.Td>
+                      <Table.Td><Badge color={severityColors[f.severity] ?? "slate"}>{f.severity}</Badge></Table.Td>
                       <Table.Td><Text size="sm" lineClamp={1}>{f.recommendation ?? "---"}</Text></Table.Td>
-                      <Table.Td><Badge color={f.status === "closed" ? "green" : f.status === "open" ? "red" : "blue"}>{f.status}</Badge></Table.Td>
+                      <Table.Td><Badge color={f.status === "closed" ? "success" : f.status === "open" ? "danger" : "primary"}>{f.status}</Badge></Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>
@@ -2013,17 +2014,17 @@ function AnalyticsReviewsTab() {
     { key: "rate_per_1000" as const, label: "Rate/1000", render: (r: PatientSafetyIndicator) => r.rate_per_1000.toFixed(2) },
     { key: "benchmark" as const, label: "Benchmark", render: (r: PatientSafetyIndicator) => r.benchmark != null ? r.benchmark.toFixed(2) : "---" },
     { key: "status" as const, label: "Status", render: (r: PatientSafetyIndicator) => {
-      if (r.benchmark == null) return <Badge color="gray">N/A</Badge>;
+      if (r.benchmark == null) return <Badge color="slate">N/A</Badge>;
       return r.rate_per_1000 <= r.benchmark
-        ? <Badge color="green">Within</Badge>
-        : <Badge color="red">Exceeded</Badge>;
+        ? <Badge color="success">Within</Badge>
+        : <Badge color="danger">Exceeded</Badge>;
     }},
   ];
 
   const scorecardColumns = [
     { key: "department_name" as const, label: "Department", render: (r: DepartmentScorecard) => <Text fw={500}>{r.department_name}</Text> },
     { key: "overall_score" as const, label: "Overall Score", render: (r: DepartmentScorecard) => (
-      <Badge color={r.overall_score >= 80 ? "green" : r.overall_score >= 60 ? "yellow" : "red"} size="lg">
+      <Badge color={r.overall_score >= 80 ? "success" : r.overall_score >= 60 ? "warning" : "danger"} size="lg">
         {r.overall_score.toFixed(1)}%
       </Badge>
     )},
@@ -2031,7 +2032,7 @@ function AnalyticsReviewsTab() {
       <Group gap="xs">
         {Object.entries(r.indicator_scores).slice(0, 4).map(([name, score]) => (
           <Tooltip key={name} label={name}>
-            <Badge size="sm" variant="light" color={score >= 80 ? "green" : score >= 60 ? "yellow" : "red"}>
+            <Badge size="sm" variant="light" color={score >= 80 ? "success" : score >= 60 ? "warning" : "danger"}>
               {score.toFixed(0)}%
             </Badge>
           </Tooltip>
@@ -2051,17 +2052,17 @@ function AnalyticsReviewsTab() {
       const daysOverdue = Math.floor((Date.now() - new Date(r.due_date).getTime()) / (1000 * 60 * 60 * 24));
       return (
         <Group gap="xs">
-          <Text size="sm" c="red">{new Date(r.due_date).toLocaleDateString()}</Text>
-          <Badge color="red" size="sm">{daysOverdue}d overdue</Badge>
+          <Text size="sm" c="danger">{new Date(r.due_date).toLocaleDateString()}</Text>
+          <Badge color="danger" size="sm">{daysOverdue}d overdue</Badge>
         </Group>
       );
     }},
-    { key: "status" as const, label: "Status", render: (r: QualityCapa) => <Badge color={capaStatusColors[r.status] ?? "gray"}>{r.status.replace(/_/g, " ")}</Badge> },
+    { key: "status" as const, label: "Status", render: (r: QualityCapa) => <Badge color={capaStatusColors[r.status] ?? "slate"}>{r.status.replace(/_/g, " ")}</Badge> },
     { key: "escalation" as const, label: "Escalation", render: (r: QualityCapa) => {
       const daysOverdue = Math.floor((Date.now() - new Date(r.due_date).getTime()) / (1000 * 60 * 60 * 24));
-      if (daysOverdue > 30) return <Badge color="red" size="sm">Critical</Badge>;
+      if (daysOverdue > 30) return <Badge color="danger" size="sm">Critical</Badge>;
       if (daysOverdue > 14) return <Badge color="orange" size="sm">High</Badge>;
-      return <Badge color="yellow" size="sm">Standard</Badge>;
+      return <Badge color="warning" size="sm">Standard</Badge>;
     }},
   ];
 
@@ -2069,8 +2070,8 @@ function AnalyticsReviewsTab() {
     { key: "incident_number" as const, label: "Incident #", render: (r: QualityIncident) => <Text fw={500}>{r.incident_number}</Text> },
     { key: "title" as const, label: "Title", render: (r: QualityIncident) => r.title },
     { key: "incident_type" as const, label: "Type", render: (r: QualityIncident) => r.incident_type },
-    { key: "severity" as const, label: "Severity", render: (r: QualityIncident) => <Badge color="red">{r.severity.replace(/_/g, " ")}</Badge> },
-    { key: "status" as const, label: "Status", render: (r: QualityIncident) => <Badge color={incidentStatusColors[r.status] ?? "gray"}>{r.status.replace(/_/g, " ")}</Badge> },
+    { key: "severity" as const, label: "Severity", render: (r: QualityIncident) => <Badge color="danger">{r.severity.replace(/_/g, " ")}</Badge> },
+    { key: "status" as const, label: "Status", render: (r: QualityIncident) => <Badge color={incidentStatusColors[r.status] ?? "slate"}>{r.status.replace(/_/g, " ")}</Badge> },
     { key: "incident_date" as const, label: "Date", render: (r: QualityIncident) => new Date(r.incident_date).toLocaleDateString() },
   ];
 
@@ -2128,14 +2129,14 @@ function AnalyticsReviewsTab() {
                 <Text size="sm" c="dimmed">Actions Open</Text>
                 <Text size="xl" fw={600} c="orange">{committeeDash.action_items_open}</Text>
                 {committeeDash.action_items_overdue > 0 && (
-                  <Badge color="red" size="sm" mt={4}>{committeeDash.action_items_overdue} overdue</Badge>
+                  <Badge color="danger" size="sm" mt={4}>{committeeDash.action_items_overdue} overdue</Badge>
                 )}
               </Card>
             </Grid.Col>
             <Grid.Col span={{ base: 6, md: 3 }}>
               <Card withBorder p="md">
                 <Text size="sm" c="dimmed">Actions Closed</Text>
-                <Text size="xl" fw={600} c="green">{committeeDash.action_items_closed}</Text>
+                <Text size="xl" fw={600} c="success">{committeeDash.action_items_closed}</Text>
               </Card>
             </Grid.Col>
           </Grid>

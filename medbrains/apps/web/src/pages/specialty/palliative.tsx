@@ -15,8 +15,8 @@ import { DataTable, PageHeader } from "../../components";
 import { useRequirePermission } from "../../hooks/useRequirePermission";
 import type { Column } from "../../components/DataTable";
 
-const DNR_COLORS: Record<string, string> = { active: "red", expired: "gray", revoked: "yellow" };
-const BODY_COLORS: Record<string, string> = { received: "blue", cold_storage: "cyan", inquest_pending: "orange", pm_scheduled: "yellow", pm_completed: "teal", released: "green", unclaimed: "red", disposed: "gray" };
+const DNR_COLORS: Record<string, string> = { active: "danger", expired: "slate", revoked: "warning" };
+const BODY_COLORS: Record<string, string> = { received: "primary", cold_storage: "info", inquest_pending: "orange", pm_scheduled: "warning", pm_completed: "teal", released: "success", unclaimed: "danger", disposed: "slate" };
 
 export function PalliativePage() {
   useRequirePermission(P.SPECIALTY.PALLIATIVE.DNR_LIST);
@@ -41,40 +41,40 @@ export function PalliativePage() {
 
   const createDnr = useMutation({
     mutationFn: (data: CreateDnrOrderRequest) => api.createDnrOrder(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["dnr-orders"] }); dnrHandlers.close(); notifications.show({ title: "Created", message: "DNR order created (48hr review)", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["dnr-orders"] }); dnrHandlers.close(); notifications.show({ title: "Created", message: "DNR order created (48hr review)", color: "success" }); },
   });
 
   const revokeDnr = useMutation({
     mutationFn: (id: string) => api.revokeDnrOrder(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["dnr-orders"] }); notifications.show({ title: "Revoked", message: "DNR order revoked", color: "yellow" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["dnr-orders"] }); notifications.show({ title: "Revoked", message: "DNR order revoked", color: "warning" }); },
   });
 
   const createPain = useMutation({
     mutationFn: (data: CreatePainAssessmentRequest) => api.createPainAssessment(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["pain-assessments"] }); painHandlers.close(); notifications.show({ title: "Created", message: "Pain assessment recorded", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["pain-assessments"] }); painHandlers.close(); notifications.show({ title: "Created", message: "Pain assessment recorded", color: "success" }); },
   });
 
   const createMort = useMutation({
     mutationFn: (data: CreateMortuaryRecordRequest) => api.createMortuaryRecord(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mortuary-records"] }); mortuaryHandlers.close(); notifications.show({ title: "Created", message: "Mortuary record created", color: "green" }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["mortuary-records"] }); mortuaryHandlers.close(); notifications.show({ title: "Created", message: "Mortuary record created", color: "success" }); },
   });
 
   const dnrCols: Column<DnrOrder>[] = [
     { key: "patient_id", label: "Patient", render: (r) => <Text size="sm">{r.patient_id.slice(0, 8)}</Text> },
-    { key: "status", label: "Status", render: (r) => <Badge color={DNR_COLORS[r.status] ?? "gray"}>{r.status.toUpperCase()}</Badge> },
-    { key: "review_due", label: "Review Due", render: (r) => <Text size="sm" c={new Date(r.review_due_at) < new Date() ? "red" : undefined}>{new Date(r.review_due_at).toLocaleString()}</Text> },
+    { key: "status", label: "Status", render: (r) => <Badge color={DNR_COLORS[r.status] ?? "slate"}>{r.status.toUpperCase()}</Badge> },
+    { key: "review_due", label: "Review Due", render: (r) => <Text size="sm" c={new Date(r.review_due_at) < new Date() ? "danger" : undefined}>{new Date(r.review_due_at).toLocaleString()}</Text> },
     { key: "scope", label: "Scope", render: (r) => <Text size="sm">{r.scope ?? "Full DNR"}</Text> },
     { key: "authorized", label: "Authorized By", render: (r) => <Text size="sm">{r.authorized_by.slice(0, 8)}</Text> },
     {
       key: "actions", label: "", render: (r) => r.status === "active" && canDnr ? (
-        <ActionIcon variant="subtle" color="red" onClick={() => revokeDnr.mutate(r.id)}><IconX size={16} /></ActionIcon>
+        <ActionIcon variant="subtle" color="danger" onClick={() => revokeDnr.mutate(r.id)}><IconX size={16} /></ActionIcon>
       ) : null,
     },
   ];
 
   const painCols: Column<PainAssessment>[] = [
     { key: "patient_id", label: "Patient", render: (r) => <Text size="sm">{r.patient_id.slice(0, 8)}</Text> },
-    { key: "pain_score", label: "Pain Score", render: (r) => <Badge color={r.pain_score >= 7 ? "red" : r.pain_score >= 4 ? "orange" : "green"}>{r.pain_score}/10</Badge> },
+    { key: "pain_score", label: "Pain Score", render: (r) => <Badge color={r.pain_score >= 7 ? "danger" : r.pain_score >= 4 ? "orange" : "success"}>{r.pain_score}/10</Badge> },
     { key: "who_ladder", label: "WHO Ladder", render: (r) => <Text size="sm">Step {r.who_ladder_step ?? "---"}</Text> },
     { key: "opioid", label: "Morphine Eq (mg)", render: (r) => <Text size="sm">{r.opioid_dose_morphine_eq ?? "---"}</Text> },
     { key: "breakthrough", label: "Breakthroughs", render: (r) => <Text size="sm">{r.breakthrough_doses ?? "---"}</Text> },
@@ -84,8 +84,8 @@ export function PalliativePage() {
   const mortCols: Column<MortuaryRecord>[] = [
     { key: "receipt", label: "Receipt #", render: (r) => <Text size="sm" fw={500}>{r.body_receipt_number}</Text> },
     { key: "name", label: "Deceased", render: (r) => <Text size="sm">{r.deceased_name}</Text> },
-    { key: "mlc", label: "MLC", render: (r) => r.is_mlc ? <Badge color="red">MLC</Badge> : <Text size="sm">No</Text> },
-    { key: "status", label: "Status", render: (r) => <Badge color={BODY_COLORS[r.status] ?? "gray"}>{r.status.replace(/_/g, " ")}</Badge> },
+    { key: "mlc", label: "MLC", render: (r) => r.is_mlc ? <Badge color="danger">MLC</Badge> : <Text size="sm">No</Text> },
+    { key: "status", label: "Status", render: (r) => <Badge color={BODY_COLORS[r.status] ?? "slate"}>{r.status.replace(/_/g, " ")}</Badge> },
     { key: "storage", label: "Storage Slot", render: (r) => <Text size="sm">{r.cold_storage_slot ?? "---"}</Text> },
     { key: "organ", label: "Organ Donation", render: (r) => <Text size="sm">{r.organ_donation_status ?? "---"}</Text> },
   ];
@@ -95,7 +95,7 @@ export function PalliativePage() {
     { key: "activity", label: "Activity (mCi)", render: (r) => <Text size="sm">{r.activity_mci}</Text> },
     { key: "half_life", label: "Half-life (h)", render: (r) => <Text size="sm">{r.half_life_hours}</Text> },
     { key: "aerb", label: "AERB License", render: (r) => <Text size="sm">{r.aerb_license_number ?? "---"}</Text> },
-    { key: "active", label: "Active", render: (r) => r.is_active ? <Badge color="green">Yes</Badge> : <Badge color="gray">No</Badge> },
+    { key: "active", label: "Active", render: (r) => r.is_active ? <Badge color="success">Yes</Badge> : <Badge color="slate">No</Badge> },
   ];
 
   return (

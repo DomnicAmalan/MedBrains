@@ -37,7 +37,7 @@ export function StatCard({ label, value, icon, color = "primary", trend }: StatC
           ) : (
             <IconArrowDownRight size={14} color="#ff6b6b" stroke={2} />
           )}
-          <Text size="xs" c={trend.value >= 0 ? "teal" : "red"} fw={600}>
+          <Text size="xs" c={trend.value >= 0 ? "teal" : "danger"} fw={600}>
             {Math.abs(trend.value)}%
           </Text>
           {trend.label && (
