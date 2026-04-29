@@ -137,6 +137,7 @@ import {
   DoctorSearchSelect,
 } from "../components";
 import { useRequirePermission } from "../hooks/useRequirePermission";
+import { useVitalsSource } from "../hooks/useVitalsSource";
 import { useTranslation } from "react-i18next";
 
 const statusColors: Record<string, string> = {
@@ -863,22 +864,26 @@ function PharmacyDispatchTab({ encounterId }: { encounterId: string }) {
 
 function VitalsTab({ encounterId, canUpdate }: { encounterId: string; canUpdate: boolean }) {
   const emit = useClinicalEmit();
-  const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
 
-  const { data: vitals = [] } = useQuery({
-    queryKey: ["vitals", encounterId],
-    queryFn: () => api.listVitals(encounterId),
+  // Mode is REST today; flip to "crdt" + provide edgeUrl/tenantId/
+  // deviceId per-tenant once tenant.offline_mode + the edge URL
+  // discovery endpoint land. The hook handles both paths uniformly,
+  // so this consumer doesn't change when the mode flips.
+  const {
+    records: vitals,
+    append,
+    unsyncedOps,
+  } = useVitalsSource({
+    encounterId,
+    mode: "rest",
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data: CreateVitalRequest) => api.createVital(encounterId, data),
-    onSuccess: (_result, variables) => {
-      void queryClient.invalidateQueries({ queryKey: ["vitals", encounterId] });
-      emit("vitals.recorded", { encounter_id: encounterId, ...variables });
-      setShowForm(false);
-    },
-  });
+  const handleSubmit = (data: CreateVitalRequest) => {
+    append(data);
+    emit("vitals.recorded", { encounter_id: encounterId, ...data });
+    setShowForm(false);
+  };
 
   return (
     <Stack>
@@ -891,8 +896,8 @@ function VitalsTab({ encounterId, canUpdate }: { encounterId: string; canUpdate:
       )}
       {showForm && (
         <VitalsRecorder
-          onSubmit={(data) => createMutation.mutate(data)}
-          isSubmitting={createMutation.isPending}
+          onSubmit={handleSubmit}
+          isSubmitting={unsyncedOps > 0}
           onCancel={() => setShowForm(false)}
         />
       )}
