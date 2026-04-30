@@ -9,6 +9,7 @@
 //! reusable `SyncServer` struct that ties together a `DocStore` and
 //! a `MerkleAudit`. Tests at the bottom show the merge cycle.
 
+use crate::authz_cache::{CacheKey, CacheSource};
 use crate::doc_store::{DocStore, DocStoreError};
 use crate::merkle::{MerkleAudit, MerkleError};
 use serde::{Deserialize, Serialize};
@@ -29,31 +30,31 @@ pub enum Frame {
     },
     /// Client → edge: send me incremental changes since this version.
     /// `vv_b64` is base64 of Loro version-vector bytes.
-    PullSince {
-        doc_id: String,
-        vv_b64: String,
-    },
+    PullSince { doc_id: String, vv_b64: String },
     /// Edge → client: here are the changes you asked for.
-    PullResponse {
-        doc_id: String,
-        update_b64: String,
-    },
+    PullResponse { doc_id: String, update_b64: String },
     /// Client → edge: I have new changes; please merge.
-    Push {
-        doc_id: String,
-        update_b64: String,
-    },
+    Push { doc_id: String, update_b64: String },
     /// Edge → client: ack of a push, with my new tip hash so the
     /// client can include it in its next chain entry (forming a
     /// device-server-cloud chain).
-    Ack {
-        doc_id: String,
-        chain_tip: String,
+    Ack { doc_id: String, chain_tip: String },
+    /// Cloud → edge: drop these authz cache entries because their
+    /// underlying SpiceDB relations changed. The edge cache is
+    /// strictly read-only — it never invents grants — but it does
+    /// honor invalidations pushed from the watch stream upstream.
+    /// Wiring into [`SyncServer`] is deferred to the integration PR.
+    CacheInvalidate { keys: Vec<CacheKey> },
+    /// Edge → cloud (future): result of an offline authz check, so
+    /// cloud can replay decisions for audit. Carried as a frame here
+    /// to lock the wire shape; the producer is the integration PR.
+    AuthzCheckResult {
+        key: CacheKey,
+        allowed: bool,
+        source: CacheSource,
     },
     /// Either side can send a structured error.
-    Error {
-        message: String,
-    },
+    Error { message: String },
 }
 
 #[derive(Debug, Error)]
@@ -104,14 +105,8 @@ impl SyncServer {
         let bytes = base64_decode(update_b64).map_err(SyncServerError::Base64)?;
         // Append to audit chain BEFORE applying so we have a record
         // even if the merge fails downstream.
-        let entry = self
-            .audit
-            .append(tenant_id, doc_id, "push", &bytes)
-            .await?;
-        let _doc = self
-            .docs
-            .apply_update(tenant_id, doc_id, &bytes)
-            .await?;
+        let entry = self.audit.append(tenant_id, doc_id, "push", &bytes).await?;
+        let _doc = self.docs.apply_update(tenant_id, doc_id, &bytes).await?;
         Ok(Frame::Ack {
             doc_id: doc_id.to_owned(),
             chain_tip: entry.entry_hash,
@@ -219,7 +214,10 @@ mod tests {
             .await
             .unwrap();
         match frame {
-            Frame::Ack { doc_id: d, chain_tip } => {
+            Frame::Ack {
+                doc_id: d,
+                chain_tip,
+            } => {
                 assert_eq!(d, doc_id);
                 assert!(!chain_tip.is_empty());
             }
@@ -254,13 +252,17 @@ mod tests {
         let a = LoroDoc::new();
         a.get_map("root").insert("hr", 80).unwrap();
         let a_upd = a.export(ExportMode::Snapshot).unwrap();
-        srv.handle_push(tenant, doc_id, &base64_encode(&a_upd)).await.unwrap();
+        srv.handle_push(tenant, doc_id, &base64_encode(&a_upd))
+            .await
+            .unwrap();
 
         // Client B writes "spo2" without seeing A's changes
         let b = LoroDoc::new();
         b.get_map("root").insert("spo2", 98).unwrap();
         let b_upd = b.export(ExportMode::Snapshot).unwrap();
-        srv.handle_push(tenant, doc_id, &base64_encode(&b_upd)).await.unwrap();
+        srv.handle_push(tenant, doc_id, &base64_encode(&b_upd))
+            .await
+            .unwrap();
 
         // Pull merged state from server
         let empty_vv = loro::VersionVector::default();
