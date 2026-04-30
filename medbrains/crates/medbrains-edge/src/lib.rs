@@ -66,7 +66,7 @@ pub use authz_cache::{
 };
 pub use doc_store::DocStore;
 pub use merkle::MerkleAudit;
-pub use sync::{SyncServer, SyncServerError};
+pub use sync::{SessionContext, SyncServer, SyncServerError};
 
 /// Server-side handshake protocol version. Bumped on incompatible
 /// wire-format changes.

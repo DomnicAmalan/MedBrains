@@ -132,7 +132,7 @@ fn cache_invalidate_drops_entries() {
         CheckOutcome::Allow { .. }
     ));
 
-    cache.invalidate(&[key.clone()]);
+    cache.invalidate(std::slice::from_ref(&key));
     assert_eq!(
         cache.check_offline(&key, &[], OfflinePolicy::CacheOnly),
         CheckOutcome::Deny {
