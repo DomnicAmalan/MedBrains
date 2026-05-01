@@ -6,26 +6,46 @@
  * writes:
  *
  *   infra/terraform/envs/tenants/<tenant-id>/terraform.tfvars  (DNS keys only)
- *   infra/terraform/envs/tenants/<tenant-id>/env.sh            (secret env vars; gitignored)
+ *   infra/terraform/envs/tenants/<tenant-id>/env.sh            (sources keychain at runtime)
+ *
+ * Credential storage:
+ *
+ *   API-key providers (GoDaddy / Cloudflare / DigitalOcean /
+ *   Namecheap) — secrets stored in the OS keychain (macOS Keychain
+ *   or Linux libsecret). env.sh runs `security find-generic-password`
+ *   / `secret-tool lookup` at source-time. Plaintext never lands on
+ *   disk.
+ *
+ *   Native auth-flow providers (AWS Route53 / Azure / Google) —
+ *   env.sh verifies the operator's existing session is active
+ *   (`aws sts get-caller-identity`, `az account show`, `gcloud auth
+ *   application-default print-access-token`) and bails with
+ *   instructions otherwise. The script never asks for those creds.
+ *
+ *   Fallback (no keychain) — operator passes `--no-keychain` or runs
+ *   on an unsupported platform; env.sh writes plaintext exports with
+ *   a strong warning.
  *
  * Run from the workspace root:
  *
  *   node medbrains/tools/setup-tenant-dns/src/index.mjs
  *
- * Or with a tenant id pre-filled:
+ * Or with flags for non-interactive use:
  *
  *   node medbrains/tools/setup-tenant-dns/src/index.mjs --tenant=hospital-a
- *
- * GoDaddy is the default provider (it's the only one we currently
- * have credentials for); the script asks for the API key + secret
- * and runs a pre-flight `curl` against api.godaddy.com to confirm
- * the account qualifies before writing anything.
+ *   node medbrains/tools/setup-tenant-dns/src/index.mjs --no-keychain
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, appendFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ask, askChoice, askSecret, askYesNo, closePrompts } from "./prompts.mjs";
+import {
+  isKeychainSupported,
+  platformName,
+  retrievalSnippet,
+  storeSecret,
+} from "./keychain.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "..", "..", "..", "..");
@@ -34,12 +54,14 @@ const TENANT_BASE = join(REPO_ROOT, "medbrains", "infra", "terraform", "envs", "
 const PROVIDERS = [
   { value: "godaddy", label: "GoDaddy (currently the only one with active credentials)" },
   { value: "cloudflare", label: "Cloudflare (recommended for new tenants)" },
-  { value: "route53", label: "AWS Route53" },
-  { value: "azure", label: "Azure DNS" },
-  { value: "google", label: "Google Cloud DNS" },
+  { value: "route53", label: "AWS Route53 (uses your existing aws sso login)" },
+  { value: "azure", label: "Azure DNS (uses your existing az login)" },
+  { value: "google", label: "Google Cloud DNS (uses your existing gcloud auth)" },
   { value: "digitalocean", label: "DigitalOcean" },
   { value: "namecheap", label: "Namecheap" },
 ];
+
+const NATIVE_AUTH_PROVIDERS = new Set(["route53", "azure", "google"]);
 
 function parseArgs(argv) {
   const flags = {};
@@ -52,10 +74,18 @@ function parseArgs(argv) {
 
 async function main() {
   const flags = parseArgs(process.argv.slice(2));
+  const useKeychain = flags["no-keychain"] !== "true" && isKeychainSupported();
   console.log("\nMedBrains — tenant DNS setup\n");
+  if (useKeychain) {
+    console.log(`  Credentials will be stored in ${platformName()}.`);
+  } else if (flags["no-keychain"] === "true") {
+    console.log("  --no-keychain set — secrets will be written to env.sh in plaintext.");
+  } else {
+    console.log("  No keychain backend detected — secrets will be written to env.sh in plaintext.");
+  }
 
   const tenantId =
-    flags.tenant ?? (await ask("Tenant id (lowercase, hyphenated)", "hospital-a"));
+    flags.tenant ?? (await ask("\nTenant id (lowercase, hyphenated)", "hospital-a"));
   if (!/^[a-z][a-z0-9-]{2,40}$/u.test(tenantId)) {
     throw new Error(`invalid tenant id: ${tenantId}`);
   }
@@ -91,29 +121,36 @@ async function main() {
   );
 
   const extras = await collectProviderExtras(provider);
-  const credentials = await collectCredentials(provider);
+  const credentials = NATIVE_AUTH_PROVIDERS.has(provider)
+    ? {}
+    : await collectCredentials(provider);
 
   if (provider === "godaddy") {
     await preflightGoDaddy(credentials.GODADDY_API_KEY, credentials.GODADDY_API_SECRET);
   }
 
-  writeTfvars(tfvarsPath, {
-    tenantId,
-    provider,
-    zoneName,
-    subdomain,
-    extras,
-  });
-  writeEnv(envPath, credentials);
+  const storedKeys = useKeychain ? persistToKeychain(tenantId, credentials) : [];
 
-  console.log(`\nWrote:\n  ${tfvarsPath}\n  ${envPath}\n`);
-  console.log("Next steps:");
+  writeTfvars(tfvarsPath, { tenantId, provider, zoneName, subdomain, extras });
+  writeEnv(envPath, {
+    provider,
+    tenantId,
+    credentials,
+    storedKeys,
+    useKeychain,
+  });
+
+  console.log(`\nWrote:\n  ${tfvarsPath}\n  ${envPath}`);
+  if (useKeychain && storedKeys.length > 0) {
+    console.log(`\nStored ${storedKeys.length} secret(s) in ${platformName()}.`);
+  }
+  console.log("\nNext steps:");
   console.log(`  1. cd ${tenantDir}`);
   console.log("  2. source ./env.sh");
-  console.log("  3. terraform init && terraform plan");
-  console.log(
-    "\nReminder: env.sh holds API secrets. Add it to .gitignore if not already there.\n",
-  );
+  if (NATIVE_AUTH_PROVIDERS.has(provider)) {
+    console.log(`     (env.sh will verify your ${provider} session is active)`);
+  }
+  console.log("  3. terraform init && terraform plan\n");
 }
 
 function writeTfvars(path, ctx) {
@@ -129,7 +166,7 @@ function writeTfvars(path, ctx) {
   ];
   for (const [k, v] of Object.entries(ctx.extras)) {
     if (v !== "" && v != null) {
-      lines.push(`${k.padEnd(20)} = ${typeof v === "boolean" ? v : `"${v}"`}`);
+      lines.push(`${k.padEnd(24)} = ${typeof v === "boolean" ? v : `"${v}"`}`);
     }
   }
   lines.push("");
@@ -141,15 +178,43 @@ function writeTfvars(path, ctx) {
   }
 }
 
-function writeEnv(path, credentials) {
+function persistToKeychain(tenantId, credentials) {
+  const stored = [];
+  for (const [k, v] of Object.entries(credentials)) {
+    if (v != null && v !== "") {
+      storeSecret(tenantId, k, String(v));
+      stored.push(k);
+    }
+  }
+  return stored;
+}
+
+function writeEnv(path, ctx) {
   const lines = [
     "#!/bin/sh",
     "# Tenant DNS credentials — source before running terraform.",
-    "# DO NOT COMMIT.",
+    "# Generated by medbrains-setup-tenant-dns.",
     "",
   ];
-  for (const [k, v] of Object.entries(credentials)) {
-    lines.push(`export ${k}=${shellQuote(v)}`);
+
+  if (ctx.provider === "route53") {
+    lines.push(verifyAwsBlock());
+  } else if (ctx.provider === "azure") {
+    lines.push(verifyAzureBlock());
+  } else if (ctx.provider === "google") {
+    lines.push(verifyGoogleBlock());
+  } else if (ctx.useKeychain) {
+    lines.push(`# Pulls secrets from the OS keychain — no plaintext on disk.`);
+    for (const key of ctx.storedKeys) {
+      lines.push(retrievalSnippet(key, ctx.tenantId, key));
+    }
+    lines.push("");
+    lines.push(verifyKeychainPopulated(ctx.storedKeys));
+  } else {
+    lines.push("# WARNING: plaintext credentials below. DO NOT COMMIT.");
+    for (const [k, v] of Object.entries(ctx.credentials)) {
+      lines.push(`export ${k}=${shellQuote(v)}`);
+    }
   }
   lines.push("");
   writeFileSync(path, lines.join("\n"), { mode: 0o600 });
@@ -157,6 +222,57 @@ function writeEnv(path, credentials) {
 
 function shellQuote(v) {
   return `'${String(v).replace(/'/g, "'\\''")}'`;
+}
+
+function verifyAwsBlock() {
+  return [
+    "# AWS Route53 uses the operator's existing AWS credentials.",
+    "# Run `aws sso login` (or set AWS_PROFILE) before sourcing this.",
+    "",
+    'if ! aws sts get-caller-identity >/dev/null 2>&1; then',
+    '  echo "ERROR: aws sts get-caller-identity failed." >&2',
+    '  echo "Run \\`aws sso login\\` or export AWS_PROFILE first." >&2',
+    "  return 1 2>/dev/null || exit 1",
+    "fi",
+  ].join("\n");
+}
+
+function verifyAzureBlock() {
+  return [
+    "# Azure DNS uses the operator's existing az login session.",
+    "# Run `az login` before sourcing this.",
+    "",
+    'if ! az account show >/dev/null 2>&1; then',
+    '  echo "ERROR: az account show failed." >&2',
+    '  echo "Run \\`az login\\` first." >&2',
+    "  return 1 2>/dev/null || exit 1",
+    "fi",
+    "",
+    'export ARM_SUBSCRIPTION_ID="$(az account show --query id -o tsv)"',
+    'export ARM_TENANT_ID="$(az account show --query tenantId -o tsv)"',
+  ].join("\n");
+}
+
+function verifyGoogleBlock() {
+  return [
+    "# Google Cloud DNS uses Application Default Credentials.",
+    "# Run `gcloud auth application-default login` before sourcing.",
+    "",
+    'if ! gcloud auth application-default print-access-token >/dev/null 2>&1; then',
+    '  echo "ERROR: gcloud ADC missing." >&2',
+    '  echo "Run \\`gcloud auth application-default login\\` first." >&2',
+    "  return 1 2>/dev/null || exit 1",
+    "fi",
+  ].join("\n");
+}
+
+function verifyKeychainPopulated(keys) {
+  if (keys.length === 0) return "";
+  const checks = keys.map(
+    (k) =>
+      `if [ -z "$${k}" ]; then echo "ERROR: ${k} not in keychain. Re-run setup-tenant-dns." >&2; return 1 2>/dev/null || exit 1; fi`,
+  );
+  return checks.join("\n");
 }
 
 async function collectProviderExtras(provider) {
@@ -187,22 +303,6 @@ async function collectCredentials(provider) {
     case "cloudflare":
       out.CLOUDFLARE_API_TOKEN = await askSecret("Cloudflare API token");
       break;
-    case "route53":
-      console.log("Route53 reuses the AWS provider's credentials.");
-      console.log("Make sure AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY are exported");
-      console.log("before running terraform.");
-      break;
-    case "azure":
-      out.ARM_CLIENT_ID = await askSecret("Azure client id");
-      out.ARM_CLIENT_SECRET = await askSecret("Azure client secret");
-      out.ARM_TENANT_ID = await askSecret("Azure tenant id");
-      out.ARM_SUBSCRIPTION_ID = await askSecret("Azure subscription id");
-      break;
-    case "google":
-      out.GOOGLE_APPLICATION_CREDENTIALS = await ask(
-        "Path to GCP service-account JSON (absolute)",
-      );
-      break;
     case "digitalocean":
       out.DIGITALOCEAN_TOKEN = await askSecret("DigitalOcean API token");
       break;
@@ -215,7 +315,7 @@ async function collectCredentials(provider) {
       );
       break;
     default:
-      throw new Error(`unknown provider: ${provider}`);
+      throw new Error(`collectCredentials called for unsupported provider: ${provider}`);
   }
   return out;
 }
