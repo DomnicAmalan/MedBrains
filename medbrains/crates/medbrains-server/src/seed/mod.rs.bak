@@ -1,5 +1,4 @@
 mod bed_types;
-mod canonical_fixtures;
 mod charge_master;
 mod default_dashboard;
 mod demo_patients;
@@ -22,8 +21,6 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
-use medbrains_core::access::{BUILT_IN_ROLES, DEFAULT_GROUPS};
-#[allow(unused_imports)]
 use medbrains_core::permissions;
 use sqlx::PgPool;
 
@@ -127,12 +124,6 @@ pub async fn run_seed(pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> {
     // Demo patients + OPD visits for testing
     demo_patients::seed_demo_patients(pool, tenant_id).await?;
 
-    // Canonical fixture rows with hardcoded UUIDs — must run AFTER
-    // demo_patients so the dept + doctor + admin user FK refs exist.
-    // See `apps/web/e2e/helpers/canonical-seed.ts` for the matching
-    // UUID map used by smoke + Vitest tests.
-    canonical_fixtures::seed_canonical_fixtures(pool, tenant_id).await?;
-
     // Screen definitions removed — screen builder eradicated
     // (see migration 123_drop_builders.sql + RFC nuke-builders).
     let _ = pool;
@@ -184,6 +175,64 @@ async fn seed_built_in_roles(
 
     Ok(())
 }
+
+/// One default access group (Zanzibar `access_group` definition).
+/// Members get `access_group:{id}#member@user:{uid}` tuples in SpiceDB.
+struct DefaultGroup {
+    code: &'static str,
+    name: &'static str,
+    description: &'static str,
+}
+
+/// 8 default access_groups. Membership is empty by default — admins
+/// assign through the Groups admin UI (M4 deliverable). Roles like
+/// `hospital_admin` may be auto-added at user-create time per
+/// `seed/role_policies.rs::POLICIES.default_groups` (M1 step 2).
+///
+/// Idempotent: ON CONFLICT (tenant_id, code) DO UPDATE name/description.
+const DEFAULT_GROUPS: &[DefaultGroup] = &[
+    DefaultGroup {
+        code: "integrations_admin",
+        name: "Integrations Administrators",
+        description: "Users authorized to create + manage integration pipelines.",
+    },
+    DefaultGroup {
+        code: "pipeline_runners",
+        name: "Pipeline Runners",
+        description: "Users authorized to execute integration pipelines.",
+    },
+    DefaultGroup {
+        code: "lab_seniors",
+        name: "Lab Seniors",
+        description: "Senior lab technicians authorized to amend results + manage QC.",
+    },
+    DefaultGroup {
+        code: "billing_seniors",
+        name: "Billing Seniors",
+        description: "Senior billing clerks authorized to apply discounts + write-offs.",
+    },
+    DefaultGroup {
+        code: "radiologists",
+        name: "Radiologists",
+        description: "Doctors authorized to read DICOM + finalize radiology reports.",
+    },
+    DefaultGroup {
+        code: "mlc_signatories",
+        name: "MLC Signatories",
+        description: "Authorized signatories for medico-legal cases (IPC § 39).",
+    },
+    DefaultGroup {
+        code: "code_blue_team",
+        name: "Code Blue Team",
+        description: "Clinical staff authorized to activate emergency code-blue protocols.",
+    },
+    DefaultGroup {
+        code: "data_exporters",
+        name: "Data Exporters",
+        description: "Users authorized to export module data (with audit watermark).",
+    },
+];
+
 /// Insert the 8 default access_groups for the tenant. Idempotent —
 /// re-running just refreshes name/description, never wipes member rows.
 async fn seed_default_groups(
