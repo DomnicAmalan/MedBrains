@@ -25,7 +25,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ask, askChoice, askSecret, askYesNo } from "./prompts.mjs";
+import { ask, askChoice, askSecret, askYesNo, closePrompts } from "./prompts.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "..", "..", "..", "..");
@@ -247,7 +247,9 @@ async function preflightGoDaddy(key, secret) {
   process.exit(1);
 }
 
-main().catch((err) => {
-  console.error(`\nfailed: ${err.message}\n`);
-  process.exit(1);
-});
+main()
+  .catch((err) => {
+    console.error(`\nfailed: ${err.message}\n`);
+    process.exit(1);
+  })
+  .finally(closePrompts);
