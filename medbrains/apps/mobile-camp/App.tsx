@@ -1,10 +1,9 @@
 /**
- * MedBrains Staff — entry component.
+ * MedBrains Camp — dedicated field-camp mobile app.
  *
- * Composes the medbrains mobile-shell with the staff modules
- * (doctor / nurse / pharmacy / lab / billing / bme / facilities /
- * housekeeping / security / hr / reception). Login gate is the
- * `StaffLoginGate` — hits the shared `/api/auth/login` endpoint.
+ * Keeps the installable app focused on remote village operations:
+ * camp packet download, local patient search/chart, registration,
+ * screening/vitals, lab sample capture, prescription and referral sync.
  */
 
 import { PaperProvider } from "react-native-paper";
@@ -16,9 +15,9 @@ import {
   buildForestCopperTheme,
 } from "@medbrains/mobile-shell";
 import { apiConfig } from "./src/api/config";
-import { Navigator } from "./src/navigator";
-import { StaffLoginGate } from "./src/login-gate";
+import { CampLoginGate } from "./src/login-gate";
 import { MODULES } from "./src/modules";
+import { Navigator } from "./src/navigator";
 
 const theme = buildForestCopperTheme("light");
 
@@ -26,16 +25,16 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <StatusBar style="dark" />
+        <StatusBar style="light" />
         <AuthProvider secretStore={apiConfig.store}>
           <Shell
-            variant="staff"
+            variant="camp"
             modules={MODULES}
             secretStore={apiConfig.store}
-            cachePath="medbrains-cache"
+            cachePath="medbrains-camp-cache"
             Navigator={Navigator}
-            loginGate={<StaffLoginGate />}
-            unlockPromptMessage="Unlock MedBrains Staff"
+            loginGate={<CampLoginGate />}
+            unlockPromptMessage="Unlock MedBrains Camp"
           />
         </AuthProvider>
       </PaperProvider>
