@@ -1993,8 +1993,18 @@ pub async fn record_payment(
     .bind(&body.reference_number)
     .bind(claims.sub)
     .bind(&body.notes)
-    .bind(body.counter_id.as_deref().map(str::trim).filter(|s| !s.is_empty()))
-    .bind(body.shift.as_deref().map(str::trim).filter(|s| !s.is_empty()))
+    .bind(
+        body.counter_id
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty()),
+    )
+    .bind(
+        body.shift
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty()),
+    )
     .fetch_one(&mut *tx)
     .await?;
 
