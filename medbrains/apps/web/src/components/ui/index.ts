@@ -9,3 +9,4 @@ export { Card, type CardProps } from "./Card";
 export { Input, NumberField, PasswordField, TextArea } from "./Input";
 export { Panel, type PanelProps } from "./Panel";
 export { Select, type SelectProps } from "./Select";
+export { SignatureHero, type SignatureHeroProps } from "./SignatureHero";

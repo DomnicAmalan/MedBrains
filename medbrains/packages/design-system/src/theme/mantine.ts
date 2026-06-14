@@ -874,6 +874,13 @@ export const cssVariableResolver: CSSVariablesResolver = (t) => {
         "linear-gradient(135deg, #406EB3 0%, #632678 45%, #982881 72%, #BA2F7D 100%)",
       "--mb-accent-gradient-soft":
         "linear-gradient(135deg, #ECF1F8 0%, #FBEAF3 100%)",
+      // Signature Spectrum — the high-energy hero gradient for flagship
+      // clinical surfaces (prescription writer, pharmacy workspace):
+      // indigo → blue-violet → rose → coral.
+      "--mb-signature-spectrum":
+        "linear-gradient(120deg, #3A2E8C 0%, #5B4BC4 38%, #C85B7E 74%, #E8895A 100%)",
+      "--mb-signature-spectrum-soft":
+        "linear-gradient(120deg, rgba(58,46,140,0.10) 0%, rgba(200,91,126,0.08) 60%, rgba(232,137,90,0.08) 100%)",
 
       // ── Motion (mode-agnostic) ───────────────────────────────
       "--mb-duration-instant": duration.instant,
