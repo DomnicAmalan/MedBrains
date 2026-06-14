@@ -136,10 +136,9 @@ export function createMedBrainsTheme(opts: CreateMedBrainsThemeOptions = {}): Ma
     ? {
         Loader: Loader.extend({
           defaultProps: {
-            // ECG stays registered for explicit use; the default is a
-            // plain console spinner.
+            // Signature Spectrum ECG loader is the default.
             loaders: { ...Loader.defaultLoaders, ecg: opts.loaders.ecg },
-            type: "oval",
+            type: "ecg",
           },
         }),
       }
@@ -869,14 +868,14 @@ export const cssVariableResolver: CSSVariablesResolver = (t) => {
       // Page header background composed at consume time using mode-specific bgs
       "--mb-page-header-bg": "linear-gradient(135deg, var(--mb-bg-default), var(--mb-bg-subtle))",
       "--mb-table-toolbar-bg": "var(--mb-bg-default)",
-      // Experian signature: blue → dark-purple → purple → magenta.
+      // Signature Spectrum — indigo-deep → indigo → rose → coral. The
+      // brand gradient across the whole system.
       "--mb-accent-gradient":
-        "linear-gradient(135deg, #406EB3 0%, #632678 45%, #982881 72%, #BA2F7D 100%)",
+        "linear-gradient(100deg, #3A2E8C 0%, #5B4BC4 40%, #C85B7E 78%, #E8895A 100%)",
       "--mb-accent-gradient-soft":
-        "linear-gradient(135deg, #ECF1F8 0%, #FBEAF3 100%)",
-      // Signature Spectrum — the high-energy hero gradient for flagship
-      // clinical surfaces (prescription writer, pharmacy workspace):
-      // indigo → blue-violet → rose → coral.
+        "linear-gradient(100deg, #EFEDFA 0%, #FBEEF2 100%)",
+      // Hero alias for flagship clinical surfaces (prescription writer,
+      // pharmacy workspace) — same Signature Spectrum.
       "--mb-signature-spectrum":
         "linear-gradient(120deg, #3A2E8C 0%, #5B4BC4 38%, #C85B7E 74%, #E8895A 100%)",
       "--mb-signature-spectrum-soft":

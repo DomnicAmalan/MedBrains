@@ -22,36 +22,36 @@ import type { MantineColorsTuple } from "@mantine/core";
 // ── Color Ramps
 // ═══════════════════════════════════════════════════════════════════
 
-/** Blue — Experian brand blue. Anchor: blue[5] = #406EB3. */
+/** Indigo — Signature Spectrum brand. Anchor: blue[5] = #5B4BC4. */
 export const blue = [
-  "#ECF1F8", // 50
-  "#D0DEEF", // 100
-  "#A8C0E0", // 200
-  "#7E9DCE", // 300 — dark-mode brand fg
-  "#5C82C0", // 400 — dark-mode brand emphasis
-  "#406EB3", // 500 — LIGHT brand (Experian blue)
-  "#345C99", // 600 — light hover, dark fg
-  "#26478D", // 700 — Experian dark blue / pressed
-  "#1C3568", // 800
-  "#132445", // 900
+  "#EFEDFA", // 50
+  "#D7D2F2", // 100
+  "#B3ABE0", // 200 — dark-mode brand fg (--primary-2)
+  "#8E82D6", // 300
+  "#7160CC", // 400 — dark-mode brand emphasis
+  "#5B4BC4", // 500 — LIGHT brand (SS indigo)
+  "#463AA8", // 600 — link / light hover (AAA on white)
+  "#3A2E8C", // 700 — SS indigo-deep / pressed
+  "#2B2269", // 800
+  "#1D1747", // 900
 ] as const satisfies readonly string[];
 
-/** Magenta — Experian signature accent. Anchor: cinnabar[5] = #BA2F7D. */
+/** Rose/Coral — Signature Spectrum accent. Anchor: cinnabar[5] = #C85B7E. */
 export const cinnabar = [
-  "#FBEAF3", // 50
-  "#F2C9DF", // 100
-  "#E398C0", // 200
-  "#D266A0", // 300 — dark-mode accent fg
-  "#C64A8C", // 400 — dark-mode accent emphasis
-  "#BA2F7D", // 500 — LIGHT accent (Experian magenta)
-  "#9C2768", // 600
-  "#7C1F53", // 700
-  "#5A1740", // 800
-  "#3C0F2A", // 900
+  "#FBEEF2", // 50
+  "#F4CFDB", // 100
+  "#E8A3B8", // 200
+  "#DB7795", // 300 — dark-mode accent fg
+  "#D26687", // 400 — dark-mode accent emphasis
+  "#C85B7E", // 500 — LIGHT accent (SS rose)
+  "#A33E4F", // 600 — coral-text (AA on white)
+  "#84324F", // 700
+  "#5E2439", // 800
+  "#3D1726", // 900
 ] as const satisfies readonly string[];
 
-/** Experian gradient stops — blue → dark-purple → purple → magenta. */
-export const experianGradientStops = ["#406EB3", "#632678", "#982881", "#BA2F7D"] as const;
+/** Signature Spectrum stops — indigo-deep → indigo → rose → coral. */
+export const signatureSpectrumStops = ["#3A2E8C", "#5B4BC4", "#C85B7E", "#E8895A"] as const;
 
 /** Mint — Apple Health vital sign / success. Anchor: mint[4] = #34D69D. */
 export const mint = [

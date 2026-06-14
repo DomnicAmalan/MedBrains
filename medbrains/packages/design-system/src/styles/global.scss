@@ -274,11 +274,13 @@ h3,
   &[data-variant="filled"]:not([data-color]),
   &[data-variant="filled"][data-color="primary"],
   &[data-variant="filled"][data-color="blue"] {
-    background-image: linear-gradient(120deg, #406eb3 0%, #632678 100%);
+    // Signature Spectrum, held in the indigo range so white text stays
+    // legible (the rose/coral end is reserved for hero surfaces).
+    background-image: linear-gradient(120deg, #3a2e8c 0%, #5b4bc4 100%);
     border: none;
 
     &:hover:not(:disabled) {
-      background-image: linear-gradient(120deg, #3a64a3 0%, #58226c 100%);
+      background-image: linear-gradient(120deg, #332883 0%, #5443ba 100%);
     }
   }
 

@@ -175,8 +175,8 @@ export const lightScheme: SemanticScheme = {
     onEmphasis: "#FFFFFF",
     onAccent: "#FFFFFF",
     onInverse: "#F4F5F8",
-    link: blue[5],
-    linkHover: blue[6],
+    link: blue[6], // #463AA8 — AAA link
+    linkHover: blue[7],
   },
   border: {
     default: "#D5DBDB", // Experian hairline
