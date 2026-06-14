@@ -22,33 +22,36 @@ import type { MantineColorsTuple } from "@mantine/core";
 // ── Color Ramps
 // ═══════════════════════════════════════════════════════════════════
 
-/** Blue — System Blue brand. Anchor: blue[5] = #0066CC. */
+/** Blue — Experian brand blue. Anchor: blue[5] = #406EB3. */
 export const blue = [
-  "#E6F1FF", // 50
-  "#BCDAFF", // 100
-  "#80B8FF", // 200
-  "#4495FF", // 300 — dark-mode brand fg
-  "#1A7CFF", // 400 — dark-mode brand emphasis
-  "#0066CC", // 500 — LIGHT brand (LOCKED anchor)
-  "#0052A3", // 600 — light hover, dark fg
-  "#003E7A", // 700 — pressed
-  "#002B54", // 800
-  "#00182F", // 900
+  "#ECF1F8", // 50
+  "#D0DEEF", // 100
+  "#A8C0E0", // 200
+  "#7E9DCE", // 300 — dark-mode brand fg
+  "#5C82C0", // 400 — dark-mode brand emphasis
+  "#406EB3", // 500 — LIGHT brand (Experian blue)
+  "#345C99", // 600 — light hover, dark fg
+  "#26478D", // 700 — Experian dark blue / pressed
+  "#1C3568", // 800
+  "#132445", // 900
 ] as const satisfies readonly string[];
 
-/** Cinnabar — reserved accent. Anchor: cinnabar[5] = #B7322E. */
+/** Magenta — Experian signature accent. Anchor: cinnabar[5] = #BA2F7D. */
 export const cinnabar = [
-  "#FDE9E6", // 50
-  "#FBC8C0", // 100
-  "#F29C8E", // 200
-  "#E9705B", // 300 — dark-mode accent fg
-  "#D44A36", // 400 — dark-mode accent emphasis
-  "#B7322E", // 500 — LIGHT accent (LOCKED anchor)
-  "#962623", // 600
-  "#6F1C1A", // 700
-  "#491110", // 800
-  "#260807", // 900
+  "#FBEAF3", // 50
+  "#F2C9DF", // 100
+  "#E398C0", // 200
+  "#D266A0", // 300 — dark-mode accent fg
+  "#C64A8C", // 400 — dark-mode accent emphasis
+  "#BA2F7D", // 500 — LIGHT accent (Experian magenta)
+  "#9C2768", // 600
+  "#7C1F53", // 700
+  "#5A1740", // 800
+  "#3C0F2A", // 900
 ] as const satisfies readonly string[];
+
+/** Experian gradient stops — blue → dark-purple → purple → magenta. */
+export const experianGradientStops = ["#406EB3", "#632678", "#982881", "#BA2F7D"] as const;
 
 /** Mint — Apple Health vital sign / success. Anchor: mint[4] = #34D69D. */
 export const mint = [

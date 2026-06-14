@@ -869,9 +869,11 @@ export const cssVariableResolver: CSSVariablesResolver = (t) => {
       // Page header background composed at consume time using mode-specific bgs
       "--mb-page-header-bg": "linear-gradient(135deg, var(--mb-bg-default), var(--mb-bg-subtle))",
       "--mb-table-toolbar-bg": "var(--mb-bg-default)",
-      "--mb-accent-gradient": "linear-gradient(135deg, var(--fc-brand) 0%, var(--fc-copper) 100%)",
+      // Experian signature: blue → dark-purple → purple → magenta.
+      "--mb-accent-gradient":
+        "linear-gradient(135deg, #406EB3 0%, #632678 45%, #982881 72%, #BA2F7D 100%)",
       "--mb-accent-gradient-soft":
-        "linear-gradient(135deg, var(--fc-tint) 0%, var(--fc-copper-tint) 100%)",
+        "linear-gradient(135deg, #ECF1F8 0%, #FBEAF3 100%)",
 
       // ── Motion (mode-agnostic) ───────────────────────────────
       "--mb-duration-instant": duration.instant,
