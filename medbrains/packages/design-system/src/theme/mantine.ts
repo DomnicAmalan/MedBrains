@@ -849,7 +849,7 @@ function buildSchemePalette(scheme: typeof lightScheme, name: SchemeName) {
     "--fc-outline": scheme.brand.outline,
     "--fc-copper": scheme.accent.emphasis,
     "--fc-copper-tint": scheme.accent.tint,
-    "--fc-copper-deep": isLight ? "#6F1C1A" : "#F29C8E",
+    "--fc-copper-deep": isLight ? "#84324F" : "#E8A3B8",
   };
 }
 
