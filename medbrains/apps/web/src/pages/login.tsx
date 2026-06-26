@@ -184,10 +184,16 @@ export function LoginPage() {
         <div className={classes.container}>
           <Stack align="center" gap="xs" mb="xl">
             <Brand surface="signin" />
-            <Text size="xl" fw={700} c="var(--mb-text-primary)">
+            <Text
+              size="sm"
+              fw={600}
+              c="var(--mb-text-secondary)"
+              tt="uppercase"
+              style={{ letterSpacing: "0.08em" }}
+            >
               Sign in
             </Text>
-            <Text size="sm" c="var(--mb-text-secondary)" ta="center">
+            <Text size="sm" c="var(--mb-text-muted)" ta="center">
               Enter your credentials to continue
             </Text>
           </Stack>

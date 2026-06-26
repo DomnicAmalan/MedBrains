@@ -41,7 +41,7 @@ export function Brand({ surface }: { surface: BrandSurface }) {
       <Stack align="center" gap="xs">
         <BrandMark size={64} radius={2} />
         {tenant && (
-          <Text size="lg" fw={700} c="var(--mb-brand)" ta="center">
+          <Text size="xl" fw={700} c="var(--mb-text-primary)" ta="center">
             {displayName}
           </Text>
         )}
