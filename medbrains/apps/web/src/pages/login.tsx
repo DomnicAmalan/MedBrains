@@ -137,9 +137,9 @@ export function LoginPage() {
           <span className={classes.manifestoLogoText}>MedBrains</span>
         </div>
 
-        <h1 className={classes.manifestoTitle}>
+        <p className={classes.manifestoTitle}>
           The hospital operating system built for <em>everyone</em>
-        </h1>
+        </p>
 
         <p className={classes.manifestoBody}>
           From OPD to ICU, pharmacy to billing — one platform that runs the entire hospital. Open
@@ -185,15 +185,16 @@ export function LoginPage() {
           <Stack align="center" gap="xs" mb="xl">
             <Brand surface="signin" />
             <Text
+              component="h1"
               size="sm"
               fw={600}
               c="var(--mb-text-secondary)"
               tt="uppercase"
-              style={{ letterSpacing: "0.08em" }}
+              style={{ letterSpacing: "0.08em", margin: 0 }}
             >
               Sign in
             </Text>
-            <Text size="sm" c="var(--mb-text-muted)" ta="center">
+            <Text size="sm" c="var(--mb-text-secondary)" ta="center">
               Enter your credentials to continue
             </Text>
           </Stack>
@@ -221,6 +222,7 @@ export function LoginPage() {
                 {...loginForm.register("password")}
                 required
                 size="md"
+                visibilityToggleButtonProps={{ "aria-label": "Show or hide password" }}
               />
 
               <div className={classes.formFooter}>
@@ -331,6 +333,7 @@ export function LoginPage() {
                 type="button"
                 className={classes.devToggle}
                 onClick={devCredsDisclosure.toggle}
+                aria-expanded={devCredsOpened}
               >
                 {devCredsOpened ? "Hide dev credentials" : "Dev credentials"}
               </button>
