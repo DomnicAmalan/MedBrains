@@ -1,14 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Anchor, Checkbox, Group, PasswordInput, Stack, Text, TextInput } from "@mantine/core";
+import { Anchor, Checkbox, PasswordInput, Stack, Text, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { api } from "@medbrains/api";
 import { userSchema } from "@medbrains/schemas";
 import { useAuthStore, usePermissionStore } from "@medbrains/stores";
 import { IconLock, IconUser } from "@tabler/icons-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Link, Navigate, useNavigate } from "react-router";
+import { Brand } from "@/components/Brand";
 import { SsoLoginButtons } from "@/components/SsoLoginButtons";
 import { Alert, Button, Image } from "@/components/ui";
 import {
@@ -16,6 +16,7 @@ import {
   type LoginFormInput,
   loginFormSchema,
 } from "@/forms/login.form";
+import { useTenantBrand } from "@/hooks/useTenantBrand";
 import {
   defaultDesktopApiBase,
   getStoredDesktopApiBase,
@@ -42,17 +43,9 @@ export function LoginPage() {
   const user = useAuthStore((s) => s.user);
   const setAuth = useAuthStore((s) => s.setAuth);
   const setPermissions = usePermissionStore((s) => s.setPermissions);
-
-  // Pre-auth: if this host is a hospital's custom domain, brand the login page
-  // with that hospital. 404 (default domain) → fall back to MedBrains.
-  const { data: tenantBrand } = useQuery({
-    queryKey: ["tenant-by-host"],
-    queryFn: () => api.getTenantByHost(window.location.hostname),
-    retry: false,
-    staleTime: 300_000,
-  });
-  const brandName = tenantBrand?.name ?? "MedBrains";
-  const brandLogo = tenantBrand?.logo_url || "/logo/medbrains-mark.svg";
+  // A configured hospital means the install is already set up — hide the
+  // "new installation" onboarding prompt.
+  const isConfigured = Boolean(useTenantBrand());
 
   const loginForm = useForm<LoginFormInput>({
     resolver: zodResolver(loginFormSchema),
@@ -138,7 +131,7 @@ export function LoginPage() {
             w={36}
             h={36}
             fit="contain"
-            radius={8}
+            radius={2}
             loading="eager"
           />
           <span className={classes.manifestoLogoText}>MedBrains</span>
@@ -189,22 +182,13 @@ export function LoginPage() {
       {/* Right — white form */}
       <div className={classes.formSide}>
         <div className={classes.container}>
-          <Stack align="center" gap="sm" mb="xl">
-            <Image
-              src={brandLogo}
-              alt={brandName}
-              w={48}
-              h={48}
-              fit="contain"
-              radius={12}
-              loading="eager"
-              className={classes.mobileLogo}
-            />
+          <Stack align="center" gap="xs" mb="xl">
+            <Brand surface="signin" />
             <Text size="xl" fw={700} c="var(--mb-text-primary)">
               Sign in
             </Text>
-            <Text size="sm" c="var(--mb-text-secondary)">
-              Enter your credentials to access {brandName}
+            <Text size="sm" c="var(--mb-text-secondary)" ta="center">
+              Enter your credentials to continue
             </Text>
           </Stack>
 
@@ -330,9 +314,11 @@ export function LoginPage() {
           )}
 
           <div className={classes.footer}>
-            <div className={classes.onboardingLink}>
-              New installation? <Link to="/onboarding">Set up now &rarr;</Link>
-            </div>
+            {!isConfigured && (
+              <div className={classes.onboardingLink}>
+                New installation? <Link to="/onboarding">Set up now &rarr;</Link>
+              </div>
+            )}
 
             <div className={classes.devHelper}>
               <button
@@ -352,22 +338,7 @@ export function LoginPage() {
             </div>
 
             <div className={classes.version}>MedBrains HMS v0.1.0</div>
-            {tenantBrand && (
-              // Open-source attribution on a white-labelled custom domain.
-              <Group gap={6} justify="center" mt={6}>
-                <Image
-                  src="/logo/medbrains-mark-mono.svg"
-                  alt=""
-                  w={14}
-                  h={14}
-                  fit="contain"
-                  loading="lazy"
-                />
-                <Text size="xs" c="var(--mb-text-muted)">
-                  Powered by MedBrains
-                </Text>
-              </Group>
-            )}
+            <Brand surface="footer" />
           </div>
         </div>
       </div>
