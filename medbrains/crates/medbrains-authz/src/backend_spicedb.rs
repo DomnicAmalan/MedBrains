@@ -316,6 +316,7 @@ impl AuthzBackend for SpiceDbBackend {
             context: None,
             optional_limit: 0,
             optional_cursor: None,
+            with_debug: false,
         };
 
         let mut client = (*self.client).clone();
