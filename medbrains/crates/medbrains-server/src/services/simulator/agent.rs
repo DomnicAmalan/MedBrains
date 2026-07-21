@@ -702,9 +702,12 @@ async fn find_demo_username(
 ) -> Result<Option<String>, AppError> {
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, tenant_id).await?;
+    // `users.role` is a `user_role` enum; a plain `role = $1` text bind fails at
+    // runtime with `operator does not exist: user_role = text`, which broke every
+    // simulator login lookup. Cast the column to text so the string bind matches.
     let username = sqlx::query_scalar::<_, String>(
         "SELECT username FROM users \
-         WHERE role = $1 AND email LIKE '%@medbrains.localhost' \
+         WHERE role::text = $1 AND email LIKE '%@medbrains.localhost' \
          ORDER BY created_at LIMIT 1",
     )
     .bind(role)
