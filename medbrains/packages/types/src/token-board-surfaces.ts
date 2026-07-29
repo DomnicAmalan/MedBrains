@@ -2,6 +2,7 @@ import { P } from "./permissions.js";
 
 export type TokenBoardSurfaceId =
   | "billing"
+  | "camp"
   | "emergency"
   | "lab"
   | "opd"
@@ -21,6 +22,7 @@ export type TokenBoardStatusPhase =
 export type TokenBoardStatusShape = "circle" | "diamond" | "pill" | "ring" | "square";
 export type TokenBoardTvDisplayType =
   | "billing_queue"
+  | "camp_queue"
   | "emergency_triage"
   | "lab_queue"
   | "opd_queue"
@@ -65,7 +67,7 @@ export interface TokenBoardSurfaceDefinition {
   accent: "brand" | "copper" | "emerald" | "red" | "violet";
   description: string;
   displayMode: TokenBoardDisplayMode;
-  module: "billing" | "emergency" | "lab" | "opd" | "pharmacy" | "radiology";
+  module: "billing" | "camp" | "emergency" | "lab" | "opd" | "pharmacy" | "radiology";
   privacyNotice: string;
   readiness: {
     flow: string;
@@ -190,6 +192,40 @@ export const TOKEN_BOARD_SURFACES: Readonly<
       webPath: tokenBoardWebPath("billing"),
     },
     title: "Billing counters",
+  },
+  camp: {
+    accent: "emerald",
+    description:
+      "Outreach camp board — every consultation room and service counter for one camp, with who is on duty.",
+    displayMode: "token_only_public",
+    id: "camp",
+    module: "camp",
+    privacyNotice:
+      "Token-only camp display. Patient names, identifiers, Aadhaar and complaints are withheld; only the staff on duty are named.",
+    readiness: {
+      flow: "Camp stations",
+      privacy: "Token only",
+    },
+    // A camp queue turns over faster than a hospital clinic: one counter can
+    // feed thirteen rooms, so the board is refreshed on the fast interval.
+    refreshIntervalMs: TOKEN_BOARD_FAST_REFRESH_MS,
+    requiredAnyPermissions: [P.CAMP.LIST, P.CAMP.REGISTRATIONS_LIST],
+    restrictedLabel: "Camp board restricted",
+    standardRefs: ["NABH CHO community outreach", "IPSG.1 patient identification"],
+    subtitle: "Consultation rooms and service counters for the day's camp",
+    targets: {
+      kioskPath: tokenBoardKioskPath("camp"),
+      mobileParams: { surface: "camp" },
+      mobileRoute: "TokenBoards",
+      // A TV taken to a camp is a queue display. There is no "TV-Camp" in the
+      // AppSurfaceCode catalog and adding a shipped app target is an org
+      // decision, not a board one.
+      tvAppCodes: ["TV-Queue"],
+      tvDeepLink: "medbrains://tv/camp-queue",
+      tvDisplayType: "camp_queue",
+      webPath: tokenBoardWebPath("camp"),
+    },
+    title: "Camp stations",
   },
   emergency: {
     accent: "red",
@@ -473,6 +509,7 @@ const TOKEN_BOARD_REFRESH_VALUE_KEY = "tokenBoards.readiness.values.refreshSecon
 
 const TOKEN_BOARD_SURFACE_FLOW_LABEL_KEYS: Readonly<Record<TokenBoardSurfaceId, string>> = {
   billing: "tokenBoards.surfaces.billing.flow",
+  camp: "tokenBoards.surfaces.camp.flow",
   emergency: "tokenBoards.surfaces.emergency.flow",
   lab: "tokenBoards.surfaces.lab.flow",
   opd: "tokenBoards.surfaces.opd.flow",

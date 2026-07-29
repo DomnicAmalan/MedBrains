@@ -1469,6 +1469,7 @@ import type {
   PharmacyPrescriptionRx,
   PharmacyPricingTier,
   // Specialty Queue Displays
+  CampBoardRow,
   PharmacyQueueDisplay,
   PharmacyReturn,
   PharmacyRxDetailResponse,
@@ -13206,6 +13207,10 @@ export const api = {
   getErQueueDisplay: () => request<ErQueueDisplay>("/tv/queue/er"),
 
   getBillingQueueDisplay: () => request<BillingQueueDisplay>("/tv/queue/billing"),
+
+  /** Every station in one camp with its live queue and who is on duty. */
+  getCampBoard: (campId: string) =>
+    request<CampBoardRow[]>(`/tokens/camp-board?camp_id=${encodeURIComponent(campId)}`),
 
   getBedAvailabilityDisplay: (wardType: string) =>
     request<BedAvailabilityDisplay>(`/tv/queue/beds/${wardType}`),
