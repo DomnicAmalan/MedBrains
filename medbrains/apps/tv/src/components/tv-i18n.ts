@@ -24,6 +24,7 @@ export type TvTokenBoardLaneKey =
   | "calledNow"
   | "collectingNow"
   | "inProgress"
+  | "missed"
   | "nextTokens"
   | "nowServing"
   | "preparing"
@@ -99,6 +100,7 @@ export const TV_TEXT = {
       inProgress: "tv.tokenBoards.laneEmpty.inProgress",
       insurance_desk: "tv.tokenBoards.laneEmpty.billing.insuranceDesk",
       ipd_discharge: "tv.tokenBoards.laneEmpty.billing.ipdDischarge",
+      missed: "tv.tokenBoards.laneEmpty.missed",
       nextTokens: "tv.tokenBoards.laneEmpty.nextTokens",
       nowServing: "tv.tokenBoards.laneEmpty.nowServing",
       opd_billing: "tv.tokenBoards.laneEmpty.billing.opdBilling",
@@ -115,6 +117,7 @@ export const TV_TEXT = {
       inProgress: "tv.tokenBoards.laneTitle.inProgress",
       insurance_desk: "tv.tokenBoards.laneTitle.billing.insuranceDesk",
       ipd_discharge: "tv.tokenBoards.laneTitle.billing.ipdDischarge",
+      missed: "tv.tokenBoards.laneTitle.missed",
       nextTokens: "tv.tokenBoards.laneTitle.nextTokens",
       nowServing: "tv.tokenBoards.laneTitle.nowServing",
       opd_billing: "tv.tokenBoards.laneTitle.billing.opdBilling",
@@ -267,6 +270,7 @@ const TV_MESSAGES: Readonly<Record<string, string>> = {
   "tv.tokenBoards.laneEmpty.calledNow": "No token is currently called",
   "tv.tokenBoards.laneEmpty.collectingNow": "No token is currently called",
   "tv.tokenBoards.laneEmpty.inProgress": "No collections in progress",
+  "tv.tokenBoards.laneEmpty.missed": "No missed tokens",
   "tv.tokenBoards.laneEmpty.nextTokens": "No waiting tokens",
   "tv.tokenBoards.laneEmpty.nowServing": "No token is currently being dispensed",
   "tv.tokenBoards.laneEmpty.preparing": "No tokens in preparation",
@@ -281,6 +285,7 @@ const TV_MESSAGES: Readonly<Record<string, string>> = {
   "tv.tokenBoards.laneTitle.calledNow": "Called now",
   "tv.tokenBoards.laneTitle.collectingNow": "Collecting now",
   "tv.tokenBoards.laneTitle.inProgress": "In progress",
+  "tv.tokenBoards.laneTitle.missed": "Missed - please see the front desk",
   "tv.tokenBoards.laneTitle.nextTokens": "Next tokens",
   "tv.tokenBoards.laneTitle.nowServing": "Now serving",
   "tv.tokenBoards.laneTitle.preparing": "Preparing",

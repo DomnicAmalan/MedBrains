@@ -715,6 +715,50 @@ export function tokenBoardStatusLabelKey(status: string): string | null {
   return isTokenBoardStatusValue(status) ? TOKEN_BOARD_STATUS_LABEL_KEYS[status] : null;
 }
 
+/**
+ * How long a missed token keeps its place on the board.
+ *
+ * Long enough that someone who stepped out to the toilet or the pharmacy walks
+ * back, finds their number still on screen, and knows to go to the desk. Short
+ * enough that the board is not carrying every no-show of the day by afternoon —
+ * a "Missed" list forty numbers long tells nobody anything.
+ *
+ * Ten minutes is a starting figure, not a measured one; it is named here so a
+ * site that runs busier or quieter can change it in one place.
+ */
+export const MISSED_TOKEN_BOARD_WINDOW_MINUTES = 10;
+
+/** The shape needed to tell whether a token was recently missed. */
+export interface MissableToken {
+  status: string;
+  /** When the token left the queue. Missed tokens without one are not shown. */
+  completed_at: string | null;
+}
+
+/**
+ * The tokens a board should announce as missed right now.
+ *
+ * Only `no_show`. A `cancelled` token shares the same "blocked" phase but is a
+ * deliberate act — announcing it as missed would send a patient to the desk to
+ * ask about a token somebody already withdrew on purpose.
+ *
+ * Tokens with no `completed_at` are left out: without a time there is no way to
+ * tell a call missed a minute ago from one missed at eight this morning, and
+ * showing both is how the list stops meaning anything.
+ */
+export function recentlyMissedTokens<T extends MissableToken>(
+  tokens: readonly T[],
+  nowMs: number,
+  windowMinutes: number = MISSED_TOKEN_BOARD_WINDOW_MINUTES,
+): T[] {
+  const cutoff = nowMs - windowMinutes * 60_000;
+  return tokens.filter((token) => {
+    if (token.status !== "no_show" || token.completed_at === null) return false;
+    const missedAt = Date.parse(token.completed_at);
+    return !Number.isNaN(missedAt) && missedAt >= cutoff;
+  });
+}
+
 export function tokenBoardStatusLabel(status: string): string {
   return isTokenBoardStatusValue(status)
     ? TOKEN_BOARD_STATUS_LABELS[status]

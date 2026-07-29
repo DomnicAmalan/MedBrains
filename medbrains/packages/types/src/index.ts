@@ -269,6 +269,7 @@ export * from "./tenant-facility";
 export type {
   BillingQueueLaneDefinition,
   BillingQueueLaneKey,
+  MissableToken,
   TokenBoardDisplayMode,
   TokenBoardLaunchTargets,
   TokenBoardReadinessItem,
@@ -289,6 +290,8 @@ export {
   getTokenBoardSurface,
   isTokenBoardStatusValue,
   isTokenBoardSurfaceId,
+  MISSED_TOKEN_BOARD_WINDOW_MINUTES,
+  recentlyMissedTokens,
   TOKEN_BOARD_FAST_REFRESH_MS,
   TOKEN_BOARD_PUBLIC_PRIVACY_NOTICE,
   TOKEN_BOARD_STANDARD_REFRESH_MS,
