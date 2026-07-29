@@ -519,6 +519,45 @@ async fn estimate_wait_minutes(
     Some(ahead.saturating_mul(pace))
 }
 
+/// How many are ahead of one token, and how long that is likely to take.
+///
+/// Public because the printed slip needs the same two numbers the board shows.
+/// The slip used to print no wait at all, and a second implementation would
+/// have let paper and screen disagree about the same queue — the failure this
+/// is meant to prevent.
+///
+/// Counted the way the queue is actually called: `priority DESC, token_seq ASC`.
+/// Returns the number *ahead*, not the 1-based position.
+pub async fn position_and_wait(
+    db: &sqlx::PgPool,
+    tenant_id: Uuid,
+    department_id: Uuid,
+    token_date: NaiveDate,
+    token_seq: i32,
+    priority: &str,
+) -> Result<(i64, Option<i32>), sqlx::Error> {
+    let ahead: (i64,) = sqlx::query_as(
+        r"
+        SELECT COUNT(*)
+        FROM queue_tokens
+        WHERE tenant_id = $1 AND department_id = $2 AND token_date = $3
+          AND status = 'waiting'
+          AND (priority > $5::queue_priority
+               OR (priority = $5::queue_priority AND token_seq < $4))
+        ",
+    )
+    .bind(tenant_id)
+    .bind(department_id)
+    .bind(token_date)
+    .bind(token_seq)
+    .bind(priority)
+    .fetch_one(db)
+    .await?;
+
+    let wait = estimate_wait_minutes(db, tenant_id, department_id, token_date, ahead.0).await;
+    Ok((ahead.0, wait))
+}
+
 pub async fn create_token(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
@@ -584,27 +623,14 @@ pub async fn create_token(
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Queue position, counted the way the queue is actually called:
-    // `ORDER BY priority DESC, token_seq ASC` (see the board and call-next
-    // queries below). Counting by token_seq alone told a patient there were
-    // three ahead while every waiting emergency case went first, and told a
-    // priority patient they were behind people who would be called after them.
-    let position: (i64,) = sqlx::query_as(
-        r"
-        SELECT COUNT(*)
-        FROM queue_tokens
-        WHERE tenant_id = $1 AND department_id = $2 AND token_date = $3
-          AND status = 'waiting'
-          AND (priority > $5::queue_priority
-               OR (priority = $5::queue_priority AND token_seq < $4))
-        ",
+    let (ahead, estimated_wait) = position_and_wait(
+        &state.db,
+        claims.tenant_id,
+        req.department_id,
+        today,
+        next_seq.0,
+        priority,
     )
-    .bind(claims.tenant_id)
-    .bind(req.department_id)
-    .bind(today)
-    .bind(next_seq.0)
-    .bind(priority)
-    .fetch_one(&state.db)
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -614,15 +640,6 @@ pub async fn create_token(
         .fetch_one(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    let estimated_wait = estimate_wait_minutes(
-        &state.db,
-        claims.tenant_id,
-        req.department_id,
-        today,
-        position.0,
-    )
-    .await;
 
     // Broadcast queue update
     broadcast_queue_update(
@@ -637,7 +654,7 @@ pub async fn create_token(
         id: token.id,
         token_number: token.token_number,
         department_name: dept_name.0,
-        queue_position: (position.0 as i32) + 1,
+        queue_position: i32::try_from(ahead).unwrap_or(i32::MAX).saturating_add(1),
         estimated_wait_minutes: estimated_wait,
     }))
 }
