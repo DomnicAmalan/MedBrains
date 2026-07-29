@@ -814,12 +814,48 @@ async fn return_to_referrer(
     Ok(token.referred_from_scope_id)
 }
 
+/// How many patients a hospital lets a returning no-show wait behind.
+///
+/// Absent — the default, and what every tenant gets until they say otherwise —
+/// means the back of the queue. A number means the patient is put back that far
+/// down: "recall after 3" is the common desk practice of not making someone who
+/// stepped out for two minutes sit through the whole afternoon again.
+///
+/// Read per requeue rather than cached: it changes at a settings screen, not at
+/// a rate worth holding state for.
+async fn missed_token_recall_after(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    tenant_id: Uuid,
+) -> Result<Option<i64>, AppError> {
+    let value: Option<serde_json::Value> = sqlx::query_scalar(
+        "SELECT value FROM tenant_settings \
+         WHERE tenant_id = $1 AND category = 'queue' \
+           AND key = 'missed_token_recall_after' AND deleted_at IS NULL",
+    )
+    .bind(tenant_id)
+    .fetch_optional(tx.as_mut())
+    .await?;
+
+    // A malformed setting means back of queue, not an error: a bad row in a
+    // config table must not stop a patient being put back in the queue.
+    Ok(value
+        .and_then(|v| {
+            v.as_i64()
+                .or_else(|| v.as_str().and_then(|s| s.parse().ok()))
+        })
+        .filter(|n| *n > 0))
+}
+
 /// POST /api/tokens/{id}/requeue — a no-show who came back.
 ///
-/// They go to the *end* of the queue, not the place they lost: putting them
-/// back where they were means the room calls the same absent name again a
-/// moment later. The token number is untouched, so the slip in their hand
-/// still works.
+/// Where they land is the hospital's policy, not ours. By default they go to
+/// the *end*: putting them back where they were means the room calls the same
+/// absent name again a moment later. A hospital that sets
+/// `queue.missed_token_recall_after` gets the kinder desk practice instead —
+/// the patient waits behind that many people and no more.
+///
+/// The token number is untouched either way, so the slip in their hand and the
+/// link on their phone both keep working.
 pub async fn requeue_token(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
@@ -830,7 +866,47 @@ pub async fn requeue_token(
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
-    let token = sqlx::query_as::<_, Token>(&format!(
+    let recall_after = missed_token_recall_after(&mut tx, claims.tenant_id).await?;
+
+    // Read the token first: its queue decides which lock to take, and the
+    // position arithmetic below needs to run inside that lock.
+    let existing = sqlx::query_as::<_, Token>(&format!(
+        "SELECT {SELECT} FROM tokens WHERE id = $1 AND token_date = CURRENT_DATE"
+    ))
+    .bind(id)
+    .fetch_optional(&mut *tx)
+    .await?
+    .ok_or(AppError::NotFound)?;
+
+    // Serialise against a concurrent issue or call-next on this queue: both
+    // read the same sequence this is about to renumber.
+    sqlx::query(
+        "SELECT pg_advisory_xact_lock(hashtextextended(\
+           $1::text || ':' || $2::text || ':' || $3::text || ':' \
+           || COALESCE($4::text, '') || ':' || CURRENT_DATE::text, 0))",
+    )
+    .bind(claims.tenant_id)
+    .bind(&existing.module)
+    .bind(&existing.scope)
+    .bind(existing.scope_id)
+    .execute(&mut *tx)
+    .await?;
+
+    let seq = match recall_after {
+        Some(after) => place_after(&mut tx, &existing, after).await?,
+        None => None,
+    };
+
+    // Placed mid-queue: everything from that point on has already been shifted
+    // up by one, so this seq is free.
+    let placed = format!(
+        "UPDATE tokens SET status = 'waiting', called_at = NULL, served_at = NULL, \
+           completed_at = NULL, seq = $2 \
+         WHERE id = $1 AND token_date = CURRENT_DATE RETURNING {SELECT}"
+    );
+    // Back of the queue — the default, and the fallback whenever there are not
+    // enough people waiting to hold a place in the middle.
+    let back = format!(
         "UPDATE tokens SET status = 'waiting', called_at = NULL, served_at = NULL, \
            completed_at = NULL, \
            seq = (SELECT COALESCE(MAX(t.seq), 0) + 1 FROM tokens t \
@@ -838,15 +914,79 @@ pub async fn requeue_token(
                      AND t.scope_id IS NOT DISTINCT FROM tokens.scope_id \
                      AND t.token_date = tokens.token_date) \
          WHERE id = $1 AND token_date = CURRENT_DATE RETURNING {SELECT}"
-    ))
-    .bind(id)
-    .fetch_optional(&mut *tx)
-    .await?
-    .ok_or(AppError::NotFound)?;
+    );
+
+    let token = seq
+        .map_or_else(
+            || sqlx::query_as::<_, Token>(&back).bind(id),
+            |seq| sqlx::query_as::<_, Token>(&placed).bind(id).bind(seq),
+        )
+        .fetch_optional(&mut *tx)
+        .await?
+        .ok_or(AppError::NotFound)?;
 
     tx.commit().await?;
     broadcast_status(&state, &token).await;
     Ok(Json(token))
+}
+
+/// Open a place in the queue with exactly `after` patients ahead, and return
+/// the seq that place now occupies.
+///
+/// Returns `None` when fewer than `after` are waiting — there is no fourth
+/// place to hold in a queue of two, and the back is the honest answer.
+///
+/// Everyone from the opened place onwards moves up by one. Their order relative
+/// to each other is untouched, so nobody who was already waiting is reordered
+/// against anybody else — they each simply lose one place to the returning
+/// patient, which is the whole point of the policy.
+async fn place_after(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    token: &Token,
+    after: i64,
+) -> Result<Option<i32>, AppError> {
+    // The seq of the last token that should still be called before this one,
+    // counted the way the queue is actually called.
+    let boundary: Option<i32> = sqlx::query_scalar(
+        "WITH ordered AS ( \
+           SELECT seq, row_number() OVER ( \
+                    ORDER BY CASE priority WHEN 'stat' THEN 0 WHEN 'urgent' THEN 1 ELSE 2 END, \
+                             seq \
+                  ) AS rn \
+             FROM tokens \
+            WHERE module = $1 AND scope = $2 AND scope_id IS NOT DISTINCT FROM $3 \
+              AND token_date = CURRENT_DATE AND status = 'waiting' AND id <> $4 \
+         ) SELECT seq FROM ordered WHERE rn = $5",
+    )
+    .bind(&token.module)
+    .bind(&token.scope)
+    .bind(token.scope_id)
+    .bind(token.id)
+    .bind(after)
+    .fetch_optional(tx.as_mut())
+    .await?;
+
+    let Some(boundary) = boundary else {
+        return Ok(None);
+    };
+
+    // `tokens.seq` carries no unique index, so opening the gap is a single
+    // bulk update. (`queue_tokens` could not be renumbered this way — it holds
+    // a unique constraint on its sequence.)
+    sqlx::query(
+        "UPDATE tokens SET seq = seq + 1 \
+          WHERE module = $1 AND scope = $2 AND scope_id IS NOT DISTINCT FROM $3 \
+            AND token_date = CURRENT_DATE AND seq > $4 AND id <> $5",
+    )
+    .bind(&token.module)
+    .bind(&token.scope)
+    .bind(token.scope_id)
+    .bind(boundary)
+    .bind(token.id)
+    .execute(tx.as_mut())
+    .await?;
+
+    Ok(Some(boundary + 1))
 }
 
 // ── Camp board (every room in one call) ──────────────────────────
