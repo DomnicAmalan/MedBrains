@@ -33,6 +33,13 @@ pub struct Token {
     pub entity_type: Option<String>,
     pub entity_id: Option<Uuid>,
     pub counter_label: Option<String>,
+    /// The queue that sent this patient here, so completing sends them back.
+    pub referred_from_module: Option<String>,
+    pub referred_from_scope: Option<String>,
+    pub referred_from_scope_id: Option<Uuid>,
+    /// Display only: "Back from Laboratory" on the board they return to.
+    pub returned_from_label: Option<String>,
+    pub returned_at: Option<chrono::DateTime<chrono::Utc>>,
     pub called_at: Option<chrono::DateTime<chrono::Utc>>,
     pub served_at: Option<chrono::DateTime<chrono::Utc>>,
     pub completed_at: Option<chrono::DateTime<chrono::Utc>>,
@@ -41,7 +48,9 @@ pub struct Token {
 }
 
 const SELECT: &str = "id, module, scope, scope_id, scope_label, number, seq, status, priority, \
-     patient_id, patient_name, entity_type, entity_id, counter_label, called_at, served_at, \
+     patient_id, patient_name, entity_type, entity_id, counter_label, \
+     referred_from_module, referred_from_scope, referred_from_scope_id, \
+     returned_from_label, returned_at, called_at, served_at, \
      completed_at, token_date, created_at";
 
 fn token_prefix(module: &str) -> &'static str {
@@ -76,6 +85,46 @@ async fn module_tokens_enabled(
     Ok(value
         .and_then(|setting| setting.get("enabled").and_then(serde_json::Value::as_bool))
         .unwrap_or(true))
+}
+
+/// Resolve a queue's label from whichever registry owns it, and refuse a scope
+/// that points nowhere.
+///
+/// `scope_id` is an opaque uuid whose meaning depends on `scope`: a department
+/// for 'department', a camp counter for 'counter'. A wrong one used to create a
+/// queue that appears on no board while still taking tokens — the patients
+/// holding them simply become invisible. Scopes with no registry ('global',
+/// 'combined') keep the caller's label.
+async fn resolve_scope(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    scope: &str,
+    scope_id: Option<Uuid>,
+    given_label: Option<&str>,
+) -> Result<Option<String>, AppError> {
+    let Some(scope_id) = scope_id else {
+        return Ok(given_label.map(ToOwned::to_owned));
+    };
+    if !matches!(scope, "department" | "counter") {
+        return Ok(given_label.map(ToOwned::to_owned));
+    }
+
+    let found: Option<(String, bool)> = sqlx::query_as(
+        "SELECT label, is_active FROM token_scopes WHERE scope = $1 AND scope_id = $2",
+    )
+    .bind(scope)
+    .bind(scope_id)
+    .fetch_optional(&mut **tx)
+    .await?;
+
+    match found {
+        Some((label, true)) => Ok(Some(label)),
+        Some((label, false)) => Err(AppError::BadRequest(format!(
+            "{label} is not open for queueing"
+        ))),
+        None => Err(AppError::BadRequest(format!(
+            "No {scope} with id {scope_id}"
+        ))),
+    }
 }
 
 /// Fields for auto-issuing a token from a module's trigger handler.
@@ -210,6 +259,13 @@ pub struct IssueTokenInput {
     pub patient_name: Option<String>,
     pub entity_type: Option<String>,
     pub entity_id: Option<Uuid>,
+    /// Set by the room doing the sending ("send this patient to lab"), so that
+    /// completing the lab token returns them to that room instead of leaving
+    /// them to rejoin the back of a queue they have already waited in.
+    pub referred_from_module: Option<String>,
+    pub referred_from_scope: Option<String>,
+    pub referred_from_scope_id: Option<Uuid>,
+    pub referred_from_label: Option<String>,
 }
 
 /// POST /api/tokens/issue — issue the next token for a module + scope.
@@ -228,6 +284,11 @@ pub async fn issue_token(
     if !module_tokens_enabled(&mut tx, claims.tenant_id, &body.module).await? {
         return Err(AppError::Forbidden);
     }
+
+    // Refuse a queue that points nowhere, and take the label from the registry
+    // so a counter renamed mid-camp does not leave stale labels on the board.
+    let scope_label =
+        resolve_scope(&mut tx, &scope, body.scope_id, body.scope_label.as_deref()).await?;
 
     // Serialise concurrent check-ins for the same queue+day (see issue_token_in_tx)
     // so two callers can't compute the same MAX(seq) and mint duplicate tokens.
@@ -260,14 +321,16 @@ pub async fn issue_token(
     let token = sqlx::query_as::<_, Token>(&format!(
         "INSERT INTO tokens \
          (tenant_id, module, scope, scope_id, scope_label, number, seq, priority, \
-          patient_id, patient_name, entity_type, entity_id, issued_by) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING {SELECT}"
+          patient_id, patient_name, entity_type, entity_id, issued_by, \
+          referred_from_module, referred_from_scope, referred_from_scope_id) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) \
+         RETURNING {SELECT}"
     ))
     .bind(claims.tenant_id)
     .bind(&body.module)
     .bind(&scope)
     .bind(body.scope_id)
-    .bind(&body.scope_label)
+    .bind(&scope_label)
     .bind(&number)
     .bind(seq)
     .bind(&priority)
@@ -276,8 +339,21 @@ pub async fn issue_token(
     .bind(&body.entity_type)
     .bind(body.entity_id)
     .bind(claims.sub)
+    .bind(&body.referred_from_module)
+    .bind(&body.referred_from_scope)
+    .bind(body.referred_from_scope_id)
     .fetch_one(&mut *tx)
     .await?;
+
+    // Remember the sending room's name for the badge on the board they go back
+    // to; it is the referrer's label, which only the caller knows.
+    if let Some(label) = &body.referred_from_label {
+        sqlx::query("UPDATE tokens SET returned_from_label = $2 WHERE id = $1")
+            .bind(token.id)
+            .bind(label)
+            .execute(&mut *tx)
+            .await?;
+    }
 
     tx.commit().await?;
     broadcast_status(&state, &token).await;
@@ -391,7 +467,31 @@ async fn transition(
     .await?
     .ok_or(AppError::NotFound)?;
 
+    // A referral that is finished sends the patient back where they came from,
+    // in front of the queue rather than at the end of it: they already waited
+    // their turn once, and the room that sent them is expecting the result.
+    let returned_to = if status == "completed" {
+        return_to_referrer(&mut tx, claims, &token).await?
+    } else {
+        None
+    };
+
     tx.commit().await?;
+
+    // The receiving board has a new head of queue; tell it so the doctor's
+    // screen does not wait for its next poll.
+    if let Some(scope_id) = returned_to {
+        state
+            .queue_broadcaster
+            .broadcast_queue_event(
+                scope_id,
+                QueueEvent::TokenStatusChanged {
+                    token_number: token.number.clone(),
+                    status: "waiting".to_owned(),
+                },
+            )
+            .await;
+    }
 
     if status == "called" {
         if let Some(scope_id) = token.scope_id {
@@ -516,11 +616,244 @@ pub async fn call_next(
     }
 }
 
+/// Put the patient back in the queue that referred them, ahead of the people
+/// still waiting. Returns the scope that received them, if any.
+///
+/// Position is expressed by moving `seq` below the current minimum rather than
+/// by raising `priority`: priority is a clinical judgement (`stat` / `urgent`)
+/// and a lab result coming back is not one. `number` is a stored column, so the
+/// token printed on the patient's slip is unchanged by the move.
+async fn return_to_referrer(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    claims: &Claims,
+    token: &Token,
+) -> Result<Option<Uuid>, AppError> {
+    let (Some(module), Some(scope)) = (&token.referred_from_module, &token.referred_from_scope)
+    else {
+        return Ok(None);
+    };
+    let Some(patient_id) = token.patient_id else {
+        return Ok(None);
+    };
+
+    // Serialise against a concurrent call-next on the receiving queue, so the
+    // returning patient cannot land on a seq another writer is also computing.
+    sqlx::query(
+        "SELECT pg_advisory_xact_lock(hashtextextended(\
+           $1::text || ':' || $2::text || ':' || $3::text || ':' \
+           || COALESCE($4::text, '') || ':' || CURRENT_DATE::text, 0))",
+    )
+    .bind(claims.tenant_id)
+    .bind(module)
+    .bind(scope)
+    .bind(token.referred_from_scope_id)
+    .execute(&mut **tx)
+    .await?;
+
+    let front: i32 = sqlx::query_scalar(
+        "SELECT COALESCE(MIN(seq), 1) - 1 FROM tokens \
+         WHERE module = $1 AND scope = $2 AND scope_id IS NOT DISTINCT FROM $3 \
+           AND token_date = CURRENT_DATE",
+    )
+    .bind(module)
+    .bind(scope)
+    .bind(token.referred_from_scope_id)
+    .fetch_one(&mut **tx)
+    .await?;
+
+    // Reuse the token that room already gave them if it is still today's, so
+    // the number on their slip keeps working. Their most recent one: a patient
+    // sent out and back twice should return to the same token both times.
+    let existing: Option<Uuid> = sqlx::query_scalar(
+        "SELECT id FROM tokens \
+         WHERE patient_id = $1 AND module = $2 AND scope = $3 \
+           AND scope_id IS NOT DISTINCT FROM $4 AND token_date = CURRENT_DATE \
+         ORDER BY created_at DESC LIMIT 1",
+    )
+    .bind(patient_id)
+    .bind(module)
+    .bind(scope)
+    .bind(token.referred_from_scope_id)
+    .fetch_optional(&mut **tx)
+    .await?;
+
+    let label = token
+        .scope_label
+        .clone()
+        .unwrap_or_else(|| token.module.clone());
+
+    if let Some(back_id) = existing {
+        sqlx::query(
+            "UPDATE tokens SET status = 'waiting', seq = $2, returned_from_label = $3, \
+               returned_at = now(), called_at = NULL, served_at = NULL, completed_at = NULL \
+             WHERE id = $1",
+        )
+        .bind(back_id)
+        .bind(front)
+        .bind(&label)
+        .execute(&mut **tx)
+        .await?;
+    } else {
+        // They were referred without ever holding a token there (sent straight
+        // from registration, say). Mint one, still at the front.
+        let number = format!("{}-{:03}", token_prefix(module), front.max(0));
+        sqlx::query(
+            "INSERT INTO tokens \
+             (tenant_id, module, scope, scope_id, number, seq, priority, patient_id, \
+              patient_name, issued_by, returned_from_label, returned_at) \
+             VALUES ($1, $2, $3, $4, $5, $6, 'normal', $7, $8, $9, $10, now())",
+        )
+        .bind(claims.tenant_id)
+        .bind(module)
+        .bind(scope)
+        .bind(token.referred_from_scope_id)
+        .bind(&number)
+        .bind(front)
+        .bind(patient_id)
+        .bind(&token.patient_name)
+        .bind(claims.sub)
+        .bind(&label)
+        .execute(&mut **tx)
+        .await?;
+    }
+
+    Ok(token.referred_from_scope_id)
+}
+
+/// POST /api/tokens/{id}/requeue — a no-show who came back.
+///
+/// They go to the *end* of the queue, not the place they lost: putting them
+/// back where they were means the room calls the same absent name again a
+/// moment later. The token number is untouched, so the slip in their hand
+/// still works.
+pub async fn requeue_token(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Path(id): Path<Uuid>,
+) -> Result<Json<Token>, AppError> {
+    require_permission(&claims, permissions::front_office::queue::MANAGE)?;
+
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+
+    let token = sqlx::query_as::<_, Token>(&format!(
+        "UPDATE tokens SET status = 'waiting', called_at = NULL, served_at = NULL, \
+           completed_at = NULL, \
+           seq = (SELECT COALESCE(MAX(t.seq), 0) + 1 FROM tokens t \
+                   WHERE t.module = tokens.module AND t.scope = tokens.scope \
+                     AND t.scope_id IS NOT DISTINCT FROM tokens.scope_id \
+                     AND t.token_date = tokens.token_date) \
+         WHERE id = $1 AND token_date = CURRENT_DATE RETURNING {SELECT}"
+    ))
+    .bind(id)
+    .fetch_optional(&mut *tx)
+    .await?
+    .ok_or(AppError::NotFound)?;
+
+    tx.commit().await?;
+    broadcast_status(&state, &token).await;
+    Ok(Json(token))
+}
+
+// ── Camp board (every room in one call) ──────────────────────────
+#[derive(Debug, Serialize, sqlx::FromRow)]
+pub struct CampBoardRow {
+    pub department_id: Uuid,
+    pub department: String,
+    /// From camp planning, when a counter is mapped to this department.
+    pub counter_name: Option<String>,
+    pub location_label: Option<String>,
+    pub capacity_per_hour: Option<i32>,
+    /// Who is on duty here right now, from the camp doctor roster. An array
+    /// because a department can be staffed by more than one — the gynecology
+    /// room at a real camp runs two.
+    pub doctors: Vec<String>,
+    /// Tokens with a patient in the room. More than one is normal: a vitals
+    /// counter staffed by three nurses sees three at a time.
+    pub serving: Vec<String>,
+    pub waiting: i64,
+    pub completed: i64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CampBoardQuery {
+    pub camp_id: Uuid,
+}
+
+/// GET /api/tokens/camp-board — every department in a camp with its live queue.
+///
+/// Reads `opd_queues`, which is what a camp actually writes: registration calls
+/// `open_registration_encounter`, which inserts there. It deliberately does not
+/// read `public.tokens` — no camp code path writes to it, so a board built on
+/// that table reports every room empty all day.
+///
+/// The room detail (counter name, location, planned capacity) comes from camp
+/// planning via `camp_department_counters`, so the board is whatever the camp
+/// plan says it is, including a department mapped an hour ago. Cancelled and
+/// closed mappings drop out; a room still being set up stays, showing zero.
+///
+/// Doctors come from `camp_doctor_roster`, narrowed to whoever is actually on
+/// duty at this moment, so a board does not name a doctor who has gone home. It
+/// is a correlated subquery rather than a join on purpose: joining a department
+/// staffed by two doctors would duplicate its queue rows and double every count
+/// on the board.
+pub async fn camp_board(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(query): Query<CampBoardQuery>,
+) -> Result<Json<Vec<CampBoardRow>>, AppError> {
+    require_permission(&claims, permissions::front_office::queue::LIST)?;
+
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+
+    let rows = sqlx::query_as::<_, CampBoardRow>(
+        "SELECT d.id AS department_id, d.name AS department, \
+                c.counter_name, c.location_label, c.capacity_per_hour, \
+                COALESCE(( \
+                  SELECT ARRAY_AGG(u.full_name || \
+                           COALESCE(' (' || NULLIF(u.qualification, '') || ')', '') \
+                         ORDER BY u.full_name) \
+                    FROM camp_doctor_roster r \
+                    JOIN users u ON u.id = r.doctor_id \
+                   WHERE r.camp_id = $1 \
+                     AND r.department_id = d.id \
+                     AND r.deleted_at IS NULL \
+                     AND r.status NOT IN ('cancelled', 'completed') \
+                     AND (r.duty_start IS NULL OR r.duty_start <= now()) \
+                     AND (r.duty_end   IS NULL OR r.duty_end   >= now())), '{}') \
+                  AS doctors, \
+                COALESCE(ARRAY_AGG(q.token_number::text ORDER BY q.called_at) \
+                         FILTER (WHERE q.status IN ('called', 'in_consultation')), '{}') \
+                  AS serving, \
+                COUNT(*) FILTER (WHERE q.status = 'waiting')   AS waiting, \
+                COUNT(*) FILTER (WHERE q.status = 'completed') AS completed \
+           FROM camp_department_counters cdc \
+           JOIN departments d ON d.id = cdc.department_id \
+           LEFT JOIN camp_counters c \
+                  ON c.id = cdc.counter_id AND c.deleted_at IS NULL \
+           LEFT JOIN opd_queues q \
+                  ON q.department_id = d.id AND q.queue_date = CURRENT_DATE \
+          WHERE cdc.camp_id = $1 \
+            AND cdc.deleted_at IS NULL \
+            AND cdc.status NOT IN ('cancelled', 'closed') \
+          GROUP BY d.id, d.name, c.counter_name, c.location_label, c.capacity_per_hour \
+          ORDER BY d.name",
+    )
+    .bind(query.camp_id)
+    .fetch_all(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
 /// Queue token routes (issue, board, call-next, advance, serve, complete).
 pub fn router() -> axum::Router<AppState> {
     axum::Router::new()
         .route("/api/tokens/issue", post(issue_token))
         .route("/api/tokens/board", get(list_board))
+        .route("/api/tokens/camp-board", get(camp_board))
         .route("/api/tokens/mine", get(my_tokens))
         .route("/api/tokens/call-next", post(call_next))
         .route("/api/tokens/{id}/advance", post(advance_token))
@@ -528,4 +861,5 @@ pub fn router() -> axum::Router<AppState> {
         .route("/api/tokens/{id}/serve", post(serve_token))
         .route("/api/tokens/{id}/complete", post(complete_token))
         .route("/api/tokens/{id}/no-show", post(no_show_token))
+        .route("/api/tokens/{id}/requeue", post(requeue_token))
 }
