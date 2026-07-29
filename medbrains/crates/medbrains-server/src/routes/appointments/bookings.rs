@@ -544,7 +544,7 @@ pub async fn check_in_appointment(
     }
 
     // TV token board entry + broadcast (same path the kiosk uses).
-    let queue_token =
+    let (_, queue_token) =
         super::issue_queue_token(&mut tx, claims.tenant_id, row.department_id, row.patient_id)
             .await?;
     state

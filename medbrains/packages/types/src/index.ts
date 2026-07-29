@@ -270,6 +270,8 @@ export type {
   BillingQueueLaneDefinition,
   BillingQueueLaneKey,
   MissableToken,
+  PublicTokenLink,
+  PublicTokenStatus,
   TokenBoardDisplayMode,
   TokenBoardLaunchTargets,
   TokenBoardReadinessItem,

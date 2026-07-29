@@ -246,6 +246,10 @@ pub fn build_router(state: AppState) -> Router {
             put(appointments::check_in_appointment),
         )
         .route(
+            "/api/opd/queue-tokens/{id}/status-link",
+            get(appointments::queue_token_status_link),
+        )
+        .route(
             "/api/opd/appointments/{id}/complete",
             put(appointments::complete_appointment),
         )
@@ -687,6 +691,10 @@ pub fn build_router(state: AppState) -> Router {
         .route(
             "/api/public/kiosk/checkin",
             post(appointments::kiosk_checkin),
+        )
+        .route(
+            "/api/public/queue-token/{token}",
+            get(appointments::public_token_status),
         )
         .route(
             "/api/public/radiology/viewer/{token}",

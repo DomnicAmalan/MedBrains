@@ -728,6 +728,27 @@ export function tokenBoardStatusLabelKey(status: string): string | null {
  */
 export const MISSED_TOKEN_BOARD_WINDOW_MINUTES = 10;
 
+/**
+ * What a patient sees when they follow their own token from their phone.
+ *
+ * No name, no identifiers: the link needs no login, so it must reveal no more
+ * than the waiting-room screen shows to everyone already standing in front of
+ * it.
+ */
+export interface PublicTokenStatus {
+  token_number: string;
+  department_name: string;
+  status: string;
+  /** How many are called first. Null once the token is no longer waiting. */
+  ahead: number | null;
+  estimated_wait_minutes: number | null;
+}
+
+/** The opaque handle staff hand to a patient so they can follow their token. */
+export interface PublicTokenLink {
+  status_token: string;
+}
+
 /** The shape needed to tell whether a token was recently missed. */
 export interface MissableToken {
   status: string;
