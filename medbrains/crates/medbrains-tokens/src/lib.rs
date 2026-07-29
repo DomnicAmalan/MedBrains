@@ -91,10 +91,11 @@ async fn module_tokens_enabled(
 /// that points nowhere.
 ///
 /// `scope_id` is an opaque uuid whose meaning depends on `scope`: a department
-/// for 'department', a camp counter for 'counter'. A wrong one used to create a
-/// queue that appears on no board while still taking tokens — the patients
-/// holding them simply become invisible. Scopes with no registry ('global',
-/// 'combined') keep the caller's label.
+/// for 'department', a camp counter for 'counter', a station (nurse station,
+/// OPD counter, kiosk) for 'station'. A wrong one used to create a queue that
+/// appears on no board while still taking tokens — the patients holding them
+/// simply become invisible. Scopes with no registry ('global', 'combined') keep
+/// the caller's label.
 async fn resolve_scope(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     scope: &str,
@@ -104,7 +105,7 @@ async fn resolve_scope(
     let Some(scope_id) = scope_id else {
         return Ok(given_label.map(ToOwned::to_owned));
     };
-    if !matches!(scope, "department" | "counter") {
+    if !matches!(scope, "department" | "counter" | "station") {
         return Ok(given_label.map(ToOwned::to_owned));
     }
 
@@ -764,10 +765,11 @@ pub struct CampBoardRow {
     pub counter_name: Option<String>,
     pub location_label: Option<String>,
     pub capacity_per_hour: Option<i32>,
-    /// Who is on duty here right now, from the camp doctor roster. An array
-    /// because a department can be staffed by more than one — the gynecology
-    /// room at a real camp runs two.
-    pub doctors: Vec<String>,
+    /// Who is on duty here right now — doctors rostered to the department and
+    /// staff rostered to the counter. An array because a station can be run by
+    /// more than one: the gynecology room at a real camp has two doctors, and a
+    /// vitals counter has as many nurses as it has chairs.
+    pub staff: Vec<String>,
     /// Tokens with a patient in the room. More than one is normal: a vitals
     /// counter staffed by three nurses sees three at a time.
     pub serving: Vec<String>,
@@ -792,11 +794,16 @@ pub struct CampBoardQuery {
 /// plan says it is, including a department mapped an hour ago. Cancelled and
 /// closed mappings drop out; a room still being set up stays, showing zero.
 ///
-/// Doctors come from `camp_doctor_roster`, narrowed to whoever is actually on
-/// duty at this moment, so a board does not name a doctor who has gone home. It
-/// is a correlated subquery rather than a join on purpose: joining a department
-/// staffed by two doctors would duplicate its queue rows and double every count
-/// on the board.
+/// Staffing comes from both rosters, because the two are keyed differently and
+/// a camp needs both: `camp_doctor_roster` attaches a doctor to a **department**,
+/// `camp_staff_roster` attaches a nurse or technician to a **counter**. A vitals
+/// or pharmacy counter has no doctor rostered at all, so reading only the doctor
+/// roster would show those rows unstaffed all day.
+///
+/// Both are narrowed to whoever is on duty at this moment, so the board does not
+/// name someone who has gone home. Both are correlated subqueries rather than
+/// joins on purpose: joining a department staffed by two doctors would duplicate
+/// its queue rows and double every count on the board.
 pub async fn camp_board(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
@@ -807,22 +814,55 @@ pub async fn camp_board(
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
+    // The queue lives on the department (`opd_queues.department_id`), so the
+    // board is one row per department and the counts are aggregated exactly
+    // once. Everything about the room and its staff is a correlated subquery:
+    // grouping by counter as well would give a department with two counters two
+    // rows, each reporting the whole department's queue.
     let rows = sqlx::query_as::<_, CampBoardRow>(
         "SELECT d.id AS department_id, d.name AS department, \
-                c.counter_name, c.location_label, c.capacity_per_hour, \
+                ( SELECT string_agg(c.counter_name, ', ' ORDER BY c.counter_name) \
+                    FROM camp_department_counters m \
+                    JOIN camp_counters c ON c.id = m.counter_id AND c.deleted_at IS NULL \
+                   WHERE m.camp_id = $1 AND m.department_id = d.id \
+                     AND m.deleted_at IS NULL ) AS counter_name, \
+                ( SELECT string_agg(DISTINCT c.location_label, ', ') \
+                    FROM camp_department_counters m \
+                    JOIN camp_counters c ON c.id = m.counter_id AND c.deleted_at IS NULL \
+                   WHERE m.camp_id = $1 AND m.department_id = d.id \
+                     AND m.deleted_at IS NULL ) AS location_label, \
+                ( SELECT SUM(c.capacity_per_hour)::int \
+                    FROM camp_department_counters m \
+                    JOIN camp_counters c ON c.id = m.counter_id AND c.deleted_at IS NULL \
+                   WHERE m.camp_id = $1 AND m.department_id = d.id \
+                     AND m.deleted_at IS NULL ) AS capacity_per_hour, \
                 COALESCE(( \
-                  SELECT ARRAY_AGG(u.full_name || \
-                           COALESCE(' (' || NULLIF(u.qualification, '') || ')', '') \
-                         ORDER BY u.full_name) \
-                    FROM camp_doctor_roster r \
-                    JOIN users u ON u.id = r.doctor_id \
-                   WHERE r.camp_id = $1 \
-                     AND r.department_id = d.id \
-                     AND r.deleted_at IS NULL \
-                     AND r.status NOT IN ('cancelled', 'completed') \
-                     AND (r.duty_start IS NULL OR r.duty_start <= now()) \
-                     AND (r.duty_end   IS NULL OR r.duty_end   >= now())), '{}') \
-                  AS doctors, \
+                  SELECT ARRAY_AGG(name ORDER BY name) FROM ( \
+                    SELECT u.full_name || \
+                           COALESCE(' (' || NULLIF(u.qualification, '') || ')', '') AS name \
+                      FROM camp_doctor_roster r \
+                      JOIN users u ON u.id = r.doctor_id \
+                     WHERE r.camp_id = $1 \
+                       AND r.department_id = d.id \
+                       AND r.deleted_at IS NULL \
+                       AND r.status NOT IN ('cancelled', 'completed') \
+                       AND (r.duty_start IS NULL OR r.duty_start <= now()) \
+                       AND (r.duty_end   IS NULL OR r.duty_end   >= now()) \
+                    UNION ALL \
+                    SELECT btrim(e.first_name || ' ' || COALESCE(e.last_name, '')) || \
+                           COALESCE(' — ' || NULLIF(sr.role_in_camp, ''), '') \
+                      FROM camp_staff_roster sr \
+                      JOIN employees e ON e.id = sr.employee_id \
+                     WHERE sr.camp_id = $1 \
+                       AND sr.deleted_at IS NULL \
+                       AND sr.status NOT IN ('cancelled', 'completed') \
+                       AND (sr.duty_start IS NULL OR sr.duty_start <= now()) \
+                       AND (sr.duty_end   IS NULL OR sr.duty_end   >= now()) \
+                       AND sr.counter_id IN ( \
+                             SELECT m.counter_id FROM camp_department_counters m \
+                              WHERE m.camp_id = $1 AND m.department_id = d.id \
+                                AND m.deleted_at IS NULL ) \
+                  ) on_duty), '{}') AS staff, \
                 COALESCE(ARRAY_AGG(q.token_number::text ORDER BY q.called_at) \
                          FILTER (WHERE q.status IN ('called', 'in_consultation')), '{}') \
                   AS serving, \
@@ -830,14 +870,12 @@ pub async fn camp_board(
                 COUNT(*) FILTER (WHERE q.status = 'completed') AS completed \
            FROM camp_department_counters cdc \
            JOIN departments d ON d.id = cdc.department_id \
-           LEFT JOIN camp_counters c \
-                  ON c.id = cdc.counter_id AND c.deleted_at IS NULL \
            LEFT JOIN opd_queues q \
                   ON q.department_id = d.id AND q.queue_date = CURRENT_DATE \
           WHERE cdc.camp_id = $1 \
             AND cdc.deleted_at IS NULL \
             AND cdc.status NOT IN ('cancelled', 'closed') \
-          GROUP BY d.id, d.name, c.counter_name, c.location_label, c.capacity_per_hour \
+          GROUP BY d.id, d.name \
           ORDER BY d.name",
     )
     .bind(query.camp_id)

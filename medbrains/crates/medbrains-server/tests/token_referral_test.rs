@@ -350,3 +350,84 @@ async fn issuing_into_an_unknown_scope_is_refused() {
         "an unknown scope must be refused"
     );
 }
+
+/// Given a nurse station in the stations master, When a token is issued scoped
+/// to it, Then it resolves and takes the station's name — a vitals counter needs
+/// a queue of its own because one counter feeds every consultation room.
+#[tokio::test]
+async fn a_station_can_hold_its_own_queue() {
+    let app = common::spawn_app().await;
+    let csrf = app.login_admin().await;
+    let (department, _) = two_departments(&app).await;
+
+    let tenant: (Uuid,) = sqlx::query_as("SELECT tenant_id FROM departments WHERE id = $1")
+        .bind(department)
+        .fetch_one(&app.db)
+        .await
+        .expect("tenant of department");
+
+    let station: (Uuid,) = sqlx::query_as(
+        "INSERT INTO stations (tenant_id, department_id, code, name, station_type) \
+         VALUES ($1, $2, $3, 'Vitals / Screening', 'nurse_station') RETURNING id",
+    )
+    .bind(tenant.0)
+    .bind(department)
+    .bind(format!("VIT-{}", &Uuid::new_v4().to_string()[..8]))
+    .fetch_one(&app.db)
+    .await
+    .expect("create station");
+
+    let token = issue(
+        &app,
+        &csrf,
+        serde_json::json!({
+            "module": "opd", "scope": "station", "scope_id": station.0,
+            "patient_id": Uuid::new_v4(),
+        }),
+    )
+    .await;
+
+    assert_eq!(
+        token["scope_label"], "Vitals / Screening",
+        "the label should come from the stations master, not the caller",
+    );
+}
+
+/// Given an inactive station, When a token is issued for it, Then it is refused
+/// rather than opening a queue nobody is standing at.
+#[tokio::test]
+async fn an_inactive_station_takes_no_tokens() {
+    let app = common::spawn_app().await;
+    let csrf = app.login_admin().await;
+    let (department, _) = two_departments(&app).await;
+
+    let tenant: (Uuid,) = sqlx::query_as("SELECT tenant_id FROM departments WHERE id = $1")
+        .bind(department)
+        .fetch_one(&app.db)
+        .await
+        .expect("tenant of department");
+
+    let station: (Uuid,) = sqlx::query_as(
+        "INSERT INTO stations (tenant_id, department_id, code, name, station_type, is_active) \
+         VALUES ($1, $2, $3, 'Closed Counter', 'opd_counter', false) RETURNING id",
+    )
+    .bind(tenant.0)
+    .bind(department)
+    .bind(format!("CLS-{}", &Uuid::new_v4().to_string()[..8]))
+    .fetch_one(&app.db)
+    .await
+    .expect("create station");
+
+    let resp = app
+        .client
+        .post(app.url("/api/tokens/issue"))
+        .header("x-csrf-token", &csrf)
+        .json(&serde_json::json!({
+            "module": "opd", "scope": "station", "scope_id": station.0,
+        }))
+        .send()
+        .await
+        .expect("issue request");
+
+    assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+}
