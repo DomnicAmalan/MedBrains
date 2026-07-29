@@ -33,6 +33,9 @@ pub struct Token {
     pub entity_type: Option<String>,
     pub entity_id: Option<Uuid>,
     pub counter_label: Option<String>,
+    /// Groups the tokens of one visit, so a patient walking OPD -> lab ->
+    /// pharmacy carries a single number instead of three.
+    pub visit_id: Option<Uuid>,
     /// The queue that sent this patient here, so completing sends them back.
     pub referred_from_module: Option<String>,
     pub referred_from_scope: Option<String>,
@@ -48,7 +51,7 @@ pub struct Token {
 }
 
 const SELECT: &str = "id, module, scope, scope_id, scope_label, number, seq, status, priority, \
-     patient_id, patient_name, entity_type, entity_id, counter_label, \
+     patient_id, patient_name, entity_type, entity_id, counter_label, visit_id, \
      referred_from_module, referred_from_scope, referred_from_scope_id, \
      returned_from_label, returned_at, called_at, served_at, \
      completed_at, token_date, created_at";
@@ -128,9 +131,57 @@ async fn resolve_scope(
     }
 }
 
+/// The number this visit is already using, if any.
+///
+/// One visit, one number: a patient sent from the consultation room to the lab
+/// and then the pharmacy should be holding one slip, not three. Only `number`
+/// is shared — `seq` is still computed per department, so every board calls in
+/// its own order exactly as before.
+async fn number_for_visit(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    visit_id: Option<Uuid>,
+) -> Result<Option<String>, AppError> {
+    let Some(visit_id) = visit_id else {
+        return Ok(None);
+    };
+    Ok(sqlx::query_scalar(
+        "SELECT number FROM tokens WHERE visit_id = $1 ORDER BY created_at LIMIT 1",
+    )
+    .bind(visit_id)
+    .fetch_optional(&mut **tx)
+    .await?)
+}
+
+/// The visit a patient is currently in, if they are in one today.
+///
+/// Downstream modules — lab, pharmacy, billing — issue tokens long after the
+/// visit began and have no visit id of their own. Rather than each deriving one,
+/// they ask here: the visit of the patient's most recent live token today.
+///
+/// Scoped to today and to non-terminal tokens on purpose. A visit that has been
+/// completed should not absorb an evening ER attendance into the morning's OPD
+/// slip.
+pub async fn current_visit(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    patient_id: Uuid,
+) -> Result<Option<Uuid>, AppError> {
+    Ok(sqlx::query_scalar(
+        "SELECT visit_id FROM tokens \
+         WHERE patient_id = $1 AND token_date = CURRENT_DATE AND visit_id IS NOT NULL \
+           AND status NOT IN ('completed', 'no_show', 'cancelled') \
+         ORDER BY created_at DESC LIMIT 1",
+    )
+    .bind(patient_id)
+    .fetch_optional(&mut **tx)
+    .await?)
+}
+
 /// Fields for auto-issuing a token from a module's trigger handler.
 #[derive(Debug)]
 pub struct IssueToken<'a> {
+    /// Ties this token to a visit so it shares that visit's number. `None`
+    /// numbers exactly as before, which is every existing caller.
+    pub visit_id: Option<Uuid>,
     pub module: &'a str,
     pub scope: &'a str,
     pub scope_id: Option<Uuid>,
@@ -180,12 +231,17 @@ pub async fn issue_token_in_tx(
     .bind(input.scope_id)
     .fetch_one(&mut **tx)
     .await?;
-    let number = format!("{}-{seq:03}", token_prefix(input.module));
+    // `seq` is this department's own position and is always freshly computed.
+    // Only the displayed number is shared, so a visit reads as one slip while
+    // every board still calls in its own order.
+    let number = number_for_visit(tx, input.visit_id)
+        .await?
+        .unwrap_or_else(|| format!("{}-{seq:03}", token_prefix(input.module)));
     sqlx::query(
         "INSERT INTO tokens \
          (tenant_id, module, scope, scope_id, scope_label, number, seq, priority, \
-          patient_id, patient_name, entity_type, entity_id, issued_by) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+          patient_id, patient_name, entity_type, entity_id, issued_by, visit_id) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)",
     )
     .bind(tenant_id)
     .bind(input.module)
@@ -200,6 +256,7 @@ pub async fn issue_token_in_tx(
     .bind(input.entity_type)
     .bind(input.entity_id)
     .bind(input.issued_by)
+    .bind(input.visit_id)
     .execute(&mut **tx)
     .await?;
     Ok(Some(number))
@@ -251,6 +308,8 @@ async fn broadcast_status(state: &AppState, token: &Token) {
 // ── Issue ────────────────────────────────────────────────────────
 #[derive(Debug, Deserialize)]
 pub struct IssueTokenInput {
+    /// Ties this token to a visit so it shares that visit's number.
+    pub visit_id: Option<Uuid>,
     pub module: String,
     pub scope: Option<String>,
     pub scope_id: Option<Uuid>,
@@ -317,14 +376,16 @@ pub async fn issue_token(
     .fetch_one(&mut *tx)
     .await?;
 
-    let number = format!("{}-{seq:03}", token_prefix(&body.module));
+    let number = number_for_visit(&mut tx, body.visit_id)
+        .await?
+        .unwrap_or_else(|| format!("{}-{seq:03}", token_prefix(&body.module)));
 
     let token = sqlx::query_as::<_, Token>(&format!(
         "INSERT INTO tokens \
          (tenant_id, module, scope, scope_id, scope_label, number, seq, priority, \
           patient_id, patient_name, entity_type, entity_id, issued_by, \
-          referred_from_module, referred_from_scope, referred_from_scope_id) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) \
+          referred_from_module, referred_from_scope, referred_from_scope_id, visit_id) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) \
          RETURNING {SELECT}"
     ))
     .bind(claims.tenant_id)
@@ -343,6 +404,7 @@ pub async fn issue_token(
     .bind(&body.referred_from_module)
     .bind(&body.referred_from_scope)
     .bind(body.referred_from_scope_id)
+    .bind(body.visit_id)
     .fetch_one(&mut *tx)
     .await?;
 
@@ -397,19 +459,50 @@ pub async fn list_board(
     Ok(Json(tokens))
 }
 
-/// GET /api/tokens/mine — a patient's active tokens today (mobile "my token").
+/// One token as the patient sees it: the queue row plus how many are ahead.
+///
+/// `serde(flatten)` as well as `sqlx(flatten)`: the JSON must stay the shape the
+/// clients already read, gaining `ahead` beside the token's own fields rather
+/// than nesting the whole token one level down and breaking every caller.
+#[derive(Debug, Serialize, sqlx::FromRow)]
+pub struct MyToken {
+    #[serde(flatten)]
+    #[sqlx(flatten)]
+    pub token: Token,
+    /// People this department will call before them — priority first, then
+    /// `seq`, the same order `call_next` uses.
+    ///
+    /// Without this a shared visit number is unreadable on a board: "now
+    /// serving V-087" tells someone holding V-087 nothing about their turn,
+    /// where a per-department number at least implied a distance.
+    pub ahead: i64,
+}
+
+/// GET /api/tokens/mine — every live token for a patient today, with position.
 pub async fn my_tokens(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
     Query(query): Query<MyTokensQuery>,
-) -> Result<Json<Vec<Token>>, AppError> {
+) -> Result<Json<Vec<MyToken>>, AppError> {
     require_permission(&claims, permissions::front_office::queue::LIST)?;
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
-    let tokens = sqlx::query_as::<_, Token>(&format!(
-        "SELECT {SELECT} FROM tokens \
-         WHERE patient_id = $1 AND token_date = CURRENT_DATE \
-           AND status IN ('waiting', 'called', 'serving') ORDER BY created_at"
+    let tokens = sqlx::query_as::<_, MyToken>(&format!(
+        "SELECT {SELECT}, ( \
+           SELECT COUNT(*) FROM tokens ahead \
+            WHERE ahead.module = t.module \
+              AND ahead.scope = t.scope \
+              AND ahead.scope_id IS NOT DISTINCT FROM t.scope_id \
+              AND ahead.token_date = t.token_date \
+              AND ahead.status = 'waiting' \
+              AND (CASE ahead.priority WHEN 'stat' THEN 0 WHEN 'urgent' THEN 1 ELSE 2 END, \
+                   ahead.seq) \
+                < (CASE t.priority WHEN 'stat' THEN 0 WHEN 'urgent' THEN 1 ELSE 2 END, t.seq) \
+         ) AS ahead \
+         FROM tokens t \
+         WHERE t.patient_id = $1 AND t.token_date = CURRENT_DATE \
+           AND t.status IN ('waiting', 'called', 'serving') \
+         ORDER BY t.created_at"
     ))
     .bind(query.patient_id)
     .fetch_all(&mut *tx)

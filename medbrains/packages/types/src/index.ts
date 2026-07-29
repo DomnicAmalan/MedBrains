@@ -7734,6 +7734,14 @@ export interface ModuleToken {
   entity_type?: string | null;
   entity_id?: string | null;
   counter_label?: string | null;
+  /** Groups a visit's tokens so one number carries OPD -> lab -> pharmacy. */
+  visit_id?: string | null;
+  /**
+   * How many this department will call first — priority, then queue position.
+   * Only returned by `myTokens`; a shared visit number is unreadable on a board
+   * without it.
+   */
+  ahead?: number;
   called_at?: string | null;
   served_at?: string | null;
   completed_at?: string | null;
