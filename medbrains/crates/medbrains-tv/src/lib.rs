@@ -460,6 +460,65 @@ pub async fn delete_display(
 
 /// POST /api/tv/tokens
 /// Generate a new queue token.
+/// Minutes this department is likely to take to reach a given queue position.
+///
+/// Measured, not assumed. The previous estimate was `position * 5` — a constant
+/// that was wrong in both directions: a department running three doctors clears
+/// its queue far faster than five minutes a patient, and a single slow clinic
+/// far slower, so the number on the slip bore no relation to the wait.
+///
+/// Throughput rather than consultation length, because throughput already
+/// carries concurrency: three doctors working in parallel produce completions
+/// three times as fast, with no staffing table to consult.
+///
+/// Falls back to the old constant until the department has finished enough
+/// patients to mean anything. An estimate drawn from one data point is worse
+/// than an honest guess, because it looks authoritative.
+const ASSUMED_MINUTES_PER_PATIENT: i32 = 5;
+const MIN_COMPLETIONS_FOR_A_PACE: i64 = 3;
+
+async fn estimate_wait_minutes(
+    db: &sqlx::PgPool,
+    tenant_id: Uuid,
+    department_id: Uuid,
+    today: NaiveDate,
+    position: i64,
+) -> Option<i32> {
+    let measured: Option<(i64, Option<i64>)> = sqlx::query_as(
+        r"
+        SELECT COUNT(*),
+               ROUND(EXTRACT(EPOCH FROM (now() - MIN(called_at))) / 60)::bigint
+        FROM queue_tokens
+        WHERE tenant_id = $1 AND department_id = $2 AND token_date = $3
+          AND status = 'completed' AND called_at IS NOT NULL
+        ",
+    )
+    .bind(tenant_id)
+    .bind(department_id)
+    .bind(today)
+    .fetch_optional(db)
+    .await
+    .ok()
+    .flatten();
+
+    let pace = match measured {
+        Some((completed, Some(elapsed)))
+            if completed >= MIN_COMPLETIONS_FOR_A_PACE && elapsed > 0 =>
+        {
+            // At least a minute a patient: a department cannot clear its queue
+            // faster than the clock, and rounding to zero would promise "no
+            // wait" to everyone behind.
+            i32::try_from(elapsed / completed)
+                .unwrap_or(ASSUMED_MINUTES_PER_PATIENT)
+                .max(1)
+        }
+        _ => ASSUMED_MINUTES_PER_PATIENT,
+    };
+
+    let ahead = i32::try_from(position).unwrap_or(i32::MAX);
+    Some(ahead.saturating_mul(pace))
+}
+
 pub async fn create_token(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
@@ -504,9 +563,12 @@ pub async fn create_token(
             tenant_id, token_date, token_seq, token_number,
             patient_id, department_id, doctor_id, status, priority
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, 'waiting', $8)
+        -- $8 is cast explicitly: Postgres accepts an unknown-typed literal for
+        -- an enum column, but not a parameter sqlx has typed as text, so this
+        -- INSERT rejected every token before the cast was added.
+        VALUES ($1, $2, $3, $4, $5, $6, $7, 'waiting', $8::queue_priority)
         RETURNING id, tenant_id, token_date, token_seq, token_number,
-                  patient_id, department_id, doctor_id, status, priority,
+                  patient_id, department_id, doctor_id, status, priority::text,
                   called_at, completed_at, created_at
         ",
     )
@@ -522,19 +584,26 @@ pub async fn create_token(
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Get queue position (waiting tokens before this one)
+    // Queue position, counted the way the queue is actually called:
+    // `ORDER BY priority DESC, token_seq ASC` (see the board and call-next
+    // queries below). Counting by token_seq alone told a patient there were
+    // three ahead while every waiting emergency case went first, and told a
+    // priority patient they were behind people who would be called after them.
     let position: (i64,) = sqlx::query_as(
         r"
         SELECT COUNT(*)
         FROM queue_tokens
         WHERE tenant_id = $1 AND department_id = $2 AND token_date = $3
-          AND status = 'waiting' AND token_seq < $4
+          AND status = 'waiting'
+          AND (priority > $5::queue_priority
+               OR (priority = $5::queue_priority AND token_seq < $4))
         ",
     )
     .bind(claims.tenant_id)
     .bind(req.department_id)
     .bind(today)
     .bind(next_seq.0)
+    .bind(priority)
     .fetch_one(&state.db)
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -546,8 +615,14 @@ pub async fn create_token(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Estimate wait time (rough: 5 min per patient)
-    let estimated_wait = Some((position.0 as i32) * 5);
+    let estimated_wait = estimate_wait_minutes(
+        &state.db,
+        claims.tenant_id,
+        req.department_id,
+        today,
+        position.0,
+    )
+    .await;
 
     // Broadcast queue update
     broadcast_queue_update(
@@ -580,7 +655,7 @@ pub async fn list_tokens(
     let tokens = sqlx::query_as::<_, QueueToken>(
         r"
         SELECT id, tenant_id, token_date, token_seq, token_number,
-               patient_id, department_id, doctor_id, status, priority,
+               patient_id, department_id, doctor_id, status, priority::text,
                called_at, completed_at, created_at
         FROM queue_tokens
         WHERE tenant_id = $1
@@ -615,7 +690,7 @@ pub async fn call_token(
         SET status = 'called', called_at = NOW()
         WHERE id = $1 AND tenant_id = $2
         RETURNING id, tenant_id, token_date, token_seq, token_number,
-                  patient_id, department_id, doctor_id, status, priority,
+                  patient_id, department_id, doctor_id, status, priority::text,
                   called_at, completed_at, created_at
         ",
     )
@@ -652,7 +727,7 @@ pub async fn complete_token(
         SET status = 'completed', completed_at = NOW()
         WHERE id = $1 AND tenant_id = $2
         RETURNING id, tenant_id, token_date, token_seq, token_number,
-                  patient_id, department_id, doctor_id, status, priority,
+                  patient_id, department_id, doctor_id, status, priority::text,
                   called_at, completed_at, created_at
         ",
     )
@@ -689,7 +764,7 @@ pub async fn no_show_token(
         SET status = 'no_show', completed_at = NOW()
         WHERE id = $1 AND tenant_id = $2
         RETURNING id, tenant_id, token_date, token_seq, token_number,
-                  patient_id, department_id, doctor_id, status, priority,
+                  patient_id, department_id, doctor_id, status, priority::text,
                   called_at, completed_at, created_at
         ",
     )
