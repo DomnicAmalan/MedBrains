@@ -14,6 +14,7 @@ import { fieldAccessText } from "@medbrains/utils";
 import {
   IconCalendarStats,
   IconCheck,
+  IconDeviceHeartMonitor,
   IconEye,
   IconHeartbeat,
   IconPhone,
@@ -60,6 +61,7 @@ import {
   todayIsoDate,
 } from "./shared";
 import { TodayAppointmentsPanel } from "./today-appointments-panel";
+import { OpdVitalsCounter } from "./vitals-counter";
 import { FollowupComplianceTab, ReferralTrackingTab, WaitTimeBadge } from "./workflow-tabs";
 
 function queueEntryEventPayload(row: QueueEntry) {
@@ -387,6 +389,22 @@ export function OpdPageInner() {
       render: (row: QueueEntry) => <QueueVisitTypeBadge row={row} />,
     },
     {
+      key: "chief_complaint",
+      label: t("queueColumns.complaint"),
+      searchable: true,
+      accessor: (row: QueueEntry) => row.chief_complaint ?? "",
+      render: (row: QueueEntry) =>
+        row.chief_complaint ? (
+          <Text size="sm" lineClamp={2}>
+            {row.chief_complaint}
+          </Text>
+        ) : (
+          <Text size="sm" c="dimmed">
+            {t("queue.noComplaint")}
+          </Text>
+        ),
+    },
+    {
       key: "status",
       label: t("queueColumns.status"),
       render: (row: QueueEntry) => (
@@ -461,6 +479,9 @@ export function OpdPageInner() {
         <Tabs.List mb="md">
           <Tabs.Tab value="queue" leftSection={<IconUsers size={16} />}>
             {t("queue")}
+          </Tabs.Tab>
+          <Tabs.Tab value="vitals-counter" leftSection={<IconDeviceHeartMonitor size={16} />}>
+            {t("vitalsCounter.tab")}
           </Tabs.Tab>
           <Tabs.Tab value="referral-tracking" leftSection={<IconTransferIn size={16} />}>
             {t("referralTracking")}
@@ -568,6 +589,13 @@ export function OpdPageInner() {
             virtualizeAt={40}
             virtualRowHeight={58}
             tableMaxHeight="calc(100vh - 410px)"
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="vitals-counter">
+          <OpdVitalsCounter
+            departmentId={filterDeptId || undefined}
+            date={filterDate || undefined}
           />
         </Tabs.Panel>
 

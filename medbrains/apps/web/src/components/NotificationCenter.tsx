@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 import { useEffectOnce } from "react-use";
 import { Button, IconButton } from "@/components/ui";
 import { type NotificationStreamEvent, useNotificationStream } from "@/hooks/useNotificationStream";
+import { boardSignalQueryKeys } from "./board-signal-invalidations";
 import styles from "./NotificationCenter.module.scss";
 
 const KIND_TONE: Record<string, string> = {
@@ -73,7 +74,19 @@ export function NotificationCenter() {
   };
 
   // Live stream: refresh the feed/badge and raise a browser notification.
+  // The same socket also carries board signals for the user's departments —
+  // those are screen nudges, not inbox items, and must not ring the bell or
+  // pop a desktop alert.
   useNotificationStream((event) => {
+    if (event.scope === "board") {
+      // A department nudge, not an inbox item: refresh whatever it affects and
+      // never ring the bell. Routed here because this is the one component that
+      // owns the socket — a screen opening its own would double the connections.
+      for (const key of boardSignalQueryKeys(event.kind)) {
+        void queryClient.invalidateQueries({ queryKey: [key] });
+      }
+      return;
+    }
     invalidate();
     showBrowserNotification(event);
   });

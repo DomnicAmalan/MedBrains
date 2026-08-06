@@ -122,6 +122,10 @@ pub struct CreateEncounterRequest {
     pub notes: Option<String>,
     pub visit_type: Option<String>,
     pub camp_id: Option<Uuid>,
+    /// What the patient says brought them in, captured at registration so the
+    /// doctor does not have to ask again. Free text — the clinical coding
+    /// happens later, in the consultation.
+    pub chief_complaint: Option<String>,
     /// Internal training / simulator flag. Only honoured for bypass roles
     /// (super_admin, hospital_admin); silently coerced to false otherwise.
     /// Tagged rows must be excluded from regulator-facing reports.
@@ -174,6 +178,13 @@ pub struct QueueEntry {
     pub patient_name: Option<String>,
     pub uhid: Option<String>,
     pub visit_type: Option<String>,
+    /// Carried from the encounter so the waiting list says why each patient is
+    /// here, not just that they are.
+    pub chief_complaint: Option<String>,
+    /// Whether anything has been recorded at the vitals counter yet. Lets the
+    /// counter show who is still waiting without fetching every patient's
+    /// vitals and diffing client-side.
+    pub has_vitals: bool,
     pub camp_id: Option<Uuid>,
     pub camp_name: Option<String>,
     pub appointment_id: Option<Uuid>,
@@ -925,11 +936,20 @@ pub async fn create_encounter(
     let is_dummy =
         body.is_dummy.unwrap_or(false) && medbrains_server_core::middleware::authorization::is_bypass_role(&claims);
 
+    // A whitespace-only complaint is no complaint — store NULL so the doctor's
+    // screen shows "not recorded" rather than an empty line that looks answered.
+    let chief_complaint = body
+        .chief_complaint
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToOwned::to_owned);
+
     let encounter = sqlx::query_as::<_, Encounter>(
         "INSERT INTO encounters \
          (tenant_id, patient_id, encounter_type, status, department_id, doctor_id, \
-          encounter_date, notes, attributes, visit_type, is_dummy) \
-         VALUES ($1, $2, 'opd'::encounter_type, 'open'::encounter_status, $3, $4, $5, $6, $7, $8, $9) \
+          encounter_date, notes, attributes, visit_type, is_dummy, chief_complaints) \
+         VALUES ($1, $2, 'opd'::encounter_type, 'open'::encounter_status, $3, $4, $5, $6, $7, $8, $9, $10) \
          RETURNING *",
     )
     .bind(claims.tenant_id)
@@ -941,6 +961,7 @@ pub async fn create_encounter(
     .bind(attributes)
     .bind(visit_type)
     .bind(is_dummy)
+    .bind(chief_complaint.as_deref())
     .fetch_one(&mut *tx)
     .await?;
 
@@ -1287,6 +1308,8 @@ pub async fn list_queue(
                 CASE WHEN $3::bool THEN CONCAT(p.first_name, ' ', p.last_name) ELSE NULL END AS patient_name, \
                 CASE WHEN $3::bool THEN p.uhid ELSE NULL END AS uhid, \
                 e.visit_type::text AS visit_type, \
+                e.chief_complaints AS chief_complaint, \
+                EXISTS (SELECT 1 FROM vitals v WHERE v.encounter_id = e.id) AS has_vitals, \
                 NULLIF(e.attributes->>'camp_id', '')::uuid AS camp_id, \
                 e.attributes->>'camp_name' AS camp_name, \
                 a.id AS appointment_id, \
@@ -1327,6 +1350,26 @@ pub async fn list_queue(
 //  Queue transitions
 // ══════════════════════════════════════════════════════════
 
+/// Board kind for "the queue in this department moved".
+///
+/// Deliberately not a `ClinicalEventName`: that enum is the clinical audit
+/// taxonomy, and a token being called is not a clinical fact. A board only
+/// needs to know it should refresh, so one kind covers every transition
+/// instead of four the client would have to map separately.
+const QUEUE_CHANGED_SIGNAL: &str = "opd.queue.changed";
+
+/// Nudge a department's boards after a queue transition commits.
+fn signal_queue_changed(state: &AppState, claims: &Claims, queue: &OpdQueue) {
+    medbrains_server_core::notifications::publish_board_signal(
+        state,
+        claims.tenant_id,
+        queue.department_id,
+        QUEUE_CHANGED_SIGNAL,
+        "queue_entry",
+        queue.id,
+    );
+}
+
 pub async fn call_queue_entry(
     State(state): State<AppState>,
     Extension(claims): Extension<Claims>,
@@ -1349,6 +1392,9 @@ pub async fn call_queue_entry(
     .await?;
 
     tx.commit().await?;
+    if let Some(ref entry) = q {
+        signal_queue_changed(&state, &claims, entry);
+    }
     q.map_or_else(|| Err(AppError::NotFound), |e| Ok(Json(e)))
 }
 
@@ -1401,6 +1447,7 @@ pub async fn start_consultation(
     .await?;
 
     tx.commit().await?;
+    signal_queue_changed(&state, &claims, &q);
     Ok(Json(q))
 }
 
@@ -1555,6 +1602,7 @@ pub async fn complete_queue_entry(
     )
     .await;
 
+    signal_queue_changed(&state, &claims, &q);
     Ok(Json(q))
 }
 
@@ -1606,6 +1654,7 @@ pub async fn mark_no_show(
     .await?;
 
     tx.commit().await?;
+    signal_queue_changed(&state, &claims, &q);
     Ok(Json(q))
 }
 
@@ -1682,7 +1731,53 @@ pub async fn create_vital(
     .fetch_one(&mut *tx)
     .await?;
 
+    // `opd.vitals.recorded` has been declared in `ClinicalEventName` — and read by
+    // the NABH indicator reports — since the event enum was written, but no code
+    // ever emitted it. Queue it in this transaction so the event cannot exist
+    // without the vitals row, nor the row without the event.
+    let (patient_id, department_id) =
+        sqlx::query_as::<_, (Uuid, Option<Uuid>)>(
+            "SELECT patient_id, department_id FROM encounters WHERE id = $1 AND tenant_id = $2",
+        )
+        .bind(encounter_id)
+        .bind(claims.tenant_id)
+        .fetch_one(&mut *tx)
+        .await?;
+
+    let mut event = ClinicalEventEnvelope::new(
+        claims.tenant_id,
+        ClinicalEventName::OpdVitalsRecorded,
+        vital.id,
+        claims.sub,
+        serde_json::json!({
+            "encounter_id": encounter_id,
+            "patient_id": patient_id,
+            "vital_id": vital.id,
+            "recorded_at": vital.recorded_at,
+        }),
+    )
+    .with_patient(patient_id)
+    .with_encounter(encounter_id);
+    if let Some(department_id) = department_id {
+        event = event.with_department(department_id);
+    }
+    medbrains_workflow::events::queue_clinical_event_in_tx(&mut tx, &event).await?;
+
     tx.commit().await?;
+
+    // Post-commit: nudge the department's open screens so the waiting list
+    // reflects the new vitals without waiting for its next poll.
+    if let Some(department_id) = department_id {
+        medbrains_server_core::notifications::publish_board_signal(
+            &state,
+            claims.tenant_id,
+            department_id,
+            ClinicalEventName::OpdVitalsRecorded.as_str(),
+            "encounter",
+            encounter_id,
+        );
+    }
+
     Ok(Json(vital))
 }
 

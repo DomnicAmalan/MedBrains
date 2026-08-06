@@ -1,14 +1,16 @@
+use axum::routing::get;
 use axum::{
     Extension, Json,
     extract::{Query, State},
     http::{HeaderMap, HeaderValue, header},
     response::IntoResponse,
 };
-use axum::routing::{get};
 use medbrains_core::analytics::{
-    BedOccupancyRow, ClinicalIndicatorRow, DateRangeQuery, DeptRevenueRow, DoctorRevenueRow,
-    ErVolumeRow, ExportQuery, IpdCensusRow, LabTatRow, OpdFootfallRow, OtUtilizationRow,
-    PharmacySalesRow,
+    BedOccupancyRow, CapaAgingRow, ClinicalIndicatorRow, CredentialExpiryRow, DateRangeQuery,
+    DeptRevenueRow, DischargeSummaryCompletionRow, DoctorRevenueRow, ErVolumeRow, ExportQuery,
+    HaiRateRow, HandHygieneComplianceRow, IpdCensusRow, LabCriticalValueComplianceRow, LabTatRow,
+    OpdFootfallRow, OpdQueueWaitRow, OtCancellationRow, OtUtilizationRow, PharmacySalesRow,
+    RadiologyTatRow, ReadmissionRow, SampleRejectionRow, StockAtRiskRow,
 };
 use medbrains_core::permissions;
 use serde::Serialize;
@@ -294,6 +296,721 @@ pub async fn opd_footfall(
     Ok(Json(rows))
 }
 
+// ── 9b. OPD Queue Wait ─────────────────────────────────────
+/// Wait is token-issued to token-called: what the patient experienced sitting in
+/// the corridor, not how long the consultation took.
+///
+/// Only called entries count. A patient still waiting has no wait yet, and a
+/// no-show never waited — including either would report a shorter queue than the
+/// clinic actually ran, which is the wrong direction for a staffing number.
+///
+/// One pass with `percentile_cont`, grouped in the database. Pulling every queue
+/// row into the server and sorting per bucket gives the same answer for far more
+/// memory and round-trips.
+pub async fn opd_queue_wait(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<DateRangeQuery>,
+) -> Result<Json<Vec<OpdQueueWaitRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let (from, to) = default_range(&params);
+    let rows = sqlx::query_as::<_, OpdQueueWaitRow>(
+        "SELECT q.queue_date, \
+                EXTRACT(HOUR FROM q.created_at)::int AS hour_of_day, \
+                COALESCE(d.name, 'Unassigned') AS department_name, \
+                COUNT(*)::bigint AS patients_seen, \
+                COALESCE(percentile_cont(0.5) WITHIN GROUP ( \
+                  ORDER BY EXTRACT(EPOCH FROM (q.called_at - q.created_at)) / 60.0), 0) \
+                  AS median_wait_minutes, \
+                COALESCE(percentile_cont(0.9) WITHIN GROUP ( \
+                  ORDER BY EXTRACT(EPOCH FROM (q.called_at - q.created_at)) / 60.0), 0) \
+                  AS p90_wait_minutes, \
+                COALESCE(MAX(EXTRACT(EPOCH FROM \
+                  (q.called_at - q.created_at)) / 60.0), 0)::double precision \
+                  AS longest_wait_minutes \
+         FROM opd_queues q \
+         LEFT JOIN departments d ON d.id = q.department_id \
+         WHERE q.tenant_id = $1 \
+           AND q.called_at IS NOT NULL \
+           AND q.queue_date >= $2::date AND q.queue_date <= $3::date \
+         GROUP BY q.queue_date, hour_of_day, d.name \
+         ORDER BY q.queue_date, hour_of_day, department_name LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .bind(&from)
+    .bind(&to)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9c. Lab Critical Value Compliance ──────────────────────
+/// Whether critical results were actually communicated, and how fast.
+///
+/// The clock runs from when the alert was raised to when a clinician was
+/// notified — not to when the result was verified. A verified result nobody was
+/// told about is the failure this report exists to catch.
+///
+/// Unnotified alerts are counted but excluded from the timing percentiles: they
+/// have no elapsed time yet, and treating them as zero would make a lab that
+/// never picks up the phone look instantaneous.
+pub async fn lab_critical_value_compliance(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<DateRangeQuery>,
+) -> Result<Json<Vec<LabCriticalValueComplianceRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let (from, to) = default_range(&params);
+    let rows = sqlx::query_as::<_, LabCriticalValueComplianceRow>(
+        "SELECT a.created_at::date AS alert_date, \
+                COUNT(*)::bigint AS critical_values, \
+                COUNT(*) FILTER (WHERE a.notified_at IS NOT NULL)::bigint AS notified, \
+                COUNT(*) FILTER (WHERE a.acknowledged_at IS NOT NULL)::bigint AS acknowledged, \
+                COUNT(*) FILTER (WHERE a.readback_verified)::bigint AS readback_verified, \
+                COUNT(*) FILTER (WHERE a.escalated_at IS NOT NULL)::bigint AS escalated, \
+                COUNT(*) FILTER ( \
+                  WHERE a.notified_at IS NOT NULL \
+                    AND a.notified_at <= a.created_at + INTERVAL '60 minutes' \
+                )::bigint AS notified_within_60_min, \
+                COALESCE(percentile_cont(0.5) WITHIN GROUP ( \
+                  ORDER BY EXTRACT(EPOCH FROM (a.notified_at - a.created_at)) / 60.0), 0) \
+                  AS median_minutes_to_notify, \
+                COALESCE(percentile_cont(0.9) WITHIN GROUP ( \
+                  ORDER BY EXTRACT(EPOCH FROM (a.notified_at - a.created_at)) / 60.0), 0) \
+                  AS p90_minutes_to_notify \
+         FROM lab_critical_alerts a \
+         WHERE a.tenant_id = $1 \
+           AND a.deleted_at IS NULL \
+           AND a.created_at::date >= $2::date AND a.created_at::date <= $3::date \
+         GROUP BY alert_date \
+         ORDER BY alert_date LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .bind(&from)
+    .bind(&to)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9d. Credential and Licence Expiry ──────────────────────
+/// Who is working on a credential that has lapsed, or is about to.
+///
+/// Deliberately not filtered by status. A row whose `status` still says
+/// `active` while its `expiry_date` is in the past is exactly the case this
+/// report has to catch — the status column reflects what somebody last typed,
+/// the date reflects what is true. Trusting the status would hide the failure.
+///
+/// Revoked and suspended credentials are excluded from the expiry buckets:
+/// those people are already stood down, and counting them as "expiring" would
+/// pad the number a manager is meant to act on.
+pub async fn credential_expiry(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+) -> Result<Json<Vec<CredentialExpiryRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let rows = sqlx::query_as::<_, CredentialExpiryRow>(
+        "SELECT c.credential_type::text AS credential_type, \
+                COUNT(*)::bigint AS total_credentials, \
+                COUNT(*) FILTER ( \
+                  WHERE c.expiry_date < CURRENT_DATE \
+                )::bigint AS expired, \
+                COUNT(*) FILTER ( \
+                  WHERE c.expiry_date >= CURRENT_DATE \
+                    AND c.expiry_date <= CURRENT_DATE + 30 \
+                )::bigint AS expiring_within_30_days, \
+                COUNT(*) FILTER ( \
+                  WHERE c.expiry_date >= CURRENT_DATE \
+                    AND c.expiry_date <= CURRENT_DATE + 90 \
+                )::bigint AS expiring_within_90_days, \
+                COUNT(*) FILTER (WHERE c.verified_at IS NULL)::bigint AS unverified, \
+                MIN(c.expiry_date - CURRENT_DATE)::bigint AS days_to_next_expiry \
+         FROM employee_credentials c \
+         WHERE c.tenant_id = $1 \
+           AND c.deleted_at IS NULL \
+           AND c.status NOT IN ('revoked'::credential_status, 'suspended'::credential_status) \
+         GROUP BY c.credential_type \
+         ORDER BY expired DESC, credential_type LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9e. CAPA Aging ─────────────────────────────────────────
+/// Corrective actions that are late, and ones closed without being checked.
+///
+/// Overdue is computed from `due_date` and `completed_at`, not from the status
+/// column — the same reason as credential expiry. A CAPA whose status still
+/// reads `in_progress` a month after its due date is overdue whatever the
+/// column says, and an audit will treat it that way.
+///
+/// `completed_unverified` is deliberately its own count rather than folded into
+/// closed. NABH separates completion from effectiveness verification because an
+/// action nobody checked is a promise, not a fix, and reporting them together
+/// would let a hospital close its CAPA log without improving anything.
+///
+/// Days-to-verify is measured only over CAPAs that actually reached
+/// verification. Including the unverified ones as zero would make a backlog of
+/// unchecked actions look like fast closure.
+pub async fn capa_aging(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+) -> Result<Json<Vec<CapaAgingRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let rows = sqlx::query_as::<_, CapaAgingRow>(
+        "SELECT COALESCE(c.capa_type, 'unspecified') AS capa_type, \
+                COUNT(*)::bigint AS total_capas, \
+                COUNT(*) FILTER ( \
+                  WHERE c.completed_at IS NULL \
+                    AND c.due_date IS NOT NULL \
+                    AND c.due_date < CURRENT_DATE \
+                )::bigint AS overdue, \
+                COUNT(*) FILTER ( \
+                  WHERE c.completed_at IS NULL \
+                    AND (c.due_date IS NULL OR c.due_date >= CURRENT_DATE) \
+                )::bigint AS open_on_time, \
+                COUNT(*) FILTER ( \
+                  WHERE c.completed_at IS NOT NULL AND c.verified_at IS NULL \
+                )::bigint AS completed_unverified, \
+                COUNT(*) FILTER (WHERE c.verified_at IS NOT NULL)::bigint AS verified, \
+                COALESCE(percentile_cont(0.5) WITHIN GROUP ( \
+                  ORDER BY EXTRACT(EPOCH FROM (c.verified_at - c.created_at)) / 86400.0), 0) \
+                  AS median_days_to_verify, \
+                MAX(CURRENT_DATE - c.due_date) FILTER ( \
+                  WHERE c.completed_at IS NULL AND c.due_date < CURRENT_DATE \
+                )::bigint AS max_days_overdue \
+         FROM quality_capa c \
+         WHERE c.tenant_id = $1 \
+           AND c.deleted_at IS NULL \
+         GROUP BY capa_type \
+         ORDER BY overdue DESC, capa_type LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9f. Discharge Summary Completion ───────────────────────
+/// Whether patients left with a summary, and how long it took to finalise.
+///
+/// The query starts from `admissions`, not from `ipd_discharge_summaries`, and
+/// that choice is the whole report. A discharge with no summary row has nothing
+/// to join to; starting from the summary side would silently drop it and report
+/// perfect completion for a ward that writes nothing. Only a LEFT JOIN from the
+/// discharges can count an absence.
+///
+/// Time-to-finalise is measured only over summaries that were finalised.
+/// Counting the missing ones as zero hours would reward never writing one.
+pub async fn discharge_summary_completion(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<DateRangeQuery>,
+) -> Result<Json<Vec<DischargeSummaryCompletionRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let (from, to) = default_range(&params);
+    let rows = sqlx::query_as::<_, DischargeSummaryCompletionRow>(
+        "SELECT a.discharged_at::date AS discharge_date, \
+                COUNT(*)::bigint AS discharges, \
+                COUNT(*) FILTER (WHERE s.finalized_at IS NOT NULL)::bigint AS finalized, \
+                COUNT(*) FILTER ( \
+                  WHERE s.id IS NOT NULL AND s.finalized_at IS NULL \
+                )::bigint AS draft_only, \
+                COUNT(*) FILTER (WHERE s.id IS NULL)::bigint AS missing, \
+                COUNT(*) FILTER ( \
+                  WHERE s.finalized_at IS NOT NULL \
+                    AND s.finalized_at <= a.discharged_at + INTERVAL '24 hours' \
+                )::bigint AS finalized_within_24h, \
+                COALESCE(percentile_cont(0.5) WITHIN GROUP ( \
+                  ORDER BY EXTRACT(EPOCH FROM (s.finalized_at - a.discharged_at)) / 3600.0), 0) \
+                  AS median_hours_to_finalize \
+         FROM admissions a \
+         LEFT JOIN ipd_discharge_summaries s \
+                ON s.admission_id = a.id AND s.deleted_at IS NULL \
+         WHERE a.tenant_id = $1 \
+           AND a.discharged_at IS NOT NULL \
+           AND a.discharged_at::date >= $2::date AND a.discharged_at::date <= $3::date \
+         GROUP BY discharge_date \
+         ORDER BY discharge_date LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .bind(&from)
+    .bind(&to)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9g. HAI Rate ───────────────────────────────────────────
+/// Device-associated infection rates, per 1,000 device-days.
+///
+/// Each HAI type is divided by the device-days for *its own* device: CLABSI by
+/// central-line days, CAUTI by urinary-catheter days, VAP by ventilator days.
+/// Dividing everything by patient-days would be easier and would understate
+/// every rate, because most patients have no device at all.
+///
+/// The rate is `None` rather than zero when no device-days were recorded. Zero
+/// asserts "we had catheters and no infections"; `None` says "we cannot tell",
+/// and a ward that stopped recording device-days must not appear to have
+/// achieved a perfect record by doing so.
+pub async fn hai_rate(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<DateRangeQuery>,
+) -> Result<Json<Vec<HaiRateRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let (from, to) = default_range(&params);
+    let rows = sqlx::query_as::<_, HaiRateRow>(
+        "WITH events AS ( \
+             SELECT date_trunc('month', e.infection_date)::date AS month, \
+                    e.hai_type::text AS hai_type, \
+                    COUNT(*) FILTER ( \
+                      WHERE e.infection_status = 'confirmed'::infection_status \
+                    )::bigint AS confirmed, \
+                    COUNT(*) FILTER ( \
+                      WHERE e.infection_status = 'suspected'::infection_status \
+                    )::bigint AS suspected \
+               FROM infection_surveillance_events e \
+              WHERE e.tenant_id = $1 \
+                AND e.deleted_at IS NULL \
+                AND e.infection_date::date >= $2::date \
+                AND e.infection_date::date <= $3::date \
+              GROUP BY month, e.hai_type \
+         ), device AS ( \
+             SELECT date_trunc('month', d.record_date)::date AS month, \
+                    COALESCE(SUM(d.central_line_days), 0)::bigint AS clabsi_days, \
+                    COALESCE(SUM(d.urinary_catheter_days), 0)::bigint AS cauti_days, \
+                    COALESCE(SUM(d.ventilator_days), 0)::bigint AS vap_days \
+               FROM infection_device_days d \
+              WHERE d.tenant_id = $1 \
+                AND d.record_date >= $2::date AND d.record_date <= $3::date \
+              GROUP BY month \
+         ) \
+         SELECT ev.month, ev.hai_type, ev.confirmed, ev.suspected, \
+                COALESCE( \
+                  CASE ev.hai_type \
+                    WHEN 'clabsi' THEN dv.clabsi_days \
+                    WHEN 'cauti'  THEN dv.cauti_days \
+                    WHEN 'vap'    THEN dv.vap_days \
+                  END, 0)::bigint AS device_days, \
+                CASE \
+                  WHEN COALESCE( \
+                    CASE ev.hai_type \
+                      WHEN 'clabsi' THEN dv.clabsi_days \
+                      WHEN 'cauti'  THEN dv.cauti_days \
+                      WHEN 'vap'    THEN dv.vap_days \
+                    END, 0) > 0 \
+                  THEN (ev.confirmed * 1000.0) / \
+                       CASE ev.hai_type \
+                         WHEN 'clabsi' THEN dv.clabsi_days \
+                         WHEN 'cauti'  THEN dv.cauti_days \
+                         WHEN 'vap'    THEN dv.vap_days \
+                       END \
+                  ELSE NULL \
+                END::double precision AS rate_per_1000_device_days \
+           FROM events ev \
+           LEFT JOIN device dv ON dv.month = ev.month \
+          ORDER BY ev.month, ev.hai_type LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .bind(&from)
+    .bind(&to)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9h. Hand Hygiene Compliance ────────────────────────────
+/// Hand hygiene compliance, computed from the observations.
+///
+/// Two deliberate choices, both of which change the number:
+///
+/// The stored `compliance_rate` column is ignored and the percentage is
+/// recomputed from `compliant` and `observations`. A denormalised rate is only
+/// as good as the last write that touched it, and this is an audited figure.
+///
+/// It is a ratio of sums, not a mean of ratios — `SUM(compliant) /
+/// SUM(observations)`, never `AVG(compliance_rate)`. Averaging per-audit rates
+/// weights a five-observation spot check the same as a five-hundred-observation
+/// ward round, which lets one flattering mini-audit outrank a unit that
+/// measured honestly.
+///
+/// Months with no observations return `None`, not 100% and not 0%: nobody
+/// watched, so there is nothing to report.
+pub async fn hand_hygiene_compliance(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<DateRangeQuery>,
+) -> Result<Json<Vec<HandHygieneComplianceRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let (from, to) = default_range(&params);
+    let rows = sqlx::query_as::<_, HandHygieneComplianceRow>(
+        "SELECT date_trunc('month', a.audit_date)::date AS month, \
+                COALESCE(a.staff_category, 'unspecified') AS staff_category, \
+                COUNT(*)::bigint AS audits, \
+                COALESCE(SUM(a.observations), 0)::bigint AS observations, \
+                COALESCE(SUM(a.compliant), 0)::bigint AS compliant, \
+                CASE WHEN COALESCE(SUM(a.observations), 0) > 0 \
+                     THEN (SUM(a.compliant) * 100.0) / SUM(a.observations) \
+                     ELSE NULL \
+                END::double precision AS compliance_percent \
+         FROM hand_hygiene_audits a \
+         WHERE a.tenant_id = $1 \
+           AND a.audit_date::date >= $2::date AND a.audit_date::date <= $3::date \
+         GROUP BY month, staff_category \
+         ORDER BY month, staff_category LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .bind(&from)
+    .bind(&to)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9i. Readmission Watch ──────────────────────────────────
+/// 7- and 30-day readmission, measured from the index discharge.
+///
+/// Three choices decide whether this number is honest:
+///
+/// Deaths are excluded from the denominator. A patient who died cannot be
+/// readmitted, so leaving them in makes the rate fall as mortality rises.
+/// The count is still reported, so the exclusion is visible rather than a
+/// silent thumb on the scale.
+///
+/// The month is the month of the *index discharge*, not of the readmission.
+/// Keying on the return date would attribute a failure to whichever month
+/// happened to receive the patient.
+///
+/// A readmission is any later admission for the same patient inside the window.
+/// `EXISTS` rather than a join, so a patient who bounced back three times is
+/// one readmitted discharge, not three — otherwise a handful of revolving-door
+/// patients could push the rate above 100%.
+pub async fn readmission_watch(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<DateRangeQuery>,
+) -> Result<Json<Vec<ReadmissionRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let (from, to) = default_range(&params);
+    let rows = sqlx::query_as::<_, ReadmissionRow>(
+        "SELECT date_trunc('month', a.discharged_at)::date AS month, \
+                COUNT(*) FILTER (WHERE NOT died)::bigint AS eligible_discharges, \
+                COUNT(*) FILTER (WHERE died)::bigint AS deaths_excluded, \
+                COUNT(*) FILTER (WHERE NOT died AND back_within_7)::bigint \
+                  AS readmitted_within_7_days, \
+                COUNT(*) FILTER (WHERE NOT died AND back_within_30)::bigint \
+                  AS readmitted_within_30_days, \
+                CASE WHEN COUNT(*) FILTER (WHERE NOT died) > 0 \
+                     THEN (COUNT(*) FILTER (WHERE NOT died AND back_within_30) * 100.0) \
+                          / COUNT(*) FILTER (WHERE NOT died) \
+                     ELSE NULL \
+                END::double precision AS readmission_rate_30_day_percent \
+         FROM ( \
+             SELECT a.discharged_at, \
+                    a.discharge_type::text IN ('death', 'deceased') AS died, \
+                    EXISTS ( \
+                      SELECT 1 FROM admissions r \
+                       WHERE r.tenant_id = a.tenant_id \
+                         AND r.patient_id = a.patient_id \
+                         AND r.id <> a.id \
+                         AND r.admitted_at > a.discharged_at \
+                         AND r.admitted_at <= a.discharged_at + INTERVAL '7 days' \
+                    ) AS back_within_7, \
+                    EXISTS ( \
+                      SELECT 1 FROM admissions r \
+                       WHERE r.tenant_id = a.tenant_id \
+                         AND r.patient_id = a.patient_id \
+                         AND r.id <> a.id \
+                         AND r.admitted_at > a.discharged_at \
+                         AND r.admitted_at <= a.discharged_at + INTERVAL '30 days' \
+                    ) AS back_within_30 \
+               FROM admissions a \
+              WHERE a.tenant_id = $1 \
+                AND a.discharged_at IS NOT NULL \
+                AND a.discharged_at::date >= $2::date \
+                AND a.discharged_at::date <= $3::date \
+         ) a \
+         GROUP BY month \
+         ORDER BY month LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .bind(&from)
+    .bind(&to)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9j. OT Cancellation Pareto ─────────────────────────────
+/// Theatre cases lost, by reason.
+///
+/// Postponed is counted with cancelled. The two statuses describe the same
+/// thing from the hospital's side — an empty theatre slot and a patient who
+/// fasted for nothing — and separating them lets a unit move cases from one
+/// bucket to the other instead of preventing them.
+///
+/// A case with no reason recorded becomes a 'not recorded' row rather than
+/// disappearing. `GROUP BY cancellation_reason` would drop exactly the cases
+/// nobody documented, which are the ones worth chasing.
+///
+/// The denominator is every case scheduled in the window, so a rising count on
+/// a growing theatre list can be told apart from a genuinely worsening one.
+pub async fn ot_cancellations(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<DateRangeQuery>,
+) -> Result<Json<Vec<OtCancellationRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let (from, to) = default_range(&params);
+    let rows = sqlx::query_as::<_, OtCancellationRow>(
+        "WITH scheduled AS ( \
+             SELECT COUNT(*)::bigint AS total \
+               FROM ot_bookings \
+              WHERE tenant_id = $1 \
+                AND deleted_at IS NULL \
+                AND scheduled_date >= $2::date AND scheduled_date <= $3::date \
+         ) \
+         SELECT COALESCE( \
+                  NULLIF(TRIM(COALESCE(b.cancellation_reason, b.postpone_reason)), ''), \
+                  'not recorded') AS reason, \
+                COUNT(*) FILTER (WHERE b.status = 'cancelled'::ot_booking_status)::bigint \
+                  AS cancelled, \
+                COUNT(*) FILTER (WHERE b.status = 'postponed'::ot_booking_status)::bigint \
+                  AS postponed, \
+                COUNT(*)::bigint AS slots_lost, \
+                COUNT(*) FILTER (WHERE b.updated_at::date >= b.scheduled_date)::bigint \
+                  AS late_losses, \
+                CASE WHEN (SELECT total FROM scheduled) > 0 \
+                     THEN (COUNT(*) * 100.0) / (SELECT total FROM scheduled) \
+                     ELSE NULL \
+                END::double precision AS percent_of_scheduled \
+         FROM ot_bookings b \
+         WHERE b.tenant_id = $1 \
+           AND b.deleted_at IS NULL \
+           AND b.status IN ('cancelled'::ot_booking_status, 'postponed'::ot_booking_status) \
+           AND b.scheduled_date >= $2::date AND b.scheduled_date <= $3::date \
+         GROUP BY reason \
+         ORDER BY slots_lost DESC, reason LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .bind(&from)
+    .bind(&to)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9k. Sample Rejection and Recollection ──────────────────
+/// Why samples were rejected, and whether the patient was ever re-drawn.
+///
+/// The rejection count is the easy half. `never_recollected` is the half that
+/// matters: a sample rejected with no result posted afterwards means the test
+/// never happened, and nothing in the system raises its hand about it — the
+/// order simply sits incomplete while everyone assumes it was repeated.
+///
+/// Rejections and affected orders are counted separately. One order rejected
+/// three times is one patient stuck three times, not three patients, and
+/// reporting only the rejection count would overstate how many people were
+/// affected while understating how badly.
+///
+/// The denominator is every order raised in the window, so a rising rejection
+/// count during a busy month is distinguishable from a collection process that
+/// is actually getting worse.
+pub async fn sample_rejections(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<DateRangeQuery>,
+) -> Result<Json<Vec<SampleRejectionRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let (from, to) = default_range(&params);
+    let rows = sqlx::query_as::<_, SampleRejectionRow>(
+        "WITH ordered AS ( \
+             SELECT COUNT(*)::bigint AS total \
+               FROM lab_orders \
+              WHERE tenant_id = $1 \
+                AND created_at::date >= $2::date AND created_at::date <= $3::date \
+         ) \
+         SELECT r.rejection_reason::text AS rejection_reason, \
+                COUNT(*)::bigint AS rejections, \
+                COUNT(DISTINCT r.order_id)::bigint AS orders_affected, \
+                COUNT(DISTINCT r.order_id) FILTER ( \
+                  WHERE NOT EXISTS ( \
+                    SELECT 1 FROM lab_results res \
+                     WHERE res.order_id = r.order_id \
+                       AND res.created_at > r.rejected_at \
+                  ) \
+                )::bigint AS never_recollected, \
+                CASE WHEN (SELECT total FROM ordered) > 0 \
+                     THEN (COUNT(DISTINCT r.order_id) * 100.0) / (SELECT total FROM ordered) \
+                     ELSE NULL \
+                END::double precision AS percent_of_orders \
+         FROM lab_sample_rejections r \
+         WHERE r.tenant_id = $1 \
+           AND r.deleted_at IS NULL \
+           AND r.rejected_at::date >= $2::date AND r.rejected_at::date <= $3::date \
+         GROUP BY r.rejection_reason \
+         ORDER BY never_recollected DESC, rejections DESC LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .bind(&from)
+    .bind(&to)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9l. Radiology TAT and Backlog ──────────────────────────
+/// Order-to-report turnaround, reported next to the queue it excludes.
+///
+/// Percentiles are computed only over studies that were actually reported,
+/// because an unreported study has no turnaround yet. That is correct and it is
+/// also dangerous: the unreported ones are the slow ones, so a department
+/// falling further behind every week shows an *improving* median. The average
+/// speeds up because the slow work has not landed, not because anything got
+/// faster.
+///
+/// `still_pending` and `oldest_pending_days` are therefore part of the same
+/// row rather than a separate report. A falling TAT beside a growing backlog is
+/// the signature of a department in trouble, and it is only visible if the two
+/// numbers are read together.
+///
+/// Rows are keyed by the month the study was ORDERED, so the backlog stays
+/// attached to the month that created it instead of drifting forward.
+pub async fn radiology_tat(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+    Query(params): Query<DateRangeQuery>,
+) -> Result<Json<Vec<RadiologyTatRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let (from, to) = default_range(&params);
+    let rows = sqlx::query_as::<_, RadiologyTatRow>(
+        "SELECT date_trunc('month', o.created_at)::date AS month, \
+                o.priority::text AS priority, \
+                COUNT(*)::bigint AS ordered, \
+                COUNT(*) FILTER (WHERE o.completed_at IS NOT NULL)::bigint AS reported, \
+                COUNT(*) FILTER ( \
+                  WHERE o.completed_at IS NULL \
+                    AND o.status <> 'cancelled'::radiology_order_status \
+                )::bigint AS still_pending, \
+                MAX(CURRENT_DATE - o.created_at::date) FILTER ( \
+                  WHERE o.completed_at IS NULL \
+                    AND o.status <> 'cancelled'::radiology_order_status \
+                )::bigint AS oldest_pending_days, \
+                percentile_cont(0.5) WITHIN GROUP ( \
+                  ORDER BY EXTRACT(EPOCH FROM (o.completed_at - o.created_at)) / 3600.0 \
+                )::double precision AS median_hours_to_report, \
+                percentile_cont(0.9) WITHIN GROUP ( \
+                  ORDER BY EXTRACT(EPOCH FROM (o.completed_at - o.created_at)) / 3600.0 \
+                )::double precision AS p90_hours_to_report \
+         FROM radiology_orders o \
+         WHERE o.tenant_id = $1 \
+           AND o.created_at::date >= $2::date AND o.created_at::date <= $3::date \
+         GROUP BY month, o.priority \
+         ORDER BY still_pending DESC, month, priority LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .bind(&from)
+    .bind(&to)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
+// ── 9m. Stock at Risk ──────────────────────────────────────
+/// Stockout and expiry exposure, counted in dispensable units.
+///
+/// The whole report turns on one decision: availability is summed from batches
+/// whose `expiry_date` is still ahead, not read from
+/// `pharmacy_catalog.current_stock`. That column counts expired stock, and
+/// expired stock cannot be given to a patient — a shelf full of out-of-date
+/// tablets is a stockout wearing a disguise, and the naive query calls it
+/// healthy inventory.
+///
+/// `below_reorder` and `stocked_out` are therefore derived from usable stock
+/// too. An item can be flagged stocked out while `current_stock` reads in the
+/// hundreds, and that is the correct answer.
+///
+/// Expired quantity is reported rather than filtered away: it explains why the
+/// shelf looks full and it is a write-off somebody has to sign for.
+pub async fn stock_at_risk(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+) -> Result<Json<Vec<StockAtRiskRow>>, AppError> {
+    require_permission(&claims, permissions::analytics::VIEW)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+    let rows = sqlx::query_as::<_, StockAtRiskRow>(
+        "SELECT c.code AS item_code, \
+                c.name AS item_name, \
+                COALESCE(SUM(b.quantity_on_hand) FILTER ( \
+                  WHERE b.expiry_date >= CURRENT_DATE \
+                ), 0)::bigint AS usable_on_hand, \
+                COALESCE(SUM(b.quantity_on_hand) FILTER ( \
+                  WHERE b.expiry_date < CURRENT_DATE \
+                ), 0)::bigint AS expired_on_hand, \
+                COALESCE(SUM(b.quantity_on_hand) FILTER ( \
+                  WHERE b.expiry_date >= CURRENT_DATE \
+                    AND b.expiry_date <= CURRENT_DATE + 30 \
+                ), 0)::bigint AS expiring_within_30_days, \
+                COALESCE(c.reorder_level, 0)::bigint AS reorder_level, \
+                COALESCE(SUM(b.quantity_on_hand) FILTER ( \
+                  WHERE b.expiry_date >= CURRENT_DATE \
+                ), 0) <= COALESCE(c.reorder_level, 0) AS below_reorder, \
+                COALESCE(SUM(b.quantity_on_hand) FILTER ( \
+                  WHERE b.expiry_date >= CURRENT_DATE \
+                ), 0) = 0 AS stocked_out \
+         FROM pharmacy_catalog c \
+         LEFT JOIN pharmacy_batches b \
+                ON b.catalog_item_id = c.id AND b.tenant_id = c.tenant_id \
+         WHERE c.tenant_id = $1 \
+           AND c.is_active \
+         GROUP BY c.id, c.code, c.name, c.reorder_level \
+         ORDER BY stocked_out DESC, below_reorder DESC, expiring_within_30_days DESC \
+         LIMIT 5000",
+    )
+    .bind(claims.tenant_id)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
 // ── 10. Bed Occupancy ──────────────────────────────────────
 pub async fn bed_occupancy(
     State(state): State<AppState>,
@@ -392,48 +1109,18 @@ pub async fn export_csv(
 /// analytics routes.
 pub fn router() -> axum::Router<AppState> {
     axum::Router::new()
-        .route(
-            "/api/analytics/revenue/department",
-            get(dept_revenue),
-        )
-        .route(
-            "/api/analytics/revenue/doctor",
-            get(doctor_revenue),
-        )
-        .route(
-            "/api/analytics/ipd/census",
-            get(ipd_census),
-        )
-        .route(
-            "/api/analytics/lab/tat",
-            get(lab_tat),
-        )
-        .route(
-            "/api/analytics/pharmacy/sales",
-            get(pharmacy_sales),
-        )
-        .route(
-            "/api/analytics/ot/utilization",
-            get(ot_utilization),
-        )
-        .route(
-            "/api/analytics/er/volume",
-            get(er_volume),
-        )
+        .route("/api/analytics/revenue/department", get(dept_revenue))
+        .route("/api/analytics/revenue/doctor", get(doctor_revenue))
+        .route("/api/analytics/ipd/census", get(ipd_census))
+        .route("/api/analytics/lab/tat", get(lab_tat))
+        .route("/api/analytics/pharmacy/sales", get(pharmacy_sales))
+        .route("/api/analytics/ot/utilization", get(ot_utilization))
+        .route("/api/analytics/er/volume", get(er_volume))
         .route(
             "/api/analytics/clinical/indicators",
             get(clinical_indicators),
         )
-        .route(
-            "/api/analytics/opd/footfall",
-            get(opd_footfall),
-        )
-        .route(
-            "/api/analytics/bed/occupancy",
-            get(bed_occupancy),
-        )
-        .route(
-            "/api/analytics/export",
-            get(export_csv),
-        )
+        .route("/api/analytics/opd/footfall", get(opd_footfall))
+        .route("/api/analytics/bed/occupancy", get(bed_occupancy))
+        .route("/api/analytics/export", get(export_csv))
 }
