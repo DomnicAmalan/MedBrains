@@ -19,18 +19,19 @@ import type {
   SetupUser,
   TerminologySearchResult,
 } from "@medbrains/types";
-import { Card, COLORS, MobileTextField, SPACING } from "@medbrains/ui-mobile";
+import { Card, COLORS, FormScrollView, MobileTextField, SPACING } from "@medbrains/ui-mobile";
 import type { ComponentProps, ReactNode } from "react";
 import { useMemo, useState } from "react";
 import type { Control, FieldPath, FieldPathValue } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
-import { ScrollView, View } from "react-native";
-import { Button, HelperText, Menu, SegmentedButtons, Text } from "react-native-paper";
+import { View } from "react-native";
+import { Button, HelperText, SegmentedButtons, Text } from "react-native-paper";
 import type { CreatePatientPayload } from "../../api/patients.js";
 import { createPatient } from "../../api/patients.js";
 import { listCamps, listDepartments, listDoctors, listFacilities } from "../../api/references.js";
 import { searchTerminology } from "../../api/terminology.js";
 import { useModuleRouter } from "../../components/module-router.js";
+import { ReferenceMenu } from "../../components/reference-menu.js";
 import { ScreenHeader } from "../../components/screen-header.js";
 import { useFetch } from "../../lib/use-fetch.js";
 
@@ -247,7 +248,7 @@ export function RegisterPatientScreen(): ReactNode {
         title="Register patient"
         description="OPD, referral and camp registration with department, consultant and safety context."
       />
-      <ScrollView contentContainerStyle={{ padding: SPACING.md, gap: SPACING.sm }}>
+      <FormScrollView>
         <Card eyebrow="Identity" title="Patient">
           <View style={{ gap: SPACING.sm }}>
             <FormTextField control={control} name="first_name" label="First name" required />
@@ -554,7 +555,7 @@ export function RegisterPatientScreen(): ReactNode {
         <Button mode="outlined" onPress={router.pop} disabled={busy}>
           Cancel
         </Button>
-      </ScrollView>
+      </FormScrollView>
     </View>
   );
 }
@@ -583,78 +584,6 @@ function FormTextField({
         />
       )}
     />
-  );
-}
-
-function ReferenceMenu<T extends { id: string }>({
-  title,
-  rows,
-  selectedId,
-  label,
-  placeholder,
-  disabled,
-  onSelect,
-  onClear,
-}: {
-  title: string;
-  rows: T[];
-  selectedId: string;
-  label: (row: T) => string;
-  placeholder: string;
-  disabled?: boolean;
-  onSelect: (row: T) => void;
-  onClear?: () => void;
-}): ReactNode {
-  const [open, setOpen] = useState(false);
-  const selected = rows.find((row) => row.id === selectedId);
-  const visibleRows = rows.slice(0, 24);
-
-  return (
-    <View style={{ gap: SPACING.xs }}>
-      <Text variant="labelMedium" style={{ color: COLORS.ink }}>
-        {title}
-      </Text>
-      <Menu
-        visible={open}
-        onDismiss={() => setOpen(false)}
-        anchor={
-          <Button
-            mode={selected ? "contained" : "outlined"}
-            disabled={disabled}
-            onPress={() => setOpen(true)}
-            contentStyle={{ justifyContent: "flex-start" }}
-          >
-            {selected ? label(selected) : placeholder}
-          </Button>
-        }
-      >
-        <View style={{ maxHeight: 320 }}>
-          {onClear && selected && (
-            <Menu.Item
-              title="Clear selection"
-              onPress={() => {
-                setOpen(false);
-                onClear();
-              }}
-            />
-          )}
-          {visibleRows.length === 0 && <Menu.Item title="No matches" disabled />}
-          {visibleRows.map((row) => (
-            <Menu.Item
-              key={row.id}
-              title={label(row)}
-              onPress={() => {
-                setOpen(false);
-                onSelect(row);
-              }}
-            />
-          ))}
-          {rows.length > visibleRows.length && (
-            <Menu.Item title={`Showing first ${visibleRows.length} of ${rows.length}`} disabled />
-          )}
-        </View>
-      </Menu>
-    </View>
   );
 }
 

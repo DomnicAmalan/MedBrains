@@ -7,11 +7,13 @@ import type { Module } from "@medbrains/mobile-shell";
 import { P } from "@medbrains/types";
 import type { IntentTone } from "@medbrains/ui-mobile";
 import type { ReactNode } from "react";
-import { listCleaningTasks } from "../api/housekeeping.js";
+import { listCleaningTasks, listTurnarounds } from "../api/housekeeping.js";
 import { EntityListScreen } from "../components/entity-list.js";
 import { EntityRow } from "../components/entity-row.js";
+import { useModuleCount } from "../components/module-count.js";
 import { ModuleHome } from "../components/module-home.js";
 import { ModuleRouter, useModuleRouter } from "../components/module-router.js";
+import { BedTurnaroundScreen } from "./housekeeping/bed-turnaround.js";
 
 const STATUS_TONE: Record<string, IntentTone> = {
   pending: "warn",
@@ -22,6 +24,7 @@ const STATUS_TONE: Record<string, IntentTone> = {
 
 function HousekeepingHome(): ReactNode {
   const router = useModuleRouter();
+  const pendingTurnaround = useModuleCount(listTurnarounds, (t) => !t.cleaning_completed_at);
   return (
     <ModuleHome
       eyebrow="MODULE"
@@ -29,7 +32,7 @@ function HousekeepingHome(): ReactNode {
       description="Cleaning, turnaround, linen, laundry."
       tags={["Mobile-Housekeeping", "TV-Ward", "infection-control", "turnaround"]}
       summaries={[
-        { eyebrow: "CLEAN", count: "—", title: "Pending bed turnaround" },
+        { eyebrow: "CLEAN", count: pendingTurnaround.count, title: "Pending bed turnaround" },
         { eyebrow: "LINEN", count: "—", title: "Soiled awaiting laundry" },
       ]}
       actions={[
@@ -45,6 +48,7 @@ function HousekeepingHome(): ReactNode {
           label: "Bed turnaround",
           description: "Discharge → terminal-clean → ready.",
           permission: P.HOUSEKEEPING.TURNAROUND_LIST,
+          onPress: () => router.push("turnaround"),
         },
         {
           id: "linen",
@@ -92,7 +96,11 @@ function HousekeepingScreen(): ReactNode {
   return (
     <ModuleRouter
       initial="home"
-      screens={{ home: <HousekeepingHome />, cleaning: <CleaningScreen /> }}
+      screens={{
+        home: <HousekeepingHome />,
+        cleaning: <CleaningScreen />,
+        turnaround: <BedTurnaroundScreen />,
+      }}
     />
   );
 }

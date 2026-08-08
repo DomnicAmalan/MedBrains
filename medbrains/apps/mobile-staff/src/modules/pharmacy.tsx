@@ -11,8 +11,10 @@ import type { ReactNode } from "react";
 import { listPharmacyOrders } from "../api/pharmacy.js";
 import { EntityListScreen } from "../components/entity-list.js";
 import { EntityRow } from "../components/entity-row.js";
+import { useModuleCount } from "../components/module-count.js";
 import { ModuleHome } from "../components/module-home.js";
 import { ModuleRouter, useModuleRouter } from "../components/module-router.js";
+import { ScanStockScreen } from "./pharmacy/scan-stock.js";
 
 const STATUS_TONE: Record<string, IntentTone> = {
   draft: "neutral",
@@ -24,6 +26,8 @@ const STATUS_TONE: Record<string, IntentTone> = {
 
 function PharmacyHome(): ReactNode {
   const router = useModuleRouter();
+  // Server-side status filter rather than counting a full page client-side.
+  const rxQueue = useModuleCount(() => listPharmacyOrders("ordered").then((r) => r.orders));
   return (
     <ModuleHome
       eyebrow="MODULE"
@@ -31,7 +35,7 @@ function PharmacyHome(): ReactNode {
       description="Dispensing, NDPS register, stock, formulary."
       tags={["Mobile-Pharmacist", "NDPS", "stock", "dispense"]}
       summaries={[
-        { eyebrow: "QUEUE", count: "—", title: "Rx awaiting dispense" },
+        { eyebrow: "QUEUE", count: rxQueue.count, title: "Rx awaiting dispense" },
         { eyebrow: "NDPS", count: "—", title: "Controlled balance entries" },
       ]}
       actions={[
@@ -59,6 +63,13 @@ function PharmacyHome(): ReactNode {
           label: "OTC counter sale",
           description: "Walk-in sale (non-prescription only).",
           permission: P.PHARMACY.POS_CREATE,
+        },
+        {
+          id: "scan-stock",
+          label: "Scan a pack",
+          description: "Record receipt, issue or a correction on the shelf.",
+          permission: P.PHARMACY.STOCK_MANAGE,
+          onPress: () => router.push("scan-stock"),
         },
         {
           id: "stock",
@@ -95,7 +106,11 @@ function PharmacyScreen(): ReactNode {
   return (
     <ModuleRouter
       initial="home"
-      screens={{ home: <PharmacyHome />, orders: <PharmacyOrdersScreen /> }}
+      screens={{
+        home: <PharmacyHome />,
+        orders: <PharmacyOrdersScreen />,
+        "scan-stock": <ScanStockScreen />,
+      }}
     />
   );
 }

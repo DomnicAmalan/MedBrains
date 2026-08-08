@@ -229,11 +229,19 @@ pub struct CreateCatalogRequest {
     pub batch_tracking_required: Option<bool>,
     pub storage_conditions: Option<String>,
     pub black_box_warning: Option<String>,
+    pub barcode: Option<String>,
+}
+
+/// An empty barcode box means "not recorded", not an empty string — otherwise
+/// two products with a blank field collide on the unique index.
+fn trimmed_barcode(value: Option<&str>) -> Option<&str> {
+    value.map(str::trim).filter(|code| !code.is_empty())
 }
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateCatalogRequest {
     pub name: Option<String>,
+    pub barcode: Option<String>,
     pub generic_name: Option<String>,
     pub category: Option<String>,
     pub manufacturer: Option<String>,
@@ -3721,6 +3729,9 @@ pub async fn create_discharge_dispensing(
 #[derive(Debug, serde::Deserialize)]
 pub struct CatalogQuery {
     pub search: Option<String>,
+    /// Exact pack barcode. Separate from `search` on purpose: a scan is an
+    /// identity claim, and matching it loosely would hand back a different drug.
+    pub barcode: Option<String>,
     pub category: Option<String>,
     pub formulary_status: Option<String>,
     pub drug_schedule: Option<String>,
@@ -3766,6 +3777,7 @@ pub async fn list_catalog(
            AND ($3::text IS NULL OR category = $3)
            AND ($4::text IS NULL OR formulary_status::text = $4)
            AND ($5::text IS NULL OR drug_schedule::text = $5)
+           AND ($6::text IS NULL OR barcode = $6)
          ORDER BY name LIMIT 100",
     )
     .bind(claims.tenant_id)
@@ -3773,6 +3785,7 @@ pub async fn list_catalog(
     .bind(&q.category)
     .bind(&q.formulary_status)
     .bind(&q.drug_schedule)
+    .bind(q.barcode.as_deref().map(str::trim).filter(|b| !b.is_empty()))
     .fetch_all(&mut *tx)
     .await?;
 
@@ -3812,10 +3825,10 @@ pub async fn create_catalog_entry(
           drug_schedule, is_controlled, inn_name, atc_code, rxnorm_code, \
           snomed_code, formulary_status, aware_category, is_lasa, lasa_group, \
           max_dose_per_day, batch_tracking_required, storage_conditions, \
-          black_box_warning) \
+          black_box_warning, barcode) \
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, \
                  $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, \
-                 $22, $23, $24, $25) \
+                 $22, $23, $24, $25, $26) \
          RETURNING *",
     )
     .bind(claims.tenant_id)
@@ -3843,6 +3856,7 @@ pub async fn create_catalog_entry(
     .bind(batch_track)
     .bind(&body.storage_conditions)
     .bind(&body.black_box_warning)
+    .bind(trimmed_barcode(body.barcode.as_deref()))
     .fetch_one(&mut *tx)
     .await?;
 
@@ -3892,6 +3906,7 @@ pub async fn update_catalog_entry(
          batch_tracking_required = COALESCE($23, batch_tracking_required), \
          storage_conditions = COALESCE($24, storage_conditions), \
          black_box_warning = COALESCE($25, black_box_warning), \
+         barcode = COALESCE($26, barcode), \
          updated_at = now() \
          WHERE id = $10 AND tenant_id = $11 \
          RETURNING *",
@@ -3921,6 +3936,7 @@ pub async fn update_catalog_entry(
     .bind(body.batch_tracking_required)
     .bind(&body.storage_conditions)
     .bind(&body.black_box_warning)
+    .bind(trimmed_barcode(body.barcode.as_deref()))
     .fetch_optional(&mut *tx)
     .await?;
 

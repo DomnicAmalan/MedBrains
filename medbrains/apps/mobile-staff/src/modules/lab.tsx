@@ -20,8 +20,10 @@ import {
 } from "../api/lab.js";
 import { EntityListScreen } from "../components/entity-list.js";
 import { EntityRow } from "../components/entity-row.js";
+import { useModuleCount } from "../components/module-count.js";
 import { ModuleHome } from "../components/module-home.js";
 import { ModuleRouter, useModuleRouter } from "../components/module-router.js";
+import { ScanSampleScreen } from "./lab/scan-sample.js";
 
 const STATUS_TONE: Record<string, IntentTone> = {
   ordered: "warn",
@@ -41,6 +43,7 @@ const PHLEBO_TONE: Record<string, IntentTone> = {
 
 function LabHome(): ReactNode {
   const router = useModuleRouter();
+  const openCritical = useModuleCount(listCriticalAlerts, (a) => !a.acknowledged_at);
   return (
     <ModuleHome
       eyebrow="MODULE"
@@ -49,7 +52,7 @@ function LabHome(): ReactNode {
       tags={["Mobile-LabTech", "Mobile-Phlebo", "NABL", "critical-values"]}
       summaries={[
         { eyebrow: "ORDERS", count: "—", title: "Pending result entry" },
-        { eyebrow: "CRITICAL", count: "—", title: "Critical alerts open" },
+        { eyebrow: "CRITICAL", count: openCritical.count, title: "Critical alerts open" },
       ]}
       actions={[
         {
@@ -65,6 +68,13 @@ function LabHome(): ReactNode {
           description: "Delta-check vs prior + critical-value flag.",
           permission: P.LAB.RESULTS_CREATE,
           onPress: () => router.push("orders"),
+        },
+        {
+          id: "scan",
+          label: "Scan a specimen",
+          description: "Read the tube label instead of typing it.",
+          permission: P.LAB.ORDERS_LIST,
+          onPress: () => router.push("scan"),
         },
         {
           id: "phlebo",
@@ -245,6 +255,7 @@ function LabScreen(): ReactNode {
         phlebotomy: <PhlebotomyQueueScreen />,
         "critical-alerts": <CriticalAlertsScreen />,
         tat: <TatAnalyticsScreen />,
+        scan: <ScanSampleScreen />,
       }}
     />
   );
