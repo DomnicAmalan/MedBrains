@@ -1,7 +1,14 @@
-# CloudWatch alarms + auto-recovery for the single-host Starter tier
-# (audit P0 #12/#14). Disk-usage alarms need the CloudWatch agent on
-# the host — tracked separately; status/CPU/credit cover the
-# instance-death and saturation failure modes.
+# CloudWatch alarms for the Enterprise-k3s tier.
+#
+# This shape boots a real EC2 node (aws_instance.node) carrying the
+# whole k3s control plane and workload, and until this file existed it
+# had strictly less detection than Starter - a cheaper tier watching a
+# smaller blast radius.
+#
+# Mirrors modules/standalone-vm/aws-ec2/alarms.tf. The auto-recover and
+# auto-reboot actions are the reason these live here rather than being
+# replaced by an outside-in health check: Route53 can tell you the node
+# is gone, but only CloudWatch can bring it back.
 
 resource "aws_sns_topic" "alerts" {
   name = "${var.hostname}-alerts"
@@ -19,7 +26,7 @@ resource "aws_sns_topic_subscription" "alerts_email" {
   endpoint  = var.alarm_email
 }
 
-# Hardware/hypervisor failure → AWS auto-recovers the instance
+# Hardware/hypervisor failure -> AWS auto-recovers the instance
 # (same instance ID, same EIP, same EBS).
 resource "aws_cloudwatch_metric_alarm" "system_status" {
   alarm_name          = "${var.hostname}-system-status-failed"
@@ -32,13 +39,12 @@ resource "aws_cloudwatch_metric_alarm" "system_status" {
   period              = 60
   evaluation_periods  = 2
 
-  # A terminated or stopped instance publishes no status metric at all.
-  # Without this the alarm goes INSUFFICIENT_DATA and fires nothing —
-  # silent on exactly the failure it exists to catch.
+  # A terminated or stopped node publishes no status metric at all.
+  # Without this the alarm goes INSUFFICIENT_DATA and fires nothing.
   treat_missing_data = "breaching"
 
   dimensions = {
-    InstanceId = aws_instance.this.id
+    InstanceId = aws_instance.node.id
   }
 
   alarm_actions = [
@@ -48,7 +54,7 @@ resource "aws_cloudwatch_metric_alarm" "system_status" {
   ok_actions = [aws_sns_topic.alerts.arn]
 }
 
-# OS-level hang → reboot.
+# OS-level hang -> reboot.
 resource "aws_cloudwatch_metric_alarm" "instance_status" {
   alarm_name          = "${var.hostname}-instance-status-failed"
   alarm_description   = "EC2 instance status check failed - rebooting"
@@ -60,13 +66,10 @@ resource "aws_cloudwatch_metric_alarm" "instance_status" {
   period              = 60
   evaluation_periods  = 3
 
-  # A terminated or stopped instance publishes no status metric at all.
-  # Without this the alarm goes INSUFFICIENT_DATA and fires nothing —
-  # silent on exactly the failure it exists to catch.
   treat_missing_data = "breaching"
 
   dimensions = {
-    InstanceId = aws_instance.this.id
+    InstanceId = aws_instance.node.id
   }
 
   alarm_actions = [
@@ -76,27 +79,9 @@ resource "aws_cloudwatch_metric_alarm" "instance_status" {
   ok_actions = [aws_sns_topic.alerts.arn]
 }
 
-resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  alarm_name          = "${var.hostname}-cpu-high"
-  alarm_description   = "CPU above 80% for 15 minutes"
-  namespace           = "AWS/EC2"
-  metric_name         = "CPUUtilization"
-  statistic           = "Average"
-  comparison_operator = "GreaterThanThreshold"
-  threshold           = 80
-  period              = 300
-  evaluation_periods  = 3
-
-  dimensions = {
-    InstanceId = aws_instance.this.id
-  }
-
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
-}
-
-# Burstable (t-family) instances grind to a halt when credits run out
-# long before CPUUtilization looks alarming.
+# Burstable nodes grind to a halt when credits run out, long before
+# CPUUtilization looks alarming - which is why there is no cpu_high
+# alarm here. aws-ec2/alarms.tf documents the same choice.
 resource "aws_cloudwatch_metric_alarm" "cpu_credits_low" {
   count               = local.is_burstable ? 1 : 0
   alarm_name          = "${var.hostname}-cpu-credits-low"
@@ -110,7 +95,29 @@ resource "aws_cloudwatch_metric_alarm" "cpu_credits_low" {
   evaluation_periods  = 2
 
   dimensions = {
-    InstanceId = aws_instance.this.id
+    InstanceId = aws_instance.node.id
+  }
+
+  alarm_actions = [aws_sns_topic.alerts.arn]
+  ok_actions    = [aws_sns_topic.alerts.arn]
+}
+
+# Autoscaling handles storage growth; this is for the ceiling reached.
+# Absolute byte floor derived from max_allocated_storage, not a
+# percentage of allocated_storage - see aws-fargate/alarms.tf.
+resource "aws_cloudwatch_metric_alarm" "rds_storage_floor" {
+  alarm_name          = "${var.hostname}-rds-storage-floor"
+  alarm_description   = "RDS free storage below 2 GiB and autoscaling has not acted - writes will start failing"
+  namespace           = "AWS/RDS"
+  metric_name         = "FreeStorageSpace"
+  statistic           = "Minimum"
+  comparison_operator = "LessThanThreshold"
+  threshold           = 2147483648
+  period              = 300
+  evaluation_periods  = 2
+
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.this.identifier
   }
 
   alarm_actions = [aws_sns_topic.alerts.arn]
