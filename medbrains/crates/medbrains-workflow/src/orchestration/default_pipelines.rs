@@ -751,25 +751,52 @@ async fn on_transfusion_reaction(
         0
     };
 
-    // b) Raise an incident so the reaction is on the quality register rather
-    //    than only in the blood bank's own records.
+    // b) Raise an incident on the quality register.
+    //
+    // This wrote to `incident_reports` — a table with no rows, no handler and
+    // no screen; the quality module's register is `quality_incidents`. The
+    // reaction was therefore filed somewhere the quality team never looks,
+    // and the `.ok()` below meant it looked filed either way.
+    //
+    // The two vocabularies do not overlap: a transfusion reaction is
+    // mild/moderate/severe/fatal, an incident is near_miss..sentinel. Fatal
+    // maps to `sentinel` because that is precisely what NABH means by one.
     if let Some(rid) = reaction_id {
+        let incident_severity = match severity {
+            "mild" => "minor",
+            "severe" => "major",
+            "fatal" => "sentinel",
+            _ => "moderate",
+        };
         sqlx::query(
-            "INSERT INTO incident_reports \
-               (tenant_id, incident_type, severity, description, immediate_action) \
-             VALUES ($1, 'transfusion_reaction', $2, $3, $4)",
+            "WITH seq AS ( \
+               UPDATE sequences SET current_val = current_val + 1 \
+                WHERE tenant_id = $1 AND seq_type = 'INC' \
+               RETURNING prefix, current_val, pad_width \
+             ) \
+             INSERT INTO quality_incidents \
+               (tenant_id, incident_number, title, description, incident_type, \
+                severity, patient_id, immediate_action, incident_date) \
+             SELECT $1, \
+                    COALESCE((SELECT prefix || lpad(current_val::text, pad_width, '0') \
+                                FROM seq), \
+                             'INC-' || to_char(now(), 'YYYYMMDDHH24MISS')), \
+                    $2, $3, 'transfusion_reaction', $4::text::incident_severity, \
+                    $5, $6, now()",
         )
         .bind(tenant_id)
-        .bind(severity)
+        .bind(format!("Transfusion reaction — {reaction_type}"))
         .bind(format!(
-            "Transfusion reaction reported ({reaction_type}). Reaction {rid}."
+            "Transfusion reaction reported ({reaction_type}, {severity}). Reaction {rid}."
         ))
+        .bind(incident_severity)
+        .bind(patient_id)
         .bind(format!(
-            "{quarantined} sibling component(s) from the same donation quarantined automatically."
+            "{quarantined} sibling component(s) from the same donation quarantined \
+             automatically."
         ))
         .execute(&mut *tx)
-        .await
-        .ok(); // the quarantine is the safety-critical half and has committed
+        .await?;
     }
 
     // c) Tell the blood bank. A hold nobody is told about is a hold nobody
