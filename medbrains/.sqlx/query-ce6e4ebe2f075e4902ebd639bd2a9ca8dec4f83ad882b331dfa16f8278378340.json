@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO notifications (tenant_id, user_id, kind, title, body, category, entity_type, entity_id, action_url) SELECT $1, u.id, 'error', $2, $3, 'emergency', 'code_blue', $4, $5 FROM users u WHERE u.tenant_id = $1 AND u.is_active = true AND u.role::text IN ('doctor', 'nurse') LIMIT 500",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ce6e4ebe2f075e4902ebd639bd2a9ca8dec4f83ad882b331dfa16f8278378340"
+}

@@ -112,6 +112,11 @@ pub const PIPELINES: &[Pipeline] = &[
         run: |p, t, v| Box::pin(on_opd_encounter_created(p, t, v)),
     },
     Pipeline {
+        event: ClinicalEventName::EmergencyCodeBlueActivated,
+        description: "Page active clinical staff + queue the code-blue alert",
+        run: |p, t, v| Box::pin(on_emergency_code_blue_activated(p, t, v)),
+    },
+    Pipeline {
         event: ClinicalEventName::BloodTransfusionReactionReported,
         description: "Quarantine sibling components + raise incident + alert blood bank",
         run: |p, t, v| Box::pin(on_transfusion_reaction(p, t, v)),
@@ -551,6 +556,92 @@ fn uuid_from_payload(payload: &Value, key: &str) -> Option<Uuid> {
 fn uuid_from_value(v: Option<&Value>) -> Option<Uuid> {
     v.and_then(Value::as_str)
         .and_then(|s| Uuid::parse_str(s).ok())
+}
+
+// ── 8. Code blue activated → page the people who can respond ───────
+
+/// A cardiac arrest is called and, until now, nothing happened.
+///
+/// `start_code_blue` writes the event, mirrors it to the NABH register, and
+/// emits `emergency.code_blue.activated`. No subscriber existed, so the most
+/// time-critical event in the hospital reached a table and stopped there.
+async fn on_emergency_code_blue_activated(
+    pool: &PgPool,
+    tenant_id: Uuid,
+    payload: &Value,
+) -> Result<(), sqlx::Error> {
+    let code_blue_id = uuid_from_payload(payload, "code_blue_id");
+    let patient_id = uuid_from_payload(payload, "patient_id");
+    let location = payload
+        .get("location")
+        .and_then(Value::as_str)
+        .unwrap_or("location not recorded");
+
+    let mut tx = pool.begin().await?;
+
+    // a) The durable alert. Channel-agnostic on purpose: whatever carries it —
+    //    SMS, push, the corridor TV — reads it from the outbox, so adding a
+    //    channel later needs no change here. This is queued first and
+    //    unconditionally, because it is the part that must survive everything
+    //    below failing.
+    let _ = enqueue(
+        &mut tx,
+        tenant_id,
+        "code_blue",
+        code_blue_id,
+        "emergency.code_blue_alert",
+        json!({
+            "code_blue_id": code_blue_id,
+            "patient_id": patient_id,
+            "location": location,
+            "body": format!("CODE BLUE — {location}. Respond immediately."),
+        }),
+        code_blue_id.map(|id| format!("code_blue:{id}")),
+    )
+    .await;
+
+    // b) In-app notification to clinical staff, in one statement rather than a
+    //    query per user. Deliberately NOT scoped to who is on shift: the
+    //    attendance table is empty, so an on-duty filter would page nobody and
+    //    look like it had worked.
+    let notified = sqlx::query!(
+        "INSERT INTO notifications \
+           (tenant_id, user_id, kind, title, body, category, entity_type, \
+            entity_id, action_url) \
+         SELECT $1, u.id, 'error', $2, $3, 'emergency', 'code_blue', $4, $5 \
+           FROM users u \
+          WHERE u.tenant_id = $1 AND u.is_active = true \
+            AND u.role::text IN ('doctor', 'nurse') \
+          LIMIT 500",
+        tenant_id,
+        "CODE BLUE",
+        format!("{location} — respond immediately."),
+        code_blue_id,
+        code_blue_id.map(|id| format!("/ipd/code-blue/{id}")),
+    )
+    .execute(&mut *tx)
+    .await?
+    .rows_affected();
+
+    tx.commit().await?;
+
+    // A code blue that reached nobody must not read as success. On this tenant
+    // that is a real possibility — 257 active users, and not one of them a
+    // nurse — and it is the kind of silence a hospital only discovers during
+    // an arrest.
+    if notified == 0 {
+        tracing::error!(
+            %tenant_id,
+            ?code_blue_id,
+            location,
+            "code blue raised but no active clinical staff to notify — the \
+             outbox alert was queued, the in-app page reached no one"
+        );
+    } else {
+        tracing::info!(%tenant_id, ?code_blue_id, notified, "code blue paged");
+    }
+
+    Ok(())
 }
 
 async fn enqueue(
