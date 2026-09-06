@@ -112,6 +112,11 @@ pub const PIPELINES: &[Pipeline] = &[
         run: |p, t, v| Box::pin(on_opd_encounter_created(p, t, v)),
     },
     Pipeline {
+        event: ClinicalEventName::PharmacyNdpsMovementCreated,
+        description: "Raise a quality incident when an NDPS entry lacks its second signature",
+        run: |p, t, v| Box::pin(on_pharmacy_ndps_movement_created(p, t, v)),
+    },
+    Pipeline {
         event: ClinicalEventName::EmergencyCodeBlueActivated,
         description: "Page active clinical staff + queue the code-blue alert",
         run: |p, t, v| Box::pin(on_emergency_code_blue_activated(p, t, v)),
@@ -639,6 +644,108 @@ async fn on_emergency_code_blue_activated(
         );
     } else {
         tracing::info!(%tenant_id, ?code_blue_id, notified, "code blue paged");
+    }
+
+    Ok(())
+}
+
+// ── 9. NDPS movement → the second signature nobody was chasing ─────
+
+/// A controlled-drug movement that needs two signatures and has one.
+///
+/// The register row itself is written correctly and transactionally by the
+/// handler — that is not the gap. The gap is that `requires_dual_sign` with a
+/// null `second_witness_id` is a statutory defect under the NDPS Act, and
+/// nothing told anyone. The entry has already committed by the time this
+/// runs, so blocking is not on offer here; raising the deficiency is.
+///
+/// It is filed on the quality register because that is the one place with a
+/// list, a screen and an assignee — a deficiency recorded only in a log is a
+/// deficiency nobody closes. `is_reportable` and `regulatory_body` are set so
+/// it appears in the reportable-incident view rather than among routine ones.
+async fn on_pharmacy_ndps_movement_created(
+    pool: &PgPool,
+    tenant_id: Uuid,
+    payload: &Value,
+) -> Result<(), sqlx::Error> {
+    let Some(entry_id) = uuid_from_payload(payload, "entry_id") else {
+        return Ok(());
+    };
+
+    // The title is derived from the entry, so a redelivered event matches the
+    // incident it already raised instead of raising a second one.
+    let title = format!("NDPS second signature missing — entry {entry_id}");
+
+    let mut tx = pool.begin().await?;
+
+    let raised = sqlx::query!(
+        "WITH ent AS ( \
+           SELECT r.id, r.action, r.quantity, r.patient_id, c.name AS item_name \
+             FROM pharmacy_ndps_register r \
+             LEFT JOIN pharmacy_catalog c \
+               ON c.id = r.catalog_item_id AND c.tenant_id = r.tenant_id \
+            WHERE r.id = $2 AND r.tenant_id = $1 \
+              AND COALESCE(r.requires_dual_sign, false) = true \
+              AND r.second_witness_id IS NULL \
+         ), seq AS ( \
+           UPDATE sequences SET current_val = current_val + 1 \
+            WHERE tenant_id = $1 AND seq_type = 'INC' AND EXISTS (SELECT 1 FROM ent) \
+           RETURNING prefix, current_val, pad_width \
+         ) \
+         INSERT INTO quality_incidents \
+           (tenant_id, incident_number, title, description, incident_type, \
+            severity, patient_id, is_reportable, regulatory_body, incident_date) \
+         SELECT $1, \
+                COALESCE((SELECT prefix || lpad(current_val::text, pad_width, '0') \
+                            FROM seq), \
+                         'INC-' || to_char(now(), 'YYYYMMDDHH24MISS')), \
+                $3::text, \
+                'NDPS register entry ' || ent.id || ' (' || ent.action || ' ' \
+                  || ent.quantity || ' of ' \
+                  || COALESCE(ent.item_name, 'unknown item') \
+                  || ') requires a second signature and has none.', \
+                'ndps_dual_signature_missing', 'major'::incident_severity, \
+                ent.patient_id, true, 'NDPS', now() \
+           FROM ent \
+          WHERE NOT EXISTS ( \
+            SELECT 1 FROM quality_incidents q \
+             WHERE q.tenant_id = $1 AND q.title = $3::text AND q.deleted_at IS NULL)",
+        tenant_id,
+        entry_id,
+        title,
+    )
+    .execute(&mut *tx)
+    .await?
+    .rows_affected();
+
+    // Nothing raised is the ordinary case: the entry either did not need two
+    // signatures or already had both. Only the deficiency is worth an alert.
+    if raised > 0 {
+        let _ = enqueue(
+            &mut tx,
+            tenant_id,
+            "ndps_register",
+            Some(entry_id),
+            "pharmacy.ndps_dual_signature_missing",
+            json!({
+                "entry_id": entry_id,
+                "title": title,
+                "regulatory_body": "NDPS",
+            }),
+            Some(format!("ndps_entry:{entry_id}")),
+        )
+        .await;
+    }
+
+    tx.commit().await?;
+
+    if raised > 0 {
+        tracing::warn!(
+            %tenant_id,
+            %entry_id,
+            "NDPS movement recorded without its second signature — quality \
+             incident raised"
+        );
     }
 
     Ok(())
