@@ -630,30 +630,30 @@ pub async fn list_uncovered_events(
             .map(|(event_type, _)| event_type)
             .collect();
 
-    let seen: Vec<(String, i64, Option<chrono::DateTime<chrono::Utc>>)> = sqlx::query_as(
-        "SELECT event_type, count(*) AS fired, max(created_at) AS last_fired \
+    let seen = sqlx::query!(
+        "SELECT event_type, count(*) AS \"fired!\", max(created_at) AS last_fired \
            FROM outbox_events \
           WHERE tenant_id = $1 \
           GROUP BY event_type \
           ORDER BY count(*) DESC \
           LIMIT 200",
+        claims.tenant_id,
     )
-    .bind(claims.tenant_id)
     .fetch_all(&mut *conn)
     .await?;
 
     let rows = seen
         .into_iter()
-        .filter(|(event_type, _, _)| {
-            event_type
+        .filter(|row| {
+            row.event_type
                 .parse::<medbrains_core::clinical_events::ClinicalEventName>()
                 .is_ok()
-                && !covered.contains(event_type.as_str())
+                && !covered.contains(row.event_type.as_str())
         })
-        .map(|(event_type, fired, last_fired)| UncoveredEventRow {
-            event_type,
-            fired,
-            last_fired,
+        .map(|row| UncoveredEventRow {
+            event_type: row.event_type,
+            fired: row.fired,
+            last_fired: row.last_fired,
         })
         .collect();
 
