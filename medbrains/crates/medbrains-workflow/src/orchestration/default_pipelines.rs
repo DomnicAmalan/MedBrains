@@ -112,6 +112,11 @@ pub const PIPELINES: &[Pipeline] = &[
         run: |p, t, v| Box::pin(on_opd_encounter_created(p, t, v)),
     },
     Pipeline {
+        event: ClinicalEventName::EmergencyCodeBlueCompleted,
+        description: "Stand down everyone the code blue paged",
+        run: |p, t, v| Box::pin(on_emergency_code_blue_completed(p, t, v)),
+    },
+    Pipeline {
         event: ClinicalEventName::BmeEquipmentDowntimeRecorded,
         description: "Take broken equipment out of service and tell biomedical",
         run: |p, t, v| Box::pin(on_bme_equipment_downtime_recorded(p, t, v)),
@@ -917,6 +922,86 @@ async fn on_bme_equipment_downtime_recorded(
              status left unchanged"
         );
     }
+
+    Ok(())
+}
+
+// ── 12. Code blue ended → stand down the people it paged ───────────
+
+/// The other half of the page.
+///
+/// `end_code_blue` records the outcome and mirrors it to NABH, and everyone
+/// summoned by the activation is left with an unread CODE BLUE and a link to
+/// an emergency that finished. The next one they see is worth less for it.
+///
+/// The stand-down goes to exactly the users the activation reached — joined
+/// from their own notification rows rather than re-derived from roles, so a
+/// change of shift, of role or of staffing cannot send it to a different set
+/// of people than the ones who were called. Nothing is marked read: a page
+/// somebody never saw is a fact about the response, and quietly clearing it
+/// would erase the evidence.
+async fn on_emergency_code_blue_completed(
+    pool: &PgPool,
+    tenant_id: Uuid,
+    payload: &Value,
+) -> Result<(), sqlx::Error> {
+    let Some(code_blue_id) = uuid_from_payload(payload, "code_blue_id") else {
+        return Ok(());
+    };
+    let outcome = payload
+        .get("outcome")
+        .and_then(Value::as_str)
+        .unwrap_or("outcome not recorded");
+
+    let title = "Code blue stood down";
+    let body = format!("The code blue has ended — {outcome}.");
+
+    let mut tx = pool.begin().await?;
+
+    let _ = enqueue(
+        &mut tx,
+        tenant_id,
+        "code_blue",
+        Some(code_blue_id),
+        "emergency.code_blue_stand_down",
+        json!({
+            "code_blue_id": code_blue_id,
+            "outcome": outcome,
+            "body": body,
+        }),
+        Some(format!("code_blue_end:{code_blue_id}")),
+    )
+    .await;
+
+    let stood_down = sqlx::query!(
+        "INSERT INTO notifications \
+           (tenant_id, user_id, kind, title, body, category, entity_type, \
+            entity_id, action_url) \
+         SELECT DISTINCT $1::uuid, n.user_id, 'info', $3::text, $4::text, \
+                'emergency', 'code_blue', $2::uuid, n.action_url \
+           FROM notifications n \
+          WHERE n.tenant_id = $1::uuid AND n.entity_type = 'code_blue' \
+            AND n.entity_id = $2::uuid AND n.title = 'CODE BLUE' \
+            AND NOT EXISTS ( \
+              SELECT 1 FROM notifications c \
+               WHERE c.tenant_id = $1::uuid AND c.entity_type = 'code_blue' \
+                 AND c.entity_id = $2::uuid AND c.title = $3::text \
+                 AND c.user_id = n.user_id) \
+          LIMIT 500",
+        tenant_id,
+        code_blue_id,
+        title,
+        body,
+    )
+    .execute(&mut *tx)
+    .await?
+    .rows_affected();
+
+    tx.commit().await?;
+
+    // Zero is expected for any code blue that pre-dates the activation
+    // pipeline — there is nobody to stand down because nobody was paged.
+    tracing::info!(%tenant_id, %code_blue_id, stood_down, "code blue stood down");
 
     Ok(())
 }
