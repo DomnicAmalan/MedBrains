@@ -8160,3 +8160,24 @@ export interface CodeBlueResponder {
   /** Seconds between the call and this person answering it. */
   seconds_after_call: number;
 }
+
+/** An arrest in progress, as the code blue list returns it. */
+export interface CodeBlueEventRow {
+  id: string;
+  patient_id: string;
+  encounter_id?: string | null;
+  location: string;
+  started_at: string;
+  ended_at?: string | null;
+  outcome?: string | null;
+}
+
+/** One emergency code called on the floor — fire, abduction, disaster, and the rest. */
+export interface EmergencyCodeActivation {
+  id: string;
+  code_type: string;
+  activated_at: string;
+  deactivated_at: string | null;
+  location: string | null;
+  outcome: string | null;
+}
