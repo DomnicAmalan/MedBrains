@@ -8418,6 +8418,16 @@ export const api = {
       }>
     >("/integration/default-pipelines"),
 
+  /** Clinical events this hospital has raised that no pipeline listens to. */
+  listUncoveredEvents: () =>
+    request<
+      Array<{
+        event_type: string;
+        fired: number;
+        last_fired: string | null;
+      }>
+    >("/integration/uncovered-events"),
+
   /** Turn one built-in pipeline on or off for this hospital. */
   setDefaultPipelineEnabled: (eventType: string, disabled: boolean) =>
     request<{
