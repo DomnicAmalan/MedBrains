@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 0900_cross_module_foreign_keys.sql
+-- RLS-Posture: not-applicable
+-- Tenant-Column: N/A
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- Name: abdm_gateway_callbacks abdm_gateway_callbacks_tenant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 

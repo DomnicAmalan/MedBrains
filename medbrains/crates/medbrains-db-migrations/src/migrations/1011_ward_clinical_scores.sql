@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 1011_ward_clinical_scores.sql
+-- RLS-Posture: tenant-scoped
+-- Tenant-Column: tenant_id
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- Ward assessment scores belong in the table that already records them.
 --
 -- `icu_scores` is a general clinical-assessment record that happens to be

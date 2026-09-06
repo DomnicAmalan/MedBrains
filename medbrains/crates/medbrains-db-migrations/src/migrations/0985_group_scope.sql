@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 0985_group_scope.sql
+-- RLS-Posture: tenant-scoped
+-- Tenant-Column: tenant_id
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- What a group shares, named for what management is actually deciding.
 --
 -- The switch added in 0982 was called `share_across_branches`, which reads as

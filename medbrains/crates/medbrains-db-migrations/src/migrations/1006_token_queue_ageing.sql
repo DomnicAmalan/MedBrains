@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 1006_token_queue_ageing.sql
+-- RLS-Posture: not-applicable
+-- Tenant-Column: N/A
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- Ageing for the token queue, so a routine patient cannot starve.
 --
 -- `call_next` ordered strictly by priority weight then arrival:

@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 1009_bed_states_follow_bed_locations.sql
+-- RLS-Posture: tenant-scoped
+-- Tenant-Column: tenant_id
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- A bed the hospital owns but the board cannot see is not a bed.
 --
 -- `bed_states` is derived: exactly one row per `locations` row at level

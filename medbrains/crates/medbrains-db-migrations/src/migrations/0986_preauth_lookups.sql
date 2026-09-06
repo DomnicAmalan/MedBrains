@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 0986_preauth_lookups.sql
+-- RLS-Posture: bypass-only
+-- Tenant-Column: N/A
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- The two lookups that happen before anybody has a tenant.
 --
 -- Row level security answers "which hospital may this session see", and both

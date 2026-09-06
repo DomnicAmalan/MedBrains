@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 0987_share_link_and_onboarding_lookups.sql
+-- RLS-Posture: bypass-only
+-- Tenant-Column: N/A
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- Two more lookups that happen before there is a tenant, answered the way
 -- 0986 answered the first two.
 --

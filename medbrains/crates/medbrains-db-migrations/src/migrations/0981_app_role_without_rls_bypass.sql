@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 0981_app_role_without_rls_bypass.sql
+-- RLS-Posture: not-applicable
+-- Tenant-Column: N/A
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- The application's own database role, which row level security applies to.
 --
 -- Every tenant-scoped table in this schema carries a policy saying "only rows

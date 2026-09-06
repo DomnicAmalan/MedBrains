@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 1012_blood_component_quarantine.sql
+-- RLS-Posture: not-applicable
+-- Tenant-Column: N/A
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- A component cannot be held pending investigation.
 --
 -- `blood_bag_status` runs collected -> processing -> tested -> available ->

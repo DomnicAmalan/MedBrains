@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 0910_partition_indexes.sql
+-- RLS-Posture: not-applicable
+-- Tenant-Column: N/A
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 ALTER INDEX public.idx_audit_log_deleted_at_f8ccc35e ATTACH PARTITION public.audit_log_2026_07_deleted_at_idx;
 
 ALTER INDEX public.audit_log_pkey1 ATTACH PARTITION public.audit_log_2026_07_pkey;

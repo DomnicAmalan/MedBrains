@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 0980_automation_state.sql
+-- RLS-Posture: tenant-scoped
+-- Tenant-Column: tenant_id
+-- New-Tables: automation_state, automation_variables, automation_binaries
+-- Drops: none
+-- ====================================================================
 -- Automation: what a workflow remembers, what a deployment is configured with,
 -- and where the files it downloads live.
 --

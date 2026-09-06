@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 0983_department_policies_scope_to_tenant.sql
+-- RLS-Posture: tenant+dept
+-- Tenant-Column: tenant_id
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- Tables whose only access rule was the department, and the audit log's was
 -- nothing at all.
 --

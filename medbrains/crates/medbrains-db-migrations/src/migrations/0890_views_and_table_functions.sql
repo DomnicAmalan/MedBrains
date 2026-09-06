@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 0890_views_and_table_functions.sql
+-- RLS-Posture: tenant-scoped
+-- Tenant-Column: tenant_id
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 CREATE FUNCTION public.sso_active_providers() RETURNS TABLE(id uuid, name text, protocol text)
     LANGUAGE sql SECURITY DEFINER
     SET search_path TO 'public'
