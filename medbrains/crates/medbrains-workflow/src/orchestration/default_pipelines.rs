@@ -112,6 +112,11 @@ pub const PIPELINES: &[Pipeline] = &[
         run: |p, t, v| Box::pin(on_opd_encounter_created(p, t, v)),
     },
     Pipeline {
+        event: ClinicalEventName::IpdAdmissionCreated,
+        description: "Raise the 24-hour initial nursing assessment on admission",
+        run: |p, t, v| Box::pin(on_ipd_admission_created(p, t, v)),
+    },
+    Pipeline {
         event: ClinicalEventName::PharmacyNdpsMovementCreated,
         description: "Raise a quality incident when an NDPS entry lacks its second signature",
         run: |p, t, v| Box::pin(on_pharmacy_ndps_movement_created(p, t, v)),
@@ -745,6 +750,82 @@ async fn on_pharmacy_ndps_movement_created(
             %entry_id,
             "NDPS movement recorded without its second signature — quality \
              incident raised"
+        );
+    }
+
+    Ok(())
+}
+
+// ── 10. Admission → the initial nursing assessment NABH requires ───
+
+/// NABH wants every inpatient assessed by nursing within 24 hours of
+/// admission. Nothing raised that task, so the obligation existed only in
+/// the standard.
+///
+/// The task is assigned, never left open. `my_tasks` filters on
+/// `assigned_to = $user`, so an unassigned row sits on nobody's list — it
+/// would populate the table and reach no nurse, which is worse than not
+/// writing it, because the register then looks attended to.
+///
+/// That is why nothing is written when no nurse can be resolved. On this
+/// database that is every admission: `nurse_shift_assignments` has no rows,
+/// so no nurse is on any ward on any date. The error below says so rather
+/// than leaving a silent gap where an assessment should be.
+async fn on_ipd_admission_created(
+    pool: &PgPool,
+    tenant_id: Uuid,
+    payload: &Value,
+) -> Result<(), sqlx::Error> {
+    let (Some(admission_id), Some(ward_id)) = (
+        uuid_from_payload(payload, "admission_id"),
+        uuid_from_payload(payload, "ward_id"),
+    ) else {
+        return Ok(());
+    };
+
+    // One statement: pick the ward's charge nurse for today — falling back to
+    // the primary assigned nurse — and raise the task only if that resolves
+    // and this admission has no such task already.
+    let created = sqlx::query!(
+        "WITH nurse AS ( \
+           SELECT COALESCE(nsa.charge_nurse_user_id, nsa.nurse_user_id) AS uid \
+             FROM nurse_shift_assignments nsa \
+            WHERE nsa.tenant_id = $1 AND nsa.ward_id = $2 \
+              AND nsa.shift_date = CURRENT_DATE AND nsa.deleted_at IS NULL \
+            ORDER BY nsa.primary_assigned DESC, \
+                     (nsa.charge_nurse_user_id IS NULL) \
+            LIMIT 1 \
+         ) \
+         INSERT INTO nursing_tasks \
+           (tenant_id, admission_id, assigned_to, task_type, description, \
+            category, priority, due_at) \
+         SELECT $1, $3, nurse.uid, 'initial_assessment', \
+                'Initial nursing assessment — due within 24 hours of \
+                 admission (NABH).', \
+                'other'::nursing_task_category, 'urgent'::nursing_task_priority, \
+                now() + interval '24 hours' \
+           FROM nurse \
+          WHERE NOT EXISTS ( \
+            SELECT 1 FROM nursing_tasks nt \
+             WHERE nt.tenant_id = $1 AND nt.admission_id = $3 \
+               AND nt.task_type = 'initial_assessment' \
+               AND nt.deleted_at IS NULL)",
+        tenant_id,
+        ward_id,
+        admission_id,
+    )
+    .execute(pool)
+    .await?
+    .rows_affected();
+
+    if created == 0 {
+        tracing::error!(
+            %tenant_id,
+            %admission_id,
+            %ward_id,
+            "no nurse rostered on this ward today — the 24-hour initial \
+             assessment was not raised, because an unassigned task reaches \
+             no one"
         );
     }
 
