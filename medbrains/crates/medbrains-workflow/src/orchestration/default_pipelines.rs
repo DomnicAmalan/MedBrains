@@ -790,6 +790,17 @@ async fn on_ipd_admission_created(
         uuid_from_payload(payload, "admission_id"),
         uuid_from_payload(payload, "ward_id"),
     ) else {
+        // Every admission on this database arrives without a ward, so this
+        // is the branch that actually runs — and returning Ok here quietly
+        // was the same two-outcome mistake the rest of this function exists
+        // to avoid. An admission with nowhere to be cannot be assessed by
+        // the nurse looking after that nowhere.
+        tracing::error!(
+            %tenant_id,
+            payload = %payload,
+            "admission carried no ward — the 24-hour initial assessment \
+             could not be raised or addressed to anyone"
+        );
         return Ok(());
     };
 
