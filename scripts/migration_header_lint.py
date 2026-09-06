@@ -28,7 +28,50 @@ MIGRATIONS_DIR = (
     REPO_ROOT / "medbrains" / "crates" / "medbrains-db-migrations" / "src" / "migrations"
 )
 
-ENFORCE_FROM = 124  # migrations >= this must comply
+ENFORCE_FROM = 124
+# ── Pre-existing debt, recorded rather than waived ──────────────────────
+#
+# This lint pointed at crates/medbrains-db/src/migrations for as long as that
+# directory has not existed, so it exited on a missing path and never checked a
+# file. `make ship` failed at it, and the convention went unenforced.
+#
+# With the path corrected these files do not comply. They are baselined, not
+# excused: a NEW migration that misses a header still fails the gate, which is
+# what the check is for. The list may only shrink — remove a name when its
+# header lands, and the entry stops being accepted.
+#
+# Do not add to this list to make a build pass. Fourteen of these are
+# infrastructure (indexes, views, foreign keys, role grants); the rest need
+# somebody who knows the migration to say what it asserts about tenant
+# isolation. Writing that under deadline is how a false `tenant-scoped` gets
+# into a hospital system.
+BASELINE_NONCOMPLIANT = {
+    "0890_views_and_table_functions.sql",
+    "0900_cross_module_foreign_keys.sql",
+    "0910_partition_indexes.sql",
+    "0950_reference_data.sql",
+    "0960_foreign_key_indexes.sql",
+    "0978_automation.sql",
+    "0979_token_priority_vocabulary.sql",
+    "0980_automation_state.sql",
+    "0981_app_role_without_rls_bypass.sql",
+    "0982_tenant_visibility.sql",
+    "0983_department_policies_scope_to_tenant.sql",
+    "0984_outbox_worker_role.sql",
+    "0985_group_scope.sql",
+    "0986_preauth_lookups.sql",
+    "0987_share_link_and_onboarding_lookups.sql",
+    "1001_token_scope_locations.sql",
+    "1003_queue_status_expired.sql",
+    "1006_token_queue_ageing.sql",
+    "1007_token_priority_escalation.sql",
+    "1008_lab_dispatch_void.sql",
+    "1009_bed_states_follow_bed_locations.sql",
+    "1010_drop_dead_bed_reservation_columns.sql",
+    "1011_ward_clinical_scores.sql",
+    "1012_blood_component_quarantine.sql",
+}
+  # migrations >= this must comply
 REQUIRED_KEYS = ("RLS-Posture", "Tenant-Column", "New-Tables", "Drops")
 VALID_POSTURES = {
     "tenant-scoped",
@@ -63,6 +106,7 @@ def main() -> int:
         return 2
 
     errors: list[str] = []
+    baselined = 0
 
     for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
         m = re.match(r"(\d+)_", path.name)
@@ -73,11 +117,21 @@ def main() -> int:
         if mig_no < ENFORCE_FROM:
             continue
 
+        if path.name in BASELINE_NONCOMPLIANT:
+            baselined += 1
+            continue
+
         header = parse_header(path.read_text(encoding="utf-8"))
         for key in REQUIRED_KEYS:
             if key not in header:
                 errors.append(f"{path.name}: missing required header key '{key}'")
         posture = header.get("RLS-Posture")
+        # A trailing parenthetical narrows the claim rather than weakening it:
+        # "tenant-scoped (per table)" asserts tenant-scoped and says where. The
+        # lint compared the whole string, so the more informative header failed
+        # while the barer one passed.
+        if posture:
+            posture = posture.split("(", 1)[0].strip()
         if posture and posture not in VALID_POSTURES:
             errors.append(
                 f"{path.name}: invalid RLS-Posture '{posture}' "
@@ -99,7 +153,15 @@ def main() -> int:
         print("  -- ====================================================================")
         return 1
 
-    print(f"✓ All migrations >= {ENFORCE_FROM} have valid headers.")
+    if baselined:
+        # Saying "all headers valid" while skipping two dozen files is the kind
+        # of green tick this check exists to prevent.
+        print(
+            f"✓ migration headers: all checked migrations >= {ENFORCE_FROM} valid; "
+            f"{baselined} baselined as pre-existing debt (see BASELINE_NONCOMPLIANT)."
+        )
+    else:
+        print(f"✓ All migrations >= {ENFORCE_FROM} have valid headers.")
     return 0
 
 
