@@ -112,6 +112,11 @@ pub const PIPELINES: &[Pipeline] = &[
         run: |p, t, v| Box::pin(on_opd_encounter_created(p, t, v)),
     },
     Pipeline {
+        event: ClinicalEventName::BmeEquipmentDowntimeRecorded,
+        description: "Take broken equipment out of service and tell biomedical",
+        run: |p, t, v| Box::pin(on_bme_equipment_downtime_recorded(p, t, v)),
+    },
+    Pipeline {
         event: ClinicalEventName::IpdAdmissionCreated,
         description: "Raise the 24-hour initial nursing assessment on admission",
         run: |p, t, v| Box::pin(on_ipd_admission_created(p, t, v)),
@@ -826,6 +831,90 @@ async fn on_ipd_admission_created(
             "no nurse rostered on this ward today — the 24-hour initial \
              assessment was not raised, because an unassigned task reaches \
              no one"
+        );
+    }
+
+    Ok(())
+}
+
+// ── 11. Equipment breakdown → take it out of service ───────────────
+
+/// A breakdown was recorded and the machine still read as usable.
+///
+/// `create_breakdown` writes the breakdown, mirrors it to NABH and emits this
+/// event, and never touches `bme_equipment.status`. A calibration that fails
+/// tolerance locks its equipment two hundred lines earlier in the same file;
+/// a ventilator someone has just reported broken does not. Every screen that
+/// lists equipment by status keeps offering it.
+///
+/// Only `active` kit is moved. Anything already under maintenance, out of
+/// service, condemned or disposed is left exactly as it is — a breakdown
+/// against a condemned asset must not quietly promote it back into the
+/// maintenance pool.
+///
+/// Nothing here returns it to service when the breakdown is resolved, and
+/// that is deliberate: kit comes back after someone verifies it, on the
+/// equipment screen, not because a status field was flipped by a repair
+/// ticket closing.
+async fn on_bme_equipment_downtime_recorded(
+    pool: &PgPool,
+    tenant_id: Uuid,
+    payload: &Value,
+) -> Result<(), sqlx::Error> {
+    let Some(equipment_id) = uuid_from_payload(payload, "equipment_id") else {
+        return Ok(());
+    };
+    let downtime_id = uuid_from_payload(payload, "downtime_id");
+    let priority = payload
+        .get("priority")
+        .and_then(Value::as_str)
+        .unwrap_or("medium");
+
+    let mut tx = pool.begin().await?;
+
+    // a) Tell biomedical first and unconditionally. The alert is the half that
+    //    has to survive: a machine left available is dangerous, and a machine
+    //    locked with nobody told is merely unusable.
+    let _ = enqueue(
+        &mut tx,
+        tenant_id,
+        "bme_equipment",
+        Some(equipment_id),
+        "bme.equipment_downtime_recorded",
+        json!({
+            "equipment_id": equipment_id,
+            "downtime_id": downtime_id,
+            "priority": priority,
+        }),
+        downtime_id.map(|id| format!("bme_downtime:{id}")),
+    )
+    .await;
+
+    let locked = sqlx::query!(
+        "UPDATE bme_equipment \
+            SET status = 'under_maintenance'::bme_equipment_status, \
+                updated_at = now() \
+          WHERE tenant_id = $1 AND id = $2 \
+            AND status = 'active'::bme_equipment_status \
+            AND deleted_at IS NULL",
+        tenant_id,
+        equipment_id,
+    )
+    .execute(&mut *tx)
+    .await?
+    .rows_affected();
+
+    tx.commit().await?;
+
+    if locked == 0 {
+        // Not an error: the usual reason is that the equipment was already
+        // out of the pool. Worth a line, because the other reason is that the
+        // breakdown names an asset this tenant does not have.
+        tracing::info!(
+            %tenant_id,
+            %equipment_id,
+            "breakdown recorded against equipment that was not active — \
+             status left unchanged"
         );
     }
 
