@@ -637,7 +637,9 @@ async fn on_emergency_code_blue_activated(
         "CODE BLUE",
         format!("{location} — respond immediately."),
         code_blue_id,
-        code_blue_id.map(|id| format!("/ipd/code-blue/{id}")),
+        // The code blue tab of the nurse activities page. The URL this shipped
+        // with, /ipd/code-blue/{id}, matched no route: the page linked to a 404.
+        Some("/nurse?tab=code-blue".to_owned()),
     )
     .execute(&mut *tx)
     .await?

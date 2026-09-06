@@ -3,6 +3,7 @@
 use axum::{Router, routing::{get,post,put}};
 use medbrains_server_core::state::AppState;
 
+pub mod code_blue_response;
 pub mod nurse_clinical;
 pub mod nurse_handoff;
 pub mod nurse_roster;
@@ -95,6 +96,14 @@ pub fn router() -> Router<AppState> {
             "/api/nurse/code-blue",
             get(nurse_handoff::list_code_blue)
                 .post(nurse_handoff::start_code_blue),
+        )
+        .route(
+            "/api/nurse/code-blue/responders",
+            get(code_blue_response::list_code_blue_responders),
+        )
+        .route(
+            "/api/nurse/code-blue/{id}/respond",
+            post(code_blue_response::respond_to_code_blue),
         )
         .route(
             "/api/nurse/code-blue/{id}/append",

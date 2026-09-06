@@ -17,7 +17,7 @@ export interface PermissionDef {
   module: string;
 }
 
-/** 982 permissions, one per constant in the Rust source. */
+/** 983 permissions, one per constant in the Rust source. */
 export const PERMISSIONS: PermissionDef[] = [
   // dashboard
   {
@@ -5818,6 +5818,12 @@ export const PERMISSIONS: PermissionDef[] = [
     module: "nurse",
   },
   {
+    code: "nurse.code_blue.respond",
+    label: "Say you are responding to a code blue",
+    description: "The page is one-way until somebody answers it. Held by everyone the activation reaches, so the team lead can see who is coming. The first response is also the arrival time NABH measures.",
+    module: "nurse",
+  },
+  {
     code: "nurse.equipment.view",
     label: "View Equipment Checks",
     description: "View equipment check log",
@@ -7677,9 +7683,11 @@ export const P = {
   NURSE: {
     CODE_BLUE: {
       RECORD: "nurse.code_blue.record",
+      RESPOND: "nurse.code_blue.respond",
       VIEW: "nurse.code_blue.view",
     },
     CODE_BLUE_RECORD: "nurse.code_blue.record",
+    CODE_BLUE_RESPOND: "nurse.code_blue.respond",
     CODE_BLUE_VIEW: "nurse.code_blue.view",
     DASHBOARD: {
       VIEW: "nurse.dashboard.view",
@@ -9055,6 +9063,7 @@ export const ROLE_TEMPLATES: Record<string, { label: string; permissions: string
       P.MRD.CASE_SHEETS.GENERATE,
       P.MRD.CASE_SHEETS.PRINT,
       P.MRD.CASE_SHEETS.VIEW,
+      P.NURSE.CODE_BLUE.RESPOND,
       P.OPD.CERTIFICATES.CREATE,
       P.OPD.CERTIFICATES.LIST,
       P.OPD.CERTIFICATES.PRINT,
@@ -9307,6 +9316,7 @@ export const ROLE_TEMPLATES: Record<string, { label: string; permissions: string
       P.MRD.FORMS.MANAGE,
       P.MRD.FORMS.VIEW,
       P.NURSE.CODE_BLUE.RECORD,
+      P.NURSE.CODE_BLUE.RESPOND,
       P.NURSE.CODE_BLUE.VIEW,
       P.NURSE.DASHBOARD.VIEW,
       P.NURSE.EQUIPMENT.RECORD,

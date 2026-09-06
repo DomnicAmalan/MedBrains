@@ -2620,6 +2620,12 @@ pub mod nurse {
     pub mod code_blue {
         pub const VIEW: &str = "nurse.code_blue.view";
         pub const RECORD: &str = "nurse.code_blue.record";
+        /// Say you are responding to a code blue.
+        ///
+        /// The page is one-way until somebody answers it. Held by everyone
+        /// the activation reaches, so the team lead can see who is coming.
+        /// The first response is also the arrival time NABH measures.
+        pub const RESPOND: &str = "nurse.code_blue.respond";
     }
     pub mod equipment {
         pub const VIEW: &str = "nurse.equipment.view";

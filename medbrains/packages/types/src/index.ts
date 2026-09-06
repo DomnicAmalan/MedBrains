@@ -8150,3 +8150,13 @@ export interface CreateNurseRosterEntryRequest {
   primary_assigned?: boolean;
   is_charge?: boolean;
 }
+
+/** One person who answered a code blue page. */
+export interface CodeBlueResponder {
+  code_blue_id: string;
+  user_id: string;
+  user_name: string;
+  responded_at: string;
+  /** Seconds between the call and this person answering it. */
+  seconds_after_call: number;
+}

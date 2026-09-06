@@ -313,6 +313,7 @@ import type {
   CmsSettings,
   CmsSubscriber,
   CmsTag,
+  CodeBlueResponder,
   CodeTestRequest,
   CodeTestResult,
   CollectionEfficiencyReport,
@@ -629,6 +630,7 @@ import type {
   CreateNewbornResponse,
   CreateNuclearMedAdminRequest,
   CreateNuclearMedSourceRequest,
+  CreateNurseRosterEntryRequest,
   CreateNursingAssessmentRequest,
   CreateNursingTaskRequest,
   CreateNutritionScreeningRequest,
@@ -1377,6 +1379,7 @@ import type {
   NuclearMedAdministration,
   NuclearMedSource,
   NurseCallBoard,
+  NurseRosterEntry,
   NursingAssessmentPrintData,
   NursingTask,
   NutritionScreening,
@@ -2144,8 +2147,6 @@ import type {
   WorkOrderPrintData,
   WoundCertificatePrintData,
   WristbandPrintData,
-  CreateNurseRosterEntryRequest,
-  NurseRosterEntry,
 } from "@medbrains/types";
 import { getApiBase } from "./config.js";
 
@@ -15561,6 +15562,13 @@ export const api = {
     }),
   endCodeBlue: (id: string, data: { outcome: string; notes?: string }) =>
     request<unknown>(`/nurse/code-blue/${id}/end`, { method: "PUT", body: JSON.stringify(data) }),
+  /** Who has answered every code blue still in progress — one call for the screen. */
+  listCodeBlueResponders: () => request<CodeBlueResponder[]>("/nurse/code-blue/responders"),
+  /** Say you are on your way. Idempotent; the first response is the team's arrival. */
+  respondToCodeBlue: (id: string) =>
+    request<{ code_blue_id: string; responded: boolean }>(`/nurse/code-blue/${id}/respond`, {
+      method: "POST",
+    }),
 
   // Equipment checks
   listEquipmentChecks: (params?: {

@@ -332,6 +332,8 @@ pub const BUILT_IN_ROLES: &[BuiltInRole] = &[
             permissions::specialty::pmr::psychometric::LIST,
             permissions::specialty::pmr::psychometric::MANAGE,
             permissions::specialty::psychiatry::restraint::MANAGE,
+            // A doctor is paged by the code blue and answers it like a nurse does.
+            permissions::nurse::code_blue::RESPOND,
         ],
     },
     BuiltInRole {
@@ -511,6 +513,7 @@ pub const BUILT_IN_ROLES: &[BuiltInRole] = &[
             permissions::nurse::handoff::RECORD,
             permissions::nurse::code_blue::VIEW,
             permissions::nurse::code_blue::RECORD,
+            permissions::nurse::code_blue::RESPOND,
             permissions::nurse::equipment::VIEW,
             permissions::nurse::equipment::RECORD,
             permissions::mrd::forms::VIEW,
