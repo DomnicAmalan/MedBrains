@@ -8127,3 +8127,26 @@ export interface CreateInstallmentRequest {
 
 export type { PermissionGroup } from "./permission-helpers";
 export { buildPermissionTree, isValidPermissionCode } from "./permission-helpers";
+
+/** One nurse rostered onto a ward's shift. */
+export interface NurseRosterEntry {
+  id: string;
+  nurse_user_id: string;
+  nurse_name: string;
+  ward_id: string | null;
+  ward_name: string | null;
+  shift_date: string;
+  shift_type: string;
+  primary_assigned: boolean;
+  is_charge: boolean | null;
+  patient_count: number;
+}
+
+export interface CreateNurseRosterEntryRequest {
+  nurse_user_id: string;
+  ward_id: string;
+  shift_type: "day" | "evening" | "night";
+  shift_date?: string;
+  primary_assigned?: boolean;
+  is_charge?: boolean;
+}

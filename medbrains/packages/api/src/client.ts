@@ -2144,6 +2144,8 @@ import type {
   WorkOrderPrintData,
   WoundCertificatePrintData,
   WristbandPrintData,
+  CreateNurseRosterEntryRequest,
+  NurseRosterEntry,
 } from "@medbrains/types";
 import { getApiBase } from "./config.js";
 
@@ -6628,6 +6630,18 @@ export const api = {
   // ── IPD Phase 2 — Wards ──────────────────────────────────
 
   listWards: () => request<WardListRow[]>("/ipd/wards"),
+  listNurseRoster: (params?: { ward_id?: string; shift_date?: string }) => {
+    const qs = params ? `?${new URLSearchParams(params as Record<string, string>)}` : "";
+    return request<NurseRosterEntry[]>(`/nurse/roster${qs}`);
+  },
+  createNurseRosterEntry: (data: CreateNurseRosterEntryRequest) =>
+    request<{ id: string }>("/nurse/roster", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  deleteNurseRosterEntry: (id: string) =>
+    request<{ id: string }>(`/nurse/roster/${id}`, { method: "DELETE" }),
+
   wardOnDuty: (wardId: string) => request<WardOnDutyRow[]>(`/ipd/wards/${wardId}/on-duty`),
   listClinicalTrials: (status?: string) =>
     request<ClinicalTrial[]>(`/clinical-trials${status ? `?status=${status}` : ""}`),

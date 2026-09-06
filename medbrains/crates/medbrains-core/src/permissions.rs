@@ -2537,6 +2537,20 @@ pub mod nurse {
         pub const VIEW: &str = "nurse.shift.view";
         pub const MANAGE: &str = "nurse.shift.manage";
     }
+    pub mod roster {
+        /// See who is rostered on a ward.
+        ///
+        /// The ward's on-duty list, per shift and date. Distinct from
+        /// `nurse.shift.*`, which covers a nurse's own duty session.
+        pub const VIEW: &str = "nurse.roster.view";
+        /// Roster nurses onto ward shifts.
+        ///
+        /// Deciding who staffs a ward. Held by no built-in role: with no
+        /// charge-nurse role to give it to, granting it to every nurse
+        /// would let any of them restaff the ward. Admins hold it by
+        /// bypass, and it can be granted to a custom role.
+        pub const MANAGE: &str = "nurse.roster.manage";
+    }
     pub mod mar {
         pub const VIEW: &str = "nurse.mar.view";
         pub const ADMINISTER: &str = "nurse.mar.administer";

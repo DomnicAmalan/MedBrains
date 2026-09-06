@@ -1,3 +1,10 @@
+-- ====================================================================
+-- Migration: 1013_pharmacy_day_settlement_upsert_key.sql
+-- RLS-Posture: tenant-scoped
+-- Tenant-Column: tenant_id
+-- New-Tables: none
+-- Drops: none
+-- ====================================================================
 -- The daily pharmacy settlement could not be upserted.
 --
 -- `get_settlement` builds one settlement row per tenant per day by summing

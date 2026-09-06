@@ -486,6 +486,7 @@ pub const BUILT_IN_ROLES: &[BuiltInRole] = &[
             permissions::nurse::dashboard::VIEW,
             permissions::nurse::profile::VIEW,
             permissions::nurse::shift::VIEW,
+            permissions::nurse::roster::VIEW,
             permissions::nurse::mar::VIEW,
             permissions::nurse::mar::ADMINISTER,
             permissions::nurse::mar::HOLD,

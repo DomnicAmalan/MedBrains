@@ -24,7 +24,9 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-MIGRATIONS_DIR = REPO_ROOT / "medbrains" / "crates" / "medbrains-db" / "src" / "migrations"
+MIGRATIONS_DIR = (
+    REPO_ROOT / "medbrains" / "crates" / "medbrains-db-migrations" / "src" / "migrations"
+)
 
 ENFORCE_FROM = 124  # migrations >= this must comply
 REQUIRED_KEYS = ("RLS-Posture", "Tenant-Column", "New-Tables", "Drops")

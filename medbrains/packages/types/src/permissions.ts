@@ -17,7 +17,7 @@ export interface PermissionDef {
   module: string;
 }
 
-/** 980 permissions, one per constant in the Rust source. */
+/** 982 permissions, one per constant in the Rust source. */
 export const PERMISSIONS: PermissionDef[] = [
   // dashboard
   {
@@ -5644,6 +5644,18 @@ export const PERMISSIONS: PermissionDef[] = [
     module: "nurse",
   },
   {
+    code: "nurse.roster.view",
+    label: "See who is rostered on a ward",
+    description: "The ward's on-duty list, per shift and date. Distinct from `nurse.shift.*`, which covers a nurse's own duty session.",
+    module: "nurse",
+  },
+  {
+    code: "nurse.roster.manage",
+    label: "Roster nurses onto ward shifts",
+    description: "Deciding who staffs a ward. Held by no built-in role: with no charge-nurse role to give it to, granting it to every nurse would let any of them restaff the ward. Admins hold it by bypass, and it can be granted to a custom role.",
+    module: "nurse",
+  },
+  {
     code: "nurse.mar.view",
     label: "View MAR",
     description: "View medication administration records",
@@ -7735,6 +7747,12 @@ export const P = {
     },
     RESTRAINT_RECORD: "nurse.restraint.record",
     RESTRAINT_VIEW: "nurse.restraint.view",
+    ROSTER: {
+      MANAGE: "nurse.roster.manage",
+      VIEW: "nurse.roster.view",
+    },
+    ROSTER_MANAGE: "nurse.roster.manage",
+    ROSTER_VIEW: "nurse.roster.view",
     SHIFT: {
       MANAGE: "nurse.shift.manage",
       VIEW: "nurse.shift.view",
@@ -9311,6 +9329,7 @@ export const ROLE_TEMPLATES: Record<string, { label: string; permissions: string
       P.NURSE.PROFILE.VIEW,
       P.NURSE.RESTRAINT.RECORD,
       P.NURSE.RESTRAINT.VIEW,
+      P.NURSE.ROSTER.VIEW,
       P.NURSE.SHIFT.VIEW,
       P.NURSE.SHIFT_NOTES.EDIT,
       P.NURSE.SHIFT_NOTES.VIEW,

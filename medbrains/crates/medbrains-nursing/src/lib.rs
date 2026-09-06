@@ -5,10 +5,19 @@ use medbrains_server_core::state::AppState;
 
 pub mod nurse_clinical;
 pub mod nurse_handoff;
+pub mod nurse_roster;
 pub mod nurse_vitals;
 
 pub fn router() -> Router<AppState> {
     Router::new()
+        .route(
+            "/api/nurse/roster",
+            get(nurse_roster::list_roster).post(nurse_roster::create_roster_entry),
+        )
+        .route(
+            "/api/nurse/roster/{id}",
+            axum::routing::delete(nurse_roster::delete_roster_entry),
+        )
         .route(
             "/api/nurse/vitals",
             post(nurse_vitals::create_vitals_reading),
