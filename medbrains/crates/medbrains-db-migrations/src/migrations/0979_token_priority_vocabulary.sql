@@ -1,4 +1,4 @@
--- RLS-Posture: catalog
+-- RLS-Posture: not-tenant-scoped
 -- Tenant-Column: none
 -- New-Tables: none
 -- Drops: none

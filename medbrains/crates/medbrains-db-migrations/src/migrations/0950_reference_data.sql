@@ -1,10 +1,3 @@
--- ====================================================================
--- Migration: 0950_reference_data.sql
--- RLS-Posture: catalog
--- Tenant-Column: N/A
--- New-Tables: none
--- Drops: none
--- ====================================================================
 -- Data for Name: asset_categories; Type: TABLE DATA; Schema: public; Owner: -
 --
 

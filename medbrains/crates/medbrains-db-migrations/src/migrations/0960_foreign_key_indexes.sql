@@ -1,4 +1,4 @@
--- RLS-Posture: not-applicable
+-- RLS-Posture: unchanged
 -- Tenant-Column: n/a
 -- New-Tables: none
 -- Drops: none

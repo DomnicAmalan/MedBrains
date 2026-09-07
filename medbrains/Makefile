@@ -11,7 +11,7 @@
        check-ui-api check-types check-ui-seam check-raw-html check-secrets check-all \
        check-field-classes check-authz-collapse check-query-collapse check-boundary-filter check-conditional-authz check-permission-codes check-permission-reachable check-ui-permission-match check-relation-parity check-parent-id-scoping check-phi-audit-coverage authz-ledger coverage-ledger coverage-ledger-check coverage-ledger-update-baseline \
        check-rls check-sharing check-authz-posture check-print-placeholders check-requirement-flags check-surface-drift check-role-templates check-tx-error-discard check-pg-enum-parity check-default-parity check-unbounded-reads check-permission-enforcement check-tenant-registry-reads check-pool-reads check-rls-only-writes check-tenant-leak check-runtime-sqlx check-audit check-tracing \
-       check-migration-headers \
+       check-migration-headers check-migration-immutable \
        check-region-pinning check-no-card-logging check-egress-allowlist check-cert-readiness check-encryption-at-rest check-redaction-masking \
        smoke-test e2e-test e2e-smoke e2e-crud e2e-forms e2e-analytics e2e-rbac e2e-journeys e2e-ui-aaa e2e-full e2e-all generate-smoke generate-e2e \
        test-rust test-unit test-ts test-all test-coverage \
@@ -442,6 +442,9 @@ check-tracing: ## Verify route handlers carry #[tracing::instrument(... fields(t
 check-migration-headers: ## Verify migrations >=124 carry RLS-Posture header block
 	python3 ../scripts/migration_header_lint.py
 
+check-migration-immutable: ## A migration already on master may never change (sqlx checksums)
+	python3 ../scripts/check_migration_immutable.py
+
 check-region-pinning: ## DPDP residency check — region-pinned configs may not reference other regions
 	python3 ../scripts/check_region_pinning.py
 
@@ -591,11 +594,14 @@ e2e-rbac: ## Layer 6 — RBAC matrix (REST, multi-role)
 e2e-journeys: ## Layer 5 — End-to-end journeys (hybrid UI + REST)
 	cd apps/web && pnpm exec playwright test --project=journeys
 
+e2e-linkages: ## Layer 5b — Cross-module linkages (an action in one module, its effect asserted in another)
+	cd apps/web && pnpm exec playwright test --project=linkages
+
 e2e-ui-aaa: ## Accessibility — WCAG 2 AAA UI journey gates
 	cd apps/web && pnpm exec playwright test --project=accessibility
 
-e2e-full: ## Full E2E gate: smoke + CRUD + forms + analytics + RBAC + journeys + accessibility
-	cd apps/web && pnpm exec playwright test --project=smoke --project=crud --project=forms --project=analytics --project=rbac --project=journeys --project=accessibility
+e2e-full: ## Full E2E gate: smoke + CRUD + forms + analytics + RBAC + journeys + linkages + accessibility
+	cd apps/web && pnpm exec playwright test --project=smoke --project=crud --project=forms --project=analytics --project=rbac --project=journeys --project=linkages --project=accessibility
 
 e2e-all: e2e-full ## Alias for the full E2E gate used before deploy
 
@@ -696,6 +702,7 @@ ship: ## Full CI gate (no deploy). Includes full E2E before release build.
 	@$(MAKE) -s check-no-card-logging
 	@$(MAKE) -s check-egress-allowlist
 	@$(MAKE) -s check-migration-headers
+	@$(MAKE) -s check-migration-immutable
 	@echo "── 8/10 screen audit (strict) + coverage ratchet ──"
 	@python3 ../scripts/audit_screens.py --strict
 	@$(MAKE) -s coverage-ledger-check
