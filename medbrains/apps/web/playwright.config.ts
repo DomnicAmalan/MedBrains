@@ -106,6 +106,19 @@ export default defineConfig({
       dependencies: ["setup"],
     },
 
+    // Linkages — one module's action asserted through another module's
+    // effect. Longer per-test budget because pipeline effects are polled.
+    {
+      name: "linkages",
+      testMatch: /linkages\/.*\.spec\.ts/,
+      timeout: 90_000,
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: authStatePath,
+      },
+      dependencies: ["setup"],
+    },
+
     // Default project — every spec not in a layered directory.
     {
       name: "chromium",
@@ -115,7 +128,7 @@ export default defineConfig({
       },
       dependencies: ["setup"],
       testIgnore:
-        /(mock|smoke\/api|crud|forms|analytics|rbac|passmark|scenarios|journeys|accessibility)\/.*\.spec\.ts/,
+        /(mock|smoke\/api|crud|forms|analytics|rbac|passmark|scenarios|journeys|accessibility|linkages)\/.*\.spec\.ts/,
     },
 
     {

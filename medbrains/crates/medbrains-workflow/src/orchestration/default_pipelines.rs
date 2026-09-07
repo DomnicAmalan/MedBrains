@@ -209,6 +209,7 @@ pub async fn dispatch_default_pipelines(
     let Ok(parsed) = event_type.parse::<ClinicalEventName>() else {
         return;
     };
+    let payload = domain_payload(payload);
 
     // Every pipeline for this event runs, and each is independent: its own
     // transaction, its own failure. One raising an error must not stop the
@@ -230,6 +231,26 @@ pub async fn dispatch_default_pipelines(
         }
     }
 
+}
+
+/// The event as the subscriber wrote it, not the envelope the outbox stored.
+///
+/// `queue_clinical_event_in_tx` serialises the whole `ClinicalEventEnvelope`
+/// into `outbox_events.payload`, so what the worker hands the fallback is
+/// `{ "event_name", "tenant_id", "actor_id", "payload": { … } }`. Every
+/// pipeline reads `code_blue_id`, `admission_id`, `order_id` from the top
+/// level — and found nothing there. The code blue still paged twelve people,
+/// because the fan-out needs only the tenant; the entity id on every one of
+/// those notifications was null, and every pipeline keyed on an id quietly
+/// did nothing. The first cross-module test found it within a minute.
+///
+/// Callers that already pass the domain payload (the Rust linkage tests)
+/// are left alone: only a value that looks like an envelope is unwrapped.
+fn domain_payload(payload: &Value) -> &Value {
+    match (payload.get("event_name"), payload.get("payload")) {
+        (Some(_), Some(inner)) if inner.is_object() => inner,
+        _ => payload,
+    }
 }
 
 // ── 1. IPD discharge → housekeeping + MRD + claim assembly ─────────
@@ -623,7 +644,8 @@ async fn on_emergency_code_blue_activated(
     // b) In-app notification to clinical staff, in one statement rather than a
     //    query per user. Deliberately NOT scoped to who is on shift: the
     //    attendance table is empty, so an on-duty filter would page nobody and
-    //    look like it had worked.
+    //    look like it had worked. Guarded per user so a redelivered event
+    //    does not page the same people twice — the stand-down already was.
     let notified = sqlx::query!(
         "INSERT INTO notifications \
            (tenant_id, user_id, kind, title, body, category, entity_type, \
@@ -632,6 +654,11 @@ async fn on_emergency_code_blue_activated(
            FROM users u \
           WHERE u.tenant_id = $1 AND u.is_active = true \
             AND u.role::text IN ('doctor', 'nurse') \
+            AND NOT EXISTS ( \
+              SELECT 1 FROM notifications n \
+               WHERE n.tenant_id = $1 AND n.user_id = u.id \
+                 AND n.entity_type = 'code_blue' AND n.entity_id = $4 \
+                 AND n.title = 'CODE BLUE') \
           LIMIT 500",
         tenant_id,
         "CODE BLUE",
@@ -792,11 +819,12 @@ async fn on_ipd_admission_created(
         uuid_from_payload(payload, "admission_id"),
         uuid_from_payload(payload, "ward_id"),
     ) else {
-        // Every admission on this database arrives without a ward, so this
-        // is the branch that actually runs — and returning Ok here quietly
-        // was the same two-outcome mistake the rest of this function exists
-        // to avoid. An admission with nowhere to be cannot be assessed by
-        // the nurse looking after that nowhere.
+        // An admission admitted without a bed has no ward (the handler takes
+        // the ward from the bed), so this branch runs for every bedless
+        // admission — and returning Ok here quietly was the same two-outcome
+        // mistake the rest of this function exists to avoid. An admission
+        // with nowhere to be cannot be assessed by the nurse looking after
+        // that nowhere.
         tracing::error!(
             %tenant_id,
             payload = %payload,
@@ -1047,6 +1075,20 @@ mod tests {
     use medbrains_core::clinical_events::ClinicalEventName;
 
     use super::PIPELINES;
+
+    #[test]
+    fn an_envelope_is_unwrapped_and_a_bare_payload_is_not() {
+        let envelope = json!({
+            "event_name": "emergency.code_blue.activated",
+            "tenant_id": "00000000-0000-0000-0000-000000000001",
+            "payload": { "code_blue_id": "abc" }
+        });
+        assert_eq!(domain_payload(&envelope)["code_blue_id"], "abc");
+        let bare = json!({ "code_blue_id": "abc" });
+        assert_eq!(domain_payload(&bare)["code_blue_id"], "abc");
+        let odd = json!({ "event_name": "x", "payload": "not an object" });
+        assert!(domain_payload(&odd).get("event_name").is_some());
+    }
 
     #[test]
     fn critical_lab_default_pipeline_follows_result_posting() {

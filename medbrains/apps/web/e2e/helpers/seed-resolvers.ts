@@ -27,10 +27,21 @@ interface CatalogRow {
   batch_tracking_required?: boolean | null;
 }
 
+/**
+ * `GET /api/ipd/beds/available` returns `bed_id`, not `id`. This helper read
+ * `.id` — undefined — so every journey that "admitted to a bed" admitted
+ * without one, and the admission never got a ward. Mapped here, once.
+ */
 interface BedRow {
   id: string;
   bed_number: string;
+  ward_id: string | null;
   status?: string;
+}
+interface AvailableBedRow {
+  bed_id: string;
+  bed_number: string;
+  ward_id: string | null;
 }
 
 interface FefoBatchOption {
@@ -247,9 +258,10 @@ export async function getAvailableBed(
   const c = getCache(ctx);
   if (c.bed) return c.bed;
   try {
-    const beds = await api<BedRow[]>(ctx, "GET", "/api/ipd/beds/available");
-    if (beds.length === 0) return undefined;
-    c.bed = beds[0];
+    const beds = await api<AvailableBedRow[]>(ctx, "GET", "/api/ipd/beds/available");
+    const first = beds[0];
+    if (!first) return undefined;
+    c.bed = { id: first.bed_id, bed_number: first.bed_number, ward_id: first.ward_id };
     return c.bed;
   } catch {
     return undefined;

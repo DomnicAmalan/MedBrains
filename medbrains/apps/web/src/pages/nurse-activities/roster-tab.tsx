@@ -38,8 +38,9 @@ export function RosterTab() {
   const qc = useQueryClient();
 
   const [wardId, setWardId] = useState("");
-  const [date, setDate] = useState<Date>(() => new Date());
-  const shiftDate = toIsoDate(date);
+  // Mantine's picker speaks ISO date strings; so does the API. Only the
+  // default needs a Date, and it is the LOCAL day — see toIsoDate.
+  const [shiftDate, setShiftDate] = useState(() => toIsoDate(new Date()));
 
   const roster = useQuery({
     queryKey: ["nurse-roster", wardId, shiftDate],
@@ -120,8 +121,7 @@ export function RosterTab() {
         render: (r) =>
           canManage ? (
             <Button
-              tone="danger"
-              variant="subtle"
+              tone="danger-ghost"
               size="xs"
               onClick={() => remove.mutate(r.id)}
               loading={remove.isPending && remove.variables === r.id}
@@ -149,8 +149,8 @@ export function RosterTab() {
         <WardSelect value={wardId} onChange={setWardId} label="Ward" />
         <DatePickerInput
           label="Date"
-          value={date}
-          onChange={(v) => v && setDate(v as Date)}
+          value={shiftDate}
+          onChange={(v) => v && setShiftDate(v)}
           valueFormat="DD MMM YYYY"
         />
       </Group>

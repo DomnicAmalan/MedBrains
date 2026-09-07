@@ -155,11 +155,10 @@ export function CodeBlueTab({
                 <Group gap="xs">
                   {canRespond && (
                     <Button
-                      tone="danger"
-                      variant={
+                      tone={
                         respondersByEvent.get(row.id)?.some((r) => r.user_id === me)
-                          ? "light"
-                          : "filled"
+                          ? "subtle-danger"
+                          : "danger"
                       }
                       disabled={respondersByEvent.get(row.id)?.some((r) => r.user_id === me)}
                       onClick={() => respond.mutate(row.id)}

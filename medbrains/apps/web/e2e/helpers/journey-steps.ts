@@ -11,7 +11,7 @@ import {
   getAvailableBed,
   getIpdDept,
 } from "./seed-resolvers";
-import type { AuthContext } from "./types";
+import type { ApiCallOptions, AuthContext } from "./types";
 
 interface PatientLite {
   id: string;
@@ -1303,4 +1303,142 @@ export async function getBillingAgingReport(
   ctx: AuthContext,
 ): Promise<Record<string, unknown>> {
   return api(ctx, "GET", "/api/billing/reports/aging");
+}
+
+// ─── Notifications ───────────────────────────────────────────────────
+
+export interface NotificationLite {
+  id: string;
+  title: string;
+  body?: string | null;
+  entity_type?: string | null;
+  entity_id?: string | null;
+  action_url?: string | null;
+  is_read: boolean;
+}
+
+/** The caller's own feed. `unread` narrows to what the bell would show. */
+export async function listNotifications(
+  ctx: AuthContext,
+  opts: { unread?: boolean; limit?: number } = {},
+): Promise<NotificationLite[]> {
+  const resp = await api<{ notifications: NotificationLite[] }>(
+    ctx,
+    "GET",
+    `/api/notifications${qs({ unread: opts.unread ? "true" : undefined, limit: opts.limit ?? 50 })}`,
+  );
+  return resp.notifications;
+}
+
+// ─── Nurse roster ────────────────────────────────────────────────────
+
+export interface RosterCandidateLite {
+  id: string;
+  full_name: string;
+}
+
+export interface RosterEntryLite {
+  id: string;
+  nurse_user_id: string;
+  ward_id: string | null;
+  shift_date: string;
+  shift_type: string;
+  is_charge: boolean | null;
+}
+
+/** Needs `nurse.roster.manage`, which no built-in role holds — call as a bypass role. */
+export async function getRosterCandidates(ctx: AuthContext): Promise<RosterCandidateLite[]> {
+  return api(ctx, "GET", "/api/nurse/roster/candidates");
+}
+
+export async function rosterNurse(
+  ctx: AuthContext,
+  args: {
+    nurseUserId: string;
+    wardId: string;
+    shiftType?: "day" | "evening" | "night";
+    shiftDate?: string;
+    isCharge?: boolean;
+  },
+  opts: ApiCallOptions = {},
+): Promise<{ id: string }> {
+  return api(
+    ctx,
+    "POST",
+    "/api/nurse/roster",
+    {
+      nurse_user_id: args.nurseUserId,
+      ward_id: args.wardId,
+      shift_type: args.shiftType ?? "day",
+      shift_date: args.shiftDate,
+      is_charge: args.isCharge ?? false,
+    },
+    opts,
+  );
+}
+
+export async function listRoster(
+  ctx: AuthContext,
+  args: { wardId?: string; shiftDate?: string } = {},
+): Promise<RosterEntryLite[]> {
+  return api(ctx, "GET", `/api/nurse/roster${qs({ ward_id: args.wardId, shift_date: args.shiftDate })}`);
+}
+
+export async function deleteRosterEntry(ctx: AuthContext, id: string): Promise<void> {
+  await api(ctx, "DELETE", `/api/nurse/roster/${id}`);
+}
+
+// ─── Code blue ───────────────────────────────────────────────────────
+
+export interface CodeBlueResponderLite {
+  code_blue_id: string;
+  user_id: string;
+  user_name: string;
+  seconds_after_call: number;
+}
+
+export async function startCodeBlue(
+  ctx: AuthContext,
+  args: { patientId: string; location: string; encounterId?: string },
+): Promise<{ id: string }> {
+  return api(ctx, "POST", "/api/nurse/code-blue", {
+    patient_id: args.patientId,
+    location: args.location,
+    encounter_id: args.encounterId,
+  });
+}
+
+export async function respondCodeBlue(
+  ctx: AuthContext,
+  id: string,
+  opts: ApiCallOptions = {},
+): Promise<unknown> {
+  return api(ctx, "POST", `/api/nurse/code-blue/${id}/respond`, undefined, opts);
+}
+
+/** Everyone who has answered every arrest still in progress. */
+export async function listCodeBlueResponders(ctx: AuthContext): Promise<CodeBlueResponderLite[]> {
+  return api(ctx, "GET", "/api/nurse/code-blue/responders");
+}
+
+export async function endCodeBlue(
+  ctx: AuthContext,
+  id: string,
+  outcome = "rosc",
+): Promise<{ id: string; ended_at: string | null }> {
+  return api(ctx, "PUT", `/api/nurse/code-blue/${id}/end`, { outcome });
+}
+
+// ─── Nursing tasks ───────────────────────────────────────────────────
+
+export interface NursingTaskLite {
+  id: string;
+  admission_id: string;
+  assigned_to: string | null;
+  task_type: string;
+  due_at: string | null;
+}
+
+export async function listAdmissionTasks(ctx: AuthContext, admissionId: string): Promise<NursingTaskLite[]> {
+  return api(ctx, "GET", `/api/ipd/admissions/${admissionId}/tasks`);
 }

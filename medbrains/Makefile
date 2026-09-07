@@ -9,7 +9,7 @@
        mobile-staff-android mobile-staff-prebuild mobile-staff-typecheck \
        check check-backend check-frontend lint check-api check-sqlx prepare-sqlx guard-sqlx-nonprod \
        check-ui-api check-types check-ui-seam check-raw-html check-secrets check-all \
-       check-field-classes check-authz-collapse check-query-collapse check-boundary-filter check-conditional-authz check-permission-codes check-permission-reachable check-ui-permission-match check-relation-parity check-parent-id-scoping check-phi-audit-coverage authz-ledger coverage-ledger coverage-ledger-check coverage-ledger-update-baseline \
+       check-field-classes check-authz-collapse check-query-collapse check-boundary-filter check-conditional-authz check-permission-codes check-permission-reachable check-ui-permission-match check-ui-permission-match-strict check-ui-permission-match-update-baseline check-relation-parity check-parent-id-scoping check-phi-audit-coverage authz-ledger coverage-ledger coverage-ledger-check coverage-ledger-update-baseline \
        check-rls check-sharing check-authz-posture check-print-placeholders check-requirement-flags check-surface-drift check-role-templates check-tx-error-discard check-pg-enum-parity check-default-parity check-unbounded-reads check-permission-enforcement check-tenant-registry-reads check-pool-reads check-rls-only-writes check-tenant-leak check-runtime-sqlx check-audit check-tracing \
        check-migration-headers check-migration-immutable \
        check-region-pinning check-no-card-logging check-egress-allowlist check-cert-readiness check-encryption-at-rest check-redaction-masking \
@@ -351,6 +351,12 @@ check-conditional-authz: ## Ban a record check nested inside a branch
 check-ui-permission-match: ## Report pages calling an endpoint they do not gate on
 	python3 scripts/check_ui_permission_match.py
 
+check-ui-permission-match-strict: ## Ratchet: no NEW page→API call under-gated, no link counter rising (scripts/ui_permission_match.baseline.json)
+	python3 scripts/check_ui_permission_match.py --check
+
+check-ui-permission-match-update-baseline: ## Record the current under-gated set as the floor
+	python3 scripts/check_ui_permission_match.py --update-baseline
+
 check-authz-collapse: ## Ban collapsing an authz check's error into a denial
 	python3 scripts/check_authz_collapse.py
 
@@ -689,6 +695,7 @@ ship: ## Full CI gate (no deploy). Includes full E2E before release build.
 	@echo "── 5/10 API + UI + type contract ─────────"
 	@$(MAKE) -s check-api
 	@$(MAKE) -s check-ui-api
+	@$(MAKE) -s check-ui-permission-match-strict
 	@$(MAKE) -s check-types
 	@$(MAKE) -s check-nav-drift
 	@echo "── 6/10 RLS + audit + tenant + tracing + sqlx ──"
