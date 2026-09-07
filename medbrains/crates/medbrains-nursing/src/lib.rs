@@ -16,6 +16,10 @@ pub fn router() -> Router<AppState> {
             get(nurse_roster::list_roster).post(nurse_roster::create_roster_entry),
         )
         .route(
+            "/api/nurse/roster/candidates",
+            get(nurse_roster::list_roster_candidates),
+        )
+        .route(
             "/api/nurse/roster/{id}",
             axum::routing::delete(nurse_roster::delete_roster_entry),
         )

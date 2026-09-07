@@ -8181,3 +8181,9 @@ export interface EmergencyCodeActivation {
   location: string | null;
   outcome: string | null;
 }
+
+/** A nurse who can be put on a ward's shift. */
+export interface NurseRosterCandidate {
+  id: string;
+  full_name: string;
+}

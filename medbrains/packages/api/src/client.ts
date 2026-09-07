@@ -1379,6 +1379,7 @@ import type {
   NuclearMedAdministration,
   NuclearMedSource,
   NurseCallBoard,
+  NurseRosterCandidate,
   NurseRosterEntry,
   NursingAssessmentPrintData,
   NursingTask,
@@ -6642,6 +6643,8 @@ export const api = {
     }),
   deleteNurseRosterEntry: (id: string) =>
     request<{ id: string }>(`/nurse/roster/${id}`, { method: "DELETE" }),
+  /** Nurses who can be rostered; gated on roster.manage, not the user directory. */
+  listNurseRosterCandidates: () => request<NurseRosterCandidate[]>("/nurse/roster/candidates"),
 
   wardOnDuty: (wardId: string) => request<WardOnDutyRow[]>(`/ipd/wards/${wardId}/on-duty`),
   listClinicalTrials: (status?: string) =>

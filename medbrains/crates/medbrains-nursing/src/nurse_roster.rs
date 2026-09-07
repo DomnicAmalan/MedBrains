@@ -83,6 +83,41 @@ pub async fn list_roster(
     Ok(Json(rows))
 }
 
+#[derive(Debug, Serialize)]
+pub struct RosterCandidate {
+    pub id: Uuid,
+    pub full_name: String,
+}
+
+/// `GET /api/nurse/roster/candidates` — the nurses who can be rostered.
+///
+/// Its own endpoint rather than the admin user directory, which needs
+/// `admin.users.list`: a charge nurse on a custom role that holds only
+/// `nurse.roster.manage` must be able to fill the picker, and widening the
+/// directory to her would hand her every account in the hospital.
+pub async fn list_roster_candidates(
+    State(state): State<AppState>,
+    Extension(claims): Extension<Claims>,
+) -> Result<Json<Vec<RosterCandidate>>, AppError> {
+    require_permission(&claims, permissions::nurse::roster::MANAGE)?;
+    let mut tx = state.db.begin().await?;
+    medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
+
+    let rows = sqlx::query_as!(
+        RosterCandidate,
+        "SELECT id, full_name FROM users \
+          WHERE tenant_id = $1 AND is_active = true AND deleted_at IS NULL \
+            AND role::text = 'nurse' \
+          ORDER BY full_name LIMIT 500",
+        claims.tenant_id,
+    )
+    .fetch_all(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
+    Ok(Json(rows))
+}
+
 #[derive(Debug, Deserialize)]
 pub struct CreateRosterEntryRequest {
     pub nurse_user_id: Uuid,
