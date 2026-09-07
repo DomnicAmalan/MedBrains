@@ -1,0 +1,1214 @@
+{
+ "_root": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "abdm": {
+  "api.perm": 0,
+  "api.smoke": 4,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "accept-invite": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "access": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "access-alerts": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "access-groups": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "access-requests": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "admin": {
+  "api.perm": 0,
+  "api.smoke": 28,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "advance-directives": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "aebas": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "ai": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "ambulance": {
+  "api.perm": 2,
+  "api.smoke": 7,
+  "api.write": 1,
+  "ui.touched": 0
+ },
+ "analytics": {
+  "api.perm": 0,
+  "api.smoke": 10,
+  "api.write": 0,
+  "ui.touched": 1
+ },
+ "api-keys": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "app": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "approvals": {
+  "api.perm": 0,
+  "api.smoke": 6,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "assets": {
+  "api.perm": 0,
+  "api.smoke": 4,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "assistant": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "audit": {
+  "api.perm": 0,
+  "api.smoke": 13,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "auth": {
+  "api.perm": 1,
+  "api.smoke": 4,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "backups": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "bedside": {
+  "api.perm": 0,
+  "api.smoke": 10,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "bedside-portal": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 1
+ },
+ "bereavement": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "billing": {
+  "api.perm": 4,
+  "api.smoke": 53,
+  "api.write": 10,
+  "ui.touched": 1
+ },
+ "blog": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "blood-bank": {
+  "api.perm": 2,
+  "api.smoke": 15,
+  "api.write": 4,
+  "ui.touched": 0
+ },
+ "bme": {
+  "api.perm": 2,
+  "api.smoke": 11,
+  "api.write": 1,
+  "ui.touched": 0
+ },
+ "break-glass": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "bridge": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 2,
+  "ui.touched": 0
+ },
+ "camp": {
+  "api.perm": 2,
+  "api.smoke": 19,
+  "api.write": 2,
+  "ui.touched": 1
+ },
+ "care-view": {
+  "api.perm": 0,
+  "api.smoke": 6,
+  "api.write": 0,
+  "ui.touched": 1
+ },
+ "case-management": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "case-mgmt": {
+  "api.perm": 0,
+  "api.smoke": 7,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "case-sheet-review": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "case-sheets": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "cath-lab": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "cds": {
+  "api.perm": 0,
+  "api.smoke": 7,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "chronic-care": {
+  "api.perm": 0,
+  "api.smoke": 11,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "ckb": {
+  "api.perm": 0,
+  "api.smoke": 7,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "client-errors": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "clinical": {
+  "api.perm": 0,
+  "api.smoke": 7,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "clinical-kb": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "clinical-trials": {
+  "api.perm": 0,
+  "api.smoke": 9,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "cms": {
+  "api.perm": 0,
+  "api.smoke": 24,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "command-center": {
+  "api.perm": 0,
+  "api.smoke": 13,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "communications": {
+  "api.perm": 0,
+  "api.smoke": 9,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "compliance-requirements": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "components-inputs": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "consent": {
+  "api.perm": 3,
+  "api.smoke": 7,
+  "api.write": 3,
+  "ui.touched": 0
+ },
+ "cssd": {
+  "api.perm": 2,
+  "api.smoke": 9,
+  "api.write": 5,
+  "ui.touched": 1
+ },
+ "dashboard": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 1
+ },
+ "dashboards": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "data-quality": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "debug": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "demo": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "dental": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "device-ingest": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "device-integrations": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "device-pairing": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "devices": {
+  "api.perm": 0,
+  "api.smoke": 10,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "diet": {
+  "api.perm": 2,
+  "api.smoke": 8,
+  "api.write": 2,
+  "ui.touched": 0
+ },
+ "diet-kitchen": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "digest": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "directory": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "disposals": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "doctor": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 1
+ },
+ "doctor-schedules": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "doctors": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "document-ingestion": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "document-templates": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "documents": {
+  "api.perm": 0,
+  "api.smoke": 16,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "emergency": {
+  "api.perm": 0,
+  "api.smoke": 12,
+  "api.write": 3,
+  "ui.touched": 1
+ },
+ "endoscopy": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "facilities": {
+  "api.perm": 0,
+  "api.smoke": 13,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "fhir": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "force-password-change": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "forgot-password": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "front-office": {
+  "api.perm": 2,
+  "api.smoke": 9,
+  "api.write": 1,
+  "ui.touched": 1
+ },
+ "geo": {
+  "api.perm": 0,
+  "api.smoke": 8,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "groups": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "health": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "health-packages": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "health-pulse": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "home-health": {
+  "api.perm": 0,
+  "api.smoke": 11,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "home-healthcare": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "home-visits": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "hospice": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "hospital-groups": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "housekeeping": {
+  "api.perm": 0,
+  "api.smoke": 11,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "hr": {
+  "api.perm": 2,
+  "api.smoke": 19,
+  "api.write": 1,
+  "ui.touched": 0
+ },
+ "iam": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "icu": {
+  "api.perm": 0,
+  "api.smoke": 9,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "incentive-assignments": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "incentive-calculations": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "incentive-plans": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "indent": {
+  "api.perm": 2,
+  "api.smoke": 17,
+  "api.write": 4,
+  "ui.touched": 0
+ },
+ "infection-control": {
+  "api.perm": 2,
+  "api.smoke": 19,
+  "api.write": 1,
+  "ui.touched": 0
+ },
+ "insurance": {
+  "api.perm": 2,
+  "api.smoke": 9,
+  "api.write": 1,
+  "ui.touched": 0
+ },
+ "integration": {
+  "api.perm": 3,
+  "api.smoke": 9,
+  "api.write": 2,
+  "ui.touched": 0
+ },
+ "integration-builder": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "integration-hub": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "integrations": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "inter-hospital-stock": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "inter-hospital-transfers": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "ipd": {
+  "api.perm": 0,
+  "api.smoke": 53,
+  "api.write": 6,
+  "ui.touched": 1
+ },
+ "kiosk": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "lab": {
+  "api.perm": 5,
+  "api.smoke": 38,
+  "api.write": 7,
+  "ui.touched": 1
+ },
+ "lms": {
+  "api.perm": 0,
+  "api.smoke": 13,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "login": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "long-term-care": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "ltc": {
+  "api.perm": 0,
+  "api.smoke": 7,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "marketing": {
+  "api.perm": 0,
+  "api.smoke": 27,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "masters": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "materials": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "maternity": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "mfa-enroll": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "microsite": {
+  "api.perm": 0,
+  "api.smoke": 5,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "microsite-settings": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "migrations": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "mrd": {
+  "api.perm": 2,
+  "api.smoke": 16,
+  "api.write": 1,
+  "ui.touched": 0
+ },
+ "multi-hospital": {
+  "api.perm": 0,
+  "api.smoke": 26,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "nabh": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "nabh-indicators": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "news": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "news-feed": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "nhcx": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "notifications": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "nurse": {
+  "api.perm": 0,
+  "api.smoke": 16,
+  "api.write": 4,
+  "ui.touched": 0
+ },
+ "oauth": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "occ-health": {
+  "api.perm": 0,
+  "api.smoke": 11,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "occupational-health": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "onboarding": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "opd": {
+  "api.perm": 3,
+  "api.smoke": 40,
+  "api.write": 5,
+  "ui.touched": 2
+ },
+ "ophthalmology": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "orchestration": {
+  "api.perm": 0,
+  "api.smoke": 4,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "order-sets": {
+  "api.perm": 0,
+  "api.smoke": 7,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "orders": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "ot": {
+  "api.perm": 4,
+  "api.smoke": 14,
+  "api.write": 3,
+  "ui.touched": 1
+ },
+ "other": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "paired-devices": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "palliative": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "patient-packages": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "patients": {
+  "api.perm": 2,
+  "api.smoke": 20,
+  "api.write": 1,
+  "ui.touched": 2
+ },
+ "payments": {
+  "api.perm": 0,
+  "api.smoke": 6,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "pharmacy": {
+  "api.perm": 2,
+  "api.smoke": 56,
+  "api.write": 16,
+  "ui.touched": 1
+ },
+ "pmr": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "portal": {
+  "api.perm": 0,
+  "api.smoke": 5,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "print-data": {
+  "api.perm": 0,
+  "api.smoke": 134,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "privacy": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "procurement": {
+  "api.perm": 2,
+  "api.smoke": 14,
+  "api.write": 4,
+  "ui.touched": 1
+ },
+ "profile": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "psychiatry": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "public": {
+  "api.perm": 0,
+  "api.smoke": 13,
+  "api.write": 2,
+  "ui.touched": 0
+ },
+ "quality": {
+  "api.perm": 0,
+  "api.smoke": 21,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "radiology": {
+  "api.perm": 4,
+  "api.smoke": 11,
+  "api.write": 4,
+  "ui.touched": 1
+ },
+ "regulatory": {
+  "api.perm": 0,
+  "api.smoke": 18,
+  "api.write": 0,
+  "ui.touched": 1
+ },
+ "remote-access": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "reports": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "retrospective": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "roi-requests": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "roles": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "scheduling": {
+  "api.perm": 0,
+  "api.smoke": 9,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "schema": {
+  "api.perm": 0,
+  "api.smoke": 4,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "security": {
+  "api.perm": 0,
+  "api.smoke": 9,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "security-incidents": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "sensitive-patients": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "settings": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "setup": {
+  "api.perm": 2,
+  "api.smoke": 31,
+  "api.write": 2,
+  "ui.touched": 0
+ },
+ "sharing": {
+  "api.perm": 0,
+  "api.smoke": 2,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "signatures": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "specialty": {
+  "api.perm": 0,
+  "api.smoke": 43,
+  "api.write": 1,
+  "ui.touched": 0
+ },
+ "sso": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "station-handoffs": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "stations": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "system-health": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "tat": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "telemedicine": {
+  "api.perm": 0,
+  "api.smoke": 9,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "terminology": {
+  "api.perm": 0,
+  "api.smoke": 3,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "terms": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "testimonials": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "token-board": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "token-console": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "token-display": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "tokens": {
+  "api.perm": 0,
+  "api.smoke": 6,
+  "api.write": 2,
+  "ui.touched": 0
+ },
+ "trial-adverse-events": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "trial-irb": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "trial-randomizations": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "trial-visits": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "tv": {
+  "api.perm": 0,
+  "api.smoke": 12,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "tv-displays": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "upload": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "users": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "utilization-review": {
+  "api.perm": 0,
+  "api.smoke": 8,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "verify-email": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "vpn": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "vte-assessments": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "vulnerabilities": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "ward-stock": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "webhooks": {
+  "api.perm": 0,
+  "api.smoke": 0,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "widget-templates": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ },
+ "ws": {
+  "api.perm": 0,
+  "api.smoke": 1,
+  "api.write": 0,
+  "ui.touched": 0
+ }
+}

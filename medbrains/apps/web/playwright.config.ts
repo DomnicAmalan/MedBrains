@@ -85,7 +85,9 @@ export default defineConfig({
     // Layer 5 — End-to-end journeys (hybrid UI + REST)
     {
       name: "journeys",
-      testMatch: /scenarios\/.*\.spec\.ts/,
+      // e2e/journeys/ used to fall through to the default project, which the
+      // deploy gate never runs; four journey specs sat outside it.
+      testMatch: /(scenarios|journeys)\/.*\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         storageState: authStatePath,
@@ -112,7 +114,8 @@ export default defineConfig({
         storageState: authStatePath,
       },
       dependencies: ["setup"],
-      testIgnore: /(mock|smoke\/api|crud|forms|analytics|rbac|passmark)\/.*\.spec\.ts/,
+      testIgnore:
+        /(mock|smoke\/api|crud|forms|analytics|rbac|passmark|scenarios|journeys|accessibility)\/.*\.spec\.ts/,
     },
 
     {

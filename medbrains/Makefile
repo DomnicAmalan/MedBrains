@@ -9,7 +9,7 @@
        mobile-staff-android mobile-staff-prebuild mobile-staff-typecheck \
        check check-backend check-frontend lint check-api check-sqlx prepare-sqlx guard-sqlx-nonprod \
        check-ui-api check-types check-ui-seam check-raw-html check-secrets check-all \
-       check-field-classes check-authz-collapse check-query-collapse check-boundary-filter check-conditional-authz check-permission-codes check-permission-reachable check-ui-permission-match check-relation-parity check-parent-id-scoping check-phi-audit-coverage authz-ledger \
+       check-field-classes check-authz-collapse check-query-collapse check-boundary-filter check-conditional-authz check-permission-codes check-permission-reachable check-ui-permission-match check-relation-parity check-parent-id-scoping check-phi-audit-coverage authz-ledger coverage-ledger coverage-ledger-check coverage-ledger-update-baseline \
        check-rls check-sharing check-authz-posture check-print-placeholders check-requirement-flags check-surface-drift check-role-templates check-tx-error-discard check-pg-enum-parity check-default-parity check-unbounded-reads check-permission-enforcement check-tenant-registry-reads check-pool-reads check-rls-only-writes check-tenant-leak check-runtime-sqlx check-audit check-tracing \
        check-migration-headers \
        check-region-pinning check-no-card-logging check-egress-allowlist check-cert-readiness check-encryption-at-rest check-redaction-masking \
@@ -363,6 +363,15 @@ check-boundary-filter: ## Ban a deploy mode that needs PHI egress filtering from
 authz-ledger: ## Report authorization conformance per module (4 axes)
 	python3 scripts/authz_ledger.py
 
+coverage-ledger: ## Report e2e coverage per module (API cells + screens), computed from routes and specs
+	python3 scripts/coverage_ledger.py
+
+coverage-ledger-check: ## Ratchet: no coverage cell may fall below scripts/coverage_ledger.baseline.json
+	python3 scripts/coverage_ledger.py --check
+
+coverage-ledger-update-baseline: ## Record the current coverage counts as the floor
+	python3 scripts/coverage_ledger.py --update-baseline
+
 check-parent-id-scoping: ## Ban nested routes that discard their parent id
 	python3 scripts/check_parent_id_scoping.py
 
@@ -561,7 +570,7 @@ collections: ## Generate importable OpenAPI + Postman collections (positive + ne
 
 # ── Layered E2E Suite (per the comprehensive E2E plan) ────
 
-e2e-smoke-generate: ## Regenerate Layer 1 API smoke specs from routes/mod.rs
+e2e-smoke-generate: ## Regenerate Layer 1 API smoke specs from every crate router
 	node apps/web/scripts/generate-api-smoke.mjs
 
 e2e-smoke: ## Layer 1 — API smoke (every parameterless GET endpoint)
@@ -585,8 +594,8 @@ e2e-journeys: ## Layer 5 — End-to-end journeys (hybrid UI + REST)
 e2e-ui-aaa: ## Accessibility — WCAG 2 AAA UI journey gates
 	cd apps/web && pnpm exec playwright test --project=accessibility
 
-e2e-full: ## Full E2E gate: smoke + CRUD + forms + analytics + RBAC + journeys
-	cd apps/web && pnpm exec playwright test --project=smoke --project=crud --project=forms --project=analytics --project=rbac --project=journeys
+e2e-full: ## Full E2E gate: smoke + CRUD + forms + analytics + RBAC + journeys + accessibility
+	cd apps/web && pnpm exec playwright test --project=smoke --project=crud --project=forms --project=analytics --project=rbac --project=journeys --project=accessibility
 
 e2e-all: e2e-full ## Alias for the full E2E gate used before deploy
 
@@ -687,8 +696,9 @@ ship: ## Full CI gate (no deploy). Includes full E2E before release build.
 	@$(MAKE) -s check-no-card-logging
 	@$(MAKE) -s check-egress-allowlist
 	@$(MAKE) -s check-migration-headers
-	@echo "── 8/10 screen audit (strict) ───────────"
+	@echo "── 8/10 screen audit (strict) + coverage ratchet ──"
 	@python3 ../scripts/audit_screens.py --strict
+	@$(MAKE) -s coverage-ledger-check
 	@echo "── 9/10 full E2E gate ───────────────────"
 	@$(MAKE) -s e2e-full
 	@echo "── 10/10 release build ──────────────────"
@@ -697,7 +707,7 @@ ship: ## Full CI gate (no deploy). Includes full E2E before release build.
 
 ship-cold: ship ## Full ship + deploy to prod (Starter tier on hims.amh.org.in)
 	@echo "── deploy ──────────────────────────────"
-	@cd infra/terraform/envs/standalone/alagappa && $(MAKE) apply
+	@cd infra/terraform/envs/clients/alagappa && $(MAKE) apply
 	@echo "── post-deploy smoke ───────────────────"
 	@curl -sS --fail --max-time 10 https://hims.amh.org.in/api/health > /dev/null \
 		&& echo "✅ /api/health 200" \
@@ -709,7 +719,7 @@ hotpush-ui: ## Build and deploy only the web SPA to the standalone host
 	if [ -f infra/.env ]; then set -a; . infra/.env; set +a; fi; \
 	: "$${TF_VAR_ssh_private_key_path:?Set TF_VAR_ssh_private_key_path in infra/.env}"; \
 	DOMAIN="$${TF_VAR_domain:-hims.amh.org.in}"; \
-	SSH_ENDPOINT="$$(cd infra/terraform/envs/standalone/alagappa && terraform output -raw ssh_endpoint 2>/dev/null || true)"; \
+	SSH_ENDPOINT="$$(cd infra/terraform/envs/clients/alagappa && terraform output -raw ssh_endpoint 2>/dev/null || true)"; \
 	if [ -z "$$SSH_ENDPOINT" ] || [ "$$SSH_ENDPOINT" = "null" ]; then SSH_ENDPOINT="ubuntu@$$DOMAIN"; fi; \
 	echo "── hotpush-ui: typecheck web ───────────"; \
 	pnpm --filter @medbrains/web typecheck; \
