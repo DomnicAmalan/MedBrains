@@ -334,6 +334,7 @@ pub const BUILT_IN_ROLES: &[BuiltInRole] = &[
             permissions::specialty::psychiatry::restraint::MANAGE,
             // A doctor is paged by the code blue and answers it like a nurse does.
             permissions::nurse::code_blue::RESPOND,
+            permissions::ai::assistant::USE,
         ],
     },
     BuiltInRole {
@@ -489,6 +490,7 @@ pub const BUILT_IN_ROLES: &[BuiltInRole] = &[
             permissions::nurse::profile::VIEW,
             permissions::nurse::shift::VIEW,
             permissions::nurse::roster::VIEW,
+            permissions::ai::assistant::USE,
             permissions::nurse::mar::VIEW,
             permissions::nurse::mar::ADMINISTER,
             permissions::nurse::mar::HOLD,

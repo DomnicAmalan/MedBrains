@@ -2528,6 +2528,18 @@ pub mod order_basket {
     pub const VIEW_AUDIT: &str = "clinical.order_basket.view_audit";
 }
 
+pub mod ai {
+    pub mod assistant {
+        /// Use the AI assistant.
+        ///
+        /// Chat, and the caller's own conversation history. The three
+        /// handlers behind it checked nothing at all: any signed-in account
+        /// could send a prompt about a patient to the model. Held by the
+        /// clinical roles the assistant is built for.
+        pub const USE: &str = "ai.assistant.use";
+    }
+}
+
 pub mod nurse {
     pub mod profile {
         pub const VIEW: &str = "nurse.profile.view";

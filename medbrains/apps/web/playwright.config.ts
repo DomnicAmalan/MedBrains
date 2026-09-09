@@ -119,6 +119,16 @@ export default defineConfig({
       dependencies: ["setup"],
     },
 
+    // Screens — every nav route rendered as a role that holds its gate, and
+    // refused for one that does not. Logs in per role, so no storageState.
+    {
+      name: "screens",
+      testMatch: /screens\/.*\.spec\.ts/,
+      timeout: 60_000,
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
+    },
+
     // Default project — every spec not in a layered directory.
     {
       name: "chromium",
@@ -128,7 +138,7 @@ export default defineConfig({
       },
       dependencies: ["setup"],
       testIgnore:
-        /(mock|smoke\/api|crud|forms|analytics|rbac|passmark|scenarios|journeys|accessibility|linkages)\/.*\.spec\.ts/,
+        /(mock|smoke\/api|crud|forms|analytics|rbac|passmark|scenarios|journeys|accessibility|linkages|screens)\/.*\.spec\.ts/,
     },
 
     {

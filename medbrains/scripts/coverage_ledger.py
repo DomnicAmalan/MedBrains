@@ -91,17 +91,135 @@ def spec_touches() -> tuple[set[str], set[str], set[str], set[str]]:
     return smoke, hand, rbac, screens
 
 
+RE_ROUTE_OPEN = re.compile(r'<Route\s+path="([^"]+)"([^>]*)>')
+
+
+def app_routes() -> list[tuple[str, str | None]]:
+    """Every `<Route>` in App.tsx as (absolute path, element component or None).
+
+    Routes nest: `<Route path="admin">` wraps children declared with relative
+    paths, so "devices" is really "/admin/devices". Walked with a stack of
+    open layout routes — a `<Route path=…>` with no `element` that does not
+    self-close is a parent until its `</Route>`.
+    """
+    if not APP_TSX.exists():
+        return []
+    stack: list[str] = []
+    out: list[tuple[str, str | None]] = []
+    for line in APP_TSX.read_text().splitlines():
+        s = line.strip()
+        m = RE_ROUTE_OPEN.search(s)
+        if m:
+            path, attrs = m.group(1), m.group(2)
+            if path in ("*", ""):
+                continue
+            segments = [p.strip("/") for p in [*stack, path] if p.strip("/")]
+            full = "/" + "/".join(segments) if not path.startswith("/") else path
+            if path.startswith("/") and stack:
+                full = path
+            comp = re.search(r"element=\{<(\w+)", attrs)
+            redirect = re.search(r'<Navigate\s+to="([^"#]+)', attrs)
+            # A `<Navigate>` route is an alias, recorded as its target path.
+            out.append((full, redirect.group(1) if redirect else comp.group(1) if comp else None))
+            if not attrs.rstrip().endswith("/") and "element=" not in attrs:
+                stack.append(path)
+        elif s.startswith("</Route>") and stack:
+            stack.pop()
+    return out
+
+
 def app_screens() -> dict[str, list[str]]:
     """App.tsx route paths grouped by their first segment (the module slug)."""
     out: dict[str, list[str]] = defaultdict(list)
-    if not APP_TSX.exists():
-        return out
-    for path in RE_ROUTE_PATH.findall(APP_TSX.read_text()):
-        if path in ("*", "") or ":" in path:
+    seen: set[str] = set()
+    for full, _comp in app_routes():
+        if ":" in full or full in seen:
             continue
-        full = path if path.startswith("/") else f"/{path}"
+        seen.add(full)
         out[full.split("/")[1] or "_root"].append(full)
     return out
+
+
+RE_LAZY = re.compile(r'const\s+(\w+)\s*=\s*lazy\(\(\)\s*=>\s*import\("\./pages/([^"]+)"\)')
+RE_ROUTE_ELEMENT = re.compile(r'<Route\s+path="([^"]+)"\s+element=\{<(\w+)')
+RE_PAGE_GUARD = re.compile(r"useRequirePermission\(\s*([^)]+?)\s*\)")
+RE_P_REF = re.compile(r"\bP\.([A-Z_0-9.]+)")
+PERMISSIONS_TS = MEDBRAINS / "packages" / "types" / "src" / "permissions.ts"
+
+
+def p_accessor_map() -> dict[str, str]:
+    """`P.NURSE.CODE_BLUE.VIEW` and `P.NURSE.CODE_BLUE_VIEW` → "nurse.code_blue.view".
+
+    Walks the generated `P` object by brace depth, so nested and flat
+    accessors both resolve — guessing the code from the accessor's spelling
+    fails wherever a segment carries an underscore.
+    """
+    text = PERMISSIONS_TS.read_text()
+    start = text.find("export const P = {")
+    if start < 0:
+        return {}
+    stack: list[str] = []
+    out: dict[str, str] = {}
+    for line in text[start:].splitlines()[1:]:
+        s = line.strip()
+        if s.startswith("}"):
+            if not stack:
+                break
+            stack.pop()
+            continue
+        m = re.match(r"([A-Z_0-9]+):\s*\{", s)
+        if m:
+            stack.append(m.group(1))
+            continue
+        m = re.match(r'([A-Z_0-9]+):\s*"([^"]+)"', s)
+        if m:
+            out[".".join([*stack, m.group(1)])] = m.group(2)
+    return out
+
+
+def page_gates() -> dict[str, dict[str, object]]:
+    """`{"gates": route → codes its page's `useRequirePermission` accepts,
+    "aliases": redirect route → target route}`.
+
+    The nav item's permission is what shows the link; the page's own guard is
+    what decides who may stay. They differ wherever a page gates on any-of
+    several codes. This is the page's side, for the screen matrix to judge by.
+    A `<Navigate>` alias carries its target's gates and lands on the target.
+    """
+    if not APP_TSX.exists():
+        return {"gates": {}, "aliases": {}}
+    app = APP_TSX.read_text()
+    lazy = {name: file for name, file in RE_LAZY.findall(app)}
+    accessors = p_accessor_map()
+    pages_dir = MEDBRAINS / "apps" / "web" / "src" / "pages"
+    out: dict[str, list[str]] = {}
+    for path, component in app_routes():
+        if ":" in path or component is None or component not in lazy:
+            continue
+        rel = lazy[component]
+        candidates = [pages_dir / f"{rel}.tsx", pages_dir / rel / "index.tsx"]
+        src = next((c.read_text() for c in candidates if c.exists()), None)
+        if src is None:
+            continue
+        guard = RE_PAGE_GUARD.search(src)
+        if not guard:
+            continue
+        arg = guard.group(1)
+        refs = RE_P_REF.findall(arg)
+        if not refs:
+            # An identifier: a const array declared in the same file.
+            ident = arg.strip().strip("[]")
+            const = re.search(rf"const\s+{re.escape(ident)}\s*=\s*\[(.*?)\]", src, re.S)
+            refs = RE_P_REF.findall(const.group(1)) if const else []
+        codes = [accessors[r] for r in refs if r in accessors]
+        if codes:
+            out[path if path.startswith("/") else f"/{path}"] = codes
+    aliases: dict[str, str] = {}
+    for path, component in app_routes():
+        if component and component.startswith("/") and "*" not in path and component in out:
+            aliases[path] = component
+            out[path] = out[component]
+    return {"gates": out, "aliases": aliases}
 
 
 def smoke_is_stale() -> bool:
@@ -222,7 +340,22 @@ def main() -> int:
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--check", action="store_true", help="fail if any cell fell below the baseline")
     ap.add_argument("--update-baseline", action="store_true")
+    ap.add_argument(
+        "--emit-page-gates",
+        metavar="PATH",
+        help="write {route: [permission codes]} from each page's useRequirePermission and exit",
+    )
     args = ap.parse_args()
+
+    if args.emit_page_gates:
+        gates = page_gates()
+        Path(args.emit_page_gates).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.emit_page_gates).write_text(json.dumps(gates, indent=1, sort_keys=True) + "\n")
+        print(
+            f"page gates for {len(gates['gates'])} routes "
+            f"({len(gates['aliases'])} aliases) → {args.emit_page_gates}"
+        )
+        return 0
 
     data = build()
     if args.update_baseline:

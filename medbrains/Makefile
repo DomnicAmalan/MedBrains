@@ -11,7 +11,7 @@
        check-ui-api check-types check-ui-seam check-raw-html check-secrets check-all \
        check-field-classes check-authz-collapse check-query-collapse check-boundary-filter check-conditional-authz check-permission-codes check-permission-reachable check-ui-permission-match check-ui-permission-match-strict check-ui-permission-match-update-baseline check-relation-parity check-parent-id-scoping check-phi-audit-coverage authz-ledger coverage-ledger coverage-ledger-check coverage-ledger-update-baseline \
        check-rls check-sharing check-authz-posture check-print-placeholders check-requirement-flags check-surface-drift check-role-templates check-tx-error-discard check-pg-enum-parity check-default-parity check-unbounded-reads check-permission-enforcement check-tenant-registry-reads check-pool-reads check-rls-only-writes check-tenant-leak check-runtime-sqlx check-audit check-tracing \
-       check-migration-headers check-migration-immutable \
+       check-migration-headers check-migration-immutable e2e-generate e2e-screens e2e-linkages \
        check-region-pinning check-no-card-logging check-egress-allowlist check-cert-readiness check-encryption-at-rest check-redaction-masking \
        smoke-test e2e-test e2e-smoke e2e-crud e2e-forms e2e-analytics e2e-rbac e2e-journeys e2e-ui-aaa e2e-full e2e-all generate-smoke generate-e2e \
        test-rust test-unit test-ts test-all test-coverage \
@@ -582,6 +582,9 @@ collections: ## Generate importable OpenAPI + Postman collections (positive + ne
 e2e-smoke-generate: ## Regenerate Layer 1 API smoke specs from every crate router
 	node apps/web/scripts/generate-api-smoke.mjs
 
+e2e-generate: e2e-smoke-generate ## Regenerate everything the e2e layers derive from source (smoke specs, page gates)
+	python3 scripts/coverage_ledger.py --emit-page-gates apps/web/e2e/generated/page-gates.json
+
 e2e-smoke: ## Layer 1 — API smoke (every parameterless GET endpoint)
 	cd apps/web && pnpm exec playwright test --project=smoke
 
@@ -603,11 +606,14 @@ e2e-journeys: ## Layer 5 — End-to-end journeys (hybrid UI + REST)
 e2e-linkages: ## Layer 5b — Cross-module linkages (an action in one module, its effect asserted in another)
 	cd apps/web && pnpm exec playwright test --project=linkages
 
+e2e-screens: ## Layer 3b — Every nav screen renders for a role holding its gate and redirects one that does not
+	cd apps/web && pnpm exec playwright test --project=screens
+
 e2e-ui-aaa: ## Accessibility — WCAG 2 AAA UI journey gates
 	cd apps/web && pnpm exec playwright test --project=accessibility
 
-e2e-full: ## Full E2E gate: smoke + CRUD + forms + analytics + RBAC + journeys + linkages + accessibility
-	cd apps/web && pnpm exec playwright test --project=smoke --project=crud --project=forms --project=analytics --project=rbac --project=journeys --project=linkages --project=accessibility
+e2e-full: ## Full E2E gate: smoke + CRUD + forms + analytics + RBAC + journeys + linkages + screens + accessibility
+	cd apps/web && pnpm exec playwright test --project=smoke --project=crud --project=forms --project=analytics --project=rbac --project=journeys --project=linkages --project=screens --project=accessibility
 
 e2e-all: e2e-full ## Alias for the full E2E gate used before deploy
 

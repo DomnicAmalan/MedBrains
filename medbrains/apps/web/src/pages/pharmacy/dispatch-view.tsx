@@ -19,10 +19,12 @@ import { P } from "@medbrains/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Alert, Badge, Button, Table } from "@/components/ui";
+import { useRequirePermission } from "@/hooks/useRequirePermission";
 import { pharmacyService } from "@/services/pharmacy.service";
 import { ReasonModal } from "./reason-modal";
 
 export function DispatchPage() {
+  useRequirePermission(P.PHARMACY.FULFILMENT.DISPATCH);
   const queryClient = useQueryClient();
   const canDispatch = useHasPermission(P.PHARMACY.FULFILMENT.DISPATCH);
   // The queue endpoint requires the pick permission, not dispatch.

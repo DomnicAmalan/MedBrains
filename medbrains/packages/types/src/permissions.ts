@@ -17,7 +17,7 @@ export interface PermissionDef {
   module: string;
 }
 
-/** 983 permissions, one per constant in the Rust source. */
+/** 984 permissions, one per constant in the Rust source. */
 export const PERMISSIONS: PermissionDef[] = [
   // dashboard
   {
@@ -5618,6 +5618,13 @@ export const PERMISSIONS: PermissionDef[] = [
     description: "View order_basket_signatures audit trail",
     module: "order_basket",
   },
+  // ai
+  {
+    code: "ai.assistant.use",
+    label: "Use the AI assistant",
+    description: "Chat, and the caller's own conversation history. The three handlers behind it checked nothing at all: any signed-in account could send a prompt about a patient to the model. Held by the clinical roles the assistant is built for.",
+    module: "ai",
+  },
   // nurse
   {
     code: "nurse.profile.view",
@@ -6235,6 +6242,12 @@ export const P = {
     USERS_LIST: "admin.users.list",
     USERS_UPDATE: "admin.users.update",
     USERS_VIEW: "admin.users.view",
+  },
+  AI: {
+    ASSISTANT: {
+      USE: "ai.assistant.use",
+    },
+    ASSISTANT_USE: "ai.assistant.use",
   },
   AMBULANCE: {
     DRIVERS: {
@@ -8943,6 +8956,7 @@ export const ROLE_TEMPLATES: Record<string, { label: string; permissions: string
     permissions: [
       P.ABDM.ABHA.VIEW,
       P.ADMIN.SETTINGS.READ,
+      P.AI.ASSISTANT.USE,
       P.AUDIT.BREAK_GLASS_START,
       P.BEDSIDE.FEEDBACK.LIST,
       P.BEDSIDE.SESSIONS.LIST,
@@ -9218,6 +9232,7 @@ export const ROLE_TEMPLATES: Record<string, { label: string; permissions: string
     label: "Nurse",
     permissions: [
       P.ADMIN.SETTINGS.READ,
+      P.AI.ASSISTANT.USE,
       P.AUDIT.BREAK_GLASS_START,
       P.BEDSIDE.CALLS.BOARD,
       P.BEDSIDE.FEEDBACK.CREATE,
