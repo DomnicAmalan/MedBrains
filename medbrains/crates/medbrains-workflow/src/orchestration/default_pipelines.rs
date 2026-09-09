@@ -128,7 +128,7 @@ pub const PIPELINES: &[Pipeline] = &[
     },
     Pipeline {
         event: ClinicalEventName::PharmacyNdpsMovementCreated,
-        description: "Raise a quality incident when an NDPS entry lacks its second signature",
+        description: "Raise a quality incident when an NDPS entry lacks its witness",
         run: |p, t, v| Box::pin(on_pharmacy_ndps_movement_created(p, t, v)),
     },
     Pipeline {
@@ -693,9 +693,14 @@ async fn on_emergency_code_blue_activated(
     Ok(())
 }
 
-// ── 9. NDPS movement → the second signature nobody was chasing ─────
+// ── 9. NDPS movement → the witness nobody was chasing ─────
 
-/// A controlled-drug movement that needs two signatures and has one.
+/// A controlled-drug movement recorded with no witness at all.
+///
+/// The dispense handler refuses that for dispense, destroy and transfer,
+/// so the path this catches is the receipt — and any write that bypasses
+/// the handler's check. `second_witness_id` is a column no handler sets and
+/// was the wrong thing to key on: it would have raised on every movement.
 ///
 /// The register row itself is written correctly and transactionally by the
 /// handler — that is not the gap. The gap is that `requires_dual_sign` with a
@@ -718,7 +723,7 @@ async fn on_pharmacy_ndps_movement_created(
 
     // The title is derived from the entry, so a redelivered event matches the
     // incident it already raised instead of raising a second one.
-    let title = format!("NDPS second signature missing — entry {entry_id}");
+    let title = format!("NDPS witness missing — entry {entry_id}");
 
     let mut tx = pool.begin().await?;
 
@@ -730,7 +735,7 @@ async fn on_pharmacy_ndps_movement_created(
                ON c.id = r.catalog_item_id AND c.tenant_id = r.tenant_id \
             WHERE r.id = $2 AND r.tenant_id = $1 \
               AND COALESCE(r.requires_dual_sign, false) = true \
-              AND r.second_witness_id IS NULL \
+              AND r.witnessed_by IS NULL \
          ), seq AS ( \
            UPDATE sequences SET current_val = current_val + 1 \
             WHERE tenant_id = $1 AND seq_type = 'INC' AND EXISTS (SELECT 1 FROM ent) \
@@ -742,12 +747,12 @@ async fn on_pharmacy_ndps_movement_created(
          SELECT $1, \
                 COALESCE((SELECT prefix || lpad(current_val::text, pad_width, '0') \
                             FROM seq), \
-                         'INC-' || to_char(now(), 'YYYYMMDDHH24MISS')), \
+                         'INC-' || to_char(now(), 'YYYYMMDDHH24MISS') || '-' || substr(md5(random()::text), 1, 4)), \
                 $3::text, \
                 'NDPS register entry ' || ent.id || ' (' || ent.action || ' ' \
                   || ent.quantity || ' of ' \
                   || COALESCE(ent.item_name, 'unknown item') \
-                  || ') requires a second signature and has none.', \
+                  || ') requires a witness and has none.', \
                 'ndps_dual_signature_missing', 'major'::incident_severity, \
                 ent.patient_id, true, 'NDPS', now() \
            FROM ent \
@@ -787,7 +792,7 @@ async fn on_pharmacy_ndps_movement_created(
         tracing::warn!(
             %tenant_id,
             %entry_id,
-            "NDPS movement recorded without its second signature — quality \
+            "NDPS movement recorded without its witness — quality \
              incident raised"
         );
     }
@@ -1197,9 +1202,13 @@ async fn on_transfusion_reaction(
              SELECT $1, \
                     COALESCE((SELECT prefix || lpad(current_val::text, pad_width, '0') \
                                 FROM seq), \
-                             'INC-' || to_char(now(), 'YYYYMMDDHH24MISS')), \
+                             'INC-' || to_char(now(), 'YYYYMMDDHH24MISS') || '-' || substr(md5(random()::text), 1, 4)), \
                     $2, $3, 'transfusion_reaction', $4::text::incident_severity, \
-                    $5, $6, now()",
+                    $5, $6, now() \
+              WHERE NOT EXISTS ( \
+                SELECT 1 FROM quality_incidents q \
+                 WHERE q.tenant_id = $1 AND q.incident_type = 'transfusion_reaction' \
+                   AND q.description = $3 AND q.deleted_at IS NULL)",
         )
         .bind(tenant_id)
         .bind(format!("Transfusion reaction — {reaction_type}"))

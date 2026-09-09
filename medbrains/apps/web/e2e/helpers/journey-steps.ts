@@ -1442,3 +1442,167 @@ export interface NursingTaskLite {
 export async function listAdmissionTasks(ctx: AuthContext, admissionId: string): Promise<NursingTaskLite[]> {
   return api(ctx, "GET", `/api/ipd/admissions/${admissionId}/tasks`);
 }
+
+// ─── Blood bank ──────────────────────────────────────────────────────
+
+export interface BloodComponentLite {
+  id: string;
+  donation_id: string;
+  status: string;
+}
+
+/** A patient with a blood group — the transfusion handler refuses one without. */
+export async function createPatientWithBloodGroup(
+  ctx: AuthContext,
+  bloodGroup: string,
+): Promise<{ id: string }> {
+  const ts = Date.now().toString(36);
+  // Digits only: the patient validator rejects base-36 letters in a phone.
+  const digits = Date.now().toString().slice(-8);
+  return api(ctx, "POST", "/api/patients", {
+    first_name: `E2E${ts}`,
+    last_name: "Transfusion",
+    gender: "female",
+    phone: `98${digits}`,
+    blood_group: bloodGroup,
+  });
+}
+
+export async function createDonor(ctx: AuthContext, bloodGroup: string): Promise<{ id: string }> {
+  const ts = Date.now().toString(36);
+  return api(ctx, "POST", "/api/blood-bank/donors", {
+    donor_number: `E2E-D-${ts}`,
+    first_name: "E2E",
+    last_name: `Donor${ts}`,
+    blood_group: bloodGroup,
+  });
+}
+
+export async function createDonation(ctx: AuthContext, donorId: string): Promise<{ id: string }> {
+  return api(ctx, "POST", `/api/blood-bank/donors/${donorId}/donations`, {
+    bag_number: `E2E-BAG-${Date.now().toString(36)}`,
+    volume_ml: 450,
+  });
+}
+
+export async function createBloodComponent(
+  ctx: AuthContext,
+  args: { donationId: string; bloodGroup: string; componentType: string },
+): Promise<{ id: string }> {
+  const expiry = new Date(Date.now() + 30 * 24 * 3_600_000).toISOString();
+  return api(ctx, "POST", "/api/blood-bank/components", {
+    donation_id: args.donationId,
+    component_type: args.componentType,
+    bag_number: `E2E-C-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    blood_group: args.bloodGroup,
+    volume_ml: 250,
+    expiry_at: expiry,
+  });
+}
+
+export async function setBloodComponentStatus(ctx: AuthContext, id: string, status: string): Promise<void> {
+  await api(ctx, "PUT", `/api/blood-bank/components/${id}/status`, { status });
+}
+
+export async function listBloodComponents(ctx: AuthContext): Promise<BloodComponentLite[]> {
+  return api(ctx, "GET", "/api/blood-bank/components");
+}
+
+export async function createTransfusion(
+  ctx: AuthContext,
+  args: { patientId: string; componentId: string; patientVerifiedBy: string; productVerifiedBy: string },
+): Promise<{ id: string }> {
+  return api(ctx, "POST", "/api/blood-bank/transfusions", {
+    patient_id: args.patientId,
+    component_id: args.componentId,
+    patient_verified_by: args.patientVerifiedBy,
+    product_verified_by: args.productVerifiedBy,
+  });
+}
+
+export async function recordTransfusionReaction(
+  ctx: AuthContext,
+  transfusionId: string,
+  args: { reactionType: string; severity: "mild" | "moderate" | "severe" | "fatal" },
+): Promise<unknown> {
+  return api(ctx, "PUT", `/api/blood-bank/transfusions/${transfusionId}/reaction`, {
+    reaction_type: args.reactionType,
+    reaction_severity: args.severity,
+  });
+}
+
+// ─── BME ─────────────────────────────────────────────────────────────
+
+export interface BmeEquipmentLite {
+  id: string;
+  status: string;
+}
+
+export async function createBmeEquipment(
+  ctx: AuthContext,
+  args: { name: string; status: "active" | "under_maintenance" | "out_of_service" | "condemned" },
+): Promise<BmeEquipmentLite> {
+  return api(ctx, "POST", "/api/bme/equipment", { name: args.name, status: args.status });
+}
+
+export async function getBmeEquipment(ctx: AuthContext, id: string): Promise<BmeEquipmentLite> {
+  return api(ctx, "GET", `/api/bme/equipment/${id}`);
+}
+
+export async function createBreakdown(
+  ctx: AuthContext,
+  args: { equipmentId: string; description?: string },
+): Promise<{ id: string }> {
+  return api(ctx, "POST", "/api/bme/breakdowns", {
+    equipment_id: args.equipmentId,
+    description: args.description ?? "E2E breakdown",
+  });
+}
+
+// ─── Quality ─────────────────────────────────────────────────────────
+
+export interface QualityIncidentLite {
+  id: string;
+  title: string;
+  incident_type: string;
+  severity: string;
+  patient_id: string | null;
+}
+
+export async function createQualityIncident(
+  ctx: AuthContext,
+  args: {
+    title: string;
+    incidentType: string;
+    severity: "near_miss" | "minor" | "moderate" | "major" | "sentinel";
+    patientId?: string;
+  },
+): Promise<QualityIncidentLite> {
+  return api(ctx, "POST", "/api/quality/incidents", {
+    title: args.title,
+    incident_type: args.incidentType,
+    severity: args.severity,
+    incident_date: new Date().toISOString(),
+    patient_id: args.patientId,
+    description: "E2E linkage incident",
+  });
+}
+
+/** No incident_type filter server-side; filter here. */
+export async function listQualityIncidents(ctx: AuthContext): Promise<QualityIncidentLite[]> {
+  return api(ctx, "GET", "/api/quality/incidents");
+}
+
+export async function listSentinelIncidents(ctx: AuthContext): Promise<QualityIncidentLite[]> {
+  return api(ctx, "GET", "/api/quality/incidents/sentinel");
+}
+
+/** Current-month rollup value for one NABH indicator, or null when it has none. */
+export async function nabhIndicator(ctx: AuthContext, code: string): Promise<number | null> {
+  const resp = await api<{ indicators: Array<{ code: string; value_current_month: number | null }> }>(
+    ctx,
+    "GET",
+    "/api/nabh/indicators",
+  );
+  return resp.indicators.find((i) => i.code === code)?.value_current_month ?? null;
+}

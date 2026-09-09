@@ -3110,8 +3110,11 @@ pub async fn dispense_order(
                 let ndps_entry = sqlx::query_as::<_, NdpsRegisterEntry>(
                     "INSERT INTO pharmacy_ndps_register \
                      (tenant_id, catalog_item_id, action, quantity, balance_after, \
-                      patient_id, prescription_id, dispensed_by, witnessed_by) \
-                     VALUES ($1, $2, 'dispensed', $3, $4, $5, $6, $7, $8) \
+                      patient_id, prescription_id, dispensed_by, witnessed_by, \
+                      requires_dual_sign) \
+                     VALUES ($1, $2, 'dispensed', $3, $4, $5, $6, $7, $8, \
+                             (SELECT is_controlled OR drug_schedule IN ('X', 'NDPS') \
+                                FROM pharmacy_catalog WHERE id = $2)) \
                      RETURNING *",
                 )
                 .bind(claims.tenant_id)
@@ -4500,10 +4503,16 @@ pub async fn create_ndps_entry(
     }
 
     let entry = sqlx::query_as::<_, NdpsRegisterEntry>(
+        // requires_dual_sign was a column nothing wrote. The deficiency
+        // pipeline reads it, so a Schedule X movement with no second witness
+        // was never raised — the register looked compliant by omission.
         "INSERT INTO pharmacy_ndps_register \
          (tenant_id, catalog_item_id, action, quantity, balance_after, \
-          dispensed_by, witnessed_by, notes) \
-         VALUES ($1, $2, $3::ndps_register_action, $4, $5, $6, $7, $8) RETURNING *",
+          dispensed_by, witnessed_by, notes, requires_dual_sign) \
+         VALUES ($1, $2, $3::ndps_register_action, $4, $5, $6, $7, $8, \
+                 (SELECT is_controlled OR drug_schedule IN ('X', 'NDPS') \
+                    FROM pharmacy_catalog WHERE id = $2)) \
+         RETURNING *",
     )
     .bind(claims.tenant_id)
     .bind(body.catalog_item_id)
