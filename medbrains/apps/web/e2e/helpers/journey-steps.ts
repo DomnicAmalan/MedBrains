@@ -447,18 +447,69 @@ export async function transferAdmissionBedIfAvailable(
     "GET",
     `/api/ipd/admissions/${admissionId}`,
   );
-  const beds = await api<Array<{ id: string }>>(
-    ctx,
-    "GET",
-    "/api/ipd/beds/available",
-  );
-  const bed = beds.find((candidate) => candidate.id !== detail.admission.bed_id);
+  const beds = await listAvailableBeds(ctx);
+  const bed = beds.find((candidate) => candidate.bed_id !== detail.admission.bed_id);
   if (!bed) return undefined;
-  await api(ctx, "PUT", `/api/ipd/admissions/${admissionId}/transfer`, {
-    bed_id: bed.id,
-    notes: "E2E transfer during golden patient journey",
-  });
-  return bed.id;
+  await transferAdmissionBed(ctx, admissionId, bed.bed_id, "E2E transfer during golden patient journey");
+  return bed.bed_id;
+}
+
+export interface AvailableBedLite {
+  bed_id: string;
+  bed_number: string;
+  ward_id: string | null;
+}
+
+/** Uncached, unlike seed-resolvers' `getAvailableBed`: a bed journey needs the list as it is now. */
+export async function listAvailableBeds(ctx: AuthContext): Promise<AvailableBedLite[]> {
+  return api(ctx, "GET", "/api/ipd/beds/available");
+}
+
+export interface BedDashboardRowLite {
+  bed_location_id: string;
+  bed_status: string;
+  admission_id: string | null;
+  patient_id: string | null;
+}
+
+export async function getBedDashboardBeds(ctx: AuthContext): Promise<BedDashboardRowLite[]> {
+  return api(ctx, "GET", "/api/ipd/bed-dashboard/beds");
+}
+
+export async function setBedStatus(
+  ctx: AuthContext,
+  bedId: string,
+  status: string,
+  reason?: string,
+): Promise<void> {
+  await api(ctx, "PUT", `/api/ipd/bed-dashboard/beds/${bedId}/status`, { status, reason });
+}
+
+export async function transferAdmissionBed(
+  ctx: AuthContext,
+  admissionId: string,
+  bedId: string,
+  notes: string,
+  opts: ApiCallOptions = {},
+): Promise<void> {
+  await api(ctx, "PUT", `/api/ipd/admissions/${admissionId}/transfer`, { bed_id: bedId, notes }, opts);
+}
+
+export interface BedTurnaroundLite {
+  id: string;
+  bed_id: string;
+  admission_id: string | null;
+  vacated_at: string;
+  ready_at: string | null;
+  turnaround_minutes: number | null;
+}
+
+export async function listBedTurnaround(ctx: AuthContext): Promise<BedTurnaroundLite[]> {
+  return api(ctx, "GET", "/api/ipd/bed-turnaround");
+}
+
+export async function completeBedTurnaround(ctx: AuthContext, id: string): Promise<BedTurnaroundLite> {
+  return api(ctx, "POST", `/api/ipd/bed-turnaround/${id}/complete`, { notes: "E2E cleaned" });
 }
 
 export async function createIpdProgressNote(
@@ -827,7 +878,6 @@ export async function dischargeAdmission(
   await api(ctx, "PUT", `/api/ipd/admissions/${admissionId}/discharge`, {
     discharge_type: "normal",
     discharge_summary: "E2E golden journey discharge",
-    follow_up_instructions: "Follow up in OPD after seven days.",
   });
 }
 
@@ -995,30 +1045,44 @@ export async function getDoctorCriticalAlerts(
 export interface EmergencyVisitLite {
   id: string;
   patient_id: string;
+  encounter_id: string | null;
   visit_number: string;
   status: string;
+  triage_level: string | null;
+  admission_id: string | null;
+  is_mlc: boolean;
 }
+
+export type TriageLevel =
+  | "immediate"
+  | "emergent"
+  | "urgent"
+  | "less_urgent"
+  | "non_urgent"
+  | "expectant";
 
 export interface TriageLite {
   id: string;
-  visit_id: string;
-  severity: "red" | "orange" | "yellow" | "green" | "black";
-  chief_complaint: string;
+  er_visit_id: string;
+  triage_level: TriageLevel;
+  chief_complaint: string | null;
 }
 
 export interface MlcCaseLite {
   id: string;
   mlc_number: string;
-  visit_id: string;
-  mlc_type: string;
+  er_visit_id: string | null;
+  patient_id: string;
+  case_type: string | null;
   status: string;
 }
 
 export interface PoliceIntimationLite {
   id: string;
-  mlc_id: string;
+  mlc_case_id: string;
+  intimation_number: string;
   police_station: string;
-  intimation_method: string;
+  sent_via: string | null;
   sent_at: string;
 }
 
@@ -1031,59 +1095,95 @@ export async function createEmergencyVisit(
     patient_id: patientId,
     arrival_mode: opts.arrivalMode ?? "walk_in",
     chief_complaint: opts.chiefComplaint ?? "E2E test complaint",
-    presenting_complaints: [opts.chiefComplaint ?? "E2E test complaint"],
   });
+}
+
+export async function getEmergencyVisit(ctx: AuthContext, visitId: string): Promise<EmergencyVisitLite> {
+  return api(ctx, "GET", `/api/emergency/visits/${visitId}`);
 }
 
 export async function createTriage(
   ctx: AuthContext,
   visitId: string,
-  severity: "red" | "orange" | "yellow" | "green" | "black" = "yellow",
+  triageLevel: TriageLevel = "urgent",
 ): Promise<TriageLite> {
   return api(ctx, "POST", `/api/emergency/visits/${visitId}/triage`, {
-    severity,
+    triage_level: triageLevel,
     chief_complaint: "E2E triage assessment",
-    pulse: 88,
-    bp_systolic: 120,
-    bp_diastolic: 80,
+    pulse_rate: 88,
+    blood_pressure_systolic: 120,
+    blood_pressure_diastolic: 80,
     spo2: 98,
-    temperature: 37.2,
     respiratory_rate: 16,
-    gcs: 15,
+    gcs_score: 15,
     pain_score: 4,
-    triage_notes: "E2E triage note",
+    notes: "E2E triage note",
   });
 }
 
 export async function createMlcCase(
   ctx: AuthContext,
-  visitId: string,
-  mlcType:
-    | "road_traffic_accident"
-    | "assault"
-    | "poisoning"
-    | "unnatural_death"
-    | "other" = "road_traffic_accident",
+  args: { patientId: string; visitId?: string; caseType?: string },
+  opts: ApiCallOptions = {},
 ): Promise<MlcCaseLite> {
-  return api(ctx, "POST", "/api/emergency/mlc", {
-    visit_id: visitId,
-    mlc_type: mlcType,
-    incident_description: "E2E MLC case — road traffic accident",
-    wound_description: "Laceration 3 cm on forehead, antemortem",
-    examining_doctor_notes: "Patient conscious, GCS 15",
-  });
+  return api(
+    ctx,
+    "POST",
+    "/api/emergency/mlc",
+    {
+      patient_id: args.patientId,
+      er_visit_id: args.visitId,
+      case_type: args.caseType ?? "road_traffic_accident",
+      history_of_incident: "E2E MLC case",
+      examination_findings: "Laceration 3 cm on forehead; conscious, GCS 15",
+    },
+    opts,
+  );
 }
 
 export async function createPoliceIntimation(
   ctx: AuthContext,
   mlcId: string,
   policeStation = "E2E Police Station",
+  opts: ApiCallOptions = {},
 ): Promise<PoliceIntimationLite> {
-  return api(ctx, "POST", `/api/emergency/mlc/${mlcId}/police-intimations`, {
-    police_station: policeStation,
-    intimation_method: "in_person",
-    intimation_notes: "E2E police intimation",
-  });
+  return api(
+    ctx,
+    "POST",
+    `/api/emergency/mlc/${mlcId}/police-intimations`,
+    { police_station: policeStation, sent_via: "in_person", notes: "E2E police intimation" },
+    opts,
+  );
+}
+
+export interface ErAdmissionLite {
+  er_visit_id: string;
+  admission_id: string;
+  encounter_id: string;
+  patient_id: string;
+  ward_id: string | null;
+  bed_id: string;
+  status: string;
+}
+
+export async function admitFromEr(
+  ctx: AuthContext,
+  visitId: string,
+  args: { bedId: string; admittingDoctorId: string; wardId?: string },
+  opts: ApiCallOptions = {},
+): Promise<ErAdmissionLite> {
+  return api(
+    ctx,
+    "POST",
+    `/api/emergency/visits/${visitId}/admit`,
+    {
+      bed_id: args.bedId,
+      admitting_doctor_id: args.admittingDoctorId,
+      ward_id: args.wardId,
+      admission_notes: "E2E admitted from the ER",
+    },
+    opts,
+  );
 }
 
 // ---------------------------------------------------------------------------

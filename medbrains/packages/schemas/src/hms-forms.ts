@@ -3711,6 +3711,8 @@ export const erVisitFormSchema = z.object({
 export const erAdmitFormSchema = z.object({
   bed_id: requiredTrimmed("Bed is required"),
   admitting_doctor_id: requiredTrimmed("Admitting doctor is required"),
+  /** Treating department; empty means the Emergency department. */
+  department_id: z.string(),
   admission_notes: z.string(),
 });
 

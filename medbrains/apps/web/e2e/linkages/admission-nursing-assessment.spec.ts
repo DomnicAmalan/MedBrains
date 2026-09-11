@@ -25,6 +25,7 @@ import {
   getRosterCandidates,
   listAdmissionTasks,
   rosterNurse,
+  setBedStatus,
 } from "../helpers/journey-steps";
 import { getAvailableBed } from "../helpers/seed-resolvers";
 
@@ -57,6 +58,7 @@ test.describe("An admission raises the initial nursing assessment for the ward's
 
     const entry = await rosterNurse(admin, { nurseUserId: nurse.userId, wardId, isCharge: true });
     const admissions: string[] = [];
+    const usedBeds: string[] = [bedId];
     try {
       // The same nurse on the same shift is a double-click, not two people.
       await rosterNurse(admin, { nurseUserId: nurse.userId, wardId, isCharge: true }, { expectStatus: 409 });
@@ -85,6 +87,7 @@ test.describe("An admission raises the initial nursing assessment for the ward's
         other = beds.find((b) => b.bed_id !== bedId && b.ward_id === wardId);
       }
       expect(other, "a second free bed to admit into").toBeTruthy();
+      if (other) usedBeds.push(other.bed_id);
       const patient2 = await createPatientApi(admin);
       const admission2 = await admitToIpd(admin, { patientId: patient2.id, bedId: other?.bed_id });
       admissions.push(admission2);
@@ -99,6 +102,10 @@ test.describe("An admission raises the initial nursing assessment for the ward's
         await dischargeAdmission(admin, id).catch(() => undefined);
       }
       await deleteRosterEntry(admin, entry.id).catch(() => undefined);
+      // Discharge hands a bed to housekeeping; mark them clean for the next run.
+      for (const id of usedBeds) {
+        await setBedStatus(admin, id, "vacant_clean").catch(() => undefined);
+      }
     }
   });
 });

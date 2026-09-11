@@ -326,7 +326,10 @@ async function firstClinicalDepartmentId(
     const preferred =
       active.find((d) => d.code === "GEN-MEDICINE") ??
       active.find((d) => d.department_type === "clinical");
-    return preferred ? [preferred.id] : [];
+    // ER visits belong to the Emergency department; a clinician who also
+    // covers the ER (the physician on ER call) can act on them.
+    const emergency = active.find((d) => d.code === "EMERGENCY");
+    return [preferred, emergency].filter((d): d is NonNullable<typeof d> => !!d).map((d) => d.id);
   } catch {
     return [];
   }
