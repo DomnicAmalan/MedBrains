@@ -57,7 +57,7 @@ RE_TEMPLATE_SEG = re.compile(r"\$\{[^}]*\}")
 RE_CONCRETE_SEG = re.compile(r"/(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|\d+)(?=/|$)")
 RE_ROUTE_PATH = re.compile(r'<Route\s+path="([^"]+)"')
 RE_GOTO = re.compile(r"""(?:goto|navigateTo)\(\s*(?:page\s*,\s*)?["'`](/[^"'`?\s]*)""")
-CELLS = ("api.smoke", "api.write", "api.perm", "ui.touched")
+CELLS = ("api.smoke", "api.write", "api.neg.validation", "api.neg.notfound", "api.perm", "ui.touched")
 
 
 def module_of(path: str) -> str:
@@ -83,6 +83,10 @@ def spec_touches() -> tuple[set[str], set[str], set[str], set[str]]:
         rel = spec.relative_to(E2E).as_posix()
         if rel.startswith("smoke/api/"):
             smoke |= paths
+        elif rel.startswith("writes/"):
+            # Generated negatives: counted through their manifest, never as
+            # hand-written coverage of the write itself.
+            continue
         else:
             hand |= paths
             if rel.startswith("rbac/"):
@@ -222,6 +226,24 @@ def page_gates() -> dict[str, dict[str, object]]:
     return {"gates": out, "aliases": aliases}
 
 
+def write_negatives() -> tuple[set[str], set[str]]:
+    """("METHOD path" with a validation case, with a not-found case), from the
+    manifest generate-api-writes.mjs leaves beside its specs."""
+    manifest = E2E / "generated" / "writes-manifest.json"
+    if not manifest.exists():
+        return set(), set()
+    data = json.loads(manifest.read_text())
+
+    def keys(kind: str) -> set[str]:
+        out = set()
+        for entry in data.get(kind, []):
+            method, _, path = entry.partition(" ")
+            out.add(f"{method} {norm(path)}")
+        return out
+
+    return keys("validation"), keys("notfound")
+
+
 def smoke_is_stale() -> bool:
     if not SMOKE_DIR.exists():
         return True
@@ -236,6 +258,7 @@ def smoke_is_stale() -> bool:
 def build() -> dict:
     endpoints = extract_backend_endpoints()
     smoke, hand, rbac, navigated = spec_touches()
+    neg_validation, neg_notfound = write_negatives()
     screens = app_screens()
 
     modules: dict[str, dict] = {}
@@ -246,6 +269,7 @@ def build() -> dict:
             {
                 "get": set(), "get_smoke": set(),
                 "write": set(), "write_hand": set(),
+                "neg_validation": set(), "neg_notfound": set(),
                 "all": set(), "perm": set(),
             },
         )
@@ -261,6 +285,10 @@ def build() -> dict:
             m["write"].add(key)
             if n in hand:
                 m["write_hand"].add(key)
+            if key in neg_validation:
+                m["neg_validation"].add(key)
+            if key in neg_notfound:
+                m["neg_notfound"].add(key)
 
     rows = []
     for name in sorted(set(modules) | set(screens)):
@@ -275,6 +303,8 @@ def build() -> dict:
                 "api.smoke": len(m["get_smoke"]) if m else 0,
                 "write": len(m["write"]) if m else 0,
                 "api.write": len(m["write_hand"]) if m else 0,
+                "api.neg.validation": len(m["neg_validation"]) if m else 0,
+                "api.neg.notfound": len(m["neg_notfound"]) if m else 0,
                 "api.perm": len(m["perm"]) if m else 0,
                 "screens": len(scr),
                 "ui.touched": len(touched),
@@ -303,17 +333,28 @@ def print_table(data: dict, only: str | None) -> None:
         f"COVERAGE LEDGER  routes {data['routes']}  screens {data['screens']}"
         "  (a cell = the path appears in a spec; an upper bound on real coverage)\n"
     )
-    print(f"{'module':22} {'GET':>4} {'smoke%':>6} {'W':>4} {'write%':>6} {'perm':>5} {'scr':>4} {'touched%':>8}")
+    print(
+        f"{'module':22} {'GET':>4} {'smoke%':>6} {'W':>4} {'write%':>6} {'val':>4} {'nf':>4} "
+        f"{'perm':>5} {'scr':>4} {'touched%':>8}"
+    )
     for r in rows:
         print(
             f"{r['module']:22} {r['get']:4d} {pct(r['api.smoke'], r['get']):>6} "
-            f"{r['write']:4d} {pct(r['api.write'], r['write']):>6} {r['api.perm']:5d} "
+            f"{r['write']:4d} {pct(r['api.write'], r['write']):>6} "
+            f"{r['api.neg.validation']:4d} {r['api.neg.notfound']:4d} {r['api.perm']:5d} "
             f"{r['screens']:4d} {pct(r['ui.touched'], r['screens']):>8}"
         )
-    tot = {k: sum(r[k] for r in data["rows"]) for k in ("get", "api.smoke", "write", "api.write", "api.perm", "screens", "ui.touched")}
+    tot = {
+        k: sum(r[k] for r in data["rows"])
+        for k in (
+            "get", "api.smoke", "write", "api.write", "api.neg.validation", "api.neg.notfound",
+            "api.perm", "screens", "ui.touched",
+        )
+    }
     print(
         f"\n{'TOTAL':22} {tot['get']:4d} {pct(tot['api.smoke'], tot['get']):>6} "
-        f"{tot['write']:4d} {pct(tot['api.write'], tot['write']):>6} {tot['api.perm']:5d} "
+        f"{tot['write']:4d} {pct(tot['api.write'], tot['write']):>6} "
+        f"{tot['api.neg.validation']:4d} {tot['api.neg.notfound']:4d} {tot['api.perm']:5d} "
         f"{tot['screens']:4d} {pct(tot['ui.touched'], tot['screens']):>8}"
     )
     if only and rows:

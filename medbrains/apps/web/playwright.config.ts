@@ -122,6 +122,15 @@ export default defineConfig({
     // Screens — every nav route rendered as a role that holds its gate, and
     // refused for one that does not. Logs in per role, so no storageState.
     {
+      // Layer 1b — generated negatives: a write with its required fields
+      // missing is refused as 400/422, a write against an absent record is
+      // refused as 404. Logs in itself, like smoke.
+      name: "writes",
+      testMatch: /writes\/.*\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
+    },
+    {
       name: "screens",
       testMatch: /screens\/.*\.spec\.ts/,
       timeout: 60_000,
@@ -138,7 +147,7 @@ export default defineConfig({
       },
       dependencies: ["setup"],
       testIgnore:
-        /(mock|smoke\/api|crud|forms|analytics|rbac|passmark|scenarios|journeys|accessibility|linkages|screens)\/.*\.spec\.ts/,
+        /(mock|smoke\/api|writes|crud|forms|analytics|rbac|passmark|scenarios|journeys|accessibility|linkages|screens)\/.*\.spec\.ts/,
     },
 
     {
