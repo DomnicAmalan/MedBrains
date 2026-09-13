@@ -99,5 +99,10 @@ last-good render, never a blank board.
    reaches parity on the journey catalogue, then `packages/mobile-shell`, `packages/ui-mobile`
    and `packages/uniffi-rn-plugin`.
 
+Parity is tracked screen by screen in `medbrains/docs/NATIVE-PARITY.md` (118 screens and
+boards surveyed from the code on 2026-09-13, each with its endpoints and an iOS/Android
+status). A React Native app is deleted only when every one of its rows is converted on both
+platforms; the ledger is updated in the PR that converts the screen, never afterwards.
+
 Each phase lands as one focused PR after the full gate, verified on simulator and emulator
 with screenshots of every screen.
