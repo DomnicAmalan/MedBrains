@@ -11,7 +11,7 @@
        check-ui-api check-types check-ui-seam check-raw-html check-secrets check-all \
        check-field-classes check-authz-collapse check-query-collapse check-boundary-filter check-conditional-authz check-permission-codes check-permission-reachable check-ui-permission-match check-ui-permission-match-strict check-ui-permission-match-update-baseline check-relation-parity check-parent-id-scoping check-phi-audit-coverage authz-ledger coverage-ledger coverage-ledger-check coverage-ledger-update-baseline \
        check-rls check-sharing check-authz-posture check-print-placeholders check-requirement-flags check-surface-drift check-role-templates check-tx-error-discard check-pg-enum-parity check-default-parity check-unbounded-reads check-permission-enforcement check-tenant-registry-reads check-pool-reads check-rls-only-writes check-tenant-leak check-runtime-sqlx check-audit check-tracing \
-       check-migration-headers check-migration-immutable e2e-generate e2e-screens e2e-linkages e2e-writes e2e-writes-generate \
+       check-migration-headers check-migration-immutable e2e-generate e2e-screens e2e-linkages e2e-writes e2e-writes-generate native-tokens native-core native-ios native-ios-test native-android \
        check-region-pinning check-no-card-logging check-egress-allowlist check-cert-readiness check-encryption-at-rest check-redaction-masking \
        smoke-test e2e-test e2e-smoke e2e-crud e2e-forms e2e-analytics e2e-rbac e2e-journeys e2e-ui-aaa e2e-full e2e-all generate-smoke generate-e2e \
        test-rust test-unit test-ts test-all test-coverage \
@@ -585,7 +585,36 @@ e2e-smoke-generate: ## Regenerate Layer 1 API smoke specs from every crate route
 e2e-writes-generate: ## Regenerate Layer 1b write negatives (missing required fields → 4xx, absent record → 404) from every crate router
 	node apps/web/scripts/generate-api-writes.mjs
 
-e2e-generate: e2e-smoke-generate e2e-writes-generate ## Regenerate everything the e2e layers derive from source (smoke specs, write negatives, page gates)
+## ── Native device apps (RFCs/RFC-NATIVE-MOBILE.md) ─────────────────────────
+NATIVE_TARGET_DIR ?= /tmp/mb-target
+IOS_SIM ?= 6A6844C9-82B6-4710-89DC-1DC3C07657AF
+
+native-tokens: ## Carbon tokens → Swift + Kotlin (apps/ios/…/Generated/Carbon.swift, apps/android/ui/…/Carbon.kt)
+	python3 scripts/generate_native_tokens.py
+
+native-core: ## Build the Rust core for iOS + Android and regenerate the UniFFI Swift/Kotlin bindings + xcframework
+	bash scripts/build_guard.sh --wait
+	CARGO_TARGET_DIR=$(NATIVE_TARGET_DIR) cargo build -p medbrains-edge-rn --release
+	CARGO_TARGET_DIR=$(NATIVE_TARGET_DIR) cargo build -p medbrains-edge-rn --release --target aarch64-apple-ios-sim
+	CARGO_TARGET_DIR=$(NATIVE_TARGET_DIR) cargo build -p medbrains-edge-rn --release --target aarch64-apple-ios
+	rm -rf apps/ios/Packages/MedBrainsCore/Generated && mkdir -p apps/ios/Packages/MedBrainsCore/Generated apps/android/core/src/main/kotlin
+	CARGO_TARGET_DIR=$(NATIVE_TARGET_DIR) cargo run -q -p medbrains-edge-rn --bin uniffi-bindgen -- generate --library $(NATIVE_TARGET_DIR)/release/libmedbrains_edge_rn.dylib --language swift --out-dir apps/ios/Packages/MedBrainsCore/Generated
+	CARGO_TARGET_DIR=$(NATIVE_TARGET_DIR) cargo run -q -p medbrains-edge-rn --bin uniffi-bindgen -- generate --library $(NATIVE_TARGET_DIR)/release/libmedbrains_edge_rn.dylib --language kotlin --out-dir apps/android/core/src/main/kotlin
+	rm -rf $(NATIVE_TARGET_DIR)/edge-rn-headers apps/ios/Packages/MedBrainsCore/MedBrainsEdgeRn.xcframework && mkdir -p $(NATIVE_TARGET_DIR)/edge-rn-headers
+	cp apps/ios/Packages/MedBrainsCore/Generated/edge_rnFFI.h $(NATIVE_TARGET_DIR)/edge-rn-headers/ && cp apps/ios/Packages/MedBrainsCore/Generated/edge_rnFFI.modulemap $(NATIVE_TARGET_DIR)/edge-rn-headers/module.modulemap
+	xcodebuild -create-xcframework -library $(NATIVE_TARGET_DIR)/aarch64-apple-ios-sim/release/libmedbrains_edge_rn.a -headers $(NATIVE_TARGET_DIR)/edge-rn-headers -library $(NATIVE_TARGET_DIR)/aarch64-apple-ios/release/libmedbrains_edge_rn.a -headers $(NATIVE_TARGET_DIR)/edge-rn-headers -output apps/ios/Packages/MedBrainsCore/MedBrainsEdgeRn.xcframework
+	ANDROID_NDK_HOME=$$(ls -d $$HOME/Library/Android/sdk/ndk/27* | head -1) CARGO_TARGET_DIR=$(NATIVE_TARGET_DIR) cargo ndk -t arm64-v8a -t x86_64 -o apps/android/core/src/main/jniLibs build --release -p medbrains-edge-rn
+
+native-ios: ## Generate the Xcode project and build MedBrainsStaff for the simulator
+	cd apps/ios && xcodegen generate && xcodebuild -project MedBrains.xcodeproj -scheme MedBrainsStaff -destination "platform=iOS Simulator,id=$(IOS_SIM)" -derivedDataPath DerivedData build | grep -E "error:|BUILD (SUCCEEDED|FAILED)"
+
+native-ios-test: ## Run the Swift package tests (MedBrainsKit)
+	cd apps/ios/Packages/MedBrainsKit && swift test
+
+native-android: ## Build the Android staff app and run the kit unit tests
+	cd apps/android && JAVA_HOME=$$(/usr/libexec/java_home -v 17) ./gradlew :kit:testDebugUnitTest :app-staff:assembleDebug -q
+
+e2e-generate: e2e-smoke-generate e2e-writes-generate ## Regenerate everything the e2e layers derive from source (smoke specs, write + permission negatives, page gates)
 	python3 scripts/coverage_ledger.py --emit-page-gates apps/web/e2e/generated/page-gates.json
 
 e2e-writes: ## Layer 1b — generated write negatives
