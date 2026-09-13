@@ -380,8 +380,20 @@ pub async fn finalize_payroll_run(
     .bind(id)
     .bind(claims.tenant_id)
     .fetch_optional(&mut *tx)
-    .await?
-    .ok_or_else(|| AppError::BadRequest("Run not found or already finalized".to_owned()))?;
+    .await?;
+    let Some(run) = run else {
+        let exists: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM payroll_runs WHERE id = $1 AND tenant_id = $2)",
+        )
+        .bind(id)
+        .bind(claims.tenant_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        if !exists {
+            return Err(AppError::NotFound);
+        }
+        return Err(AppError::BadRequest("Run is already finalized".to_owned()));
+    };
     tx.commit().await?;
     Ok(Json(run))
 }

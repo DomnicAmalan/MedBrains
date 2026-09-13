@@ -5124,7 +5124,7 @@ pub async fn delete_attender(
     medbrains_db::pool::set_full_context(&mut tx, &claims.tenant_id, &claims.department_ids)
         .await?;
 
-    sqlx::query(
+    let result = sqlx::query(
         "DELETE FROM admission_attenders \
          WHERE id = $1 AND admission_id = $2 AND tenant_id = $3",
     )
@@ -5133,6 +5133,9 @@ pub async fn delete_attender(
     .bind(claims.tenant_id)
     .execute(&mut *tx)
     .await?;
+    if result.rows_affected() == 0 {
+        return Err(AppError::NotFound);
+    }
 
     tx.commit().await?;
 
@@ -5467,10 +5470,21 @@ pub async fn finalize_discharge_summary(
     .bind(claims.tenant_id)
     .bind(claims.sub)
     .fetch_optional(&mut *tx)
-    .await?
-    .ok_or_else(|| {
-        AppError::BadRequest("Discharge summary not found or already finalized".to_owned())
-    })?;
+    .await?;
+    let Some(row) = row else {
+        let exists: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM ipd_discharge_summaries \
+             WHERE admission_id = $1 AND tenant_id = $2)",
+        )
+        .bind(admission_id)
+        .bind(claims.tenant_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        if !exists {
+            return Err(AppError::NotFound);
+        }
+        return Err(AppError::BadRequest("Discharge summary is already finalized".to_owned()));
+    };
 
     #[derive(sqlx::FromRow)]
     struct DischargeFinalizedEventContext {
@@ -6771,8 +6785,22 @@ pub async fn resolve_clinical_doc(
     .bind(claims.sub)
     .bind(admission_id)
     .fetch_optional(&mut *tx)
-    .await?
-    .ok_or_else(|| AppError::BadRequest("Document not found or already resolved".to_owned()))?;
+    .await?;
+    let Some(row) = row else {
+        let exists: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM ipd_clinical_documentations \
+             WHERE id = $1 AND tenant_id = $2 AND admission_id = $3)",
+        )
+        .bind(doc_id)
+        .bind(claims.tenant_id)
+        .bind(admission_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        if !exists {
+            return Err(AppError::NotFound);
+        }
+        return Err(AppError::BadRequest("Document is already resolved".to_owned()));
+    };
 
     tx.commit().await?;
     Ok(Json(row))

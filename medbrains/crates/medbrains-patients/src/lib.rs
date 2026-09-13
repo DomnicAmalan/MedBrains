@@ -4329,13 +4329,17 @@ pub async fn update_patient_photo(
     medbrains_db::pool::set_full_context(&mut tx, &claims.tenant_id, &claims.department_ids)
         .await?;
 
-    sqlx::query!(
+    let updated = sqlx::query!(
         "UPDATE patients SET photo_url = $1, photo_captured_at = now(), updated_at = now() WHERE id = $2",
         &body.photo_url,
         patient_id,
     )
     .execute(&mut *tx)
     .await?;
+    // Bypass roles pass `require_patient_access` without the row existing.
+    if updated.rows_affected() == 0 {
+        return Err(AppError::NotFound);
+    }
 
     tx.commit().await?;
     Ok(Json(serde_json::json!({ "photo_url": body.photo_url })))

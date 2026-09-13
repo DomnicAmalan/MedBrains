@@ -2898,6 +2898,18 @@ pub async fn review_qc_result(
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
+    let exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM lab_qc_results \
+         WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL)",
+    )
+    .bind(id)
+    .bind(claims.tenant_id)
+    .fetch_one(&mut *tx)
+    .await?;
+    if !exists {
+        return Err(AppError::NotFound);
+    }
+
     // The reviewer is not the person who ran the control. Reviewing one's own
     // failed run is the same signature twice.
     let reason = body.reviewer_notes.trim();
@@ -2925,8 +2937,7 @@ pub async fn review_qc_result(
     .await?;
 
     let Some(row) = row else {
-        // Either it is not there, or the caller ran it themselves. Both are
-        // refusals a reviewer can act on without being told which.
+        // The run exists, so the caller ran it themselves.
         return Err(AppError::BadRequest(
             "This QC run cannot be reviewed by you. A run is reviewed by somebody other than the \
              person who performed it."

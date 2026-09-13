@@ -3503,7 +3503,7 @@ pub async fn delete_prescription_template(
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
-    sqlx::query(
+    let deleted = sqlx::query(
         "DELETE FROM prescription_templates \
          WHERE id = $1 AND tenant_id = $2 AND created_by = $3",
     )
@@ -3512,6 +3512,9 @@ pub async fn delete_prescription_template(
     .bind(claims.sub)
     .execute(&mut *tx)
     .await?;
+    if deleted.rows_affected() == 0 {
+        return Err(AppError::NotFound);
+    }
 
     tx.commit().await?;
     Ok(Json(serde_json::json!({ "status": "ok" })))
