@@ -10,11 +10,16 @@ public enum MedBrainsTheme {
     public static let success = Carbon.mint[4]
     public static let warning = Carbon.amber[4]
     public static let danger = Carbon.rose[5]
-    public static let ink = Carbon.ink[9]
-    public static let inkSecondary = Carbon.ink[6]
+    public static let ink = Carbon.ink[10]
+    public static let inkSecondary = Carbon.ink[7]
+    public static let inkDisabled = Carbon.ink[3]
+    public static let inkInverse = Carbon.ink[0]
     public static let hairline = Carbon.ink[2]
-    public static let canvas = Color(uiColor: .systemBackground)
-    public static let surface = Color(uiColor: .secondarySystemBackground)
+    public static let borderStrong = Carbon.ink[5]
+    /// Carbon layers: the white canvas, then Gray 10 for fields and layer-01.
+    public static let canvas = Carbon.ink[0]
+    public static let field = Carbon.ink[1]
+    public static let surface = Carbon.ink[1]
 
     /// Carbon-for-mobile: phones 44pt, tablets 48pt (Material's floor, right
     /// for a surface held further away). WCAG 2.2 SC 2.5.8's 24pt is the floor.
@@ -30,8 +35,8 @@ public struct Eyebrow: View {
     public init(_ text: String) { self.text = text }
     public var body: some View {
         Text(text.uppercased())
-            .font(.caption.monospaced().weight(.semibold))
-            .tracking(1.2)
+            .font(CarbonType.codeSmall)
+            .tracking(1.6)
             .foregroundStyle(MedBrainsTheme.inkSecondary)
             .accessibilityAddTraits(.isHeader)
     }

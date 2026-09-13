@@ -12,6 +12,7 @@ struct StaffApp: App {
     private let client: ApiClient
 
     init() {
+        CarbonType.register()
         let secrets = SecretStore(service: "com.medbrains.staff")
         let client = ApiClient(baseURL: AppConfig.baseURL, variant: "staff", secrets: secrets)
         self.client = client

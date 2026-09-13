@@ -75,18 +75,26 @@ struct PlaceholderModuleHome: View {
     let phase: Int
 
     var body: some View {
-        List {
-            Section {
-                Eyebrow("Converting in phase \(phase)")
-                Text("\(module.displayName) keeps running on the current app until this screen lands natively.")
-                    .foregroundStyle(.secondary)
-            }
-            Section("Surfaces") {
-                ForEach(module.appCodes, id: \.self) { Text($0).font(.body.monospaced()) }
-            }
-            Section("Requires") {
-                ForEach(module.requiredPermissions, id: \.self) { Text($0).font(.body.monospaced()) }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Eyebrow("Converting in phase \(phase)")
+                    Text("\(module.displayName) keeps running on the current app until this screen lands natively.")
+                        .font(CarbonType.body)
+                        .foregroundStyle(MedBrainsTheme.inkSecondary)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(MedBrainsTheme.surface)
+                .overlay(alignment: .leading) { Rectangle().fill(MedBrainsTheme.interactive).frame(width: 3) }
+                .padding(16)
+
+                CarbonSectionTitle("Surfaces")
+                ForEach(module.appCodes, id: \.self) { CarbonRow($0, mono: true) }
+                CarbonSectionTitle("Requires")
+                ForEach(module.requiredPermissions, id: \.self) { CarbonRow($0, mono: true) }
             }
         }
+        .background(MedBrainsTheme.canvas)
     }
 }

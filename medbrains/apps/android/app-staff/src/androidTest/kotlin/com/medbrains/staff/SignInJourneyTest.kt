@@ -1,5 +1,6 @@
 package com.medbrains.staff
 
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -34,6 +35,8 @@ class SignInJourneyTest {
         // never opd.visit.update, so Lab is offered and Doctor is not.
         compose.onNodeWithTag("module-doctor").assertDoesNotExist()
         compose.onNodeWithTag("module-lab").assertExists()
+        // Registry order decides the landing: the nurse opens on Nurse, not on the last module.
+        compose.onNodeWithTag("module-nurse").assertIsSelected()
 
         compose.onNodeWithContentDescription("Account").performClick()
         compose.onNodeWithText("Sign out").performClick()

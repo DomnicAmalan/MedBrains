@@ -5,5 +5,5 @@ let package = Package(
     name: "MedBrainsUI",
     platforms: [.iOS(.v17)],
     products: [.library(name: "MedBrainsUI", targets: ["MedBrainsUI"])],
-    targets: [.target(name: "MedBrainsUI")]
+    targets: [.target(name: "MedBrainsUI", resources: [.copy("Fonts")])]
 )

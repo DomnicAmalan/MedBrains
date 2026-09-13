@@ -41,6 +41,8 @@ final class SignInJourneyTests: XCTestCase {
         // never opd.visit.update, so Lab is offered and Doctor is not.
         XCTAssertFalse(app.tabBars.buttons["Doctor"].exists, "Doctor is gated on opd.visit.update")
         XCTAssertTrue(app.tabBars.buttons["Lab"].exists, "Lab is gated on lab.orders.list, which a nurse holds")
+        // Registry order decides the landing: the nurse opens on Nurse, not on the last module.
+        XCTAssertTrue(nurseTab.isSelected, "lands on the first permitted module")
 
         app.navigationBars.buttons["Account"].tap()
         XCTAssertTrue(app.buttons["Sign out"].waitForExistence(timeout: 5))
@@ -58,7 +60,7 @@ final class SignInJourneyTests: XCTestCase {
         app.secureTextFields["Password"].tap()
         app.secureTextFields["Password"].typeText("wrong")
         app.buttons["signIn"].tap()
-        XCTAssertTrue(app.staticTexts["Sign-in failed: Wrong username or password."].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Wrong username or password."].waitForExistence(timeout: 10))
         shoot("04-wrong-password")
     }
 }
