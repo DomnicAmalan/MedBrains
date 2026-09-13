@@ -199,6 +199,7 @@ export async function createPatientApi(
     lastName?: string;
     phone?: string;
     gender?: string;
+    email?: string;
   } = {},
 ): Promise<PatientLite> {
   const ts = Date.now() + Math.floor(Math.random() * 1000);
@@ -212,6 +213,7 @@ export async function createPatientApi(
     last_name: lastName,
     phone,
     gender,
+    email: base.email,
   });
   return created;
 }
@@ -254,11 +256,27 @@ export async function createConsultation(
   );
 }
 
+export interface PrescriptionFanout {
+  id: string;
+  /** The pharmacist's review-queue entry the prescription raised. */
+  pharmacyRxQueueId: string | null;
+  /** The pharmacy order the prescription raised. */
+  pharmacyOrderId: string | null;
+}
+
 export async function createPrescription(
   ctx: AuthContext,
   encounterId: string,
   opts: { drugId?: string; drugName?: string; itemCount?: number } = {},
 ): Promise<string> {
+  return (await createPrescriptionDetailed(ctx, encounterId, opts)).id;
+}
+
+export async function createPrescriptionDetailed(
+  ctx: AuthContext,
+  encounterId: string,
+  opts: { drugId?: string; drugName?: string; itemCount?: number } = {},
+): Promise<PrescriptionFanout> {
   const drug = opts.drugId
     ? { id: opts.drugId, name: opts.drugName ?? "Unknown" }
     : await getFirstDrug(ctx);
@@ -281,13 +299,21 @@ export async function createPrescription(
   // genuinely cannot re-prove identity.
   const signing = ctx.password ? await withStepUp(ctx) : ctx;
 
-  const resp = await api<{ prescription: { id: string } }>(
+  const resp = await api<{
+    prescription: { id: string };
+    pharmacy_rx_queue_id: string | null;
+    pharmacy_order_id: string | null;
+  }>(
     signing,
     "POST",
     `/api/opd/encounters/${encounterId}/prescriptions`,
     { items },
   );
-  return resp.prescription.id;
+  return {
+    id: resp.prescription.id,
+    pharmacyRxQueueId: resp.pharmacy_rx_queue_id,
+    pharmacyOrderId: resp.pharmacy_order_id,
+  };
 }
 
 export async function createPharmacyOrder(
@@ -297,10 +323,15 @@ export async function createPharmacyOrder(
     prescriptionId?: string;
     encounterId?: string;
     quantity?: number;
+    /** A specific catalogue item; the shared FEFO drug when omitted. */
+    drugId?: string;
+    drugName?: string;
     unitPrice?: number;
   },
 ): Promise<{ id: string; itemId: string }> {
-  const drug = await getFirstDrug(ctx);
+  const drug = args.drugId
+    ? { id: args.drugId, name: args.drugName ?? "E2E drug" }
+    : await getFirstDrug(ctx);
   // POST returns { order: { id }, items: [{ id }] }
   const resp = await api<{
     order: { id: string };
@@ -366,9 +397,9 @@ export async function createLabOrder(
 export async function cancelLabOrder(
   ctx: AuthContext,
   labOrderId: string,
-  reason = "spec test cancellation",
+  opts: ApiCallOptions = {},
 ): Promise<void> {
-  await api(ctx, "PUT", `/api/lab/orders/${labOrderId}/cancel`, { reason });
+  await api(ctx, "PUT", `/api/lab/orders/${labOrderId}/cancel`, undefined, opts);
 }
 
 export async function createInvoice(
@@ -394,6 +425,62 @@ export async function addBillingItem(
     quantity: args.quantity ?? 1,
     unit_price: args.unitPrice ?? 500,
   });
+}
+
+export interface InvoiceItemLite {
+  id: string;
+  charge_code: string;
+  description: string;
+  source: string | null;
+  source_id: string | null;
+  quantity: number;
+  total_price: string | number;
+}
+
+export interface InvoiceDetailLite {
+  invoice: { id: string; status: string; total_amount: string | number; patient_id: string };
+  items: InvoiceItemLite[];
+  payments: Array<{ id: string }>;
+}
+
+export async function getInvoiceDetail(ctx: AuthContext, invoiceId: string): Promise<InvoiceDetailLite> {
+  return api(ctx, "GET", `/api/billing/invoices/${invoiceId}`);
+}
+
+export async function listPatientInvoices(
+  ctx: AuthContext,
+  patientId: string,
+): Promise<Array<{ id: string; status: string }>> {
+  const resp = await api<{ invoices: Array<{ id: string; status: string }> }>(
+    ctx,
+    "GET",
+    `/api/billing/invoices${qs({ patient_id: patientId })}`,
+  );
+  return resp.invoices;
+}
+
+/** The invoice item a module's auto-charge wrote for one source record. */
+export async function findChargeFor(
+  ctx: AuthContext,
+  patientId: string,
+  source: string,
+  sourceId: string,
+): Promise<{ invoiceId: string; item: InvoiceItemLite } | undefined> {
+  for (const inv of await listPatientInvoices(ctx, patientId)) {
+    const detail = await getInvoiceDetail(ctx, inv.id);
+    const item = detail.items.find((i) => i.source === source && i.source_id === sourceId);
+    if (item) return { invoiceId: inv.id, item };
+  }
+  return undefined;
+}
+
+export async function setTenantSetting(
+  ctx: AuthContext,
+  category: string,
+  key: string,
+  value: unknown,
+): Promise<void> {
+  await api(ctx, "PUT", "/api/setup/settings", { category, key, value });
 }
 
 export async function issueInvoice(
@@ -977,11 +1064,14 @@ export interface CriticalAlertLite {
   acknowledged_by: string | null;
 }
 
+/** Collection confirms identity first: the identifier must match the order's patient. */
 export async function collectLabSample(
   ctx: AuthContext,
   orderId: string,
+  patientIdentifier: string,
 ): Promise<void> {
   await api(ctx, "PUT", `/api/lab/orders/${orderId}/collect`, {
+    patient_identifier: patientIdentifier,
     collected_at: new Date().toISOString(),
     collection_notes: "E2E sample collection",
   });
@@ -1012,8 +1102,9 @@ export async function completeLabOrder(
 export async function verifyLabResults(
   ctx: AuthContext,
   orderId: string,
+  opts: ApiCallOptions = {},
 ): Promise<void> {
-  await api(ctx, "PUT", `/api/lab/orders/${orderId}/verify`, {});
+  await api(ctx, "PUT", `/api/lab/orders/${orderId}/verify`, {}, opts);
 }
 
 export async function listCriticalAlerts(
@@ -1025,11 +1116,17 @@ export async function listCriticalAlerts(
 export async function acknowledgeLabCriticalAlert(
   ctx: AuthContext,
   alertId: string,
-  actionNote: string,
+  readbackValue: string,
+  opts: ApiCallOptions = {},
 ): Promise<CriticalAlertLite> {
-  return api(ctx, "PUT", `/api/lab/critical-alerts/${alertId}/acknowledge`, {
-    action_taken: actionNote,
-  });
+  // Closing the loop means reading the value back; it must match what was reported.
+  return api(
+    ctx,
+    "PUT",
+    `/api/lab/critical-alerts/${alertId}/acknowledge`,
+    { readback_value: readbackValue },
+    opts,
+  );
 }
 
 export async function getDoctorCriticalAlerts(

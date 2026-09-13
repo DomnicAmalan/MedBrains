@@ -69,11 +69,12 @@ pub struct Pipeline {
 ///
 /// Boxed because a `const` array cannot hold `async fn`s of differing types —
 /// each row wraps its function in `Box::pin`.
-pub type PipelineFn = for<'a> fn(
-    &'a PgPool,
-    Uuid,
-    &'a Value,
-) -> Pin<Box<dyn Future<Output = Result<(), sqlx::Error>> + Send + 'a>>;
+pub type PipelineFn =
+    for<'a> fn(
+        &'a PgPool,
+        Uuid,
+        &'a Value,
+    ) -> Pin<Box<dyn Future<Output = Result<(), sqlx::Error>> + Send + 'a>>;
 
 /// Every built-in pipeline.
 ///
@@ -87,19 +88,14 @@ pub const PIPELINES: &[Pipeline] = &[
         run: |p, t, v| Box::pin(on_ipd_discharge_initiated(p, t, v)),
     },
     Pipeline {
-        event: ClinicalEventName::PharmacyOrderDispensed,
-        description: "Low-stock check on every dispensed item",
-        run: |p, t, v| Box::pin(on_pharmacy_order_dispensed(p, t, v)),
-    },
-    Pipeline {
         event: ClinicalEventName::LabResultPosted,
         description: "Critical-value SMS to ordering doctor",
         run: |p, t, v| Box::pin(on_lab_result_posted(p, t, v)),
     },
     Pipeline {
-        event: ClinicalEventName::BillingInvoiceCreated,
-        description: "Payment link to patient (WhatsApp)",
-        run: |p, t, v| Box::pin(on_billing_invoice_created(p, t, v)),
+        event: ClinicalEventName::BillingInvoiceFinalized,
+        description: "Payment link to the patient (WhatsApp) once the bill is issued",
+        run: |p, t, v| Box::pin(on_billing_invoice_finalized(p, t, v)),
     },
     Pipeline {
         event: ClinicalEventName::BillingPaymentReceived,
@@ -230,7 +226,6 @@ pub async fn dispatch_default_pipelines(
             );
         }
     }
-
 }
 
 /// The event as the subscriber wrote it, not the envelope the outbox stored.
@@ -313,59 +308,6 @@ async fn on_ipd_discharge_initiated(
     Ok(())
 }
 
-// ── 2. Pharmacy dispense → low-stock auto-indent ───
-
-async fn on_pharmacy_order_dispensed(
-    pool: &PgPool,
-    tenant_id: Uuid,
-    payload: &Value,
-) -> Result<(), sqlx::Error> {
-    let items = payload.get("items").and_then(Value::as_array);
-
-    let mut tx = pool.begin().await?;
-
-    // The NDPS register is deliberately not written here. This pipeline used
-    // to insert into `pharmacy_ndps_register` naming `order_id`, `drug_id`,
-    // `drug_name`, `schedule`, `qty` and `action_at` — none of which are
-    // columns on that table — with the error swallowed by `.ok()`. Not one row
-    // was ever written by it.
-    //
-    // The dispense handler already writes the register correctly, in the same
-    // transaction as the stock movement, with the running `balance_after`, the
-    // witness, the patient and the prescription. That is where a statutory
-    // narcotics register belongs: a register written by a subscriber that can
-    // fail is a register that can disagree with what was dispensed.
-
-    // b) For each item whose post-dispense stock dropped below reorder_level,
-    //    queue a low-stock alert event. The alert is consumed by an
-    //    indent-creation job that batches by drug to avoid duplicate
-    //    indents within the same window.
-    if let Some(items) = items {
-        for item in items {
-            let Some(drug_id) = uuid_from_value(item.get("drug_id")) else {
-                continue;
-            };
-            let _ = enqueue(
-                &mut tx,
-                tenant_id,
-                "drug",
-                Some(drug_id),
-                "pharmacy.stock_check",
-                json!({ "drug_id": drug_id, "trigger": "post_dispense" }),
-                // Idempotency: at most one stock_check per drug per day.
-                Some(format!(
-                    "stock_check:{drug_id}:{}",
-                    chrono::Utc::now().date_naive()
-                )),
-            )
-            .await;
-        }
-    }
-
-    tx.commit().await?;
-    Ok(())
-}
-
 // ── 3. Lab result posted → critical-value SMS to ordering doctor ─
 
 async fn on_lab_result_posted(
@@ -402,7 +344,7 @@ async fn on_lab_result_posted(
         None => None,
     };
 
-    match doctor_phone.filter(|phone| !phone.trim().is_empty()) {
+    match doctor_phone.as_deref().and_then(e164) {
         Some(phone) => {
             let _ = enqueue(
                 &mut tx,
@@ -433,27 +375,35 @@ async fn on_lab_result_posted(
     Ok(())
 }
 
-// ── 4. Invoice created → payment-link to patient ───────────────────
+// ── 4. Invoice issued → payment-link to patient ───────────────────
 
-async fn on_billing_invoice_created(
+/// A payment link goes out when the bill is issued, not when the draft is
+/// opened: a draft is created with a zero total and only gains lines as
+/// charges land. The finalised event carries no amount, and an amount in
+/// a payload would only ever be a copy — the invoice row is the fact.
+async fn on_billing_invoice_finalized(
     pool: &PgPool,
     tenant_id: Uuid,
     payload: &Value,
 ) -> Result<(), sqlx::Error> {
-    let invoice_id = uuid_from_payload(payload, "invoice_id");
-    let patient_id = uuid_from_payload(payload, "patient_id");
-    let total = payload
-        .get("total_amount")
-        .and_then(Value::as_f64)
-        .unwrap_or(0.0);
-
-    if total <= 0.0 {
-        return Ok(()); // No charge → no payment link needed.
-    }
-
-    let Some(inv) = invoice_id else { return Ok(()) };
-    let Some(p) = patient_id else { return Ok(()) };
+    let Some(inv) = uuid_from_payload(payload, "invoice_id") else {
+        return Ok(());
+    };
     let mut tx = pool.begin().await?;
+
+    let row: Option<(Uuid, rust_decimal::Decimal)> = sqlx::query_as(
+        "SELECT patient_id, total_amount FROM invoices WHERE id = $1 AND tenant_id = $2",
+    )
+    .bind(inv)
+    .bind(tenant_id)
+    .fetch_optional(&mut *tx)
+    .await?;
+    let Some((patient_id, total)) = row else {
+        return Ok(());
+    };
+    if total <= rust_decimal::Decimal::ZERO {
+        return Ok(()); // Nothing to pay → no link.
+    }
 
     let _ = enqueue(
         &mut tx,
@@ -463,8 +413,8 @@ async fn on_billing_invoice_created(
         "whatsapp.payment_link",
         json!({
             "invoice_id": inv,
-            "patient_id": p,
-            "amount": total,
+            "patient_id": patient_id,
+            "amount": total.to_string(),
             "template_name": "payment_link",
             "language": "en",
         }),
@@ -568,7 +518,26 @@ async fn on_opd_encounter_created(
     let Some(enc) = encounter_id else {
         return Ok(());
     };
+    let Some(patient) = patient_id else {
+        return Ok(());
+    };
     let mut tx = pool.begin().await?;
+
+    // The SMS handler dead-letters anything without an E.164 `to` and a
+    // body; a row it cannot send is a confirmation the patient never gets.
+    let phone: Option<String> =
+        sqlx::query_scalar("SELECT phone FROM patients WHERE id = $1 AND tenant_id = $2")
+            .bind(patient)
+            .bind(tenant_id)
+            .fetch_optional(&mut *tx)
+            .await?;
+    let Some(to) = phone.as_deref().and_then(e164) else {
+        tracing::warn!(
+            encounter = %enc,
+            "appointment confirmation not queued: patient has no dialable phone"
+        );
+        return Ok(());
+    };
 
     let _ = enqueue(
         &mut tx,
@@ -577,8 +546,10 @@ async fn on_opd_encounter_created(
         Some(enc),
         "sms.appointment_confirmation",
         json!({
+            "to": to,
             "encounter_id": enc,
-            "patient_id": patient_id,
+            "patient_id": patient,
+            "body": "Your appointment is confirmed. Please carry this message and a photo ID.",
         }),
         Some(format!("conf:{enc}")),
     )
@@ -586,6 +557,21 @@ async fn on_opd_encounter_created(
 
     tx.commit().await?;
     Ok(())
+}
+
+/// A phone the SMS handler will accept. Numbers arrive as they were typed:
+/// `+91 98765 43210`, `9876543210`, `+1-555-0100`. `+` and digits pass
+/// through; a bare ten-digit number is an Indian mobile.
+// ponytail: India dialling code assumed for bare numbers; per-tenant
+// country when a second country onboards.
+fn e164(raw: &str) -> Option<String> {
+    let digits: String = raw.chars().filter(char::is_ascii_digit).collect();
+    if raw.trim_start().starts_with('+') {
+        return (10..=15)
+            .contains(&digits.len())
+            .then(|| format!("+{digits}"));
+    }
+    (digits.len() == 10).then(|| format!("+91{digits}"))
 }
 
 // ── helpers ────────────────────────────────────────────────────────
@@ -1078,8 +1064,26 @@ async fn enqueue(
 #[cfg(test)]
 mod tests {
     use medbrains_core::clinical_events::ClinicalEventName;
+    use serde_json::json;
 
-    use super::PIPELINES;
+    use super::{PIPELINES, domain_payload, e164};
+
+    #[test]
+    fn phones_are_normalised_to_e164_or_refused() {
+        assert_eq!(e164("9876543210").as_deref(), Some("+919876543210"));
+        assert_eq!(e164("+91 98765 43210").as_deref(), Some("+919876543210"));
+        assert_eq!(e164("+1-555-0100-123").as_deref(), Some("+15550100123"));
+        assert_eq!(e164("12345"), None);
+        assert_eq!(e164(""), None);
+    }
+
+    #[test]
+    fn a_decimal_serialises_as_a_string_so_payload_amounts_are_not_numbers() {
+        // The workspace enables rust_decimal's serde-with-str: any pipeline
+        // that reads an amount from a payload with `as_f64` reads nothing.
+        let v = json!({ "t": rust_decimal::Decimal::new(150_000, 2) });
+        assert_eq!(v["t"], json!("1500.00"));
+    }
 
     #[test]
     fn an_envelope_is_unwrapped_and_a_bare_payload_is_not() {

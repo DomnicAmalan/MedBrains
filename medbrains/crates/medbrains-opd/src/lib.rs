@@ -2142,7 +2142,7 @@ pub async fn create_consultation(
     tx.commit().await?;
 
     for lab_order_id in created_lab_order_ids {
-        medbrains_lab::grant_lab_order_creator_viewer(
+        medbrains_lab::grant_lab_order_access(
             &state,
             &claims,
             lab_order_id,
