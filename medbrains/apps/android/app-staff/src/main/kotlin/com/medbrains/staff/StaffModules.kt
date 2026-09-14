@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.medbrains.kit.AppModule
+import com.medbrains.staff.doctor.DoctorModule
 import com.medbrains.staff.nurse.NurseModule
 
 /**
@@ -26,7 +27,7 @@ import com.medbrains.staff.nurse.NurseModule
  */
 object StaffModules {
     val registry: List<AppModule> = listOf(
-        module("doctor", "Doctor", Icons.Filled.MonitorHeart, listOf("opd.visit.update"), listOf("Mobile-Doctor"), 3),
+        AppModule(id = "doctor", displayName = "Doctor", requiredPermissions = listOf("opd.visit.update"), appCodes = listOf("Mobile-Doctor"), icon = Icons.Filled.MonitorHeart) { DoctorModule() },
         AppModule(id = "nurse", displayName = "Nurse", requiredPermissions = listOf("nurse.dashboard.view"), appCodes = listOf("Mobile-Nurse"), icon = Icons.Filled.LocalHospital) { NurseModule() },
         module("reception", "Reception", Icons.Filled.SupportAgent, listOf("front_office.queue.list"), listOf("Desktop-Kiosk", "Desktop-Workstation", "Mobile-Admin", "Mobile-Security"), 5),
         module("pharmacy", "Pharmacy", Icons.Filled.Medication, listOf("pharmacy.prescriptions.list"), listOf("Mobile-Pharmacist"), 5),

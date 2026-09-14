@@ -24,6 +24,7 @@ class SignInJourneyTest {
 
     @Test
     fun nurseSignsInAndSeesOnlyNurseModules() {
+        with(Session) { compose.ensureSignedOut() }
         compose.onNodeWithTag("username").performTextInput("native_nurse")
         compose.onNodeWithTag("password").performTextInput("NativeNurse#2026")
         compose.onNodeWithTag("signIn").performClick()
@@ -47,6 +48,7 @@ class SignInJourneyTest {
 
     @Test
     fun wrongPasswordIsRefusedWithAMessage() {
+        with(Session) { compose.ensureSignedOut() }
         compose.onNodeWithTag("username").performTextInput("native_nurse")
         compose.onNodeWithTag("password").performTextInput("wrong")
         compose.onNodeWithTag("signIn").performClick()

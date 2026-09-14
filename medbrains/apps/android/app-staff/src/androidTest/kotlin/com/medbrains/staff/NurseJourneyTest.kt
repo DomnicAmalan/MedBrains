@@ -29,18 +29,9 @@ class NurseJourneyTest {
     @get:Rule
     val compose = createAndroidComposeRule<MainActivity>()
 
-    private fun has(tag: String) = compose.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().isNotEmpty()
+    private fun has(tag: String) = with(Session) { compose.has(tag) }
 
-    private fun signInAsNurse() {
-        // The Keystore keeps the session between launches, so a second test opens on the module home.
-        compose.waitUntil(10_000) { has("username") || has("module-home-nurse") }
-        if (has("username")) {
-            compose.onNodeWithTag("username").performTextInput("native_nurse")
-            compose.onNodeWithTag("password").performTextInput("NativeNurse#2026")
-            compose.onNodeWithTag("signIn").performClick()
-        }
-        compose.waitUntil(15_000) { has("module-home-nurse") }
-    }
+    private fun signInAsNurse() = with(Session) { compose.signInAs("native_nurse", "NativeNurse#2026", "module-home-nurse") }
 
     private fun waitOneOf(a: String, b: String) {
         compose.waitUntil(10_000) { has(a) || has(b) }

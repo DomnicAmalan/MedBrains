@@ -487,6 +487,26 @@ pub fn emergency_register_tap(taps_ms: Vec<i64>, now_ms: i64) -> TapOutcome {
     TapOutcome { taps_ms: out.taps, triple: out.triple }
 }
 
+pub fn clinic_order(start_times: Vec<Option<String>>) -> Vec<u32> {
+    clinical::clinic_day::clinic_order(&start_times)
+}
+
+pub fn clinic_next_patient(start_times: Vec<Option<String>>, statuses: Vec<String>) -> Option<u32> {
+    clinical::clinic_day::next_patient(&start_times, &statuses)
+}
+
+pub fn clinic_remaining_count(statuses: Vec<String>) -> u32 {
+    clinical::clinic_day::remaining_count(&statuses)
+}
+
+pub fn clinic_is_still_to_come(status: String) -> bool {
+    clinical::clinic_day::is_still_to_come(&status)
+}
+
+pub fn consultation_problem(chief_complaint: String, examination: String, assessment: String, plan: String) -> Option<String> {
+    clinical::consultation::consultation_problem(&chief_complaint, &examination, &assessment, &plan)
+}
+
 // ── Peer-to-peer sync identity ─────────────────────────────────────
 
 /// A device's peer-to-peer sync identity.

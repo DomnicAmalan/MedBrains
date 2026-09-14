@@ -69,6 +69,15 @@ namespace edge_rn {
     sequence<OpenEmergencyCode> emergency_open_codes(sequence<CodeBlueRef> code_blues, sequence<EmergencyCodeRef> er_codes, sequence<string> silenced_keys);
     /// Feed one tap of the silence gesture.
     TapOutcome emergency_register_tap(sequence<i64> taps_ms, i64 now_ms);
+
+    /// A doctor's clinic, earliest first; indices into the caller's list, timeless last.
+    sequence<u32> clinic_order(sequence<string?> start_times);
+    /// The earliest still-open appointment, as an index, or none when the clinic is finished.
+    u32? clinic_next_patient(sequence<string?> start_times, sequence<string> statuses);
+    u32 clinic_remaining_count(sequence<string> statuses);
+    boolean clinic_is_still_to_come(string status);
+    /// The message that stops a consultation note being saved, or none.
+    string? consultation_problem(string chief_complaint, string examination, string assessment, string plan);
 };
 
 dictionary WitnessCandidate {

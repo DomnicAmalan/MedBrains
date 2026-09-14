@@ -9,26 +9,31 @@ pub struct WitnessCandidate {
     pub is_charge: bool,
 }
 
-/// Who may witness this dose: never the nurse giving it. The server rejects
-/// `witnessed_by == actor`, so offering their own name would only produce a
-/// refusal after the nurse has already decided — and a second check by the
-/// same pair of eyes is not a second check.
+/// Who may witness this dose: never the nurse giving it.
+///
+/// The server rejects `witnessed_by == actor`, so offering their own name
+/// would only produce a refusal after the nurse has already decided — and a
+/// second check by the same pair of eyes is not a second check.
 #[must_use]
 pub fn eligible_witnesses(on_duty: Vec<WitnessCandidate>, actor_id: &str) -> Vec<WitnessCandidate> {
     on_duty.into_iter().filter(|n| n.nurse_user_id != actor_id).collect()
 }
 
-/// Whether "Give now" may be pressed. A high-alert drug without a named
-/// witness is the case this exists for; the server refuses the same write,
-/// but a disabled button explains itself and a 400 does not.
+/// Whether "Give now" may be pressed.
+///
+/// A high-alert drug without a named witness is the case this exists for;
+/// the server refuses the same write, but a disabled button explains itself
+/// and a 400 does not.
 #[must_use]
 pub fn can_record_given(is_high_alert: bool, witness_id: Option<&str>) -> bool {
     !is_high_alert || witness_id.is_some_and(|w| !w.is_empty())
 }
 
-/// The one-line summary under the server's reason. Both rights are named
-/// every time, including the one that passed: "Wristband matched, drug did
-/// not" tells a nurse to put the pack down and keep the patient.
+/// The one-line summary under the server's reason.
+///
+/// Both rights are named every time, including the one that passed:
+/// "Wristband matched, drug did not" tells a nurse to put the pack down and
+/// keep the patient.
 #[must_use]
 pub fn scan_rights_summary(right_patient: bool, right_drug: bool) -> String {
     let patient = if right_patient { "Wristband matched." } else { "Wristband did not match." };

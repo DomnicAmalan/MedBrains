@@ -28,19 +28,7 @@ final class NurseJourneyTests: XCTestCase {
     /// Any element by accessibility identifier, whatever SwiftUI mapped it to.
     private func el(_ id: String) -> XCUIElement { app.descendants(matching: .any)[id] }
 
-    private func signInAsNurse() {
-        // The Keychain keeps the session between launches, so a second test
-        // opens straight on the module home.
-        let username = app.textFields["Username or email"]
-        if username.waitForExistence(timeout: 5) {
-            username.tap()
-            username.typeText("native_nurse")
-            app.secureTextFields["Password"].tap()
-            app.secureTextFields["Password"].typeText("NativeNurse#2026")
-            app.buttons["signIn"].tap()
-        }
-        XCTAssertTrue(el("module-home-nurse").waitForExistence(timeout: 15), "the nurse lands on the nurse module")
-    }
+    private func signInAsNurse() { Session.signIn(app, as: "native_nurse", password: "NativeNurse#2026", home: "module-home-nurse") }
 
     private func shoot(_ name: String) {
         let shot = XCTAttachment(screenshot: app.screenshot())

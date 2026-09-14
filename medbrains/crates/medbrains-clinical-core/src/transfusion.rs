@@ -1,7 +1,8 @@
-//! What the bedside transfusion chart owes next. A transfusion is not
-//! "running" or "done", it is a sequence of observations at fixed points, and
-//! the one at fifteen minutes is the one that catches an acute haemolytic
-//! reaction while there is still something to do about it.
+//! What the bedside transfusion chart owes next.
+//!
+//! A transfusion is not "running" or "done", it is a sequence of observations
+//! at fixed points, and the one at fifteen minutes is the one that catches an
+//! acute haemolytic reaction while there is still something to do about it.
 
 /// The four points a transfusion is charted at, in order.
 pub const PHASES: [&str; 4] = ["baseline", "fifteen_min", "periodic", "completion"];
@@ -31,10 +32,11 @@ pub const fn is_running(started_unix: Option<i64>, ended: bool) -> bool {
     started_unix.is_some() && !ended
 }
 
-/// The chart, phase by phase. `periodic` may be recorded any number of
-/// times, so it counts as recorded once and never as overdue afterwards.
-/// Completion is never overdue: flagging it would put a red mark on every
-/// transfusion that is simply still running.
+/// The chart, phase by phase.
+///
+/// `periodic` may be recorded any number of times, so it counts as recorded
+/// once and never as overdue afterwards. Completion is never overdue: flagging
+/// it would put a red mark on every transfusion that is simply still running.
 #[must_use]
 pub fn phase_states(started_unix: Option<i64>, ended: bool, recorded: &[String], now_unix: i64) -> Vec<PhaseState> {
     let running = is_running(started_unix, ended);

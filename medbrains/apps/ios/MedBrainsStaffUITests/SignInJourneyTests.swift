@@ -22,6 +22,7 @@ final class SignInJourneyTests: XCTestCase {
 
     func testNurseSignsInAndSeesOnlyNurseModules() {
         app.launch()
+        Session.ensureSignedOut(app)
         shoot("01-login")
 
         let username = app.textFields["Username or email"]
@@ -53,6 +54,7 @@ final class SignInJourneyTests: XCTestCase {
 
     func testWrongPasswordIsRefusedWithAMessage() {
         app.launch()
+        Session.ensureSignedOut(app)
         let username = app.textFields["Username or email"]
         XCTAssertTrue(username.waitForExistence(timeout: 10))
         username.tap()

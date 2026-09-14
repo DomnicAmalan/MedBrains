@@ -7,8 +7,8 @@ natively. Status columns: `iOS` / `Android`, values ⬜ not started · 🟨 shel
 ✅ converted and verified on the screen.
 
 **Totals:** 35 modules + 4 role stacks, **118 screens/boards** (108 module or routed
-screens + 10 gates/overlays). Shells (login, gating, module home) and the Nurse module (phase 2, 2026-09-14) are ✅ on
-both; every other module row is 🟨 (placeholder home) until its phase lands.
+screens + 10 gates/overlays). Shells (login, gating, module home), the Nurse module (phase 2) and the Doctor module (phase 3, both 2026-09-14) are ✅
+on both; every other module row is 🟨 (placeholder home) until its phase lands.
 
 ## 1. apps/mobile-staff → MedBrainsStaff (13 modules, 62 screens + login + EmergencyFlash)
 
@@ -16,13 +16,13 @@ Registry order decides where a role lands (`StaffModules` on both platforms mirr
 
 | Module (phase) | Screen | RN file | Endpoints | iOS | Android |
 |---|---|---|---|---|---|
-| doctor (3) | DoctorHome | modules/doctor.tsx | GET /api/tokens/worklist | 🟨 | 🟨 |
-| doctor | QueueListScreen | doctor/queue-list.tsx | GET /api/tokens/worklist, POST /api/tokens/call-next | ⬜ | ⬜ |
-| doctor | QueueDetailScreen | doctor/queue-detail.tsx | POST /api/tokens/{id}/call\|serve\|complete\|no-show | ⬜ | ⬜ |
-| doctor | ConsultationScreen | doctor/consultation.tsx | GET/POST /api/opd/encounters/{id}/consultation, PATCH …/consultation/{cid} | ⬜ | ⬜ |
-| doctor | DoctorIpdRoundsScreen | doctor/ipd-rounds.tsx | GET /api/ipd/admissions | ⬜ | ⬜ |
-| doctor | DoctorIpdRoundDetailScreen | doctor/ipd-rounds.tsx | (props) | ⬜ | ⬜ |
-| doctor | MyClinicScreen | doctor/my-clinic.tsx | GET /api/opd/appointments | ⬜ | ⬜ |
+| doctor (3) | DoctorHome | modules/doctor.tsx | GET /api/tokens/worklist | ✅ | ✅ |
+| doctor | QueueListScreen | doctor/queue-list.tsx | GET /api/tokens/worklist, POST /api/tokens/call-next | ✅ | ✅ |
+| doctor | QueueDetailScreen | doctor/queue-detail.tsx | POST /api/tokens/{id}/call\|serve\|complete\|no-show | ✅ | ✅ |
+| doctor | ConsultationScreen | doctor/consultation.tsx | GET/POST /api/opd/encounters/{id}/consultation, PATCH …/consultation/{cid} | ✅ | ✅ |
+| doctor | DoctorIpdRoundsScreen | doctor/ipd-rounds.tsx | GET /api/ipd/admissions | ✅ | ✅ |
+| doctor | DoctorIpdRoundDetailScreen | doctor/ipd-rounds.tsx | (props) | ✅ | ✅ |
+| doctor | MyClinicScreen | doctor/my-clinic.tsx | GET /api/opd/appointments | ✅ | ✅ |
 | nurse (2) | NurseHome | modules/nurse.tsx | GET /api/ipd/admissions, GET /api/bedside/nurse-calls/active | ✅ | ✅ |
 | nurse | AdmissionsListScreen | nurse/admissions-list.tsx | GET /api/ipd/admissions | ✅ | ✅ |
 | nurse | NurseCallBoardScreen | nurse/call-board.tsx | GET /api/bedside/nurse-calls/active, PATCH /api/bedside/nurse-requests/{id}/status | ✅ | ✅ |

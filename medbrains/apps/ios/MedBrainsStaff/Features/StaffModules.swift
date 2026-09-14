@@ -9,7 +9,7 @@ import SwiftUI
 /// modules first, cross-cutting ones after.
 enum StaffModules {
     static let registry: [AppModule] = [
-        module("doctor", "Doctor", "stethoscope", ["opd.visit.update"], apps: ["Mobile-Doctor"], phase: 3),
+        AppModule(id: "doctor", displayName: "Doctor", symbol: "stethoscope", requiredPermissions: ["opd.visit.update"], appCodes: ["Mobile-Doctor"]) { AnyView(DoctorHomeView()) },
         AppModule(id: "nurse", displayName: "Nurse", symbol: "cross.case", requiredPermissions: ["nurse.dashboard.view"], appCodes: ["Mobile-Nurse"]) { AnyView(NurseHomeView()) },
         module("reception", "Reception", "person.badge.clock", ["front_office.queue.list"], apps: ["Desktop-Kiosk", "Desktop-Workstation", "Mobile-Admin", "Mobile-Security"], phase: 5),
         module("pharmacy", "Pharmacy", "pills", ["pharmacy.prescriptions.list"], apps: ["Mobile-Pharmacist"], phase: 5),

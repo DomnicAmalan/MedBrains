@@ -3,10 +3,12 @@
 //! These mirror rules the server already enforces. The device copy exists so
 //! a nurse is stopped *before* the tap rather than handed a refusal after it,
 //! never as the only guard. They lived in TypeScript inside the React Native
-//! staff app; the SwiftUI and Compose apps must not each carry a third copy
+//! staff app; the `SwiftUI` and Compose apps must not each carry a third copy
 //! that can drift, so they moved here and reach both through `medbrains-edge-rn`.
 
 pub mod bcma;
+pub mod clinic_day;
+pub mod consultation;
 pub mod emergency;
 pub mod fall_risk;
 pub mod nurse_calls;

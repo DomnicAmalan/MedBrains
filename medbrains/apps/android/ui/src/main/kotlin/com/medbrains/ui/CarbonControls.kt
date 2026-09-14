@@ -46,6 +46,7 @@ fun CarbonTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    singleLine: Boolean = true,
 ) {
     // The caller's modifier (test tag, focus requester) belongs to the field, not the label.
     Column(Modifier.fillMaxWidth()) {
@@ -54,7 +55,8 @@ fun CarbonTextField(
         TextField(
             value = value,
             onValueChange = onValueChange,
-            singleLine = true,
+            singleLine = singleLine,
+            minLines = if (singleLine) 1 else 3,
             isError = error != null,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
