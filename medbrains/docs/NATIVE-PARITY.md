@@ -7,8 +7,8 @@ natively. Status columns: `iOS` / `Android`, values ⬜ not started · 🟨 shel
 ✅ converted and verified on the screen.
 
 **Totals:** 35 modules + 4 role stacks, **118 screens/boards** (108 module or routed
-screens + 10 gates/overlays). Shells (login, gating, module home) are ✅ on both; every
-module row below is 🟨 (placeholder home) until its phase lands.
+screens + 10 gates/overlays). Shells (login, gating, module home) and the Nurse module (phase 2, 2026-09-14) are ✅ on
+both; every other module row is 🟨 (placeholder home) until its phase lands.
 
 ## 1. apps/mobile-staff → MedBrainsStaff (13 modules, 62 screens + login + EmergencyFlash)
 
@@ -23,16 +23,16 @@ Registry order decides where a role lands (`StaffModules` on both platforms mirr
 | doctor | DoctorIpdRoundsScreen | doctor/ipd-rounds.tsx | GET /api/ipd/admissions | ⬜ | ⬜ |
 | doctor | DoctorIpdRoundDetailScreen | doctor/ipd-rounds.tsx | (props) | ⬜ | ⬜ |
 | doctor | MyClinicScreen | doctor/my-clinic.tsx | GET /api/opd/appointments | ⬜ | ⬜ |
-| nurse (2) | NurseHome | modules/nurse.tsx | GET /api/ipd/admissions, GET /api/bedside/nurse-calls/active | 🟨 | 🟨 |
-| nurse | AdmissionsListScreen | nurse/admissions-list.tsx | GET /api/ipd/admissions | ⬜ | ⬜ |
-| nurse | NurseCallBoardScreen | nurse/call-board.tsx | GET /api/bedside/nurse-calls/active, PATCH /api/bedside/nurse-requests/{id}/status | ⬜ | ⬜ |
-| nurse | CodeBlueScreen | nurse/code-blue.tsx | /api/nurse/code-blue/*, …/responders | ⬜ | ⬜ |
-| nurse | TransfusionMonitorScreen | nurse/transfusion-monitor.tsx | /api/ipd/admissions/{id}/transfusions, /api/ipd/transfusions/{id}/complete, /api/blood-bank/transfusions/{id}/observations | ⬜ | ⬜ |
-| nurse | PatientWorkspaceScreen | nurse/patient-workspace.tsx | (props) | ⬜ | ⬜ |
-| nurse | MarScheduleScreen | nurse/mar-schedule.tsx | GET /api/ipd/admissions/{id}/mar | ⬜ | ⬜ |
-| nurse | AdministerDoseScreen (BCMA, scanner) | nurse/administer-dose.tsx | POST /api/nurse/mar/{marId}/verify-barcode, PATCH /api/ipd/admissions/{id}/mar/{marId}, GET /api/ipd/wards/{wardId}/on-duty | ⬜ | ⬜ |
-| nurse | ShiftHandoverScreen | nurse/shift-handover.tsx | /api/nurse/handoffs, …/encounter/{id}, …/{id}/accept | ⬜ | ⬜ |
-| nurse | BedsideActionScreen (vitals/io/pain/fall-risk) | nurse/bedside-action.tsx | /api/nurse/vitals, /api/nurse/io-entries, …/encounter/{id}/balance, /api/nurse/pain-entries, /api/nurse/fall-risk | ⬜ | ⬜ |
+| nurse (2) | NurseHome | modules/nurse.tsx | GET /api/ipd/admissions, GET /api/bedside/nurse-calls/active | ✅ | ✅ |
+| nurse | AdmissionsListScreen | nurse/admissions-list.tsx | GET /api/ipd/admissions | ✅ | ✅ |
+| nurse | NurseCallBoardScreen | nurse/call-board.tsx | GET /api/bedside/nurse-calls/active, PATCH /api/bedside/nurse-requests/{id}/status | ✅ | ✅ |
+| nurse | CodeBlueScreen | nurse/code-blue.tsx | /api/nurse/code-blue/*, …/responders | ✅ | ✅ |
+| nurse | TransfusionMonitorScreen | nurse/transfusion-monitor.tsx | /api/ipd/admissions/{id}/transfusions, /api/ipd/transfusions/{id}/complete, /api/blood-bank/transfusions/{id}/observations | ✅ | ✅ |
+| nurse | PatientWorkspaceScreen | nurse/patient-workspace.tsx | (props) | ✅ | ✅ |
+| nurse | MarScheduleScreen | nurse/mar-schedule.tsx | GET /api/ipd/admissions/{id}/mar | ✅ | ✅ |
+| nurse | AdministerDoseScreen (BCMA, scanner) | nurse/administer-dose.tsx | POST /api/nurse/mar/{marId}/verify-barcode, PATCH /api/ipd/admissions/{id}/mar/{marId}, GET /api/ipd/wards/{wardId}/on-duty | ✅ | ✅ |
+| nurse | ShiftHandoverScreen | nurse/shift-handover.tsx | /api/nurse/handoffs, …/encounter/{id}, …/{id}/accept | ✅ | ✅ |
+| nurse | BedsideActionScreen (vitals/io/pain/fall-risk) | nurse/bedside-action.tsx | /api/nurse/vitals, /api/nurse/io-entries, …/encounter/{id}/balance, /api/nurse/pain-entries, /api/nurse/fall-risk | ✅ | ✅ |
 | reception (5) | ReceptionHome | modules/reception.tsx | GET /api/tokens/worklist | 🟨 | 🟨 |
 | reception | RegisterPatientScreen | reception/register-patient.tsx | POST /api/patients, GET /api/camp/camps, /api/setup/departments, /api/setup/doctors, /api/setup/facilities, /api/terminology/search | ⬜ | ⬜ |
 | reception | PatientListScreen | reception/patient-list.tsx | GET /api/patients | ⬜ | ⬜ |
@@ -79,7 +79,7 @@ Registry order decides where a role lands (`StaffModules` on both platforms mirr
 | hr | AttendanceScreen | modules/hr.tsx | GET /api/hr/attendance | ⬜ | ⬜ |
 | device-sync (6) | SyncSetupScreen | mobile-shell/pairing/sync-setup-screen.tsx | local node keypair (Rust `generateNodeIdentity`) | 🟨 | 🟨 |
 | shell | StaffLoginGate | login-gate.tsx | POST /api/auth/login | ✅ | ✅ |
-| shell (2) | EmergencyFlash overlay (1 Hz cap, reduced-motion banner, triple-tap silence, Respond) | components/emergency-flash.tsx | GET /api/emergency/codes, /api/nurse/code-blue/* | ⬜ | ⬜ |
+| shell (2) | EmergencyFlash overlay (1 Hz cap, reduced-motion banner, triple-tap silence, Respond) | components/emergency-flash.tsx | GET /api/emergency/codes, /api/nurse/code-blue/* | ✅ | ✅ |
 
 Shell features to carry: BarcodeScanner (4 screens), BiometricUnlockGate, NotificationBridge
 (`ws(s)://<base>/api/ws/notifications?token=`, foreground only, torn down on token change),

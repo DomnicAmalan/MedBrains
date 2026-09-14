@@ -1388,7 +1388,13 @@ pub async fn list_admissions(
          JOIN encounters e ON e.id = a.encounter_id \
          WHERE {where_clause}"
     );
+    // The ReBAC scope is the first condition after the tenant ($2), so its
+    // array binds before the filters: bound after them, a nurse with any
+    // visible admission got "operator does not exist: text = uuid[]".
     let mut count_q = sqlx::query_scalar::<_, i64>(&count_sql).bind(claims.tenant_id);
+    if let Some(ref ids) = visible_ids {
+        count_q = count_q.bind(ids.clone());
+    }
     for b in &binds {
         if let Some(u) = b.uuid_val {
             count_q = count_q.bind(u);
@@ -1396,9 +1402,6 @@ pub async fn list_admissions(
         if let Some(ref s) = b.string_val {
             count_q = count_q.bind(s.clone());
         }
-    }
-    if let Some(ref ids) = visible_ids {
-        count_q = count_q.bind(ids.clone());
     }
     let total = count_q.fetch_one(&mut *tx).await?;
 
@@ -1418,6 +1421,9 @@ pub async fn list_admissions(
         bind_idx + 1
     );
     let mut data_q = sqlx::query_as::<_, AdmissionRow>(&data_sql).bind(claims.tenant_id);
+    if let Some(ref ids) = visible_ids {
+        data_q = data_q.bind(ids.clone());
+    }
     for b in &binds {
         if let Some(u) = b.uuid_val {
             data_q = data_q.bind(u);
@@ -1425,9 +1431,6 @@ pub async fn list_admissions(
         if let Some(ref s) = b.string_val {
             data_q = data_q.bind(s.clone());
         }
-    }
-    if let Some(ref ids) = visible_ids {
-        data_q = data_q.bind(ids.clone());
     }
     let admissions = data_q
         .bind(per_page)

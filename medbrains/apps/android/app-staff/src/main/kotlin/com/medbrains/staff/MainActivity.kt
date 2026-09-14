@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -16,6 +17,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.medbrains.kit.ApiClient
 import com.medbrains.kit.AuthState
 import com.medbrains.kit.AuthStore
+import com.medbrains.kit.LocalApiClient
+import com.medbrains.kit.LocalAuthStore
+import com.medbrains.kit.LocalIdentity
 import com.medbrains.kit.SecretStore
 import com.medbrains.ui.MedBrainsTheme
 
@@ -34,7 +38,9 @@ class MainActivity : ComponentActivity() {
         val auth = AuthStore(applicationContext, client, secrets)
         setContent {
             MedBrainsTheme {
-                Root(auth = auth, initialModule = intent?.getStringExtra("module"))
+                CompositionLocalProvider(LocalApiClient provides client, LocalAuthStore provides auth) {
+                    Root(auth = auth, initialModule = intent?.getStringExtra("module"))
+                }
             }
         }
     }
@@ -56,6 +62,11 @@ private fun Root(auth: AuthStore, initialModule: String?) {
     when (val s = state) {
         AuthState.Hydrating -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         AuthState.SignedOut -> LoginScreen(auth)
-        is AuthState.SignedIn -> ModuleHome(auth = auth, identity = s.identity, modules = StaffModules.registry, initialModule = initialModule)
+        is AuthState.SignedIn -> CompositionLocalProvider(LocalIdentity provides s.identity) {
+            Box(Modifier.fillMaxSize()) {
+                ModuleHome(auth = auth, identity = s.identity, modules = StaffModules.registry, initialModule = initialModule)
+                EmergencyFlash()
+            }
+        }
     }
 }

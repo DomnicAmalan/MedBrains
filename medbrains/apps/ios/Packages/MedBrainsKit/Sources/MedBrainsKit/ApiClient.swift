@@ -38,7 +38,11 @@ public actor ApiClient {
 
     /// Request and decode. `Empty` for routes that answer nothing useful.
     public func request<T: Decodable>(_ method: HttpMethod, _ path: String, body: (some Encodable)? = Optional<Empty>.none, as type: T.Type = T.self) async throws -> T {
-        var req = URLRequest(url: baseURL.appendingPathComponent(path.hasPrefix("/") ? String(path.dropFirst()) : path))
+        // Resolved against the base, not appended as a path component: a
+        // component is percent-encoded, which turns `?status=admitted` into
+        // `%3Fstatus=admitted` and every filtered list into a 404.
+        guard let url = URL(string: path, relativeTo: baseURL) else { throw ApiError(status: 0, message: "bad path \(path)") }
+        var req = URLRequest(url: url)
         req.httpMethod = method.rawValue
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         req.setValue(clientName, forHTTPHeaderField: "X-MedBrains-Client")

@@ -25,6 +25,12 @@ data class TenantIdentity(
     val departmentIds: List<String>,
 ) {
     val isBypassRole: Boolean get() = role == "super_admin" || role == "hospital_admin"
+
+    /** Element-level gate, mirroring `useHasPermission`: a bypass role holds everything. */
+    fun can(code: String): Boolean = isBypassRole || code in permissions
+
+    /** `useHasAny`: one of the codes is enough. */
+    fun canAny(codes: List<String>): Boolean = isBypassRole || codes.any { it in permissions }
 }
 
 /** `POST /api/auth/login` answer for a native client (body tokens). */

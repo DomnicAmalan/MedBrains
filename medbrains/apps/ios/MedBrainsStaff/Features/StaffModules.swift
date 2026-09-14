@@ -10,7 +10,7 @@ import SwiftUI
 enum StaffModules {
     static let registry: [AppModule] = [
         module("doctor", "Doctor", "stethoscope", ["opd.visit.update"], apps: ["Mobile-Doctor"], phase: 3),
-        module("nurse", "Nurse", "cross.case", ["nurse.dashboard.view"], apps: ["Mobile-Nurse"], phase: 2),
+        AppModule(id: "nurse", displayName: "Nurse", symbol: "cross.case", requiredPermissions: ["nurse.dashboard.view"], appCodes: ["Mobile-Nurse"]) { AnyView(NurseHomeView()) },
         module("reception", "Reception", "person.badge.clock", ["front_office.queue.list"], apps: ["Desktop-Kiosk", "Desktop-Workstation", "Mobile-Admin", "Mobile-Security"], phase: 5),
         module("pharmacy", "Pharmacy", "pills", ["pharmacy.prescriptions.list"], apps: ["Mobile-Pharmacist"], phase: 5),
         module("lab", "Lab", "testtube.2", ["lab.orders.list"], apps: ["Mobile-LabTech", "Mobile-Phlebo"], phase: 5),

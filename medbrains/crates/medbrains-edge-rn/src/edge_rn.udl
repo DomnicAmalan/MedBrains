@@ -39,6 +39,72 @@ namespace edge_rn {
     /// Recover the node id from a stored secret, on later launches.
     [Throws=BridgeError]
     string node_id_for_secret(string secret_hex);
+
+    // ── Bedside decisions (medbrains-clinical-core) ───────────────
+    // The rules the server enforces, answered on the device before the
+    // tap so the refusal is explained rather than merely returned.
+
+    /// Who may witness a high-alert dose: everyone on duty except the
+    /// nurse giving it.
+    sequence<WitnessCandidate> bcma_eligible_witnesses(sequence<WitnessCandidate> on_duty, string actor_id);
+    /// Whether "Give now" may be pressed.
+    boolean bcma_can_record_given(boolean is_high_alert, string? witness_id);
+    /// "Wristband matched. Drug did not match." — both rights, every time.
+    string bcma_scan_rights_summary(boolean right_patient, boolean right_drug);
+
+    /// The transfusion chart, phase by phase, with what is overdue.
+    sequence<TransfusionPhaseState> transfusion_phase_states(i64? started_unix, boolean ended, sequence<string> recorded_phases, i64 now_unix);
+    boolean transfusion_is_running(i64? started_unix, boolean ended);
+    boolean transfusion_can_start(string bag_number, string blood_group, string product_type, string expiry_date, boolean consent_on_file, boolean crossmatch_compatible, string? second_nurse_id);
+
+    /// `4m 07s`, clamped at zero.
+    string nurse_call_wait_label(i64 waiting_seconds);
+    boolean nurse_call_is_open(string status);
+    boolean nurse_call_is_overdue(string escalation);
+
+    /// Morse banding: low / moderate / high.
+    string fall_risk_morse_level(i64 score);
+
+    /// Which open codes own the flash, code blue first, silenced ones dropped.
+    sequence<OpenEmergencyCode> emergency_open_codes(sequence<CodeBlueRef> code_blues, sequence<EmergencyCodeRef> er_codes, sequence<string> silenced_keys);
+    /// Feed one tap of the silence gesture.
+    TapOutcome emergency_register_tap(sequence<i64> taps_ms, i64 now_ms);
+};
+
+dictionary WitnessCandidate {
+    string nurse_user_id;
+    string nurse_name;
+    boolean is_charge;
+};
+
+dictionary TransfusionPhaseState {
+    string phase;
+    boolean recorded;
+    boolean overdue;
+};
+
+dictionary CodeBlueRef {
+    string id;
+    string location;
+};
+
+dictionary EmergencyCodeRef {
+    string id;
+    string code_type;
+    string? location;
+};
+
+dictionary OpenEmergencyCode {
+    string key;
+    string label;
+    string code_type;
+    string location;
+    string? code_blue_id;
+};
+
+dictionary TapOutcome {
+    sequence<i64> taps_ms;
+    boolean triple;
 };
 
 /// A device's peer-to-peer sync identity.

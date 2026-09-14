@@ -61,6 +61,16 @@ class ApiClient(
     suspend inline fun <reified B, reified T> post(path: String, body: B): T =
         json.decodeFromString(call("POST", path, json.encodeToString(body)))
 
+    suspend inline fun <reified T> post(path: String): T = json.decodeFromString(call("POST", path, "{}"))
+
+    suspend inline fun <reified B, reified T> put(path: String, body: B): T =
+        json.decodeFromString(call("PUT", path, json.encodeToString(body)))
+
+    suspend inline fun <reified T> put(path: String): T = json.decodeFromString(call("PUT", path, "{}"))
+
+    suspend inline fun <reified B, reified T> patch(path: String, body: B): T =
+        json.decodeFromString(call("PATCH", path, json.encodeToString(body)))
+
     private fun errorMessage(text: String, status: Int): String = runCatching {
         json.decodeFromString<ErrorPayload>(text).let { it.detail ?: it.error }
     }.getOrDefault("HTTP $status")

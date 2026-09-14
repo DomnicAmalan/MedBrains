@@ -15,6 +15,17 @@ public struct TenantIdentity: Codable, Equatable, Sendable {
     public var departmentIds: [String]
 
     public var isBypassRole: Bool { role == "super_admin" || role == "hospital_admin" }
+
+    /// Element-level gate, mirroring `useHasPermission`: a bypass role holds
+    /// everything, anyone else exactly what login listed.
+    public func can(_ code: String) -> Bool {
+        isBypassRole || permissions.contains(code)
+    }
+
+    /// `useHasAny`: one of the codes is enough.
+    public func canAny(_ codes: [String]) -> Bool {
+        isBypassRole || codes.contains(where: permissions.contains)
+    }
 }
 
 /// `POST /api/auth/login` answer for a native client (body tokens).

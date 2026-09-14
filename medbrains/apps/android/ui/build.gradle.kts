@@ -15,6 +15,8 @@ android {
     buildFeatures { compose = true }
 }
 dependencies {
+    api(project(":kit"))
+    implementation(libs.activity.compose)
     val bom = platform(libs.compose.bom)
     api(bom)
     api(libs.compose.ui)
@@ -23,6 +25,11 @@ dependencies {
     api(libs.compose.material3.adaptive.navigation.suite)
     api(libs.compose.material3.window.size)
     api(libs.compose.material.icons)
+    implementation(libs.camerax.core)
+    implementation(libs.camerax.camera2)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
+    implementation(libs.zxing.core)
     debugApi(libs.compose.ui.tooling)
     api(libs.compose.ui.tooling.preview)
 }

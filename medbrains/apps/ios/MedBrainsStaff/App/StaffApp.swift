@@ -66,6 +66,7 @@ struct RootView: View {
             LoginView()
         } else {
             ModuleHomeView(modules: modules, appCode: appCode)
+                .overlay { EmergencyFlashOverlay() }
         }
     }
 }

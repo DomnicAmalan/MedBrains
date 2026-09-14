@@ -34,6 +34,8 @@ use uuid::Uuid;
 
 use medbrains_offline_core as offline;
 
+use medbrains_clinical_core as clinical;
+
 uniffi::include_scaffolding!("edge_rn");
 
 #[derive(Debug, Error)]
@@ -327,6 +329,162 @@ pub fn is_action_offline_required(object_type: String, action: String) -> bool {
     offline::ONLINE_REQUIRED_ACTIONS
         .iter()
         .any(|(t, a)| *t == object_type && *a == action)
+}
+
+// ── Bedside decisions ──────────────────────────────────────────────
+// Thin FFI faces over `medbrains-clinical-core`; the logic and its tests
+// live there so the Swift and Kotlin apps share one answer.
+
+#[derive(Debug, Clone)]
+pub struct WitnessCandidate {
+    pub nurse_user_id: String,
+    pub nurse_name: String,
+    pub is_charge: bool,
+}
+
+impl From<WitnessCandidate> for clinical::bcma::WitnessCandidate {
+    fn from(w: WitnessCandidate) -> Self {
+        Self { nurse_user_id: w.nurse_user_id, nurse_name: w.nurse_name, is_charge: w.is_charge }
+    }
+}
+
+impl From<clinical::bcma::WitnessCandidate> for WitnessCandidate {
+    fn from(w: clinical::bcma::WitnessCandidate) -> Self {
+        Self { nurse_user_id: w.nurse_user_id, nurse_name: w.nurse_name, is_charge: w.is_charge }
+    }
+}
+
+pub fn bcma_eligible_witnesses(on_duty: Vec<WitnessCandidate>, actor_id: String) -> Vec<WitnessCandidate> {
+    clinical::bcma::eligible_witnesses(on_duty.into_iter().map(Into::into).collect(), &actor_id)
+        .into_iter()
+        .map(Into::into)
+        .collect()
+}
+
+pub fn bcma_can_record_given(is_high_alert: bool, witness_id: Option<String>) -> bool {
+    clinical::bcma::can_record_given(is_high_alert, witness_id.as_deref())
+}
+
+pub fn bcma_scan_rights_summary(right_patient: bool, right_drug: bool) -> String {
+    clinical::bcma::scan_rights_summary(right_patient, right_drug)
+}
+
+#[derive(Debug, Clone)]
+pub struct TransfusionPhaseState {
+    pub phase: String,
+    pub recorded: bool,
+    pub overdue: bool,
+}
+
+pub fn transfusion_phase_states(
+    started_unix: Option<i64>,
+    ended: bool,
+    recorded_phases: Vec<String>,
+    now_unix: i64,
+) -> Vec<TransfusionPhaseState> {
+    clinical::transfusion::phase_states(started_unix, ended, &recorded_phases, now_unix)
+        .into_iter()
+        .map(|p| TransfusionPhaseState { phase: p.phase, recorded: p.recorded, overdue: p.overdue })
+        .collect()
+}
+
+pub fn transfusion_is_running(started_unix: Option<i64>, ended: bool) -> bool {
+    clinical::transfusion::is_running(started_unix, ended)
+}
+
+#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
+pub fn transfusion_can_start(
+    bag_number: String,
+    blood_group: String,
+    product_type: String,
+    expiry_date: String,
+    consent_on_file: bool,
+    crossmatch_compatible: bool,
+    second_nurse_id: Option<String>,
+) -> bool {
+    clinical::transfusion::can_start_transfusion(
+        &bag_number,
+        &blood_group,
+        &product_type,
+        &expiry_date,
+        consent_on_file,
+        crossmatch_compatible,
+        second_nurse_id.as_deref(),
+    )
+}
+
+pub fn nurse_call_wait_label(waiting_seconds: i64) -> String {
+    clinical::nurse_calls::wait_label(waiting_seconds)
+}
+
+pub fn nurse_call_is_open(status: String) -> bool {
+    clinical::nurse_calls::is_open_nurse_call(&status)
+}
+
+pub fn nurse_call_is_overdue(escalation: String) -> bool {
+    clinical::nurse_calls::is_overdue_nurse_call(&escalation)
+}
+
+pub fn fall_risk_morse_level(score: i64) -> String {
+    clinical::fall_risk::morse_level(score).to_owned()
+}
+
+#[derive(Debug, Clone)]
+pub struct CodeBlueRef {
+    pub id: String,
+    pub location: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct EmergencyCodeRef {
+    pub id: String,
+    pub code_type: String,
+    pub location: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct OpenEmergencyCode {
+    pub key: String,
+    pub label: String,
+    pub code_type: String,
+    pub location: String,
+    pub code_blue_id: Option<String>,
+}
+
+pub fn emergency_open_codes(
+    code_blues: Vec<CodeBlueRef>,
+    er_codes: Vec<EmergencyCodeRef>,
+    silenced_keys: Vec<String>,
+) -> Vec<OpenEmergencyCode> {
+    let cbs: Vec<clinical::emergency::CodeBlueRef> = code_blues
+        .into_iter()
+        .map(|c| clinical::emergency::CodeBlueRef { id: c.id, location: c.location })
+        .collect();
+    let ers: Vec<clinical::emergency::EmergencyCodeRef> = er_codes
+        .into_iter()
+        .map(|e| clinical::emergency::EmergencyCodeRef { id: e.id, code_type: e.code_type, location: e.location })
+        .collect();
+    clinical::emergency::open_codes(&cbs, &ers, &silenced_keys)
+        .into_iter()
+        .map(|c| OpenEmergencyCode {
+            key: c.key,
+            label: c.label,
+            code_type: c.code_type,
+            location: c.location,
+            code_blue_id: c.code_blue_id,
+        })
+        .collect()
+}
+
+#[derive(Debug, Clone)]
+pub struct TapOutcome {
+    pub taps_ms: Vec<i64>,
+    pub triple: bool,
+}
+
+pub fn emergency_register_tap(taps_ms: Vec<i64>, now_ms: i64) -> TapOutcome {
+    let out = clinical::emergency::register_tap(&taps_ms, now_ms);
+    TapOutcome { taps_ms: out.taps, triple: out.triple }
 }
 
 // ── Peer-to-peer sync identity ─────────────────────────────────────
