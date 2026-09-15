@@ -12,7 +12,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin { jvmToolchain(17) }
+    kotlin {
+        jvmToolchain(17)
+        compilerOptions { allWarningsAsErrors.set(true) }
+    }
     buildFeatures { compose = true }
 }
 dependencies {
@@ -23,6 +26,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.okhttp)
-    implementation(libs.security.crypto)
     testImplementation(libs.junit)
 }

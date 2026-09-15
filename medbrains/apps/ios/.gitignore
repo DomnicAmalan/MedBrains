@@ -8,3 +8,4 @@ Packages/*/.build/
 Packages/*/.swiftpm/
 .swiftpm/
 MedBrainsStaff/Resources/Info.plist
+MedBrainsPatient/Resources/Info.plist

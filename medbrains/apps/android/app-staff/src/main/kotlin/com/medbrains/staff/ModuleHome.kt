@@ -115,10 +115,9 @@ fun ModuleHome(auth: AuthStore, identity: TenantIdentity, modules: List<AppModul
             LazyColumn {
                 items(inMore, key = { it.id }) { module ->
                     ListItem(
-                        headlineContent = { Text(module.displayName) },
                         leadingContent = { Icon(module.icon, contentDescription = null) },
                         modifier = Modifier.testTag("module-${module.id}").clickable { selected = module; moreOpen = false },
-                    )
+                    ) { Text(module.displayName) }
                 }
             }
         }

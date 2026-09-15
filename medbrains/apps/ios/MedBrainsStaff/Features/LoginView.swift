@@ -19,7 +19,7 @@ struct LoginView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                Eyebrow("MedBrains")
+                BrandWordmark()
                     .padding(.top, 48)
                 Text("Sign in")
                     .font(CarbonType.heading05)

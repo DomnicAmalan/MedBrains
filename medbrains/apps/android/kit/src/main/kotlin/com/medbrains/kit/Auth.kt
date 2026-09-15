@@ -114,6 +114,19 @@ class AuthStore(context: Context, private val client: ApiClient, private val sec
         }
     }
 
+    /**
+     * Adopt a session issued by another sign-in path — the patient portal's
+     * verified code — so the shell treats it like a password session. A portal
+     * identity carries no role and no permissions.
+     */
+    fun adopt(token: String, refreshToken: String? = null, who: TenantIdentity) {
+        secrets.write(SecretKey.JWT, token)
+        refreshToken?.let { secrets.write(SecretKey.REFRESH_TOKEN, it) }
+        prefs.edit().putString(IDENTITY, json.encodeToString(TenantIdentity.serializer(), who)).apply()
+        _lastError.value = null
+        _state.value = AuthState.SignedIn(who)
+    }
+
     fun signOut() {
         secrets.delete(SecretKey.JWT)
         secrets.delete(SecretKey.REFRESH_TOKEN)

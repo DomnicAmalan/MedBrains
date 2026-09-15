@@ -36,7 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.medbrains.kit.AuthStore
 import com.medbrains.ui.CarbonPrimaryButton
 import com.medbrains.ui.CarbonTextField
-import com.medbrains.ui.Eyebrow
+import com.medbrains.ui.BrandWordmark
 import kotlinx.coroutines.launch
 
 /**
@@ -72,7 +72,7 @@ fun LoginScreen(auth: AuthStore) {
             verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
             Spacer(Modifier.height(48.dp))
-            Eyebrow("MedBrains")
+            BrandWordmark()
             Spacer(Modifier.height(8.dp))
             Text("Sign in", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onBackground)
             Spacer(Modifier.height(8.dp))

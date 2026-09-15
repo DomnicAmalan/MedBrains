@@ -507,6 +507,73 @@ pub fn consultation_problem(chief_complaint: String, examination: String, assess
     clinical::consultation::consultation_problem(&chief_complaint, &examination, &assessment, &plan)
 }
 
+pub fn companion_access(licensed_by_hospital: Option<bool>, band_paired: Option<bool>, purchased: Option<bool>) -> Option<String> {
+    clinical::companion::companion_access(licensed_by_hospital, band_paired, purchased).map(str::to_owned)
+}
+
+pub fn band_state(last_synced_unix: Option<i64>, now_unix: i64) -> String {
+    clinical::companion::band_state(last_synced_unix, now_unix).to_owned()
+}
+
+pub fn describe_band_state(state: String) -> String {
+    clinical::companion::describe_band_state(&state).to_owned()
+}
+
+#[derive(Debug, Clone)]
+pub struct MedicationPlan {
+    pub id: String,
+    pub name: String,
+    pub instructions: String,
+    pub times: Vec<String>,
+    pub started_on: String,
+    pub ends_on: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AdherenceEvent {
+    pub plan_id: String,
+    pub scheduled_for: String,
+    pub status: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct DoseSlot {
+    pub plan_id: String,
+    pub name: String,
+    pub instructions: String,
+    pub time: String,
+    pub scheduled_for: String,
+    pub status: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct DailyBrief {
+    pub slots: Vec<DoseSlot>,
+    pub adherence_percent: Option<u32>,
+    pub streak_days: u32,
+    pub confidence: String,
+    pub verdict: String,
+}
+
+pub fn daily_brief(medications: Vec<MedicationPlan>, adherence: Vec<AdherenceEvent>, observation_days: Vec<String>, now_unix: i64) -> DailyBrief {
+    let meds: Vec<clinical::companion::MedicationPlan> = medications
+        .into_iter()
+        .map(|m| clinical::companion::MedicationPlan { id: m.id, name: m.name, instructions: m.instructions, times: m.times, started_on: m.started_on, ends_on: m.ends_on })
+        .collect();
+    let events: Vec<clinical::companion::AdherenceEvent> = adherence
+        .into_iter()
+        .map(|a| clinical::companion::AdherenceEvent { plan_id: a.plan_id, scheduled_for: a.scheduled_for, status: a.status })
+        .collect();
+    let b = clinical::companion::daily_brief(&meds, &events, &observation_days, now_unix);
+    DailyBrief {
+        slots: b.slots.into_iter().map(|s| DoseSlot { plan_id: s.plan_id, name: s.name, instructions: s.instructions, time: s.time, scheduled_for: s.scheduled_for, status: s.status }).collect(),
+        adherence_percent: b.adherence_percent,
+        streak_days: b.streak_days,
+        confidence: b.confidence,
+        verdict: b.verdict,
+    }
+}
+
 // ── Peer-to-peer sync identity ─────────────────────────────────────
 
 /// A device's peer-to-peer sync identity.

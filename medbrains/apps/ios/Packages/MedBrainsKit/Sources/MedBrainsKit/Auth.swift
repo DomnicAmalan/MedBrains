@@ -14,6 +14,16 @@ public struct TenantIdentity: Codable, Equatable, Sendable {
     public var permissions: [String]
     public var departmentIds: [String]
 
+    public init(tenantId: String, userId: String, username: String, fullName: String, role: String?, permissions: [String], departmentIds: [String]) {
+        self.tenantId = tenantId
+        self.userId = userId
+        self.username = username
+        self.fullName = fullName
+        self.role = role
+        self.permissions = permissions
+        self.departmentIds = departmentIds
+    }
+
     public var isBypassRole: Bool { role == "super_admin" || role == "hospital_admin" }
 
     /// Element-level gate, mirroring `useHasPermission`: a bypass role holds
@@ -112,6 +122,20 @@ public final class AuthStore {
             lastError = "Could not reach the hospital server."
         }
         return false
+    }
+
+    /// Adopt a session issued by another sign-in path — the patient portal's
+    /// verified code — so the rest of the shell (bearer client, 401 sign-out,
+    /// hydration) treats it exactly like a password session. A portal identity
+    /// carries no role and no permissions; nothing downstream may mistake it
+    /// for staff.
+    public func adopt(token: String, refreshToken: String? = nil, identity who: TenantIdentity) async throws {
+        try secrets.write(.jwt, token)
+        if let refreshToken { try secrets.write(.refreshToken, refreshToken) }
+        UserDefaults.standard.set(try JSONEncoder().encode(who), forKey: Self.identityKey)
+        identity = who
+        lastError = nil
+        await client.setUnauthorizedHandler { [weak self] in await self?.signOut() }
     }
 
     public func signOut() async {

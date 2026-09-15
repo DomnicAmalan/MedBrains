@@ -7,7 +7,8 @@ natively. Status columns: `iOS` / `Android`, values ⬜ not started · 🟨 shel
 ✅ converted and verified on the screen.
 
 **Totals:** 35 modules + 4 role stacks, **118 screens/boards** (108 module or routed
-screens + 10 gates/overlays). Shells (login, gating, module home), the Nurse module (phase 2) and the Doctor module (phase 3, both 2026-09-14) are ✅
+screens + 10 gates/overlays). Shells (login, gating, module home), the Nurse module (phase 2), the Doctor module (phase 3, both 2026-09-14) and the Patient
+app (phase 4, 2026-09-15; consent and family-share as tiles, bands as the empty state, as the RN app had them) are ✅
 on both; every other module row is 🟨 (placeholder home) until its phase lands.
 
 ## 1. apps/mobile-staff → MedBrainsStaff (13 modules, 62 screens + login + EmergencyFlash)
@@ -93,16 +94,16 @@ Hospital tab always; Health tab (today, bands) only when `/api/portal/entitlemen
 
 | Module (phase 4) | Screen | Endpoints | iOS | Android |
 |---|---|---|---|---|
-| appointments | AppointmentsScreen (Coming up / Earlier) | GET /api/portal/appointments | ⬜ | ⬜ |
-| lab-reports | LabReportsScreen (flags emphasised, ≤200) | GET /api/portal/lab-reports | ⬜ | ⬜ |
-| prescriptions | PrescriptionsScreen (≤200) | GET /api/portal/prescriptions | ⬜ | ⬜ |
-| bills | BillsScreen ("still to pay" headline) | GET /api/portal/bills | ⬜ | ⬜ |
-| consent | ConsentScreen (DPDP tiles; RN unwired) | /api/portal/consents (to wire) | ⬜ | ⬜ |
-| family-share | FamilyShareScreen (RN unwired) | /api/portal/family-share (to wire) | ⬜ | ⬜ |
-| today | TodayScreen (companion daily brief, local) | none (local record) | ⬜ | ⬜ |
-| bands | BandsScreen (wearables; pairing unwired) | none | ⬜ | ⬜ |
-| shell | PatientLoginGate (OTP; ABHA next) | POST /api/portal/auth/request-otp, /verify | ⬜ | ⬜ |
-| shell | useCompanionAccess entitlement gate | GET /api/portal/entitlements | ⬜ | ⬜ |
+| appointments | AppointmentsScreen (Coming up / Earlier) | GET /api/portal/appointments | ✅ | ✅ |
+| lab-reports | LabReportsScreen (flags emphasised, ≤200) | GET /api/portal/lab-reports | ✅ | ✅ |
+| prescriptions | PrescriptionsScreen (≤200) | GET /api/portal/prescriptions | ✅ | ✅ |
+| bills | BillsScreen ("still to pay" headline) | GET /api/portal/bills | ✅ | ✅ |
+| consent | ConsentScreen (DPDP tiles; RN unwired) | /api/portal/consents (to wire) | ✅ | ✅ |
+| family-share | FamilyShareScreen (RN unwired) | /api/portal/family-share (to wire) | ✅ | ✅ |
+| today | TodayScreen (companion daily brief, local) | none (local record) | ✅ | ✅ |
+| bands | BandsScreen (wearables; pairing unwired) | none | ✅ | ✅ |
+| shell | PatientLoginGate (OTP; ABHA next) | POST /api/portal/auth/request-otp, /verify | ✅ | ✅ |
+| shell | useCompanionAccess entitlement gate | GET /api/portal/entitlements | ✅ | ✅ |
 
 ## 3. apps/mobile-camp → MedBrainsCamp (2 modules, 10 screens + login)
 

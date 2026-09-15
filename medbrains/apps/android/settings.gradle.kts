@@ -17,4 +17,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "MedBrains"
-include(":core", ":kit", ":ui", ":app-staff")
+include(":core", ":kit", ":ui", ":app-staff", ":app-patient")

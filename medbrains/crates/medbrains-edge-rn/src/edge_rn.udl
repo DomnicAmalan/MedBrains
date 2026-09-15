@@ -78,6 +78,46 @@ namespace edge_rn {
     boolean clinic_is_still_to_come(string status);
     /// The message that stops a consultation note being saved, or none.
     string? consultation_problem(string chief_complaint, string examination, string assessment, string plan);
+
+    /// Why the companion is open ("hospital" | "band" | "purchase"), or none: hidden.
+    string? companion_access(boolean? licensed_by_hospital, boolean? band_paired, boolean? purchased);
+    /// "reporting" | "stale" | "never_synced".
+    string band_state(i64? last_synced_unix, i64 now_unix);
+    string describe_band_state(string state);
+    /// The day's brief from the phone's own record.
+    DailyBrief daily_brief(sequence<MedicationPlan> medications, sequence<AdherenceEvent> adherence, sequence<string> observation_days, i64 now_unix);
+};
+
+dictionary MedicationPlan {
+    string id;
+    string name;
+    string instructions;
+    sequence<string> times;
+    string started_on;
+    string? ends_on;
+};
+
+dictionary AdherenceEvent {
+    string plan_id;
+    string scheduled_for;
+    string status;
+};
+
+dictionary DoseSlot {
+    string plan_id;
+    string name;
+    string instructions;
+    string time;
+    string scheduled_for;
+    string status;
+};
+
+dictionary DailyBrief {
+    sequence<DoseSlot> slots;
+    u32? adherence_percent;
+    u32 streak_days;
+    string confidence;
+    string verdict;
 };
 
 dictionary WitnessCandidate {

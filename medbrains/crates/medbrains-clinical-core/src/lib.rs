@@ -8,6 +8,7 @@
 
 pub mod bcma;
 pub mod clinic_day;
+pub mod companion;
 pub mod consultation;
 pub mod emergency;
 pub mod fall_risk;

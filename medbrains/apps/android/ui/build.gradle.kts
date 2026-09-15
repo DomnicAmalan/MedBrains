@@ -11,12 +11,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin { jvmToolchain(17) }
+    kotlin {
+        jvmToolchain(17)
+        compilerOptions { allWarningsAsErrors.set(true) }
+    }
     buildFeatures { compose = true }
 }
 dependencies {
     api(project(":kit"))
     implementation(libs.activity.compose)
+    implementation(libs.lifecycle.runtime.compose)
     val bom = platform(libs.compose.bom)
     api(bom)
     api(libs.compose.ui)
