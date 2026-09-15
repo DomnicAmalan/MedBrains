@@ -78,6 +78,14 @@ namespace edge_rn {
     boolean clinic_is_still_to_come(string status);
     /// The message that stops a consultation note being saved, or none.
     string? consultation_problem(string chief_complaint, string examination, string assessment, string plan);
+    /// After the duplicate-patient check: "confirm" | "proceed" | "proceed_unverified".
+    string registration_action(boolean check_unavailable, u32 matches);
+    /// Whether a registration field is desk context kept for the next walk-in.
+    boolean registration_carries_over(string field);
+    /// The first field that stops a registration, or none.
+    RegistrationProblem? registration_problem(RegistrationDraft draft);
+    /// 1 January of the birth year, for someone who only knows their age.
+    string estimated_date_of_birth(u32 age_years, i32 today_year);
 
     /// Why the companion is open ("hospital" | "band" | "purchase"), or none: hidden.
     string? companion_access(boolean? licensed_by_hospital, boolean? band_paired, boolean? purchased);
@@ -86,6 +94,22 @@ namespace edge_rn {
     string describe_band_state(string state);
     /// The day's brief from the phone's own record.
     DailyBrief daily_brief(sequence<MedicationPlan> medications, sequence<AdherenceEvent> adherence, sequence<string> observation_days, i64 now_unix);
+};
+
+dictionary RegistrationDraft {
+    string first_name;
+    string last_name;
+    string phone;
+    string date_of_birth;
+    u32? age_years;
+    boolean is_medico_legal;
+    string mlc_number;
+    string abha_number;
+};
+
+dictionary RegistrationProblem {
+    string field;
+    string message;
 };
 
 dictionary MedicationPlan {

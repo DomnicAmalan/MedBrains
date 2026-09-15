@@ -31,7 +31,7 @@ class Api private constructor(private var token: String?) {
     fun list(path: String): List<JSONObject> {
         val text = call("GET", path).second
         val arr = runCatching { JSONArray(text) }.getOrNull() ?: runCatching {
-            val o = JSONObject(text); listOf("admissions", "calls", "rows", "data", "items").firstNotNullOfOrNull { o.optJSONArray(it) }
+            val o = JSONObject(text); listOf("admissions", "calls", "rows", "data", "items", "patients").firstNotNullOfOrNull { o.optJSONArray(it) }
         }.getOrNull() ?: return emptyList()
         return (0 until arr.length()).map { arr.getJSONObject(it) }
     }
@@ -58,8 +58,8 @@ class Api private constructor(private var token: String?) {
         return (rows.firstOrNull { it.optString("code") == "GEN-MEDICINE" } ?: rows.firstOrNull())?.optString("id")
     }
 
-    fun patient(last: String): JSONObject = obj("POST", "/api/patients", JSONObject()
-        .put("first_name", "Seeded").put("last_name", "$last$RUN").put("gender", "female").put("phone", "98" + RUN.padEnd(8, '0'))
+    fun patient(last: String, phone: String = "98" + RUN.padEnd(8, '0')): JSONObject = obj("POST", "/api/patients", JSONObject()
+        .put("first_name", "Seeded").put("last_name", "$last$RUN").put("gender", "female").put("phone", phone)
         .put("date_of_birth", "1988-05-05").put("is_dob_estimated", false).put("registration_type", "new")
         .put("registration_source", "walk_in").put("is_medico_legal", false).put("is_vip", false))
 
@@ -107,6 +107,14 @@ class Api private constructor(private var token: String?) {
         const val BACKEND = "http://10.0.2.2:3000"
         val RUN: String = (System.currentTimeMillis() / 1000 % 1_000_000).toString()
         private var serial = 0
+        /** The API as a provisioned identity — what the desk itself can see and do. */
+        fun signIn(username: String, password: String): Api {
+            val api = Api(null)
+            val (status, text) = api.call("POST", "/api/auth/login", JSONObject().put("username", username).put("password", password))
+            check(status == 200) { "$username signs in: $status" }
+            return Api(JSONObject(text).getString("token"))
+        }
+
         fun admin(): Api {
             val api = Api(null)
             api.token = JSONObject(api.call("POST", "/api/auth/login", JSONObject().put("username", "admin").put("password", "admin123")).second).optString("token").ifEmpty { null }

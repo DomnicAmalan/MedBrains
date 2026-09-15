@@ -34,12 +34,12 @@ Registry order decides where a role lands (`StaffModules` on both platforms mirr
 | nurse | AdministerDoseScreen (BCMA, scanner) | nurse/administer-dose.tsx | POST /api/nurse/mar/{marId}/verify-barcode, PATCH /api/ipd/admissions/{id}/mar/{marId}, GET /api/ipd/wards/{wardId}/on-duty | ✅ | ✅ |
 | nurse | ShiftHandoverScreen | nurse/shift-handover.tsx | /api/nurse/handoffs, …/encounter/{id}, …/{id}/accept | ✅ | ✅ |
 | nurse | BedsideActionScreen (vitals/io/pain/fall-risk) | nurse/bedside-action.tsx | /api/nurse/vitals, /api/nurse/io-entries, …/encounter/{id}/balance, /api/nurse/pain-entries, /api/nurse/fall-risk | ✅ | ✅ |
-| reception (5) | ReceptionHome | modules/reception.tsx | GET /api/tokens/worklist | 🟨 | 🟨 |
-| reception | RegisterPatientScreen | reception/register-patient.tsx | POST /api/patients, GET /api/camp/camps, /api/setup/departments, /api/setup/doctors, /api/setup/facilities, /api/terminology/search | ⬜ | ⬜ |
-| reception | PatientListScreen | reception/patient-list.tsx | GET /api/patients | ⬜ | ⬜ |
-| reception | PatientDetailScreen | reception/patient-detail.tsx | (props) | ⬜ | ⬜ |
-| reception | StartVisitScreen | reception/start-visit.tsx | POST /api/opd/encounters, GET /api/setup/departments, /api/setup/doctors | ⬜ | ⬜ |
-| reception | QueueBoardScreen | reception/queue-board.tsx | GET /api/tokens/worklist, POST /api/tokens/call-next | ⬜ | ⬜ |
+| reception (5) | ReceptionHome | modules/reception.tsx | GET /api/tokens/worklist | ✅ | ✅ |
+| reception | RegisterPatientScreen | reception/register-patient.tsx | POST /api/patients/match + POST /api/patients (duplicate check the RN screen never ran), /api/setup/departments, /api/setup/doctors — camp, facility and ICD-11 fields deliberately left to the desk workstation (phone form stays one screen) | ✅ | ✅ |
+| reception | PatientListScreen | reception/patient-list.tsx | GET /api/patients | ✅ | ✅ |
+| reception | PatientDetailScreen | reception/patient-detail.tsx | (props) | ✅ | ✅ |
+| reception | StartVisitScreen | reception/start-visit.tsx | POST /api/opd/encounters, GET /api/setup/departments, /api/setup/doctors | ✅ | ✅ |
+| reception | QueueBoardScreen | reception/queue-board.tsx | GET /api/tokens/worklist, POST /api/tokens/call-next | ✅ | ✅ |
 | reception | VisitorDeskScreen | reception/visitor-desk.tsx | /api/front-office/visitors, /passes, /passes/{id}/revoke, /visitor-logs/{passId}/check-in\|check-out | ⬜ | ⬜ |
 | reception | EnquiryDeskScreen | reception/enquiry-desk.tsx | /api/front-office/enquiries, …/{id}/resolve | ⬜ | ⬜ |
 | pharmacy (5) | PharmacyHome | modules/pharmacy.tsx | GET /api/pharmacy/orders | 🟨 | 🟨 |

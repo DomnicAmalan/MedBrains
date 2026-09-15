@@ -43,7 +43,7 @@ final class Api {
     func list(_ path: String) -> [[String: Any]] {
         let (_, json) = call("GET", path)
         if let rows = json as? [[String: Any]] { return rows }
-        if let page = json as? [String: Any] { for key in ["admissions", "calls", "rows", "data", "items"] { if let rows = page[key] as? [[String: Any]] { return rows } } }
+        if let page = json as? [String: Any] { for key in ["admissions", "calls", "rows", "data", "items", "patients"] { if let rows = page[key] as? [[String: Any]] { return rows } } }
         return []
     }
 
@@ -101,8 +101,8 @@ final class Api {
 
     // MARK: seeds
 
-    func patient(_ last: String) -> [String: Any] {
-        obj("POST", "/api/patients", ["first_name": "Seeded", "last_name": "\(last)\(Self.runId)", "gender": "female", "phone": "98\(String(Self.runId).padding(toLength: 8, withPad: "0", startingAt: 0))", "date_of_birth": "1988-05-05", "is_dob_estimated": false, "registration_type": "new", "registration_source": "walk_in", "is_medico_legal": false, "is_vip": false])
+    func patient(_ last: String, phone: String? = nil) -> [String: Any] {
+        obj("POST", "/api/patients", ["first_name": "Seeded", "last_name": "\(last)\(Self.runId)", "gender": "female", "phone": phone ?? "98\(String(Self.runId).padding(toLength: 8, withPad: "0", startingAt: 0))", "date_of_birth": "1988-05-05", "is_dob_estimated": false, "registration_type": "new", "registration_source": "walk_in", "is_medico_legal": false, "is_vip": false])
     }
 
     /// An admitted patient in the clinical department, so a scoped nurse or doctor sees them.

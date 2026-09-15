@@ -25,6 +25,18 @@ class JourneyCase: XCTestCase {
         add(s)
     }
 
+    /// A row a lazy list has not rendered yet: swipe until it exists (a long
+    /// queue keeps the newest token below the first screen).
+    @discardableResult
+    func reveal(_ id: String, swipes: Int = 12) -> Bool {
+        if el(id).waitForExistence(timeout: 3) { return true }
+        for _ in 0..<swipes {
+            app.swipeUp()
+            if el(id).exists { return true }
+        }
+        return el(id).waitForExistence(timeout: 2)
+    }
+
     /// Any static text whose label contains `text`, waited for.
     func sees(_ text: String, timeout: TimeInterval = 5) -> Bool {
         app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", text)).firstMatch.waitForExistence(timeout: timeout)

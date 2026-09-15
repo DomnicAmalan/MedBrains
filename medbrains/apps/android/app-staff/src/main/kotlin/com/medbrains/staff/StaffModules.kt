@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.medbrains.kit.AppModule
 import com.medbrains.staff.doctor.DoctorModule
 import com.medbrains.staff.nurse.NurseModule
+import com.medbrains.staff.reception.ReceptionModule
 
 /**
  * The staff registry, in the order apps/mobile-staff/src/modules/index.ts
@@ -29,7 +30,7 @@ object StaffModules {
     val registry: List<AppModule> = listOf(
         AppModule(id = "doctor", displayName = "Doctor", requiredPermissions = listOf("opd.visit.update"), appCodes = listOf("Mobile-Doctor"), icon = Icons.Filled.MonitorHeart) { DoctorModule() },
         AppModule(id = "nurse", displayName = "Nurse", requiredPermissions = listOf("nurse.dashboard.view"), appCodes = listOf("Mobile-Nurse"), icon = Icons.Filled.LocalHospital) { NurseModule() },
-        module("reception", "Reception", Icons.Filled.SupportAgent, listOf("front_office.queue.list"), listOf("Desktop-Kiosk", "Desktop-Workstation", "Mobile-Admin", "Mobile-Security"), 5),
+        AppModule(id = "reception", displayName = "Reception", requiredPermissions = listOf("front_office.queue.list"), appCodes = listOf("Desktop-Kiosk", "Desktop-Workstation", "Mobile-Admin", "Mobile-Security"), icon = Icons.Filled.SupportAgent) { ReceptionModule() },
         module("pharmacy", "Pharmacy", Icons.Filled.Medication, listOf("pharmacy.prescriptions.list"), listOf("Mobile-Pharmacist"), 5),
         module("lab", "Lab", Icons.Filled.Science, listOf("lab.orders.list"), listOf("Mobile-LabTech", "Mobile-Phlebo"), 5),
         module("blood-bank", "Blood Bank", Icons.Filled.Bloodtype, listOf("blood_bank.inventory.list"), listOf("Mobile-LabTech", "Mobile-Nurse", "Mobile-Doctor"), 5),

@@ -23,13 +23,14 @@ final class DoctorJourneyTests: JourneyCase {
     func testCallNextMovesTheSeededTokenToCalledOnTheServer() {
         let visit = api.waitingVisit(doctorId: doctor.id, last: "Queue")!
         openQueue()
-        XCTAssertTrue(el("queue-row-\(visit.patientId)").waitForExistence(timeout: 10), "the seeded token is on today's queue")
+        XCTAssertTrue(reveal("queue-row-\(visit.patientId)"), "the seeded token is on today's queue")
         XCTAssertFalse(el("queue-mark-complete").exists, "no transition the queue is not in")
         shoot("doctor-queue")
         el("queue-call-next").tap()
         XCTAssertTrue(el("queue-call-next-toast").waitForExistence(timeout: 10), "the call confirms itself")
         // The server picks by priority and sequence; today's queue holds other runs' tokens too,
         // so the assertion is on the server's answer for *some* waiting token, then on this one's detail.
+        XCTAssertTrue(reveal("queue-row-\(visit.patientId)"), "the row, after the list refreshed")
         el("queue-row-\(visit.patientId)").tap()
         XCTAssertTrue(el("screen-queue-detail").waitForExistence(timeout: 10))
         if el("queue-call-patient").exists {
@@ -51,7 +52,8 @@ final class DoctorJourneyTests: JourneyCase {
     func testNoShowIsRecordedOnTheServer() {
         let visit = api.waitingVisit(doctorId: doctor.id, last: "NoShow")!
         openQueue()
-        XCTAssertTrue(el("queue-row-\(visit.patientId)").waitForExistence(timeout: 10))
+        XCTAssertTrue(reveal("queue-row-\(visit.patientId)"))
+        XCTAssertTrue(reveal("queue-row-\(visit.patientId)"), "the row, after the list refreshed")
         el("queue-row-\(visit.patientId)").tap()
         XCTAssertTrue(el("screen-queue-detail").waitForExistence(timeout: 10))
         el("queue-call-patient").tap()
@@ -65,7 +67,8 @@ final class DoctorJourneyTests: JourneyCase {
     func testConsultationRefusesAnEmptyNoteThenRecordsAllFourFields() {
         let visit = api.waitingVisit(doctorId: doctor.id, last: "Consult")!
         openQueue()
-        XCTAssertTrue(el("queue-row-\(visit.patientId)").waitForExistence(timeout: 10))
+        XCTAssertTrue(reveal("queue-row-\(visit.patientId)"))
+        XCTAssertTrue(reveal("queue-row-\(visit.patientId)"), "the row, after the list refreshed")
         el("queue-row-\(visit.patientId)").tap()
         XCTAssertTrue(el("screen-queue-detail").waitForExistence(timeout: 10))
         el("queue-open-consultation").tap()

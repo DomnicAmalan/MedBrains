@@ -58,4 +58,28 @@ class OutageJourneyTest {
             }
         } finally { api.retire(nurse) }
     }
+
+    @Test
+    fun theReceptionBoardIsNeverAnEmptyFloor() {
+        val api = Api.admin()
+        val desk = api.provision("receptionist")
+        try {
+            launch(Api.BACKEND).use {
+                compose.waitUntil(10_000) { has("username") || has("module-home-reception") || compose.onAllNodes(androidx.compose.ui.test.hasContentDescription("Account")).fetchSemanticsNodes().isNotEmpty() }
+                if (!has("module-home-reception")) {
+                    if (!has("username")) { compose.onAllNodes(androidx.compose.ui.test.hasContentDescription("Account"))[0].performClick(); compose.onAllNodes(hasText("Sign out"))[0].performClick(); compose.waitUntil(10_000) { has("username") } }
+                    compose.onNodeWithTag("username").performTextInput(desk.username)
+                    compose.onNodeWithTag("password").performTextInput(desk.password)
+                    compose.onNodeWithTag("signIn").performClick()
+                    compose.waitUntil(15_000) { has("module-home-reception") }
+                }
+            }
+            launch("http://10.0.2.2:9").use {
+                compose.waitUntil(15_000) { has("module-home-reception") }
+                compose.onNodeWithTag("module-action-queue").performClick()
+                compose.waitUntil(30_000) { has("reception-queue-unavailable") }
+                check(compose.onAllNodes(hasText("Do not read this as an empty floor", substring = true)).fetchSemanticsNodes().isNotEmpty()) { "an outage is named, never an empty floor" }
+            }
+        } finally { api.retire(desk) }
+    }
 }

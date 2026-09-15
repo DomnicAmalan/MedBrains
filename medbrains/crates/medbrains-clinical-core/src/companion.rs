@@ -13,7 +13,7 @@
 /// tenant that never licensed it. Hospital first because that is the answer a
 /// support call needs.
 #[must_use]
-pub const fn companion_access(licensed_by_hospital: Option<bool>, band_paired: Option<bool>, purchased: Option<bool>) -> Option<&'static str> {
+pub fn companion_access(licensed_by_hospital: Option<bool>, band_paired: Option<bool>, purchased: Option<bool>) -> Option<&'static str> {
     if licensed_by_hospital == Some(true) {
         Some("hospital")
     } else if band_paired == Some(true) {

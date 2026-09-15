@@ -77,6 +77,8 @@ mod tests {
 
     const START: i64 = 1_787_306_400; // 2026-08-21T10:00:00Z
 
+    // A missing phase is a failed test, and a test may say so loudly.
+    #[allow(clippy::panic)]
     fn state<'a>(states: &'a [PhaseState], phase: &str) -> &'a PhaseState {
         states.iter().find(|s| s.phase == phase).unwrap_or_else(|| panic!("no {phase}"))
     }

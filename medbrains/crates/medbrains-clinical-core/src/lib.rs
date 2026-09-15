@@ -13,4 +13,5 @@ pub mod consultation;
 pub mod emergency;
 pub mod fall_risk;
 pub mod nurse_calls;
+pub mod registration;
 pub mod transfusion;

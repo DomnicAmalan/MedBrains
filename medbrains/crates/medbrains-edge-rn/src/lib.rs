@@ -507,6 +507,63 @@ pub fn consultation_problem(chief_complaint: String, examination: String, assess
     clinical::consultation::consultation_problem(&chief_complaint, &examination, &assessment, &plan)
 }
 
+/// What the desk typed, as the registration rules see it (UDL record).
+#[derive(Debug, Clone)]
+pub struct RegistrationDraft {
+    pub first_name: String,
+    pub last_name: String,
+    pub phone: String,
+    pub date_of_birth: String,
+    pub age_years: Option<u32>,
+    pub is_medico_legal: bool,
+    pub mlc_number: String,
+    pub abha_number: String,
+}
+
+impl From<RegistrationDraft> for clinical::registration::RegistrationDraft {
+    fn from(d: RegistrationDraft) -> Self {
+        Self {
+            first_name: d.first_name,
+            last_name: d.last_name,
+            phone: d.phone,
+            date_of_birth: d.date_of_birth,
+            age_years: d.age_years,
+            is_medico_legal: d.is_medico_legal,
+            mlc_number: d.mlc_number,
+            abha_number: d.abha_number,
+        }
+    }
+}
+
+/// A refusal on one registration field, in the desk's words (UDL record).
+#[derive(Debug, Clone)]
+pub struct RegistrationProblem {
+    pub field: String,
+    pub message: String,
+}
+
+impl From<clinical::registration::RegistrationProblem> for RegistrationProblem {
+    fn from(p: clinical::registration::RegistrationProblem) -> Self {
+        Self { field: p.field, message: p.message }
+    }
+}
+
+pub fn registration_action(check_unavailable: bool, matches: u32) -> String {
+    clinical::registration::registration_action(check_unavailable, matches).to_owned()
+}
+
+pub fn registration_carries_over(field: String) -> bool {
+    clinical::registration::registration_carries_over(&field)
+}
+
+pub fn registration_problem(draft: RegistrationDraft) -> Option<RegistrationProblem> {
+    clinical::registration::registration_problem(&draft.into()).map(Into::into)
+}
+
+pub fn estimated_date_of_birth(age_years: u32, today_year: i32) -> String {
+    clinical::registration::estimated_date_of_birth(age_years, today_year)
+}
+
 pub fn companion_access(licensed_by_hospital: Option<bool>, band_paired: Option<bool>, purchased: Option<bool>) -> Option<String> {
     clinical::companion::companion_access(licensed_by_hospital, band_paired, purchased).map(str::to_owned)
 }

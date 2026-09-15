@@ -44,4 +44,6 @@ Kept here so the next author knows what a "strong" journey pays for.
 - **"Send me a code" blamed the number for an outage.** Now "Could not reach the hospital server." Found by the patient outage journey.
 - **A module with no permission was visible to every role**, so "nothing assigned to you here" could never be reached. Device sync is gated until phase 6 defines its permission.
 
+- **A receptionist's patient list is scoped to the patients linked to them**, so the desk cannot find a returning patient a colleague registered (phone and web read the same endpoint), while the unfiltered duplicate check offers that record. Not widened here: the Find empty state names the scope, the journeys walk Register → Use this record → token, and `docs/plans/native-front-office.md` records the authz-grammar fix for the operator. Found by the Android find-by-phone journey (evidence: the empty state with the right phone typed).
+
 Harness lessons: one identity per provisioning call (a run id alone collides across roles); never run the iOS and Android staff suites at once (each ends every open code blue in `setUp`); JUnit does not run tests alphabetically, so a test must not depend on the seeded sign-in code surviving another test; the shared `native_*` accounts lock after repeated wrong passwords, so refusals use a per-run identity.
