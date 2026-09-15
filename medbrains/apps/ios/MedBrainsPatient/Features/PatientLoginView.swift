@@ -79,8 +79,10 @@ struct PatientLoginView: View {
             try await portal.requestCode(tenantCode: AppConfig.hospitalCode, phone: phone.trimmingCharacters(in: .whitespaces))
             codeStep = true
             focus = "code"
-        } catch {
+        } catch is ApiError {
             self.error = "Could not send the code. Check the number and try again."
+        } catch {
+            self.error = "Could not reach the hospital server."
         }
     }
 

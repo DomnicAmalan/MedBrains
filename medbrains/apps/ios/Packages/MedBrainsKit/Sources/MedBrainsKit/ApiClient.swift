@@ -46,8 +46,9 @@ public actor ApiClient {
         req.httpMethod = method.rawValue
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         req.setValue(clientName, forHTTPHeaderField: "X-MedBrains-Client")
-        if let jwt = try? secrets.read(.jwt) {
-            req.setValue("Bearer \(jwt)", forHTTPHeaderField: "Authorization")
+        let used = try? secrets.read(.jwt)
+        if let used {
+            req.setValue("Bearer \(used)", forHTTPHeaderField: "Authorization")
         }
         if let body {
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -57,7 +58,9 @@ public actor ApiClient {
         let (data, response) = try await session.data(for: req)
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard (200..<300).contains(status) else {
-            if status == 401 { await onUnauthorized?() }
+            // A 401 for the token this request carried; a poll answered after a
+            // fresh sign-in must not sign the new session out.
+            if status == 401, used == (try? secrets.read(.jwt)) { await onUnauthorized?() }
             throw ApiError(status: status, message: Self.errorMessage(from: data, status: status))
         }
         if T.self == Empty.self { return Empty() as! T }

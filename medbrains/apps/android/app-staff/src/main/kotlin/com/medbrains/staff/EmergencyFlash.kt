@@ -18,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -130,6 +131,10 @@ private fun FlashBanner(api: NurseApi, code: OpenEmergencyCode, others: Int, can
             Text(code.location, style = MaterialTheme.typography.headlineSmall, color = ink, textAlign = TextAlign.Center)
             if (others > 0) Text("+$others more code${if (others == 1) "" else "s"} open", color = ink)
             Text("Triple-tap to silence on this phone", style = MaterialTheme.typography.bodyMedium, color = ink.copy(alpha = 0.9f))
+            // The gesture is for a gloved hand; the button is for everyone else (WCAG 2.5.1 — no gesture-only path).
+            TextButton(onClick = onSilence, modifier = Modifier.height(44.dp).testTag("emergency-flash-silence").semantics { contentDescription = "Silence this alarm on this phone. Silencing does not say you are responding." }) {
+                Text("Silence on this phone", color = ink)
+            }
             code.codeBlueId?.takeIf { canRespond }?.let { id ->
                 Button(
                     onClick = { scope.launch { busy = true; try { api.respondToCodeBlue(id); responded = true } catch (_: Exception) {} finally { busy = false } } },

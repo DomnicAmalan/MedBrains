@@ -28,6 +28,11 @@ enum Session {
         if !field.exists { ensureSignedOut(app) }
         field.tap()
         field.typeText(username)
+        if (field.value as? String) != username {
+            // A keystroke from the previous screen can land first; clear and say it again.
+            field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: ((field.value as? String) ?? "").count))
+            field.typeText(username)
+        }
         app.secureTextFields["Password"].tap()
         app.secureTextFields["Password"].typeText(password)
         app.buttons["signIn"].tap()

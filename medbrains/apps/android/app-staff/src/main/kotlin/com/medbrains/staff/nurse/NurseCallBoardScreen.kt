@@ -124,10 +124,10 @@ private fun CallRow(api: NurseApi, call: ActiveNurseCall, canRespond: Boolean, o
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (call.acknowledged_at == null) {
                     CarbonTertiaryButton("Seen", onClick = { respond("acknowledged") }, enabled = !busy,
-                        modifier = Modifier.testTag("nurse-call-seen").semantics { contentDescription = "Mark the call from $bed as seen" })
+                        modifier = Modifier.testTag("nurse-call-seen-${call.id}").semantics { contentDescription = "Mark the call from $bed as seen" })
                 }
                 CarbonPrimaryButton("Done", onClick = { respond("completed") }, enabled = !busy,
-                    modifier = Modifier.weight(1f).testTag("nurse-call-done").semantics { contentDescription = "Mark the call from $bed as answered" })
+                    modifier = Modifier.weight(1f).testTag("nurse-call-done-${call.id}").semantics { contentDescription = "Mark the call from $bed as answered" })
             }
         }
     }

@@ -62,20 +62,16 @@ fun BarcodeScanner(title: String, hint: String, resumeKey: Int, onScan: (String)
         Text(title, style = MaterialTheme.typography.titleMedium)
         Text(hint, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
-        when {
-            !hasCamera -> ManualEntry("This device has no camera.", onScan)
-            granted -> {
-                CameraPane(resumeKey, onScan)
-                Spacer(Modifier.height(12.dp))
-                ManualEntry("Or, if the code will not read:", onScan)
-            }
-            !asked -> CarbonPrimaryButton("Allow the camera", onClick = { ask.launch(Manifest.permission.CAMERA) })
-            else -> {
-                CarbonNotification(NotificationKind.Warning, "Camera access is off", "Turn it on in Settings › MedBrains to scan. You can type the code below meanwhile.")
-                Spacer(Modifier.height(12.dp))
-                ManualEntry(null, onScan)
-            }
+        // Typing the code is always offered: a wristband that will not read is the
+        // common case, and it must not wait on a permission prompt.
+        val reason = when {
+            !hasCamera -> "This device has no camera."
+            granted -> { CameraPane(resumeKey, onScan); "Or, if the code will not read:" }
+            !asked -> { CarbonPrimaryButton("Allow the camera", onClick = { ask.launch(Manifest.permission.CAMERA) }); "Or type the code:" }
+            else -> { CarbonNotification(NotificationKind.Warning, "Camera access is off", "Turn it on in Settings › MedBrains to scan. You can type the code below meanwhile."); null }
         }
+        Spacer(Modifier.height(12.dp))
+        ManualEntry(reason, onScan)
     }
 }
 

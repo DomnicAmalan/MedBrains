@@ -39,7 +39,8 @@ object StaffModules {
         module("housekeeping", "Housekeeping", Icons.Filled.CleaningServices, listOf("housekeeping.cleaning.list"), listOf("Mobile-Housekeeping", "TV-Ward"), 5),
         module("security", "Security", Icons.Filled.Security, listOf("security.incidents.list"), listOf("Mobile-Security", "TV-Emergency"), 5),
         module("hr", "HR", Icons.Filled.Groups, listOf("hr.attendance.list"), listOf("Mobile-Admin"), 5),
-        module("device-sync", "Device sync", Icons.Filled.Sync, emptyList(), listOf("Mobile-Admin"), 6),
+        // Phase 6 defines this module's own permission; until then the pairing roster gates the placeholder.
+        module("device-sync", "Device sync", Icons.Filled.Sync, listOf("devices.pairing.paired_list"), listOf("Mobile-Admin"), 6),
     )
 
     private fun module(id: String, name: String, icon: ImageVector, all: List<String>, apps: List<String>, phase: Int): AppModule {

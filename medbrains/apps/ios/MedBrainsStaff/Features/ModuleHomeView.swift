@@ -28,6 +28,7 @@ struct ModuleHomeView: View {
             } actions: {
                 Button("Sign out") { Task { await auth.signOut() } }
             }
+            .accessibilityIdentifier("nothing-assigned")
         } else {
             TabView(selection: $selection) {
                 ForEach(visible) { module in

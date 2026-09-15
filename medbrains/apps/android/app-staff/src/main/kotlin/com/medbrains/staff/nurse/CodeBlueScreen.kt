@@ -117,7 +117,7 @@ private fun ArrestRow(api: NurseApi, event: CodeBlueEvent, responders: List<Code
         if (first != null) {
             Text("First on scene: ${first.user_name} (+${first.seconds_after_call}s)" + if (responders.size > 1) " · ${responders.size - 1} more responding" else "", style = MaterialTheme.typography.bodyLarge)
         } else {
-            Text("Nobody has responded yet.", style = MaterialTheme.typography.bodyLarge, color = Carbon.amber[6])
+            Text("Nobody has responded yet.", style = MaterialTheme.typography.bodyLarge, color = Carbon.amber[6], modifier = Modifier.testTag("code-blue-nobody-${event.id}"))
         }
         if (canRespond) {
             CarbonPrimaryButton(

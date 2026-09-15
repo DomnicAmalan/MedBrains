@@ -175,14 +175,14 @@ private fun RecordNotGiven(api: NurseApi, admission: AdmissionRow, dose: MarRow,
         val m = mode
         if (m == null) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                CarbonTertiaryButton("Hold", onClick = { mode = "held" }, modifier = Modifier.semantics { contentDescription = "Hold ${dose.drug_name} and give a reason" })
-                CarbonTertiaryButton("Refused", onClick = { mode = "refused" }, modifier = Modifier.semantics { contentDescription = "Record that the patient refused ${dose.drug_name}" })
+                CarbonTertiaryButton("Hold", onClick = { mode = "held" }, modifier = Modifier.testTag("dose-hold").semantics { contentDescription = "Hold ${dose.drug_name} and give a reason" })
+                CarbonTertiaryButton("Refused", onClick = { mode = "refused" }, modifier = Modifier.testTag("dose-refused").semantics { contentDescription = "Record that the patient refused ${dose.drug_name}" })
             }
         } else {
-            CarbonTextField(reason, { reason = it }, if (m == "held") "Why was it held?" else "What did the patient say?")
+            CarbonTextField(reason, { reason = it }, if (m == "held") "Why was it held?" else "What did the patient say?", modifier = Modifier.testTag("dose-reason"))
             failure?.let { CarbonNotification(NotificationKind.Error, "Not recorded", it) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                CarbonPrimaryButton("Save", enabled = !busy && reason.isNotBlank(), modifier = Modifier.weight(1f), onClick = {
+                CarbonPrimaryButton("Save", enabled = !busy && reason.isNotBlank(), modifier = Modifier.weight(1f).testTag("dose-save"), onClick = {
                     scope.launch {
                         busy = true; failure = null
                         try {

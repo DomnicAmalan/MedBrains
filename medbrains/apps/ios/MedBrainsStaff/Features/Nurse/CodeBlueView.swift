@@ -97,6 +97,7 @@ private struct ArrestRow: View {
                     .font(CarbonType.body).foregroundStyle(MedBrainsTheme.ink)
             } else {
                 Text("Nobody has responded yet.").font(CarbonType.body).foregroundStyle(Carbon.amber[6])
+                    .accessibilityIdentifier("code-blue-nobody-\(event.id)")
             }
             if canRespond {
                 Button(responded ? "You are responding" : "Responding") { Task { await respond() } }

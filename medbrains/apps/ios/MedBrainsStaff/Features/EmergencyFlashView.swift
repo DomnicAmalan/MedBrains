@@ -27,10 +27,11 @@ struct EmergencyFlashOverlay: View {
         )
         ZStack {
             if let current = open.first {
+                // No fade: a fading overlay still takes touches, so the tap after
+                // a silence landed on "I'm responding". An alarm appears and goes at once.
                 FlashBanner(code: current, others: open.count - 1, canRespond: auth.identity?.can("nurse.code_blue.respond") ?? false) {
                     silenced.append(current.key)
                 }
-                .transition(.opacity)
             }
         }
         .task(id: auth.identity?.userId) {
@@ -76,6 +77,11 @@ private struct FlashBanner: View {
                 Text(code.location).font(CarbonType.heading03).foregroundStyle(ink).multilineTextAlignment(.center)
                 if others > 0 { Text("+\(others) more code\(others == 1 ? "" : "s") open").font(CarbonType.body).foregroundStyle(ink) }
                 Text("Triple-tap to silence on this phone").font(CarbonType.bodyCompact).foregroundStyle(ink.opacity(0.9))
+                // The gesture is for a gloved hand; the button is for everyone else (WCAG 2.5.1 — no gesture-only path).
+                Button("Silence on this phone", action: onSilence)
+                    .font(CarbonType.bodyCompact).foregroundStyle(ink).frame(minHeight: 44)
+                    .accessibilityLabel("Silence this alarm on this phone. Silencing does not say you are responding.")
+                    .accessibilityIdentifier("emergency-flash-silence")
                 if let id = code.codeBlueId, canRespond {
                     Button(responded ? "You are responding" : "I'm responding") { Task { await respond(id) } }
                         .font(CarbonType.body)

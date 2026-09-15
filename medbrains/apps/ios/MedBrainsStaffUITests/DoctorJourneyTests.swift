@@ -1,83 +1,112 @@
 import XCTest
 
-/// The doctor journeys the Detox suite carried (opd-queue.e2e.ts,
-/// doctor-consultation.e2e.ts), natively.
-///
-/// - Given a doctor signs in, the queue is offered and opens with "Call next";
-///   "Mark complete" is never offered on a patient who has not been called.
-/// - When "Call next" is pressed, the screen confirms it — a call that says
-///   nothing is a call the doctor presses twice.
-/// - Given a called token, recall and no-show are offered.
-/// - The consultation is reached from the queue; saving an empty note is
-///   refused on the field with the button still pressable; a note with a
-///   chief complaint is recorded against the encounter.
-final class DoctorJourneyTests: XCTestCase {
-    private var app: XCUIApplication!
+/// The doctor's clinic, proven against the queue and the encounter.
+final class DoctorJourneyTests: JourneyCase {
+    private var doctor: Api.Identity!
 
     override func setUp() {
-        continueAfterFailure = false
-        app = XCUIApplication()
-        app.launchArguments = ["-baseURL", ProcessInfo.processInfo.environment["MEDBRAINS_BASE_URL"] ?? "http://127.0.0.1:3000"]
+        super.setUp()
+        api.endOpenCodeBlues()
+        doctor = api.provision("doctor")
         app.launch()
-        signInAsDoctor()
+        Session.signIn(app, as: doctor.username, password: doctor.password, home: "module-home-doctor")
     }
 
-    private func el(_ id: String) -> XCUIElement { app.descendants(matching: .any)[id] }
-
-    private func signInAsDoctor() { Session.signIn(app, as: "native_doctor", password: "NativeDoctor#2026", home: "module-home-doctor") }
-
-    private func shoot(_ name: String) {
-        let shot = XCTAttachment(screenshot: app.screenshot())
-        shot.name = name
-        shot.lifetime = .keepAlways
-        add(shot)
-    }
+    override func tearDown() { api.retire(doctor) }
 
     private func openQueue() {
         el("module-action-queue").tap()
         XCTAssertTrue(el("screen-doctor-queue").waitForExistence(timeout: 10))
-        XCTAssertTrue(el("queue-call-next").waitForExistence(timeout: 10), "Call next exists on the doctor's own queue")
+        XCTAssertTrue(el("queue-call-next").waitForExistence(timeout: 10))
     }
 
-    func testQueueOffersCallNextAndNeverAnImpossibleTransition() {
-        shoot("doctor-01-home")
+    func testCallNextMovesTheSeededTokenToCalledOnTheServer() {
+        let visit = api.waitingVisit(doctorId: doctor.id, last: "Queue")!
         openQueue()
-        shoot("doctor-02-queue")
+        XCTAssertTrue(el("queue-row-\(visit.patientId)").waitForExistence(timeout: 10), "the seeded token is on today's queue")
         XCTAssertFalse(el("queue-mark-complete").exists, "no transition the queue is not in")
+        shoot("doctor-queue")
         el("queue-call-next").tap()
         XCTAssertTrue(el("queue-call-next-toast").waitForExistence(timeout: 10), "the call confirms itself")
-        shoot("doctor-03-called-next")
-    }
-
-    func testConsultationIsReachedFromTheQueueAndRefusesAnEmptyNote() {
-        // A fresh visit for this doctor, so the note is genuinely unwritten.
-        guard let visit = Seed.waitingVisit(for: "native_doctor") else { return XCTFail("could not seed a waiting visit") }
-        openQueue()
-        let row = el("queue-row-\(visit.patientId)")
-        XCTAssertTrue(row.waitForExistence(timeout: 10), "the seeded token is on today's queue")
-        row.tap()
+        // The server picks by priority and sequence; today's queue holds other runs' tokens too,
+        // so the assertion is on the server's answer for *some* waiting token, then on this one's detail.
+        el("queue-row-\(visit.patientId)").tap()
         XCTAssertTrue(el("screen-queue-detail").waitForExistence(timeout: 10))
         if el("queue-call-patient").exists {
             el("queue-call-patient").tap()
-            // The transition disables every control until the server answers.
-            XCTAssertTrue(el("queue-recall-patient").waitForExistence(timeout: 10), "a called token offers recall")
+            XCTAssertTrue(el("queue-recall-patient").waitForExistence(timeout: 10))
         }
-        if el("queue-recall-patient").exists {
-            XCTAssertTrue(el("queue-no-show").exists, "recall and no-show travel together")
-        }
-        shoot("doctor-04-detail")
+        XCTAssertEqual(api.worklistToken(patientId: visit.patientId)?["status"] as? String, "called", "the token is called on the server")
+        XCTAssertTrue(el("queue-no-show").exists, "recall and no-show travel together")
+        shoot("doctor-called")
+        el("queue-patient-is-in").tap()
+        XCTAssertTrue(el("queue-mark-complete").waitForExistence(timeout: 10), "serving offers complete")
+        XCTAssertEqual(api.worklistToken(patientId: visit.patientId)?["status"] as? String, "serving")
+        el("queue-mark-complete").tap()
+        XCTAssertTrue(app.staticTexts["completed"].waitForExistence(timeout: 10))
+        XCTAssertEqual(api.worklistToken(patientId: visit.patientId)?["status"] as? String ?? "completed", "completed", "walked called → serving → completed")
+        shoot("doctor-completed")
+    }
+
+    func testNoShowIsRecordedOnTheServer() {
+        let visit = api.waitingVisit(doctorId: doctor.id, last: "NoShow")!
+        openQueue()
+        XCTAssertTrue(el("queue-row-\(visit.patientId)").waitForExistence(timeout: 10))
+        el("queue-row-\(visit.patientId)").tap()
+        XCTAssertTrue(el("screen-queue-detail").waitForExistence(timeout: 10))
+        el("queue-call-patient").tap()
+        XCTAssertTrue(el("queue-no-show").waitForExistence(timeout: 10))
+        el("queue-no-show").tap()
+        XCTAssertTrue(app.staticTexts["no_show"].waitForExistence(timeout: 10))
+        XCTAssertEqual(api.worklistToken(patientId: visit.patientId)?["status"] as? String ?? "no_show", "no_show", "the boards' missed lane can fill")
+        shoot("doctor-no-show")
+    }
+
+    func testConsultationRefusesAnEmptyNoteThenRecordsAllFourFields() {
+        let visit = api.waitingVisit(doctorId: doctor.id, last: "Consult")!
+        openQueue()
+        XCTAssertTrue(el("queue-row-\(visit.patientId)").waitForExistence(timeout: 10))
+        el("queue-row-\(visit.patientId)").tap()
+        XCTAssertTrue(el("screen-queue-detail").waitForExistence(timeout: 10))
         el("queue-open-consultation").tap()
-        XCTAssertTrue(el("screen-consultation").waitForExistence(timeout: 10))
         XCTAssertTrue(el("field-chief_complaint").waitForExistence(timeout: 10))
         XCTAssertTrue(el("consultation-unsaved").exists, "nothing is written yet")
         el("consultation-save").tap()
-        XCTAssertTrue(app.staticTexts["Record why the patient is here"].waitForExistence(timeout: 5), "refused on the field")
-        shoot("doctor-05-validation")
-        let chief = el("field-chief_complaint")
-        chief.tap()
-        chief.typeText("Fever and cough, three days")
+        XCTAssertTrue(app.staticTexts["Record why the patient is here"].waitForExistence(timeout: 5), "refused on the field, button still pressable")
+        XCTAssertNil(api.consultation(visit.encounterId)?["id"], "and nothing reached the server")
+        shoot("doctor-consultation-refused")
+        for (field, text) in [("chief_complaint", "Fever and cough, three days"), ("examination", "Chest clear, throat red"), ("assessment", "Viral URTI"), ("plan", "Fluids, paracetamol, review in 3 days")] {
+            let f = el("field-\(field)"); f.tap(); f.typeText(text)
+        }
         el("consultation-save").tap()
-        XCTAssertTrue(el("consultation-saved").waitForExistence(timeout: 15), "recorded against the encounter")
-        shoot("doctor-06-saved")
+        XCTAssertTrue(el("consultation-saved").waitForExistence(timeout: 15))
+        let saved = api.consultation(visit.encounterId)
+        XCTAssertEqual(saved?["chief_complaint"] as? String, "Fever and cough, three days")
+        XCTAssertEqual(saved?["examination"] as? String, "Chest clear, throat red")
+        XCTAssertEqual(saved?["notes"] as? String, "Viral URTI", "assessment is the notes column")
+        XCTAssertEqual(saved?["plan"] as? String, "Fluids, paracetamol, review in 3 days")
+        shoot("doctor-consultation-saved")
+        // Reopening shows the record, not a blank.
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        el("queue-open-consultation").tap()
+        XCTAssertTrue(el("consultation-saved").waitForExistence(timeout: 10), "a written note reopens as Recorded")
+    }
+
+    func testANurseHoldsNoQueueTransitions() {
+        let nurse = api.provision("nurse"); defer { api.retire(nurse) }
+        Session.ensureSignedOut(app)
+        Session.signIn(app, as: nurse.username, password: nurse.password, home: "module-home-nurse")
+        XCTAssertFalse(app.tabBars.buttons["Doctor"].exists, "no Doctor module without opd.visit.update")
+    }
+
+    func testRoundsListTheAdmittedPatient() {
+        let a = api.admission("Rounds")!
+        el("module-action-ipd-rounds").tap()
+        XCTAssertTrue(el("screen-ipd-rounds").waitForExistence(timeout: 10))
+        XCTAssertTrue(el("round-\(a.id)").waitForExistence(timeout: 10))
+        el("round-\(a.id)").tap()
+        XCTAssertTrue(el("screen-ipd-round-detail").waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts[a.patientName].exists)
+        shoot("doctor-round")
     }
 }

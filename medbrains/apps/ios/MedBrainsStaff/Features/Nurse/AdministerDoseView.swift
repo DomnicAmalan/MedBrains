@@ -187,18 +187,22 @@ private struct RecordNotGiven: View {
             VStack(alignment: .leading, spacing: 12) {
                 CarbonField(mode == "held" ? "Why was it held?" : "What did the patient say?", isFocused: focused) {
                     TextField("Reason", text: $reason, axis: .vertical).lineLimit(2...5).focused($focused)
+                        .accessibilityIdentifier("dose-reason")
                 }
                 if let failure { CarbonNotification(kind: .error, title: "Not recorded", message: failure) }
                 HStack(spacing: 8) {
                     Button("Save") { Task { await submit(mode) } }.buttonStyle(.carbonPrimary)
                         .disabled(busy || reason.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .accessibilityIdentifier("dose-save")
                     Button("Cancel") { self.mode = nil; reason = "" }.buttonStyle(.carbonGhost)
                 }
             }
         } else {
             HStack(spacing: 8) {
                 Button("Hold") { mode = "held" }.buttonStyle(.carbonTertiary).accessibilityLabel("Hold \(dose.drugName) and give a reason")
+                    .accessibilityIdentifier("dose-hold")
                 Button("Refused") { mode = "refused" }.buttonStyle(.carbonTertiary).accessibilityLabel("Record that the patient refused \(dose.drugName)")
+                    .accessibilityIdentifier("dose-refused")
             }
         }
     }

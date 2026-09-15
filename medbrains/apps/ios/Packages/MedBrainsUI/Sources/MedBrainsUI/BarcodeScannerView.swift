@@ -40,7 +40,6 @@ public struct BarcodeScannerView: View {
             }
         }
         .padding(16)
-        .accessibilityIdentifier("barcode-scanner")
     }
 
     @ViewBuilder private var cameraPane: some View {

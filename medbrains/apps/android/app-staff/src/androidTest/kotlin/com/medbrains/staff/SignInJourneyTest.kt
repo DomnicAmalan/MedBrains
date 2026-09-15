@@ -1,59 +1,80 @@
 package com.medbrains.staff
 
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.medbrains.testkit.Evidence
 import org.junit.Rule
+import org.junit.rules.RuleChain
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Phase 1 acceptance: a nurse signs in and lands on exactly the modules the
- * nurse role holds. Runs against the live dev backend at the emulator's host
- * loopback (10.0.2.2:3000), like the Detox `registration-journey` it replaces.
+ * Sign-in and session on the device: a wrong password is refused in words
+ * with the username kept; a nurse provisioned this run lands on Nurse and
+ * sees only her modules; sign-out ends the session; an account deactivated
+ * server-side is signed out on its next request.
  */
 @RunWith(AndroidJUnit4::class)
 class SignInJourneyTest {
-    @get:Rule
     val compose = createAndroidComposeRule<MainActivity>()
 
-    @Test
-    fun nurseSignsInAndSeesOnlyNurseModules() {
-        with(Session) { compose.ensureSignedOut() }
-        compose.onNodeWithTag("username").performTextInput("native_nurse")
-        compose.onNodeWithTag("password").performTextInput("NativeNurse#2026")
+    @get:Rule
+    val chain: RuleChain = RuleChain.outerRule(compose).around(Evidence { compose })
+    private val api = Api.admin()
+
+    private fun has(tag: String) = with(Session) { compose.has(tag) }
+    private fun seesText(t: String) = compose.onAllNodes(hasText(t)).fetchSemanticsNodes().isNotEmpty()
+    private fun type(username: String, password: String) {
+        compose.onNodeWithTag("username").performTextInput(username)
+        compose.onNodeWithTag("password").performTextInput(password)
         compose.onNodeWithTag("signIn").performClick()
-
-        compose.waitUntil(timeoutMillis = 15_000) {
-            compose.onAllNodes(androidx.compose.ui.test.hasTestTag("module-nurse")).fetchSemanticsNodes().isNotEmpty()
-        }
-        // The gate: a nurse holds nurse.dashboard.view and lab.orders.list,
-        // never opd.visit.update, so Lab is offered and Doctor is not.
-        compose.onNodeWithTag("module-doctor").assertDoesNotExist()
-        compose.onNodeWithTag("module-lab").assertExists()
-        // Registry order decides the landing: the nurse opens on Nurse, not on the last module.
-        compose.onNodeWithTag("module-nurse").assertIsSelected()
-
-        compose.onNodeWithContentDescription("Account").performClick()
-        compose.onNodeWithText("Sign out").performClick()
-        compose.waitUntil(timeoutMillis = 10_000) {
-            compose.onAllNodes(androidx.compose.ui.test.hasTestTag("signIn")).fetchSemanticsNodes().isNotEmpty()
-        }
     }
 
     @Test
-    fun wrongPasswordIsRefusedWithAMessage() {
+    fun wrongPasswordIsRefusedInWordsAndTheUsernameStays() {
+        val nurse = api.provision("nurse")
+        try {
+            with(Session) { compose.ensureSignedOut() }
+            type(nurse.username, "wrong")
+            compose.waitUntil(10_000) { seesText("Wrong username or password.") }
+            compose.onAllNodes(hasText(nurse.username)).fetchSemanticsNodes().isNotEmpty().let { check(it) { "a refusal keeps what was typed" } }
+        } finally { api.retire(nurse) }
+    }
+
+    @Test
+    fun aProvisionedNurseLandsOnHerModulesAndOnlyHers() {
+        val nurse = api.provision("nurse")
+        try {
+            with(Session) { compose.ensureSignedOut() }
+            type(nurse.username, nurse.password)
+            compose.waitUntil(15_000) { has("module-home-nurse") }
+            compose.onNodeWithTag("module-nurse").assertIsSelected()
+            check(has("module-lab")) { "lab.orders.list is held by a nurse" }
+            check(!has("module-doctor")) { "opd.visit.update is not" }
+            check(!has("module-billing"))
+            compose.onNodeWithContentDescription("Account").performClick()
+            compose.onNodeWithText("Sign out").performClick()
+            compose.waitUntil(10_000) { has("username") }
+        } finally { api.retire(nurse) }
+    }
+
+    @Test
+    fun aDeactivatedAccountIsSignedOutOnItsNextRequest() {
+        val nurse = api.provision("nurse")
         with(Session) { compose.ensureSignedOut() }
-        compose.onNodeWithTag("username").performTextInput("native_nurse")
-        compose.onNodeWithTag("password").performTextInput("wrong")
-        compose.onNodeWithTag("signIn").performClick()
-        compose.waitUntil(timeoutMillis = 10_000) {
-            compose.onAllNodes(androidx.compose.ui.test.hasText("Wrong username or password.")).fetchSemanticsNodes().isNotEmpty()
-        }
+        type(nurse.username, nurse.password)
+        compose.waitUntil(15_000) { has("module-home-nurse") }
+        api.retire(nurse) // deactivated while the app holds a token
+        // The next request answers 401 — the flash poll may make it before the tap does.
+        if (has("module-action-calls")) runCatching { compose.onNodeWithTag("module-action-calls").performClick() }
+        compose.waitUntil(15_000) { has("username") }
     }
 }

@@ -100,12 +100,12 @@ private struct CallRow: View {
                         Button("Seen") { Task { await respond("acknowledged") } }
                             .buttonStyle(.carbonTertiary).disabled(busy)
                             .accessibilityLabel("Mark the call from \(call.bedNumber ?? "an unassigned bed") as seen")
-                            .accessibilityIdentifier("nurse-call-seen")
+                            .accessibilityIdentifier("nurse-call-seen-\(call.id)")
                     }
                     Button("Done") { Task { await respond("completed") } }
                         .buttonStyle(.carbonPrimary).disabled(busy)
                         .accessibilityLabel("Mark the call from \(call.bedNumber ?? "an unassigned bed") as answered")
-                        .accessibilityIdentifier("nurse-call-done")
+                        .accessibilityIdentifier("nurse-call-done-\(call.id)")
                 }
             }
         }

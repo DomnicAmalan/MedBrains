@@ -127,7 +127,7 @@ fun ModuleHome(auth: AuthStore, identity: TenantIdentity, modules: List<AppModul
 @Composable
 private fun EmptyRole(auth: AuthStore) {
     Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Nothing assigned to you here", style = MaterialTheme.typography.headlineSmall)
+        Text("Nothing assigned to you here", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.testTag("nothing-assigned"))
         Text("Your role has no module on this app. Ask an administrator, or sign in on the right app.")
         TextButton(onClick = { auth.signOut() }) { Text("Sign out") }
     }

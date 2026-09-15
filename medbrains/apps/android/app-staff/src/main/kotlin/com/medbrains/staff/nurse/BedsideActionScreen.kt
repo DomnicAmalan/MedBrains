@@ -67,7 +67,7 @@ fun BedsideActionScreen(api: NurseApi, admission: AdmissionRow, mode: String) {
 
     @Composable
     fun field(label: String, key: String, keyboard: KeyboardType, placeholder: String = "", modifier: Modifier = Modifier) {
-        CarbonTextField(form[key] ?: "", { form[key] = it }, if (placeholder.isEmpty()) label else "$label — $placeholder", modifier, keyboardOptions = KeyboardOptions(keyboardType = keyboard))
+        CarbonTextField(form[key] ?: "", { form[key] = it }, if (placeholder.isEmpty()) label else "$label — $placeholder", modifier.testTag("field-$key"), keyboardOptions = KeyboardOptions(keyboardType = keyboard))
     }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).imePadding().testTag("screen-bedside-$mode")) {

@@ -21,7 +21,8 @@ enum StaffModules {
         module("housekeeping", "Housekeeping", "bed.double", ["housekeeping.cleaning.list"], apps: ["Mobile-Housekeeping", "TV-Ward"], phase: 5),
         module("security", "Security", "shield.lefthalf.filled", ["security.incidents.list"], apps: ["Mobile-Security", "TV-Emergency"], phase: 5),
         module("hr", "HR", "person.2", ["hr.attendance.list"], apps: ["Mobile-Admin"], phase: 5),
-        module("device-sync", "Device sync", "arrow.triangle.2.circlepath", [], apps: ["Mobile-Admin"], phase: 6),
+        // Phase 6 defines this module's own permission; until then the pairing roster gates the placeholder.
+        module("device-sync", "Device sync", "arrow.triangle.2.circlepath", ["devices.pairing.paired_list"], apps: ["Mobile-Admin"], phase: 6),
     ]
 
     private static func module(_ id: String, _ name: String, _ symbol: String, _ all: [String], apps: [String], phase: Int) -> AppModule {

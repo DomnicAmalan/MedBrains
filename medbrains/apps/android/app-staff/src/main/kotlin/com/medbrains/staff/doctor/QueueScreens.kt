@@ -95,7 +95,7 @@ fun QueueListScreen(nav: NavHostController, api: DoctorApi, session: DoctorSessi
             isEmpty = { it.isEmpty() }, emptyTitle = "Queue is empty", emptyMessage = "No tokens issued for today yet.",
             retry = { scope.launch { load() } },
         ) { rows ->
-            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
+            LazyColumn(Modifier.fillMaxSize().testTag("queue-tokens"), contentPadding = PaddingValues(bottom = 32.dp)) {
                 items(rows, key = { it.id }) { token ->
                     // Keyed by patient, not position: a queue reorders as it advances.
                     CarbonActionRow(token.displayName, "UHID ${token.uhid ?: "—"} · TOKEN ${token.number}", onClick = { nav.navigate("queue/${token.id}") },

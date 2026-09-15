@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 android {
+    sourceSets.getByName("androidTest").kotlin.srcDir("../testkit/src")
     namespace = "com.medbrains.patient"
     compileSdk = 37
     defaultConfig {

@@ -43,13 +43,16 @@ class ApiClient(
             .url(baseUrl.trimEnd('/') + path)
             .header("Accept", "application/json")
             .header("X-MedBrains-Client", clientName)
-        secrets.read(SecretKey.JWT)?.let { builder.header("Authorization", "Bearer $it") }
+        val used = secrets.read(SecretKey.JWT)
+        used?.let { builder.header("Authorization", "Bearer $it") }
         val requestBody = body?.toRequestBody(JSON_MEDIA)
         builder.method(method, if (method == "GET" || method == "DELETE" && body == null) null else requestBody ?: "".toRequestBody(JSON_MEDIA))
         http.newCall(builder.build()).execute().use { response ->
             val text = response.body?.string().orEmpty()
             if (!response.isSuccessful) {
-                if (response.code == 401) onUnauthorized?.invoke()
+                // A 401 for the token this request carried; a poll answered after a
+                // fresh sign-in must not sign the new session out.
+                if (response.code == 401 && used == secrets.read(SecretKey.JWT)) onUnauthorized?.invoke()
                 throw ApiError(response.code, errorMessage(text, response.code))
             }
             text

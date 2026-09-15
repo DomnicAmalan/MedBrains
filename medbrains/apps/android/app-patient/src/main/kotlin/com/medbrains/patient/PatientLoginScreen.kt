@@ -86,7 +86,7 @@ fun PatientLoginScreen(auth: AuthStore) {
                     CarbonPrimaryButton("Send me a code", enabled = !busy && phoneOk, modifier = Modifier.testTag("sendCode"), onClick = {
                         scope.launch {
                             busy = true; error = null
-                            try { portal.requestCode(hospital, phone.trim()); codeStep = true } catch (e: Exception) { error = "Could not send the code. Check the number and try again." } finally { busy = false }
+                            try { portal.requestCode(hospital, phone.trim()); codeStep = true } catch (e: ApiError) { error = "Could not send the code. Check the number and try again." } catch (e: Exception) { error = "Could not reach the hospital server." } finally { busy = false }
                         }
                     })
                     TextButton(onClick = { codeStep = true; error = null }, enabled = !busy && phoneOk, modifier = Modifier.testTag("haveCode")) { Text("I already have a code") }
