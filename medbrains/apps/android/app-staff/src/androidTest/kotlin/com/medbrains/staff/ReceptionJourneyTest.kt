@@ -204,7 +204,7 @@ class ReceptionJourneyTest {
         try {
             with(Session) { compose.ensureSignedOut(); compose.signInAs(gate.username, gate.password, "module-home-reception") }
             check(has("reception-no-actions")) { "the module without a desk action says so — the grant gap is in roles.rs, not papered over here" }
-            check(!has("module-action-register") && !has("module-action-find") && !has("module-action-queue")) { "no patients.* or opd.* code, no action" }
+            check(!has("module-action-register") && !has("module-action-find") && !has("module-action-queue") && !has("module-action-appointments")) { "no patients.* or opd.* code, no action" }
         } finally { api.retire(gate) }
     }
 }

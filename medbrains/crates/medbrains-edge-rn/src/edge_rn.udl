@@ -86,6 +86,10 @@ namespace edge_rn {
     RegistrationProblem? registration_problem(RegistrationDraft draft);
     /// 1 January of the birth year, for someone who only knows their age.
     string estimated_date_of_birth(u32 age_years, i32 today_year);
+    /// What a booking offers the desk: "check_in" and "no_show" on its day while still open, else nothing.
+    sequence<string> appointment_actions(string status, boolean is_today);
+    /// Whether a slot may be offered: available and not already behind us (ISO date + HH:MM:SS).
+    boolean slot_is_bookable(string date, string start_time, string today, string now_time, boolean is_available);
 
     /// Why the companion is open ("hospital" | "band" | "purchase"), or none: hidden.
     string? companion_access(boolean? licensed_by_hospital, boolean? band_paired, boolean? purchased);

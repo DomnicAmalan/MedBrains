@@ -58,7 +58,7 @@ final class SignInJourneyTests: JourneyCase {
         XCTAssertTrue(app.tabBars.buttons["Nurse"].waitForExistence(timeout: 15))
         api.retire(nurse) // deactivated server-side while the app holds a token
         // The next request answers 401 — the flash poll may make it before the tap does.
-        if el("module-action-calls").exists { el("module-action-calls").tap() }
+        if el("module-action-calls").isHittable { el("module-action-calls").tap() }
         XCTAssertTrue(app.textFields["Username or email"].waitForExistence(timeout: 15), "a revoked account does not keep a ward screen")
         shoot("signin-revoked")
     }

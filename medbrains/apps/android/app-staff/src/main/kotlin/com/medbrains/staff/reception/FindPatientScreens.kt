@@ -31,6 +31,7 @@ import com.medbrains.ui.CarbonPageHeader
 import com.medbrains.ui.CarbonPrimaryButton
 import com.medbrains.ui.CarbonRow
 import com.medbrains.ui.CarbonTag
+import com.medbrains.ui.CarbonTertiaryButton
 import com.medbrains.ui.CarbonTextField
 import com.medbrains.ui.CarbonTile
 import com.medbrains.ui.CarbonTone
@@ -97,7 +98,11 @@ fun ReceptionPatientScreen(nav: NavHostController, patient: PatientSummary) {
             patient.last_visit_date?.let { CarbonRow("Last visit", it) }
             if (identity?.can("opd.visit.create") == true) {
                 CarbonPrimaryButton("Start OPD visit", modifier = Modifier.testTag("patient-start-visit"), onClick = { nav.navigate("start-visit/${patient.id}") })
-            } else {
+            }
+            if (identity?.can("opd.appointment.create") == true) {
+                CarbonTertiaryButton("Book appointment", onClick = { nav.navigate("book/${patient.id}") }, modifier = Modifier.fillMaxWidth().testTag("patient-book"))
+            }
+            if (identity?.can("opd.visit.create") != true) {
                 Text("This account cannot start a visit.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }

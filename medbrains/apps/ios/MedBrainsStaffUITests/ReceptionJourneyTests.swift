@@ -23,7 +23,6 @@ final class ReceptionJourneyTests: JourneyCase {
         return "96" + String(repeating: "0", count: max(0, 6 - Api.runId.count)) + Api.runId + String(format: "%02d", Self.serial)
     }
 
-    private func type(_ id: String, _ text: String) { el(id).tap(); el(id).typeText(text) }
 
     private func openRegister() {
         el("module-action-register").tap()
@@ -195,7 +194,7 @@ final class ReceptionJourneyTests: JourneyCase {
         Session.ensureSignedOut(app)
         Session.signIn(app, as: gate.username, password: gate.password, home: "module-home-reception")
         XCTAssertTrue(el("reception-no-actions").waitForExistence(timeout: 5), "the module without a desk action says so — the grant gap is in roles.rs, not papered over here")
-        XCTAssertFalse(el("module-action-register").exists || el("module-action-find").exists || el("module-action-queue").exists, "no patients.* or opd.* code, no action")
+        XCTAssertFalse(el("module-action-register").exists || el("module-action-find").exists || el("module-action-queue").exists || el("module-action-appointments").exists, "no patients.* or opd.* code, no action")
         shoot("reception-front-office-staff")
     }
 }

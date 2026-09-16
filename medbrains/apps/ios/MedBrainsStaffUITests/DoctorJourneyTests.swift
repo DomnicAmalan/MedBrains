@@ -79,7 +79,7 @@ final class DoctorJourneyTests: JourneyCase {
         XCTAssertNil(api.consultation(visit.encounterId)?["id"], "and nothing reached the server")
         shoot("doctor-consultation-refused")
         for (field, text) in [("chief_complaint", "Fever and cough, three days"), ("examination", "Chest clear, throat red"), ("assessment", "Viral URTI"), ("plan", "Fluids, paracetamol, review in 3 days")] {
-            let f = el("field-\(field)"); f.tap(); f.typeText(text)
+            type("field-\(field)", text)
         }
         el("consultation-save").tap()
         XCTAssertTrue(el("consultation-saved").waitForExistence(timeout: 15))

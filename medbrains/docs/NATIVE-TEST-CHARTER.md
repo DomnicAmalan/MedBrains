@@ -16,6 +16,7 @@ one combined count.
 | **Session** | a 401 signs out; a kept session hydrates; sign-out clears; **a deactivated or deleted account is signed out on its next request, not at token expiry** | retire the identity server-side while the app holds a token, then tap anything |
 | **Safety copy** | every outage message says "do not read this as …" where a blank would mislead | string assertion on the unavailable state |
 | **Evidence** | a screenshot per state, named, attached to the run | XCTAttachment / `screencap` per step |
+| **Clean device** | every run starts on a device that holds only the app under test — never the developer's shared simulator, which carries every app on the machine | `scripts/native_test_env.sh ios\|android` creates the dedicated `MedBrainsPhone` once and erases it before each run |
 
 ## Module rows (staff app)
 
@@ -45,5 +46,7 @@ Kept here so the next author knows what a "strong" journey pays for.
 - **A module with no permission was visible to every role**, so "nothing assigned to you here" could never be reached. Device sync is gated until phase 6 defines its permission.
 
 - **A receptionist's patient list is scoped to the patients linked to them**, so the desk cannot find a returning patient a colleague registered (phone and web read the same endpoint), while the unfiltered duplicate check offers that record. Not widened here: the Find empty state names the scope, the journeys walk Register → Use this record → token, and `docs/plans/native-front-office.md` records the authz-grammar fix for the operator. Found by the Android find-by-phone journey (evidence: the empty state with the right phone typed).
+
+- **The appointment list offered actions the server refuses.** `check-in` and `no-show` carry a per-record patient hop the list did not apply, so a colleague's booking showed *Check in* and answered "not found". The list now carries `can_manage` per row and the screens offer only what the server accepts. Found by the Android appointment journey (evidence: the "Not recorded / not found" banner over a row with both buttons).
 
 Harness lessons: one identity per provisioning call (a run id alone collides across roles); never run the iOS and Android staff suites at once (each ends every open code blue in `setUp`); JUnit does not run tests alphabetically, so a test must not depend on the seeded sign-in code surviving another test; the shared `native_*` accounts lock after repeated wrong passwords, so refusals use a per-run identity.

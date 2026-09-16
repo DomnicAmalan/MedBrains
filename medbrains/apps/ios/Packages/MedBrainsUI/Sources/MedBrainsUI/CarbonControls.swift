@@ -116,6 +116,11 @@ public struct CarbonRow<Trailing: View>: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
         .frame(minHeight: 48)
+        // The row draws no fill, so without this a button or link built from
+        // it is only tappable where its glyphs are — the gap between a short
+        // title and the trailing tag hits nothing. The whole row is the
+        // target (WCAG 2.5.8).
+        .contentShape(Rectangle())
         .overlay(alignment: .bottom) { Rectangle().fill(MedBrainsTheme.hairline).frame(height: 1) }
     }
 }

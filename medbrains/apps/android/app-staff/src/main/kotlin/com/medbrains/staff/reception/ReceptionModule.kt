@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Search
@@ -85,6 +86,8 @@ fun ReceptionModule() {
             TokenIssuedScreen(nav, session.patients.getValue(id), session.visits.getValue(id), session)
         }
         composable("board") { ReceptionQueueBoardScreen(DoctorApi(client)) }
+        composable("appointments") { AppointmentsTodayScreen(AppointmentsApi(client)) }
+        composable("book/{id}") { BookAppointmentScreen(nav, AppointmentsApi(client), session, session.patients.getValue(it.arguments!!.getString("id")!!)) }
     }
 }
 
@@ -105,6 +108,7 @@ fun ReceptionHome(nav: NavHostController, queueApi: DoctorApi) {
     val actions = listOf(
         Action("register", "Register a patient", "New walk-in: identity, safety flags, the desk's clinic.", Icons.Filled.PersonAdd, "register", "patients.create"),
         Action("find", "Find a patient", "By UHID, name or phone. Open the record, start a visit.", Icons.Filled.Search, "find", "patients.list"),
+        Action("appointments", "Appointments today", "Check in the booked, mark the missing.", Icons.Filled.CalendarMonth, "appointments", "opd.appointment.list"),
         Action("queue", "Queue board", "Who is waiting, and one Call next for the floor.", Icons.Filled.Groups, "board", "opd.queue.list"),
     )
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("module-home-reception")) {
@@ -120,7 +124,7 @@ fun ReceptionHome(nav: NavHostController, queueApi: DoctorApi) {
         CarbonSectionTitle("Actions")
         val allowed = actions.filter { identity?.can(it.permission) == true }
         if (allowed.isEmpty()) {
-            Text("Your role holds the reception module but none of its desk actions yet. Ask an administrator for patients.create, patients.list or opd.queue.list.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp).testTag("reception-no-actions"))
+            Text("Your role holds the reception module but none of its desk actions yet. Ask an administrator for patients.create, patients.list, opd.queue.list or opd.appointment.list.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp).testTag("reception-no-actions"))
         }
         allowed.forEach { act ->
             CarbonActionRow(act.label, act.detail, onClick = { nav.navigate(act.route) }, modifier = Modifier.fillMaxWidth().testTag("module-action-${act.id}")) {

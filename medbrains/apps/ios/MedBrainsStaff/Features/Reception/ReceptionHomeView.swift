@@ -9,6 +9,8 @@ enum ReceptionRoute: Hashable {
     case startVisit(PatientSummary)
     case tokenIssued(PatientSummary, VisitStarted, String)
     case board
+    case appointments
+    case book(PatientSummary)
 }
 
 /// What survives between two walk-ins at the same desk: the department, the
@@ -41,6 +43,8 @@ struct ReceptionDestination: View {
         case .startVisit(let p): StartVisitView(patient: p)
         case .tokenIssued(let p, let v, let dept): TokenIssuedView(patient: p, visit: v, departmentName: dept)
         case .board: ReceptionQueueBoardView()
+        case .appointments: AppointmentsTodayView()
+        case .book(let p): BookAppointmentView(patient: p)
         }
     }
 }
@@ -71,13 +75,14 @@ struct ReceptionHomeView: View {
                 .padding(.horizontal, 16)
                 CarbonSectionTitle("Actions")
                 let who = auth.identity
-                if !(who?.canAny(["patients.create", "patients.list", "opd.queue.list"]) ?? false) {
-                    Text("Your role holds the reception module but none of its desk actions yet. Ask an administrator for patients.create, patients.list or opd.queue.list.")
+                if !(who?.canAny(["patients.create", "patients.list", "opd.queue.list", "opd.appointment.list"]) ?? false) {
+                    Text("Your role holds the reception module but none of its desk actions yet. Ask an administrator for patients.create, patients.list, opd.queue.list or opd.appointment.list.")
                         .font(CarbonType.bodyCompact).foregroundStyle(MedBrainsTheme.inkSecondary).padding(16)
                         .accessibilityIdentifier("reception-no-actions")
                 }
                 action("register", "Register a patient", "New walk-in: identity, safety flags, the desk's clinic.", "person.badge.plus", .register, allowed: who?.can("patients.create") ?? false)
                 action("find", "Find a patient", "By UHID, name or phone. Open the record, start a visit.", "magnifyingglass", .find, allowed: who?.can("patients.list") ?? false)
+                action("appointments", "Appointments today", "Check in the booked, mark the missing.", "calendar", .appointments, allowed: who?.can("opd.appointment.list") ?? false)
                 action("queue", "Queue board", "Who is waiting, and one Call next for the floor.", "person.3.sequence", .board, allowed: who?.can("opd.queue.list") ?? false)
             }
         }

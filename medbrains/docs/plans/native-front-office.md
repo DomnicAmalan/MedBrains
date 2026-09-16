@@ -17,7 +17,7 @@ ER door. Everything is one-handed, short, and read back to the patient.
 | Slice | Screens | Server | Status |
 |---|---|---|---|
 | **A — registration to token** | Reception home · Register · Possible duplicate · Registered (UHID read-back) · Find patient · Patient · Start visit · Token issued · Queue board | `POST /patients/match`, `POST /patients`, `GET /patients?search`, `POST /opd/encounters`, `GET /tokens/worklist?module=opd`, `POST /tokens/call-next`, `GET /setup/departments`, `GET /setup/doctors` | this PR |
-| B — appointments | Today's list · Check in (issues the token) · No-show · Book (doctor → date → slot) | `GET/POST /opd/appointments`, `PUT …/check-in`, `…/no-show`, `GET /opd/doctors/{id}/slots` | next |
+| B — appointments | Today's list · Check in (issues the token) · No-show · Book from the patient screen (doctor → date → slot) | `GET/POST /opd/appointments`, `PUT …/check-in`, `…/no-show`, `GET /opd/doctors/{id}/slots` | this PR |
 | C — visitors and enquiries | Visitor desk (register, pass, in/out, revoke; active vs **overdue**) · Enquiry desk (log, resolve) | `/front-office/visitors`, `/passes`, `/visitor-logs`, `/enquiries` | after B |
 
 ## Found while building slice A — a policy question for the operator
@@ -34,6 +34,51 @@ scope. The fix, if wanted, is a relation in the authz grammar (a tenant-level
 desk→patient viewer relation for the reception roles), not a wider gate here.
 Also: `front_office_staff` holds no `patients.*` or `opd.*` code, so on this
 app it sees the module with no action and is told so (`reception-no-actions`).
+
+
+## Slice B — appointments
+
+**Found and fixed while building it:** the appointment list applied no
+per-record check while `check-in` and `no-show` do (they hop to the patient,
+`links::APPOINTMENT`, and answer 404 without access). A desk was therefore
+shown **Check in** on a colleague's booking and got "not found" — a screen
+offering what the server refuses, which repo law forbids. `list_appointments`
+now carries `can_manage` per row, from one bulk patient-access lookup (an
+unanswerable backend refuses the list rather than showing a day with every
+action missing, as the patient list already does), and both screens offer the
+buttons only when it is true, saying why when it is not.
+
+
+- **Appointments today** (home action, `opd.appointment.list`): today's rows
+  in time order — time, patient, doctor, status tag. A row in `scheduled` or
+  `confirmed` offers **Check in** and **No-show** (both `opd.appointment.update`);
+  the core rule `appointment_actions(status, is_today)` decides which, so a
+  row for another day or an already checked-in one offers nothing. Check-in
+  is the server's own path (it creates the encounter and the OPD token); the
+  answer's `token_number` is shown on the row and announced. Empty in words;
+  unavailable named.
+- **Book appointment** (patient screen action, `opd.appointment.create`):
+  doctor (picker, prefilled with the desk's consultant), department (from the
+  desk), date (default tomorrow), then the day's slots from the server; slots
+  the core says are not bookable (already passed, or full) are not offered
+  (`slot_is_bookable`). Tap a slot → **Book HH:MM** → confirmation card with
+  date, time, doctor, and the patient's identifiers; **Done** returns to the
+  patient.
+
+Scenarios (both platforms, read back):
+
+12. **Check-in issues the token.** Given an appointment booked today for a
+    doctor provisioned this run, When the desk taps Check in, Then the server
+    holds `checked_in` with an encounter, the worklist has the patient waiting,
+    and the row shows the token the server issued.
+13. **No-show is recorded.** Given a second booking today, When the desk taps
+    No-show, Then the server holds `no_show` and the row offers nothing more.
+14. **Book from the patient screen.** Given a patient the desk registered,
+    When the desk books the first free slot tomorrow with a provisioned
+    doctor, Then the server holds that doctor, date and slot, and the card
+    shows them.
+15. **A past slot is never offered.** Proved on the core rule.
+16. **Gate.** `front_office_staff` sees no Appointments action.
 
 ## Placement
 

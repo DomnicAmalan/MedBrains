@@ -564,6 +564,14 @@ pub fn estimated_date_of_birth(age_years: u32, today_year: i32) -> String {
     clinical::registration::estimated_date_of_birth(age_years, today_year)
 }
 
+pub fn appointment_actions(status: String, is_today: bool) -> Vec<String> {
+    clinical::appointment::appointment_actions(&status, is_today).into_iter().map(str::to_owned).collect()
+}
+
+pub fn slot_is_bookable(date: String, start_time: String, today: String, now_time: String, is_available: bool) -> bool {
+    clinical::appointment::slot_is_bookable(&date, &start_time, &today, &now_time, is_available)
+}
+
 pub fn companion_access(licensed_by_hospital: Option<bool>, band_paired: Option<bool>, purchased: Option<bool>) -> Option<String> {
     clinical::companion::companion_access(licensed_by_hospital, band_paired, purchased).map(str::to_owned)
 }

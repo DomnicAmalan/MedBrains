@@ -87,6 +87,12 @@ struct ReceptionPatientView: View {
                     }
                     .buttonStyle(.carbonPrimary).accessibilityIdentifier("patient-start-visit")
                 }
+                if auth.identity?.can("opd.appointment.create") ?? false {
+                    NavigationLink(value: ReceptionRoute.book(patient)) {
+                        HStack { Text("Book appointment"); Spacer(); Image(systemName: "calendar.badge.plus") }
+                    }
+                    .buttonStyle(.carbonTertiary).accessibilityIdentifier("patient-book")
+                }
             }
             .padding(16)
         }

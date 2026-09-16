@@ -40,6 +40,8 @@ Registry order decides where a role lands (`StaffModules` on both platforms mirr
 | reception | PatientDetailScreen | reception/patient-detail.tsx | (props) | ✅ | ✅ |
 | reception | StartVisitScreen | reception/start-visit.tsx | POST /api/opd/encounters, GET /api/setup/departments, /api/setup/doctors | ✅ | ✅ |
 | reception | QueueBoardScreen | reception/queue-board.tsx | GET /api/tokens/worklist, POST /api/tokens/call-next | ✅ | ✅ |
+| reception | AppointmentsToday (new — the RN app's tile was dead) | — | GET /api/opd/appointments, PUT …/check-in, …/no-show | ✅ | ✅ |
+| reception | BookAppointment (new) | — | GET /api/opd/doctors/{id}/slots, POST /api/opd/appointments | ✅ | ✅ |
 | reception | VisitorDeskScreen | reception/visitor-desk.tsx | /api/front-office/visitors, /passes, /passes/{id}/revoke, /visitor-logs/{passId}/check-in\|check-out | ⬜ | ⬜ |
 | reception | EnquiryDeskScreen | reception/enquiry-desk.tsx | /api/front-office/enquiries, …/{id}/resolve | ⬜ | ⬜ |
 | pharmacy (5) | PharmacyHome | modules/pharmacy.tsx | GET /api/pharmacy/orders | 🟨 | 🟨 |

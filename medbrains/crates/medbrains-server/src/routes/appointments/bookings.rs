@@ -46,6 +46,8 @@ pub async fn list_appointments(
             .iter()
             .any(|permission| permission == permissions::patients::VIEW);
 
+    let manageable = manageable_patients(&state, &claims).await?;
+
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
@@ -139,6 +141,9 @@ pub async fn list_appointments(
             },
             patient_name: row.patient_name,
             doctor_name: row.doctor_name,
+            can_manage: manageable
+                .as_ref()
+                .is_none_or(|ids| ids.contains(&row.patient_id)),
         })
         .collect();
 
@@ -315,6 +320,36 @@ pub async fn book_appointment(
     Ok(Json(first_row.ok_or(AppError::Internal(
         "No appointment created".into(),
     ))?))
+}
+
+/// The patients this caller may act on, or `None` for a bypass role that may
+/// act on all of them.
+///
+/// One bulk lookup, not a check per row: `check-in` and `no-show` hop to the
+/// patient, so patient `view` is the answer for both. An unanswerable backend
+/// is not "no" — it refuses the list, the way the patient list does, rather
+/// than showing a day on which every action has quietly gone missing.
+async fn manageable_patients(
+    state: &AppState,
+    claims: &Claims,
+) -> Result<Option<std::collections::HashSet<Uuid>>, AppError> {
+    let ctx = medbrains_server_core::middleware::authorization::authz_context(claims);
+    if ctx.is_bypass {
+        return Ok(None);
+    }
+    match state
+        .authz
+        .list_accessible(&ctx, "patient", medbrains_authz::Relation::Viewer)
+        .await
+    {
+        Ok(ids) => Ok(Some(ids.into_iter().collect())),
+        Err(e) => {
+            tracing::error!(error = %e, user = %ctx.user_id, "rebac: list_accessible(patient) FAILED for appointments");
+            Err(AppError::ServiceUnavailable(
+                "authorization backend unavailable".to_owned(),
+            ))
+        }
+    }
 }
 
 /// GET /api/opd/appointments/{id}

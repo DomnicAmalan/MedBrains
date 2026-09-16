@@ -6,6 +6,7 @@
 //! staff app; the `SwiftUI` and Compose apps must not each carry a third copy
 //! that can drift, so they moved here and reach both through `medbrains-edge-rn`.
 
+pub mod appointment;
 pub mod bcma;
 pub mod clinic_day;
 pub mod companion;
