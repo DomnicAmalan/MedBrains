@@ -44,6 +44,18 @@ pub mod automation {
 
 pub mod patients {
     pub const LIST: &str = "patients.list";
+    /// Find any patient at the desk.
+    ///
+    /// A desk lookup, not a browse. It searches every patient in the tenant by
+    /// UHID, phone or name and returns identity only — name, UHID, phone, date
+    /// of birth, sex — never a chart, never a diagnosis. `patients.list` is
+    /// relationship-scoped, so a receptionist could not find a patient a
+    /// colleague had registered and the returning patient was registered a
+    /// second time, which is how a hospital ends up with two records and half
+    /// a history in each. Widening `list` would have handed a tenant-wide
+    /// browse to everyone already holding it; this is the narrower grant, and
+    /// the lookup is audited like every other read under `/api/patients`.
+    pub const FIND: &str = "patients.find";
     pub const VIEW: &str = "patients.view";
     pub const CREATE: &str = "patients.create";
     pub const UPDATE: &str = "patients.update";

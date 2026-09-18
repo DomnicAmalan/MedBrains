@@ -3996,6 +3996,12 @@ export const api = {
       method: "DELETE",
     }),
 
+  // The front desk's lookup. Unlike listPatients this is not scoped to the
+  // caller's own patients: a returning patient gives a UHID or a phone number
+  // and the desk has to find them whoever registered them. Identity only.
+  findPatients: (q: string) =>
+    request<MpiMatchResult[]>(`/patients/find?q=${encodeURIComponent(q)}`),
+
   // MPI
   matchPatients: (data: MpiMatchRequest) =>
     request<MpiMatchResult[]>("/patients/match", {

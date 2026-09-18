@@ -240,3 +240,64 @@ Given/When/Then, each read back from the server:
     Register nor Find; a receptionist lands on Reception.
 11. **Outage.** The board against an unreachable host names it and says not to
     read it as an empty floor.
+
+---
+
+## Slice D — the desk's own lookup (`patients.find`)
+
+**The finding this closes.** `GET /api/patients` is ReBAC-scoped: it returns
+patients the caller has a relationship with. That is right for a browse and
+wrong for a desk. A returning patient walks up, gives a UHID or a phone number,
+and the receptionist who registered them last year is not on shift — so the
+search came back empty and the desk registered the same human a second time.
+Scenario 7 above was *written around the bug*: it seeded the patient as the desk
+itself so that Find would work at all.
+
+**Why not widen `patients.list`.** Widening grants a tenant-wide browse to
+everyone already holding the code, which is the mistake the repo's authz law
+names explicitly. A missing permission is created, not borrowed.
+
+**What shipped.**
+
+- `patients.find` — defined in Rust with its reasoning, generated into the TS
+  catalogue, granted to `receptionist`.
+- `GET /api/patients/find?q=` — tenant-wide, one bounded query (exact UHID,
+  exact phone, prefix of either, then trigram on the name; `LIMIT 20`), and
+  **identity only**: name, UHID, phone, date of birth, sex. Never a chart,
+  never a diagnosis. It reuses `MatchResult`, the shape `/patients/match`
+  already returns for duplicate detection, and inherits the same
+  field-level masking. Audited by the `/api/patients` PHI prefix.
+- Under three characters returns nothing — a desk lookup is a lookup for
+  someone in particular, not a way to page through the register.
+- Both apps' Find screens call it, and the Find action is gated on
+  `patients.find` rather than `patients.list`, so the control matches the
+  permission its call requires.
+- The empty-state copy no longer says "within your access" — it was describing
+  the limit that has just been removed.
+
+**Scenarios (12–13, both platforms)**
+
+12. **The desk finds a patient it did not register.** Given a patient seeded by
+    another identity, When the desk searches their UHID, Then the row appears
+    and Start visit is offered from it.
+13. **Two characters are not a search.** Given a two-character query, Then the
+    desk answers empty rather than opening the register.
+
+**Still open, deliberately not in this slice.** Starting a visit writes tuples
+on the *encounter* (department, attending) and none for the desk that created
+it, so a receptionist who finds and starts a visit still cannot open that
+patient's chart. That is correct for now — the desk does not need the chart to
+book a visit, and the card it shows comes from the find result already in
+memory, not from a second fetch. But it means "find → open record" is not a
+path, only "find → start visit". Granting the desk a standing relation to a
+patient it touched is a decision about standing access and belongs in the
+grammar work, not here.
+
+**Web still has the bug.** `apps/web/src/pages/patients.tsx` searches through
+`listPatients`, so a receptionist on the web app cannot find a colleague's
+registration either. The endpoint and the client method (`findPatients`) exist
+for it; what is missing is the screen decision — hospital-wide results are a
+slimmer row than the directory's columns (identity only, no VIP/MLC flags, no
+balance), so they need their own presentation rather than being poured into the
+same table. That is a UI plan, per **Plan UI before build**, and it is the next
+slice rather than an improvisation at the end of this one.

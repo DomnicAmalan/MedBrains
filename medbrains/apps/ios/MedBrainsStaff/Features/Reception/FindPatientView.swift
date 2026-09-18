@@ -25,7 +25,7 @@ struct FindPatientView: View {
                     .buttonStyle(.carbonPrimary).padding(16).disabled(query.trimmingCharacters(in: .whitespaces).isEmpty)
                     .accessibilityIdentifier("find-submit")
                 if searched {
-                    RemoteContentView(id: "find", state: results.state, unavailableTitle: "Couldn't search", unavailableMessage: "The hospital server did not answer. Do not read this as \"not registered\".", isEmpty: \.isEmpty, emptyTitle: "No patient matches within your access", emptyMessage: "Nobody you can see has that UHID, name or phone. A record registered at another desk still exists: Register them, and the duplicate check will offer it.", retry: { Task { await search() } }) { rows in
+                    RemoteContentView(id: "find", state: results.state, unavailableTitle: "Couldn't search", unavailableMessage: "The hospital server did not answer. Do not read this as \"not registered\".", isEmpty: \.isEmpty, emptyTitle: "No patient by that UHID, name or phone", emptyMessage: "This searches the whole hospital, not only your own desk, so nothing here matches. Check the number, or register them.", retry: { Task { await search() } }) { rows in
                         LazyVStack(spacing: 1) {
                             ForEach(rows) { p in
                                 NavigationLink(value: ReceptionRoute.patient(p)) {

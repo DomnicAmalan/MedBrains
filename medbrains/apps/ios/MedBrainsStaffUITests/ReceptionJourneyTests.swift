@@ -75,7 +75,11 @@ final class ReceptionJourneyTests: JourneyCase {
         XCTAssertTrue(sees(deptName), "the desk's department survived the next walk-in")
     }
 
-    /// A returning patient registered at another desk: invisible to Find (the list is scoped to the desk), offered by the duplicate check, and started from there.
+    /// A returning patient registered at another desk, reached the other way:
+    /// the desk types them in fresh, and the duplicate check offers the record
+    /// that already exists instead of creating a second one. Find reaches them
+    /// too now (`patients.find`), but the desk that does not think to search
+    /// must still be caught here.
     func testAReturningPatientFromAnotherDeskIsReachedThroughTheDuplicateCheck() {
         let deptName = (api.list("/api/setup/departments").first { ($0["code"] as? String) == "GEN-MEDICINE" }?["name"] as? String) ?? "General Medicine"
         let phone = freshPhone()
@@ -138,7 +142,6 @@ final class ReceptionJourneyTests: JourneyCase {
 
     func testFindByPhoneThenWalkInToToken() {
         let dept = api.list("/api/setup/departments").first { ($0["code"] as? String) == "GEN-MEDICINE" }
-        // The list is scoped to the desk, so the patient it finds is one it registered.
         let p = Api.signIn(desk.username, desk.password).patient("Token", phone: freshPhone())
         guard let phone = p["phone"] as? String, let id = p["id"] as? String, let uhid = p["uhid"] as? String else { return XCTFail("seeded a patient") }
         el("module-action-find").tap()
@@ -146,7 +149,7 @@ final class ReceptionJourneyTests: JourneyCase {
         type("find-search", "zzz-nobody-\(Api.runId)")
         el("find-submit").tap()
         XCTAssertTrue(el("find-empty").waitForExistence(timeout: 10))
-        XCTAssertTrue(sees("No patient matches within your access"), "nobody, in words — and the scope is named")
+        XCTAssertTrue(sees("No patient by that UHID, name or phone"), "nobody, in words")
         el("find-search").tap()
         el("find-search").typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 30))
         el("find-search").typeText(phone)
@@ -188,13 +191,42 @@ final class ReceptionJourneyTests: JourneyCase {
         shoot("reception-board")
     }
 
-    func testFrontOfficeStaffIsToldTheModuleHasNoDeskActionForThem() {
+    func testFrontOfficeStaffSeesOnlyTheFrontOfficeDesk() {
         let gate = api.provision("front_office_staff")
         defer { api.retire(gate) }
         Session.ensureSignedOut(app)
         Session.signIn(app, as: gate.username, password: gate.password, home: "module-home-reception")
-        XCTAssertTrue(el("reception-no-actions").waitForExistence(timeout: 5), "the module without a desk action says so — the grant gap is in roles.rs, not papered over here")
-        XCTAssertFalse(el("module-action-register").exists || el("module-action-find").exists || el("module-action-queue").exists || el("module-action-appointments").exists, "no patients.* or opd.* code, no action")
+        XCTAssertTrue(el("module-action-enquiries").waitForExistence(timeout: 10), "the front-office codes it does hold are its whole desk")
+        XCTAssertTrue(el("module-action-visitors").exists)
+        XCTAssertFalse(el("module-action-register").exists || el("module-action-find").exists || el("module-action-queue").exists || el("module-action-appointments").exists, "no patients.* or opd.* code, no action — the grant gap is in roles.rs, not papered over here")
         shoot("reception-front-office-staff")
+    }
+    /// The morning shift registered them, this desk did not. `GET /api/patients`
+    /// is scoped to patients the caller has a relationship with, so the search
+    /// came back empty and the desk registered the same person a second time.
+    /// `patients.find` is the narrower answer: the whole hospital, identity only.
+    func testTheDeskFindsAPatientItDidNotRegister() {
+        let seeded = api.patient("Colleague")   // seeded as the admin, not as this desk
+        guard let uhid = seeded["uhid"] as? String, let id = seeded["id"] as? String else { return XCTFail("seeded a patient") }
+        el("module-action-find").tap()
+        XCTAssertTrue(el("screen-find-patient").waitForExistence(timeout: 10))
+        type("find-search", uhid)
+        tapWhenReady(el("find-submit"))
+        XCTAssertTrue(reveal("find-row-\(id)"), "found by UHID although this desk never registered them")
+        shoot("reception-find-colleague")
+        tapWhenReady(el("find-row-\(id)"))
+        XCTAssertTrue(el("screen-reception-patient").waitForExistence(timeout: 10))
+        XCTAssertTrue(el("patient-start-visit").exists, "and the desk can take them through to a visit")
+    }
+
+    /// Three characters is the floor. Two matches half the register, and a desk
+    /// lookup is a lookup for someone in particular, not a way to page through it.
+    func testTwoCharactersAreNotASearch() {
+        _ = api.patient("Floor")
+        el("module-action-find").tap()
+        XCTAssertTrue(el("screen-find-patient").waitForExistence(timeout: 10))
+        type("find-search", "se")
+        tapWhenReady(el("find-submit"))
+        XCTAssertTrue(sees("No patient by that UHID, name or phone"), "answers empty rather than opening the register")
     }
 }

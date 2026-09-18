@@ -17,7 +17,7 @@ export interface PermissionDef {
   module: string;
 }
 
-/** 984 permissions, one per constant in the Rust source. */
+/** 985 permissions, one per constant in the Rust source. */
 export const PERMISSIONS: PermissionDef[] = [
   // dashboard
   {
@@ -56,6 +56,12 @@ export const PERMISSIONS: PermissionDef[] = [
     code: "patients.list",
     label: "List Patients",
     description: "View patient directory",
+    module: "patients",
+  },
+  {
+    code: "patients.find",
+    label: "Find any patient at the desk",
+    description: "A desk lookup, not a browse. It searches every patient in the tenant by UHID, phone or name and returns identity only — name, UHID, phone, date of birth, sex — never a chart, never a diagnosis. `patients.list` is relationship-scoped, so a receptionist could not find a patient a colleague had registered and the returning patient was registered a second time, which is how a hospital ends up with two records and half a history in each. Widening `list` would have handed a tenant-wide browse to everyone already holding it; this is the narrower grant, and the lookup is audited like every other read under `/api/patients`.",
     module: "patients",
   },
   {
@@ -8032,6 +8038,7 @@ export const P = {
   PATIENTS: {
     CREATE: "patients.create",
     DELETE: "patients.delete",
+    FIND: "patients.find",
     LIST: "patients.list",
     NOTES: {
       EDIT: "patients.notes.edit",
@@ -9501,6 +9508,7 @@ export const ROLE_TEMPLATES: Record<string, { label: string; permissions: string
       P.PATIENT_PACKAGES.SUBSCRIBE,
       P.PATIENT_PACKAGES.VIEW,
       P.PATIENTS.CREATE,
+      P.PATIENTS.FIND,
       P.PATIENTS.LIST,
       P.PATIENTS.UPDATE,
       P.PATIENTS.VIEW,

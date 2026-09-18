@@ -110,10 +110,13 @@ struct ReceptionApi: Sendable {
 
     func matchPatients(_ q: MatchQuery) async throws -> [MatchCandidate] { try await client.request(.post, "/api/patients/match", body: q) }
     func createPatient(_ body: CreatePatientBody) async throws -> PatientSummary { try await client.request(.post, "/api/patients", body: body) }
+    /// The desk's lookup, not the caller's own list. `/api/patients` is scoped
+    /// to patients this user has a relationship with, so a receptionist could
+    /// not find one a colleague registered; `/find` reaches the whole hospital
+    /// and answers with identity only.
     func searchPatients(_ text: String) async throws -> [PatientSummary] {
         let q = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? text
-        let page: PatientPage = try await client.request(.get, "/api/patients?search=\(q)&per_page=25")
-        return page.patients
+        return try await client.request(.get, "/api/patients/find?q=\(q)")
     }
     func departments() async throws -> [DepartmentRow] { try await client.request(.get, "/api/setup/departments") }
     func doctors() async throws -> [DoctorRow] { try await client.request(.get, "/api/setup/doctors") }

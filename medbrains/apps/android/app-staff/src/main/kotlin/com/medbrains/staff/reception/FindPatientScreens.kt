@@ -60,7 +60,7 @@ fun FindPatientScreen(nav: NavHostController, api: ReceptionApi, session: Recept
             CarbonPrimaryButton("Search", enabled = query.isNotBlank(), modifier = Modifier.testTag("find-submit"), onClick = ::search)
         }
         if (searched) {
-            RemoteContent("find", state, "Couldn't search", "The hospital server did not answer. Do not read this as \"not registered\".", { it.isEmpty() }, "No patient matches within your access", "Nobody you can see has that UHID, name or phone. A record registered at another desk still exists: Register them, and the duplicate check will offer it.", ::search) { rows ->
+            RemoteContent("find", state, "Couldn't search", "The hospital server did not answer. Do not read this as \"not registered\".", { it.isEmpty() }, "No patient by that UHID, name or phone", "This searches the whole hospital, not only your own desk, so nothing here matches. Check the number, or register them.", ::search) { rows ->
                 Column {
                     rows.forEach { p ->
                         CarbonActionRow(p.fullName, p.identifiers, onClick = { session.patients[p.id] = p; nav.navigate("patient/${p.id}") }, modifier = Modifier.fillMaxWidth().testTag("find-row-${p.id}")) {

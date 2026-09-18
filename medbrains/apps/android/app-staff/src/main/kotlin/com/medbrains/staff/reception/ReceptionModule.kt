@@ -113,7 +113,7 @@ fun ReceptionHome(nav: NavHostController, queueApi: DoctorApi) {
     val q by queue.state.collectAsState()
     val actions = listOf(
         Action("register", "Register a patient", "New walk-in: identity, safety flags, the desk's clinic.", Icons.Filled.PersonAdd, "register", "patients.create"),
-        Action("find", "Find a patient", "By UHID, name or phone. Open the record, start a visit.", Icons.Filled.Search, "find", "patients.list"),
+        Action("find", "Find a patient", "By UHID, name or phone, anywhere in the hospital.", Icons.Filled.Search, "find", "patients.find"),
         Action("appointments", "Appointments today", "Check in the booked, mark the missing.", Icons.Filled.CalendarMonth, "appointments", "opd.appointment.list"),
         Action("queue", "Queue board", "Who is waiting, and one Call next for the floor.", Icons.Filled.Groups, "board", "opd.queue.list"),
         Action("visitors", "Visitor desk", "Passes, who is inside, and who is overdue.", Icons.Filled.Badge, "visitors", "front_office.passes.list"),

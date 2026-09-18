@@ -44,6 +44,16 @@ def android(results_dir: str) -> int:
 
 def table(platform: str, rows) -> int:
     print(f"\n{platform}: {len(rows)} tests, {sum(1 for r in rows if r[2] != 'Passed')} failed")
+    # A run that executed nothing is not a pass. Gradle's connectedAndroidTest
+    # exits 0 when its installer fails on a freshly wiped emulator: BUILD
+    # SUCCESSFUL, empty results, no app on the device. Read as green twice
+    # before it was caught by hand, so the report refuses to be the last word.
+    if not rows:
+        print(f"    ↳ NO TESTS RAN. An empty result is a failed run, not a clean one.\n"
+              f"      Check the device is booted and the APKs installed; "
+              f"`adb shell am instrument -w <pkg>.test/androidx.test.runner.AndroidJUnitRunner` "
+              f"reports the install error that the build swallows.")
+        return 1
     print(f"{'suite':<24} {'test':<62} {'result':<8} {'time':>7}")
     for suite, name, result, dur, fails in sorted(rows):
         print(f"{suite[:24]:<24} {name[:62]:<62} {result:<8} {str(dur)[:7]:>7}")

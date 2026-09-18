@@ -83,13 +83,13 @@ struct ReceptionHomeView: View {
                 .padding(.horizontal, 16)
                 CarbonSectionTitle("Actions")
                 let who = auth.identity
-                if !(who?.canAny(["patients.create", "patients.list", "opd.queue.list", "opd.appointment.list", "front_office.passes.list", "front_office.enquiry.list"]) ?? false) {
+                if !(who?.canAny(["patients.create", "patients.list", "patients.find", "opd.queue.list", "opd.appointment.list", "front_office.passes.list", "front_office.enquiry.list"]) ?? false) {
                     Text("Your role holds the reception module but none of its desk actions yet. Ask an administrator for one of its codes: patients, OPD queue, appointments, passes or enquiries.")
                         .font(CarbonType.bodyCompact).foregroundStyle(MedBrainsTheme.inkSecondary).padding(16)
                         .accessibilityIdentifier("reception-no-actions")
                 }
                 action("register", "Register a patient", "New walk-in: identity, safety flags, the desk's clinic.", "person.badge.plus", .register, allowed: who?.can("patients.create") ?? false)
-                action("find", "Find a patient", "By UHID, name or phone. Open the record, start a visit.", "magnifyingglass", .find, allowed: who?.can("patients.list") ?? false)
+                action("find", "Find a patient", "By UHID, name or phone, anywhere in the hospital.", "magnifyingglass", .find, allowed: who?.can("patients.find") ?? false)
                 action("appointments", "Appointments today", "Check in the booked, mark the missing.", "calendar", .appointments, allowed: who?.can("opd.appointment.list") ?? false)
                 action("queue", "Queue board", "Who is waiting, and one Call next for the floor.", "person.3.sequence", .board, allowed: who?.can("opd.queue.list") ?? false)
                 action("visitors", "Visitor desk", "Passes, who is inside, and who is overdue.", "person.2.badge.key", .visitors, allowed: who?.can("front_office.passes.list") ?? false)

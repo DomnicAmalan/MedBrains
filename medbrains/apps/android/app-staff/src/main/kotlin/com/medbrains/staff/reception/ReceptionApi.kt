@@ -75,8 +75,12 @@ data class VisitStarted(val encounter: Encounter, val queue: Queue) {
 class ReceptionApi(private val client: ApiClient) {
     suspend fun matchPatients(q: MatchQuery): List<MatchCandidate> = client.post("/api/patients/match", q)
     suspend fun createPatient(body: CreatePatientBody): PatientSummary = client.post("/api/patients", body)
+    /// The desk's lookup, not the caller's own list. `/api/patients` is scoped
+    /// to patients this user has a relationship with, so a receptionist could
+    /// not find one a colleague registered; `/find` reaches the whole hospital
+    /// and answers with identity only.
     suspend fun searchPatients(text: String): List<PatientSummary> =
-        client.get<PatientPage>("/api/patients?search=${URLEncoder.encode(text, "UTF-8")}&per_page=25").patients
+        client.get<List<PatientSummary>>("/api/patients/find?q=${URLEncoder.encode(text, "UTF-8")}")
     suspend fun departments(): List<DepartmentRow> = client.get("/api/setup/departments")
     suspend fun doctors(): List<DoctorRow> = client.get("/api/setup/doctors")
     suspend fun startVisit(body: StartVisitBody): VisitStarted = client.post("/api/opd/encounters", body)

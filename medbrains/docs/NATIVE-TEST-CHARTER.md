@@ -50,3 +50,21 @@ Kept here so the next author knows what a "strong" journey pays for.
 - **The appointment list offered actions the server refuses.** `check-in` and `no-show` carry a per-record patient hop the list did not apply, so a colleague's booking showed *Check in* and answered "not found". The list now carries `can_manage` per row and the screens offer only what the server accepts. Found by the Android appointment journey (evidence: the "Not recorded / not found" banner over a row with both buttons).
 
 Harness lessons: one identity per provisioning call (a run id alone collides across roles); never run the iOS and Android staff suites at once (each ends every open code blue in `setUp`); JUnit does not run tests alphabetically, so a test must not depend on the seeded sign-in code surviving another test; the shared `native_*` accounts lock after repeated wrong passwords, so refusals use a per-run identity.
+
+## A green run that ran nothing
+
+`./gradlew :app-staff:connectedDebugAndroidTest` exits **0** when its APK
+installer fails on a freshly wiped emulator. The log carries one line —
+`Failed to uninstall package …test` — then `BUILD SUCCESSFUL`, an empty
+`test-result.pb`, and no app on the device. It was read as a pass twice on
+2026-09-18 before anyone checked the count.
+
+Two habits follow:
+
+1. **Never take the build's exit code as the result.** `scripts/native_test_report.py`
+   is the result, and it now exits 1 on zero tests.
+2. **When the install misbehaves, go under Gradle.** Install both APKs with
+   `adb install -r -t` and run
+   `adb shell am instrument -w -e class <Class> com.medbrains.staff.test/androidx.test.runner.AndroidJUnitRunner`.
+   It prints the real error, and it is how the 9 reception journeys were
+   actually proven that day.

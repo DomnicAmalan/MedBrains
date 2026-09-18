@@ -608,6 +608,11 @@ pub const BUILT_IN_ROLES: &[BuiltInRole] = &[
             permissions::admin::settings::READ,
             permissions::dashboard::VIEW,
             permissions::patients::LIST,
+            // The desk's own lookup. `list` only reaches patients this
+            // receptionist has a relationship with, which is every patient
+            // they registered themselves and none of the ones the morning
+            // shift registered.
+            permissions::patients::FIND,
             permissions::patients::VIEW,
             permissions::patients::CREATE,
             permissions::patients::UPDATE,

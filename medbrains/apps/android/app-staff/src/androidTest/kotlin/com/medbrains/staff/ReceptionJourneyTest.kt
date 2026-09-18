@@ -89,7 +89,7 @@ class ReceptionJourneyTest {
         check(seesText(api.list("/api/setup/departments").first { it.optString("id") == dept }.optString("name"))) { "the desk's department survived the next walk-in" }
     }
 
-    /** A returning patient registered at another desk: invisible to Find (the list is scoped to the desk), offered by the duplicate check, and started from there. */
+    /** A returning patient registered at another desk: reached the other way: the desk types them in fresh and the duplicate check offers the record that already exists. Find reaches them too now (`patients.find`), but the desk that does not think to search must still be caught here. */
     @Test
     fun aReturningPatientFromAnotherDeskIsReachedThroughTheDuplicateCheck() {
         val dept = checkNotNull(api.firstDepartmentId())
@@ -159,7 +159,7 @@ class ReceptionJourneyTest {
         type("find-search", "zzz-nobody-${Api.RUN}")
         tap("find-submit")
         compose.waitUntil(10_000) { has("find-empty") }
-        check(seesText("No patient matches within your access")) { "nobody, in words — and the scope is named" }
+        check(seesText("No patient by that UHID, name or phone")) { "nobody, in words — and the scope is named" }
         compose.onNodeWithTag("find-search").performScrollTo().performTextClearance()
         compose.onNodeWithTag("find-search").performTextInput(phone)
         tap("find-submit")
@@ -199,12 +199,48 @@ class ReceptionJourneyTest {
     }
 
     @Test
-    fun frontOfficeStaffIsToldTheModuleHasNoDeskActionForThem() {
+    fun frontOfficeStaffSeesOnlyTheFrontOfficeDesk() {
         val gate = api.provision("front_office_staff")
         try {
             with(Session) { compose.ensureSignedOut(); compose.signInAs(gate.username, gate.password, "module-home-reception") }
-            check(has("reception-no-actions")) { "the module without a desk action says so — the grant gap is in roles.rs, not papered over here" }
-            check(!has("module-action-register") && !has("module-action-find") && !has("module-action-queue") && !has("module-action-appointments")) { "no patients.* or opd.* code, no action" }
+            compose.waitUntil(10_000) { has("module-action-enquiries") }
+            check(has("module-action-visitors")) { "the front-office codes it does hold are its whole desk" }
+            check(!has("module-action-register") && !has("module-action-find") && !has("module-action-queue") && !has("module-action-appointments")) { "no patients.* or opd.* code, no action — the grant gap is in roles.rs, not papered over here" }
         } finally { api.retire(gate) }
+    }
+
+    /**
+     * The morning shift registered them, this desk did not. `GET /api/patients`
+     * is scoped to patients the caller has a relationship with, so the search
+     * came back empty and the desk registered the same person a second time.
+     * `patients.find` is the narrower answer: the whole hospital, identity only.
+     */
+    @Test
+    fun theDeskFindsAPatientItDidNotRegister() {
+        val seeded = api.patient("Colleague")   // seeded as the admin, not as this desk
+        val uhid = seeded.getString("uhid")
+        val id = seeded.getString("id")
+        tap("module-action-find")
+        compose.waitUntil(10_000) { has("screen-find-patient") }
+        type("find-search", uhid)
+        tap("find-submit")
+        compose.waitUntil(15_000) { has("find-row-$id") }
+        tap("find-row-$id")
+        compose.waitUntil(10_000) { has("screen-reception-patient") }
+        check(has("patient-start-visit")) { "and the desk can take them through to a visit" }
+    }
+
+    /**
+     * Three characters is the floor. Two matches half the register, and a desk
+     * lookup is a lookup for someone in particular, not a way to page through it.
+     */
+    @Test
+    fun twoCharactersAreNotASearch() {
+        api.patient("Floor")
+        tap("module-action-find")
+        compose.waitUntil(10_000) { has("screen-find-patient") }
+        type("find-search", "se")
+        tap("find-submit")
+        compose.waitUntil(10_000) { seesText("No patient by that UHID, name or phone", sub = true) }
     }
 }
