@@ -326,3 +326,37 @@ The patients directory page itself still lists scoped rows. That is defensible
 happens), but if a desk is meant to browse the hospital there, it needs its own
 presentation for slimmer rows — not the same table with VIP, MLC and balance
 columns silently empty.
+
+### Slice E — the desk can open the visit it started
+
+`schema.zed` has always said `encounter.owner` is "FK: `encounters.created_by`".
+Neither side was ever written by a hospital path. Locally: 914 encounters, 369
+with a creator, and every one of those 369 came from the camp app — the only
+code that filled the column. OPD walk-ins, appointment check-ins, ER arrivals
+and both admission paths left it NULL.
+
+Two costs, one of them not about authorization at all:
+
+1. **No record of who started a visit.** For a hospital system that is an audit
+   answer missing, independent of any access question.
+2. **The desk could not open the record it had just created.**
+   `require_patient_access` reaches a patient through their recent encounters,
+   and the receptionist held no relation to any of them.
+
+All five paths now record `created_by` and grant `encounter#owner` through
+`medbrains_authz_gate::grant_encounter_owner`. The grant is on the encounter,
+never the patient: it names the visit that user actually handled, and it falls
+out of reach as newer encounters push it past `MAX_FANOUT`, instead of becoming
+standing access to a person. Both backends agree — SpiceDB resolves
+`encounter.view = owner + …`, and the Postgres backend expands Viewer to include
+Owner.
+
+**Scenario 14 (both platforms).** As the desk's own identity,
+`GET /api/patients/{id}` is *not* 200 before the visit and *is* 200 after
+starting one through the screen. Asserting only the second half would pass just
+as well in a system where everyone can read everyone.
+
+**No backfill.** The 545 existing encounters with a NULL creator cannot be
+repaired: who started those visits was never recorded anywhere. They stay
+reachable the way they always were — department and attending — and the column
+starts telling the truth from here.

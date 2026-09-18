@@ -568,9 +568,9 @@ pub async fn check_in_appointment(
         let encounter_id = sqlx::query_scalar::<_, Uuid>( // allow-raw-sql: check-in creates encounter
             "INSERT INTO encounters \
              (tenant_id, patient_id, encounter_type, status, department_id, doctor_id, \
-              encounter_date, visit_type) \
+              encounter_date, visit_type, created_by) \
              VALUES ($1, $2, 'opd'::encounter_type, 'open'::encounter_status, $3, $4, \
-              $5, $6) \
+              $5, $6, $7) \
              RETURNING id",
         )
         .bind(claims.tenant_id)
@@ -579,6 +579,7 @@ pub async fn check_in_appointment(
         .bind(row.doctor_id)
         .bind(row.appointment_date)
         .bind(visit_type)
+        .bind(claims.sub)
         .fetch_one(&mut *tx)
         .await?;
 
@@ -679,6 +680,12 @@ pub async fn check_in_appointment(
     .await?;
 
     tx.commit().await?;
+    // The desk that checked them in owns the encounter it created, the same
+    // way a walk-in does. Without it the receptionist cannot open the visit
+    // they just started.
+    if let Some(encounter_id) = row.encounter_id {
+        medbrains_authz_gate::grant_encounter_owner(&state, &claims, encounter_id).await?;
+    }
     Ok(Json(row))
 }
 

@@ -229,4 +229,32 @@ final class ReceptionJourneyTests: JourneyCase {
         tapWhenReady(el("find-submit"))
         XCTAssertTrue(sees("No patient by that UHID, name or phone"), "answers empty rather than opening the register")
     }
+    /// Finding someone is not the same as being allowed to read them, and the
+    /// act that should grant it is starting their visit. `encounters.created_by`
+    /// was never written and `encounter#owner` never granted, so the desk that
+    /// registered a walk-in and sent them to a clinic could not open the record
+    /// it had just created.
+    func testStartingAVisitGivesTheDeskTheRecordItStarted() {
+        let deptName = (api.list("/api/setup/departments").first { ($0["code"] as? String) == "GEN-MEDICINE" }?["name"] as? String) ?? "General Medicine"
+        let seeded = api.patient("Reach")          // registered by the admin, not this desk
+        guard let id = seeded["id"] as? String, let uhid = seeded["uhid"] as? String else { return XCTFail("seeded a patient") }
+        let asDesk = Api.signIn(desk.username, desk.password)
+        XCTAssertNotEqual(asDesk.call("GET", "/api/patients/\(id)").0, 200, "before the visit the desk has no relationship with them")
+
+        el("module-action-find").tap()
+        XCTAssertTrue(el("screen-find-patient").waitForExistence(timeout: 10))
+        type("find-search", uhid)
+        tapWhenReady(el("find-submit"))
+        XCTAssertTrue(reveal("find-row-\(id)"))
+        tapWhenReady(el("find-row-\(id)"))
+        XCTAssertTrue(el("screen-reception-patient").waitForExistence(timeout: 10))
+        tapWhenReady(el("patient-start-visit"))
+        XCTAssertTrue(el("screen-start-visit").waitForExistence(timeout: 10))
+        chooseDepartment(named: deptName)
+        tapWhenReady(el("start-visit-submit"))
+        XCTAssertTrue(el("token-number").waitForExistence(timeout: 15), "the visit started")
+
+        XCTAssertEqual(asDesk.call("GET", "/api/patients/\(id)").0, 200, "and the desk can now open the visit it started")
+        shoot("reception-reach-after-visit")
+    }
 }

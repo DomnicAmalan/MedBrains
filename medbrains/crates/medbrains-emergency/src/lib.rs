@@ -796,8 +796,9 @@ pub async fn create_visit(
     let department_id = emergency_department_id(&mut tx, &claims).await?;
     let encounter_id = sqlx::query_scalar::<_, Uuid>(
         "INSERT INTO encounters \
-         (tenant_id, patient_id, encounter_type, visit_type, notes, attributes, department_id) \
-         VALUES ($1, $2, 'emergency'::encounter_type, 'emergency', $3, $4, $5) \
+         (tenant_id, patient_id, encounter_type, visit_type, notes, attributes, department_id, \
+          created_by) \
+         VALUES ($1, $2, 'emergency'::encounter_type, 'emergency', $3, $4, $5, $6) \
          RETURNING id",
     )
     .bind(claims.tenant_id)
@@ -805,6 +806,7 @@ pub async fn create_visit(
     .bind(row.chief_complaint.as_deref())
     .bind(serde_json::json!({ "source": "er", "er_visit_id": row.id }))
     .bind(department_id)
+    .bind(claims.sub)
     .fetch_one(&mut *tx)
     .await?;
 
@@ -867,6 +869,9 @@ pub async fn create_visit(
     medbrains_workflow::events::queue_clinical_event_in_tx(&mut tx, &event).await?;
 
     tx.commit().await?;
+    // Whoever registered the arrival owns its encounter; the department grant
+    // below is what gets the rest of the ER to it.
+    medbrains_authz_gate::grant_encounter_owner(&state, &claims, encounter_id).await?;
     if let Some(dept_id) = department_id {
         state
             .authz
@@ -2484,8 +2489,8 @@ pub async fn admit_from_er(
     let encounter_id = sqlx::query_scalar::<_, Uuid>(
         "INSERT INTO encounters \
          (tenant_id, patient_id, encounter_type, status, doctor_id, encounter_date, notes, \
-          attributes, department_id) \
-         VALUES ($1, $2, 'ipd'::encounter_type, 'open'::encounter_status, $3, $4, $5, $6, $7) \
+          attributes, department_id, created_by) \
+         VALUES ($1, $2, 'ipd'::encounter_type, 'open'::encounter_status, $3, $4, $5, $6, $7, $8) \
          RETURNING id",
     )
     .bind(claims.tenant_id)
@@ -2498,6 +2503,7 @@ pub async fn admit_from_er(
         "er_visit_id": id,
     }))
     .bind(department_id)
+    .bind(claims.sub)
     .fetch_one(&mut *tx)
     .await?;
 
@@ -2609,6 +2615,7 @@ pub async fn admit_from_er(
 
     tx.commit().await?;
 
+    medbrains_authz_gate::grant_encounter_owner(&state, &claims, encounter_id).await?;
     // The same care-team links a direct IPD admission writes — without them
     // the doctor the ER named cannot open the admission it just created.
     medbrains_authz_gate::grant_admission_care_team(

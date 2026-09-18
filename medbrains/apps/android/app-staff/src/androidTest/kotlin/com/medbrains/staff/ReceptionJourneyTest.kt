@@ -243,4 +243,35 @@ class ReceptionJourneyTest {
         tap("find-submit")
         compose.waitUntil(10_000) { seesText("No patient by that UHID, name or phone", sub = true) }
     }
+    /**
+     * Finding someone is not the same as being allowed to read them, and the act
+     * that should grant it is starting their visit. `encounters.created_by` was
+     * never written and `encounter#owner` never granted, so the desk that
+     * registered a walk-in and sent them to a clinic could not open the record
+     * it had just created.
+     */
+    @Test
+    fun startingAVisitGivesTheDeskTheRecordItStarted() {
+        val deptId = checkNotNull(api.list("/api/setup/departments").firstOrNull { it.optString("code") == "GEN-MEDICINE" }?.optString("id")) { "a department to send them to" }
+        val seeded = api.patient("Reach")          // registered by the admin, not this desk
+        val id = seeded.getString("id")
+        val uhid = seeded.getString("uhid")
+        val asDesk = Api.signIn(desk.username, desk.password)
+        check(asDesk.call("GET", "/api/patients/$id").first != 200) { "before the visit the desk has no relationship with them" }
+
+        tap("module-action-find")
+        compose.waitUntil(10_000) { has("screen-find-patient") }
+        type("find-search", uhid)
+        tap("find-submit")
+        compose.waitUntil(15_000) { has("find-row-$id") }
+        tap("find-row-$id")
+        compose.waitUntil(10_000) { has("screen-reception-patient") }
+        tap("patient-start-visit")
+        compose.waitUntil(10_000) { has("screen-start-visit") }
+        chooseDepartment(deptId)
+        tap("start-visit-submit")
+        compose.waitUntil(15_000) { has("token-number") }
+
+        check(asDesk.call("GET", "/api/patients/$id").first == 200) { "and the desk can now open the visit it started" }
+    }
 }

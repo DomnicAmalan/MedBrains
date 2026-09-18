@@ -873,3 +873,40 @@ pub async fn grant_admission_care_team(
     }
     Ok(())
 }
+
+/// The user who started a visit owns that encounter.
+///
+/// `schema.zed` has said so since it was written — `relation owner: user //
+/// FK: encounters.created_by` — and nothing ever wrote either side. The column
+/// was NULL on every encounter a hospital desk or ward created (545 of 914
+/// locally; only the camp app filled it), so there was no record of who started
+/// a visit, and no tuple for the backfill to derive from.
+///
+/// What it costs to leave out: `require_patient_access` reaches a patient
+/// through their recent encounters, so a receptionist who registers a walk-in
+/// and sends them to a clinic cannot open the record they just created. The
+/// grant is deliberately on the *encounter*, not the patient — it names the
+/// visit this user actually handled, and it falls out of reach as newer
+/// encounters push it out of the window, rather than becoming standing access
+/// to a person forever.
+pub async fn grant_encounter_owner(
+    state: &AppState,
+    claims: &Claims,
+    encounter_id: Uuid,
+) -> Result<(), AppError> {
+    let authz_ctx = medbrains_server_core::middleware::authorization::authz_context(claims);
+    state
+        .authz
+        .write_tuple(
+            &authz_ctx,
+            "encounter",
+            encounter_id,
+            medbrains_authz::Relation::Owner,
+            medbrains_authz::Subject::User(claims.sub),
+            None,
+            Some("encounter_created".to_owned()),
+        )
+        .await
+        .map_err(|e| AppError::Internal(format!("encounter owner authz grant failed: {e}")))?;
+    Ok(())
+}
