@@ -18,7 +18,7 @@ ER door. Everything is one-handed, short, and read back to the patient.
 |---|---|---|---|
 | **A — registration to token** | Reception home · Register · Possible duplicate · Registered (UHID read-back) · Find patient · Patient · Start visit · Token issued · Queue board | `POST /patients/match`, `POST /patients`, `GET /patients?search`, `POST /opd/encounters`, `GET /tokens/worklist?module=opd`, `POST /tokens/call-next`, `GET /setup/departments`, `GET /setup/doctors` | this PR |
 | B — appointments | Today's list · Check in (issues the token) · No-show · Book from the patient screen (doctor → date → slot) | `GET/POST /opd/appointments`, `PUT …/check-in`, `…/no-show`, `GET /opd/doctors/{id}/slots` | this PR |
-| C — visitors and enquiries | Visitor desk (register, pass, in/out, revoke; active vs **overdue**) · Enquiry desk (log, resolve) | `/front-office/visitors`, `/passes`, `/visitor-logs`, `/enquiries` | after B |
+| C — visitors and enquiries | Visitor desk (register, pass, in/out, revoke; active vs **overdue**) · Enquiry desk (log, resolve) | `/front-office/visitors`, `/passes`, `/visitor-logs`, `/enquiries` | this PR |
 
 ## Found while building slice A — a policy question for the operator
 
@@ -79,6 +79,54 @@ Scenarios (both platforms, read back):
     shows them.
 15. **A past slot is never offered.** Proved on the core rule.
 16. **Gate.** `front_office_staff` sees no Appointments action.
+
+
+## Slice C — visitors and enquiries
+
+**Who the building believes is inside it.** A pass has three stored states —
+active, expired, revoked — and nothing sweeps the table, so a pass whose hours
+ran out an hour ago still reads `active` while the person is very likely still
+upstairs. The desk therefore gets a fourth state of its own, **overdue**, and
+those people are still counted as inside. The rule lives in the core
+(`visitors.rs`: `pass_state`, `pass_is_inside`, `pass_actions`), not on two
+screens that could drift.
+
+- **Visitor desk** (home action, `front_office.passes.list`): two counts at the
+  top — inside now, and of those, overdue. Then the passes, overdue first,
+  each showing visitor, pass number, ward/bed and until when. A pass offers
+  only what the server will accept: **Check in** or **Check out** (whichever
+  the person's state calls for) and **Revoke**, and a revoked or expired pass
+  offers nothing at all. Revoke asks for a reason and records it.
+  **Register a visitor** (`front_office.visitors.create`) takes name, phone,
+  relationship, who they are visiting and why, then issues the pass in the
+  same act — registering without issuing was the drudgery the old desk had.
+- **Enquiry desk** (home action, `front_office.enquiry.list`): open enquiries
+  first, then resolved. **Log an enquiry** (`…enquiry.create`) records caller,
+  phone, type and what they were told; **Resolve** (`…enquiry.manage`) closes
+  it with what was said. `front_office_staff` holds `enquiry.list` only, so it
+  reads the desk and is told it cannot log or resolve rather than being shown
+  buttons the server refuses.
+
+Scenarios (both platforms, read back):
+
+17. **Register a visitor and issue their pass in one act.** Given a patient,
+    When the desk registers a visitor and issues a pass, Then the server holds
+    the registration and a pass against it, and the pass appears on the board.
+18. **Check in, then check out.** The count of people inside rises by one on
+    check-in and falls on check-out, and the log on the server carries both
+    times.
+19. **An overdue pass is distinguished from an expired one.** Given a pass
+    whose hours have run out but which was never revoked, Then the board calls
+    it overdue, still counts that person as inside, and offers the way to end
+    it. (The state rule is proved in the core; the device proves the wording
+    and the count.)
+20. **A revoked pass offers nothing.** Given a revoked pass, Then no check-in
+    or check-out is offered and the reason is on the record.
+21. **Log an enquiry and resolve it.** Given a caller, When the desk logs the
+    enquiry and later resolves it, Then the server holds it resolved and it
+    leaves the open list.
+22. **Gate.** `front_office_staff` sees the enquiry desk without the log or
+    resolve action, and is told why.
 
 ## Placement
 

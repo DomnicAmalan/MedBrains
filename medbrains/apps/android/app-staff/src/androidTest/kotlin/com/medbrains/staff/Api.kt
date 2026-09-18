@@ -53,6 +53,23 @@ class Api private constructor(private var token: String?) {
     /** An arrest another run left open covers every screen with the flash. */
     fun endOpenCodeBlues() { list("/api/nurse/code-blue?active_only=true").forEach { endCodeBlue(it.getString("id")) } }
 
+    fun visitor(name: String): JSONObject = obj("POST", "/api/front-office/visitors", JSONObject()
+        .put("visitor_name", "$name$RUN").put("phone", "95$RUN").put("relationship", "family").put("purpose", "visiting").put("category", "general"))
+
+    /** `hours` may be negative: that is how a pass whose hours already lapsed is made without waiting for the clock. */
+    fun pass(registrationId: String, hours: Int = 4, bed: String? = null): JSONObject {
+        val body = JSONObject().put("registration_id", registrationId).put("valid_hours", hours)
+        bed?.let { body.put("bed_number", it) }
+        return obj("POST", "/api/front-office/passes", body)
+    }
+
+    fun revokePass(id: String, reason: String) { call("PUT", "/api/front-office/passes/$id/revoke", JSONObject().put("reason", reason)) }
+    fun passes(): List<JSONObject> = list("/api/front-office/passes")
+    fun visitorLogs(): List<JSONObject> = list("/api/front-office/visitor-logs")
+    fun enquiry(said: String): JSONObject = obj("POST", "/api/front-office/enquiries", JSONObject()
+        .put("caller_name", "Caller $RUN").put("caller_phone", "94$RUN").put("enquiry_type", "general").put("response_text", said))
+    fun enquiries(): List<JSONObject> = list("/api/front-office/enquiries")
+
     fun firstDepartmentId(): String? {
         val rows = list("/api/setup/departments")
         return (rows.firstOrNull { it.optString("code") == "GEN-MEDICINE" } ?: rows.firstOrNull())?.optString("id")

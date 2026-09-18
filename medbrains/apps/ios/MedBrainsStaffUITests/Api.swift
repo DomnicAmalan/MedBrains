@@ -143,6 +143,28 @@ final class Api {
         return (patientId, enc)
     }
 
+    // MARK: front office
+
+    func visitor(_ name: String) -> [String: Any] {
+        obj("POST", "/api/front-office/visitors", ["visitor_name": "\(name)\(Self.runId)", "phone": "95\(Self.runId)", "relationship": "family", "purpose": "visiting", "category": "general"])
+    }
+
+    /// `hours` may be negative: that is how a pass whose hours already lapsed
+    /// is made without waiting for the clock.
+    func pass(_ registrationId: String, hours: Int = 4, bed: String? = nil) -> [String: Any] {
+        var body: [String: Any] = ["registration_id": registrationId, "valid_hours": hours]
+        if let bed { body["bed_number"] = bed }
+        return obj("POST", "/api/front-office/passes", body)
+    }
+
+    func revokePass(_ id: String, reason: String) { call("PUT", "/api/front-office/passes/\(id)/revoke", ["reason": reason]) }
+    func passes() -> [[String: Any]] { list("/api/front-office/passes") }
+    func visitorLogs() -> [[String: Any]] { list("/api/front-office/visitor-logs") }
+    func enquiry(_ said: String) -> [String: Any] {
+        obj("POST", "/api/front-office/enquiries", ["caller_name": "Caller \(Self.runId)", "caller_phone": "94\(Self.runId)", "enquiry_type": "general", "response_text": said])
+    }
+    func enquiries() -> [[String: Any]] { list("/api/front-office/enquiries") }
+
     // MARK: read-backs
 
     func nurseRequests(_ admissionId: String) -> [[String: Any]] { list("/api/bedside/\(admissionId)/nurse-requests") }

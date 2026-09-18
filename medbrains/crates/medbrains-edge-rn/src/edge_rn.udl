@@ -90,6 +90,12 @@ namespace edge_rn {
     sequence<string> appointment_actions(string status, boolean is_today);
     /// Whether a slot may be offered: available and not already behind us (ISO date + HH:MM:SS).
     boolean slot_is_bookable(string date, string start_time, string today, string now_time, boolean is_available);
+    /// What the desk should call a visitor pass now: "active" | "overdue" | "expired" | "revoked".
+    string pass_state(string status, string valid_until, string now);
+    /// Whether this pass counts among the people inside the building.
+    boolean pass_is_inside(string state, boolean checked_out);
+    /// What the desk may do with a pass: "check_in"/"check_out" then "revoke", or nothing.
+    sequence<string> pass_actions(string state, boolean inside);
 
     /// Why the companion is open ("hospital" | "band" | "purchase"), or none: hidden.
     string? companion_access(boolean? licensed_by_hospital, boolean? band_paired, boolean? purchased);

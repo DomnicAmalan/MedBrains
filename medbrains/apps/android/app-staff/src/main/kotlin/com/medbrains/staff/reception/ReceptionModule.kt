@@ -11,7 +11,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.QuestionAnswer
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -88,6 +90,10 @@ fun ReceptionModule() {
         composable("board") { ReceptionQueueBoardScreen(DoctorApi(client)) }
         composable("appointments") { AppointmentsTodayScreen(AppointmentsApi(client)) }
         composable("book/{id}") { BookAppointmentScreen(nav, AppointmentsApi(client), session, session.patients.getValue(it.arguments!!.getString("id")!!)) }
+        composable("visitors") { VisitorDeskScreen(nav, FrontOfficeApi(client)) }
+        composable("register-visitor") { RegisterVisitorScreen(nav, FrontOfficeApi(client)) }
+        composable("enquiries") { EnquiryDeskScreen(nav, FrontOfficeApi(client)) }
+        composable("log-enquiry") { LogEnquiryScreen(nav, FrontOfficeApi(client)) }
     }
 }
 
@@ -110,6 +116,8 @@ fun ReceptionHome(nav: NavHostController, queueApi: DoctorApi) {
         Action("find", "Find a patient", "By UHID, name or phone. Open the record, start a visit.", Icons.Filled.Search, "find", "patients.list"),
         Action("appointments", "Appointments today", "Check in the booked, mark the missing.", Icons.Filled.CalendarMonth, "appointments", "opd.appointment.list"),
         Action("queue", "Queue board", "Who is waiting, and one Call next for the floor.", Icons.Filled.Groups, "board", "opd.queue.list"),
+        Action("visitors", "Visitor desk", "Passes, who is inside, and who is overdue.", Icons.Filled.Badge, "visitors", "front_office.passes.list"),
+        Action("enquiries", "Enquiry desk", "What was asked at the door, and the answer given.", Icons.Filled.QuestionAnswer, "enquiries", "front_office.enquiry.list"),
     )
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("module-home-reception")) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
@@ -124,7 +132,7 @@ fun ReceptionHome(nav: NavHostController, queueApi: DoctorApi) {
         CarbonSectionTitle("Actions")
         val allowed = actions.filter { identity?.can(it.permission) == true }
         if (allowed.isEmpty()) {
-            Text("Your role holds the reception module but none of its desk actions yet. Ask an administrator for patients.create, patients.list, opd.queue.list or opd.appointment.list.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp).testTag("reception-no-actions"))
+            Text("Your role holds the reception module but none of its desk actions yet. Ask an administrator for one of its codes: patients, OPD queue, appointments, passes or enquiries.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp).testTag("reception-no-actions"))
         }
         allowed.forEach { act ->
             CarbonActionRow(act.label, act.detail, onClick = { nav.navigate(act.route) }, modifier = Modifier.fillMaxWidth().testTag("module-action-${act.id}")) {

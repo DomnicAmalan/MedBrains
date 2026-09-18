@@ -11,6 +11,10 @@ enum ReceptionRoute: Hashable {
     case board
     case appointments
     case book(PatientSummary)
+    case visitors
+    case registerVisitor
+    case enquiries
+    case logEnquiry
 }
 
 /// What survives between two walk-ins at the same desk: the department, the
@@ -45,6 +49,10 @@ struct ReceptionDestination: View {
         case .board: ReceptionQueueBoardView()
         case .appointments: AppointmentsTodayView()
         case .book(let p): BookAppointmentView(patient: p)
+        case .visitors: VisitorDeskView()
+        case .registerVisitor: RegisterVisitorView()
+        case .enquiries: EnquiryDeskView()
+        case .logEnquiry: LogEnquiryView()
         }
     }
 }
@@ -75,8 +83,8 @@ struct ReceptionHomeView: View {
                 .padding(.horizontal, 16)
                 CarbonSectionTitle("Actions")
                 let who = auth.identity
-                if !(who?.canAny(["patients.create", "patients.list", "opd.queue.list", "opd.appointment.list"]) ?? false) {
-                    Text("Your role holds the reception module but none of its desk actions yet. Ask an administrator for patients.create, patients.list, opd.queue.list or opd.appointment.list.")
+                if !(who?.canAny(["patients.create", "patients.list", "opd.queue.list", "opd.appointment.list", "front_office.passes.list", "front_office.enquiry.list"]) ?? false) {
+                    Text("Your role holds the reception module but none of its desk actions yet. Ask an administrator for one of its codes: patients, OPD queue, appointments, passes or enquiries.")
                         .font(CarbonType.bodyCompact).foregroundStyle(MedBrainsTheme.inkSecondary).padding(16)
                         .accessibilityIdentifier("reception-no-actions")
                 }
@@ -84,6 +92,8 @@ struct ReceptionHomeView: View {
                 action("find", "Find a patient", "By UHID, name or phone. Open the record, start a visit.", "magnifyingglass", .find, allowed: who?.can("patients.list") ?? false)
                 action("appointments", "Appointments today", "Check in the booked, mark the missing.", "calendar", .appointments, allowed: who?.can("opd.appointment.list") ?? false)
                 action("queue", "Queue board", "Who is waiting, and one Call next for the floor.", "person.3.sequence", .board, allowed: who?.can("opd.queue.list") ?? false)
+                action("visitors", "Visitor desk", "Passes, who is inside, and who is overdue.", "person.2.badge.key", .visitors, allowed: who?.can("front_office.passes.list") ?? false)
+                action("enquiries", "Enquiry desk", "What was asked at the door, and the answer given.", "bubble.left.and.text.bubble.right", .enquiries, allowed: who?.can("front_office.enquiry.list") ?? false)
             }
         }
         .background(MedBrainsTheme.canvas)

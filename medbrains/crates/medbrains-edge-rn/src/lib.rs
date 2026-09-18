@@ -572,6 +572,18 @@ pub fn slot_is_bookable(date: String, start_time: String, today: String, now_tim
     clinical::appointment::slot_is_bookable(&date, &start_time, &today, &now_time, is_available)
 }
 
+pub fn pass_state(status: String, valid_until: String, now: String) -> String {
+    clinical::visitors::pass_state(&status, &valid_until, &now).to_owned()
+}
+
+pub fn pass_is_inside(state: String, checked_out: bool) -> bool {
+    clinical::visitors::pass_is_inside(&state, checked_out)
+}
+
+pub fn pass_actions(state: String, inside: bool) -> Vec<String> {
+    clinical::visitors::pass_actions(&state, inside).into_iter().map(str::to_owned).collect()
+}
+
 pub fn companion_access(licensed_by_hospital: Option<bool>, band_paired: Option<bool>, purchased: Option<bool>) -> Option<String> {
     clinical::companion::companion_access(licensed_by_hospital, band_paired, purchased).map(str::to_owned)
 }

@@ -16,3 +16,4 @@ pub mod fall_risk;
 pub mod nurse_calls;
 pub mod registration;
 pub mod transfusion;
+pub mod visitors;
