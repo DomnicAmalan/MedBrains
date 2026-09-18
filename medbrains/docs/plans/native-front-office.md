@@ -301,3 +301,28 @@ slimmer row than the directory's columns (identity only, no VIP/MLC flags, no
 balance), so they need their own presentation rather than being poured into the
 same table. That is a UI plan, per **Plan UI before build**, and it is the next
 slice rather than an improvisation at the end of this one.
+
+### Web — the picker, not the directory
+
+The web fix went somewhere better than the patients page. Every patient field
+on the web app — OPD visit, IPD admission, pharmacy, appointments, merge — is
+the same `PatientSearchSelect`, and all of them were searching the
+relationship-scoped list. So a receptionist could not *select* a returning
+patient either, in any form, not just fail to find one in the directory.
+
+The picker now prefers `findPatients` when the caller holds `patients.find`
+and stays on the scoped list otherwise, so a caller without the code is never
+silently sent at an endpoint that will 403 and read on screen as "no such
+patient". It renders identity only either way, which is exactly what the wide
+lookup returns, so nothing about the row changed. Three characters is the floor
+when wide, two when scoped, matching the server.
+
+`PatientSearchSelect.test.tsx` encodes the decision — which endpoint, under
+which permission, and the character floor — and was mutation-checked: forcing
+the scoped branch fails the first case.
+
+The patients directory page itself still lists scoped rows. That is defensible
+(it is a directory of your own patients, and the picker is where selection
+happens), but if a desk is meant to browse the hospital there, it needs its own
+presentation for slimmer rows — not the same table with VIP, MLC and balance
+columns silently empty.
