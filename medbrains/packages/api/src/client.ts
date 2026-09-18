@@ -13414,8 +13414,9 @@ export const api = {
   getPreopAssessmentPrintData: (admissionId: string) =>
     request<PreopAssessmentPrintData>(`/print-data/preop-assessment/${admissionId}`),
 
-  getSurgicalSafetyChecklistPrintData: (surgeryId: string) =>
-    request<SurgicalSafetyChecklistPrintData>(`/print-data/surgical-safety-checklist/${surgeryId}`),
+  // The OT booking, not a surgery: the checklist rows hang off the booking.
+  getSurgicalSafetyChecklistPrintData: (bookingId: string) =>
+    request<SurgicalSafetyChecklistPrintData>(`/print-data/surgical-safety-checklist/${bookingId}`),
 
   getAnesthesiaRecordPrintData: (surgeryId: string) =>
     request<AnesthesiaRecordPrintData>(`/print-data/anesthesia-record/${surgeryId}`),

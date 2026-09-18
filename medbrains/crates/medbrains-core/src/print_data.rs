@@ -1327,64 +1327,51 @@ pub struct PreopLabResult {
     pub flag: Option<String>,
 }
 
+/// The WHO Surgical Safety Checklist as it was actually recorded.
+///
+/// This used to be three structs of fixed booleans that the handler filled in
+/// with `true` — every item, every surgery, including the instrument and sponge
+/// counts, with a named nurse as `completed_by`. A printed checklist is the
+/// evidence that the pause happened; one that asserts a pause nobody took is
+/// worse than no document at all.
+///
+/// So the shape now mirrors the record: the phases that exist, the items as
+/// they were ticked, and an explicit `recorded` flag for a phase that was
+/// never filled in — which prints as blanks, the way a paper checklist waiting
+/// to be used looks.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SurgicalSafetyChecklistPrintData {
     pub patient_name: String,
     pub uhid: String,
-    pub surgery_id: String,
+    pub booking_id: String,
     pub procedure_name: String,
     pub surgery_date: String,
     pub ot_number: String,
-    // Sign In (Before Anesthesia)
-    pub sign_in: SurgicalSignIn,
-    // Time Out (Before Skin Incision)
-    pub time_out: SurgicalTimeOut,
-    // Sign Out (Before Patient Leaves OT)
-    pub sign_out: SurgicalSignOut,
     pub surgeon_name: String,
-    pub anesthesiologist_name: String,
-    pub scrub_nurse_name: String,
-    pub circulating_nurse_name: Option<String>,
+    pub anesthetist_name: String,
+    pub phases: Vec<SurgicalChecklistPhase>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SurgicalSignIn {
-    pub patient_confirmed_identity: bool,
-    pub site_marked: bool,
-    pub consent_signed: bool,
-    pub anesthesia_check_complete: bool,
-    pub pulse_oximeter_working: bool,
-    pub known_allergy: Option<String>,
-    pub difficult_airway_risk: bool,
-    pub blood_loss_risk: bool,
-    pub completed_by: String,
-    pub completed_at: String,
+pub struct SurgicalChecklistPhase {
+    /// `sign_in` | `time_out` | `sign_out`.
+    pub phase: String,
+    pub label: String,
+    /// Whether a checklist row exists for this phase at all. False prints the
+    /// required items unticked rather than pretending they were done.
+    pub recorded: bool,
+    pub completed: bool,
+    pub completed_by: Option<String>,
+    pub completed_at: Option<String>,
+    pub verified_by: Option<String>,
+    pub items: Vec<SurgicalChecklistItem>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SurgicalTimeOut {
-    pub team_members_introduced: bool,
-    pub patient_name_confirmed: bool,
-    pub procedure_confirmed: bool,
-    pub site_confirmed: bool,
-    pub antibiotics_given: bool,
-    pub antibiotics_time: Option<String>,
-    pub essential_imaging_displayed: bool,
-    pub anticipated_critical_events: Option<String>,
-    pub completed_by: String,
-    pub completed_at: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SurgicalSignOut {
-    pub procedure_recorded: bool,
-    pub instrument_count_correct: bool,
-    pub sponge_count_correct: bool,
-    pub specimens_labeled: bool,
-    pub equipment_issues: Option<String>,
-    pub recovery_concerns: Option<String>,
-    pub completed_by: String,
-    pub completed_at: String,
+pub struct SurgicalChecklistItem {
+    pub key: String,
+    pub label: String,
+    pub checked: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
