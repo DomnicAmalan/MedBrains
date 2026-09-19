@@ -71,9 +71,50 @@ pub fn can_start_transfusion(
         && second_nurse_id.is_some_and(|n| !n.is_empty())
 }
 
+/// Whether a unit of `unit_group` may be given to a patient of `patient_group`.
+///
+/// Lifted out of the blood-bank handler so the bedside path and both native
+/// apps answer with the same matrix. The bedside path had no compatibility
+/// check at all: it took the nurse's word for `crossmatch_compatible` and
+/// never looked the bag up.
+///
+/// Group strings arrive in two spellings — `"A+"` from a label, `"a_positive"`
+/// from the enum — and both are accepted. An unknown or empty spelling is not
+/// compatible: a group nobody can read is a reason to stop, not to proceed.
+#[must_use]
+pub fn abo_compatible(patient_group: &str, unit_group: &str) -> bool {
+    let p = patient_group.trim().to_ascii_lowercase();
+    let u = unit_group.trim().to_ascii_lowercase();
+    if p.is_empty() || u.is_empty() {
+        return false;
+    }
+    let positive = |g: &str| g.ends_with('+') || g.contains("positive");
+    let letters = |g: &str| -> Option<&'static str> {
+        match g.trim_end_matches(['+', '-']).trim_end_matches("_positive").trim_end_matches("_negative") {
+            "ab" => Some("ab"),
+            "a" => Some("a"),
+            "b" => Some("b"),
+            "o" => Some("o"),
+            _ => None,
+        }
+    };
+    let (Some(pl), Some(ul)) = (letters(&p), letters(&u)) else {
+        return false;
+    };
+    // Rh: a negative patient may not receive a positive unit.
+    if positive(&u) && !positive(&p) {
+        return false;
+    }
+    match (pl, ul) {
+        (_, "o") => true,
+        ("ab", _) => true,
+        (a, b) => a == b,
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{PhaseState, can_start_transfusion, is_running, phase_states};
+    use super::{PhaseState, abo_compatible, can_start_transfusion, is_running, phase_states};
 
     const START: i64 = 1_787_306_400; // 2026-08-21T10:00:00Z
 
@@ -129,5 +170,42 @@ mod tests {
         assert!(!can_start_transfusion("BAG-1", "O", "PRBC", "2026-09-01", true, false, Some("n2")));
         assert!(!can_start_transfusion("BAG-1", "O", "PRBC", "2026-09-01", true, true, None));
         assert!(!can_start_transfusion("   ", "O", "PRBC", "2026-09-01", true, true, Some("n2")));
+    }
+
+
+    #[test]
+    fn o_negative_goes_to_anyone_and_ab_positive_takes_anything() {
+        for group in ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] {
+            assert!(abo_compatible(group, "O-"), "{group} must accept O-");
+            assert!(abo_compatible("AB+", group), "AB+ must accept {group}");
+        }
+    }
+
+    #[test]
+    fn a_negative_patient_never_takes_a_positive_unit() {
+        // The Rh mistake that sensitises a woman of childbearing age.
+        assert!(!abo_compatible("A-", "A+"));
+        assert!(!abo_compatible("O-", "O+"));
+        assert!(!abo_compatible("AB-", "AB+"));
+        assert!(abo_compatible("A+", "A-"), "the other direction is fine");
+    }
+
+    #[test]
+    fn the_lethal_pairs_are_refused() {
+        // Group A blood into a group O patient is the classic fatal
+        // haemolytic reaction.
+        assert!(!abo_compatible("O+", "A+"));
+        assert!(!abo_compatible("O+", "B+"));
+        assert!(!abo_compatible("A+", "B+"));
+        assert!(!abo_compatible("B+", "A+"));
+        assert!(!abo_compatible("A+", "AB+"));
+    }
+
+    #[test]
+    fn both_spellings_agree_and_an_unreadable_group_is_not_compatible() {
+        assert_eq!(abo_compatible("a_positive", "o_negative"), abo_compatible("A+", "O-"));
+        assert!(!abo_compatible("", "O-"), "no patient group is a reason to stop");
+        assert!(!abo_compatible("A+", ""), "no unit group is a reason to stop");
+        assert!(!abo_compatible("A+", "banana"));
     }
 }
