@@ -1988,11 +1988,16 @@ struct LabReportFullRow {
     uhid: String,
     age: Option<f64>,
     gender: String,
-    sample_id: String,
-    accession_number: String,
-    order_date: chrono::DateTime<Utc>,
+    // Every one of these is nullable in `lab_orders`, and three of them were
+    // declared non-null here. An order that has not been reported yet has no
+    // `report_date`, so the row failed to decode and the endpoint answered
+    // 500 — which read as a broken server rather than as "this has not been
+    // released", and hid the missing release gate underneath it.
+    sample_id: Option<String>,
+    accession_number: Option<String>,
+    order_date: Option<chrono::DateTime<Utc>>,
     collection_date: Option<chrono::DateTime<Utc>>,
-    report_date: chrono::DateTime<Utc>,
+    report_date: Option<chrono::DateTime<Utc>>,
     referring_doctor: Option<String>,
     department_name: Option<String>,
     ward_name: Option<String>,
@@ -2087,6 +2092,18 @@ pub async fn get_lab_report_full_print_data(
     .bind(claims.tenant_id)
     .fetch_one(&mut *tx)
     .await?;
+
+    // Same rule as the short report: authorisation comes before reporting.
+    // This is the fuller sheet — it carries the pathologist's and the
+    // technologist's names — so printing it unreleased reads as released by
+    // two named people.
+    if row.verified_at.is_none() {
+        return Err(AppError::BadRequest(
+            "These results have not been released yet. A pathologist or lab supervisor must \
+             verify the order before its report can be printed."
+                .to_owned(),
+        ));
+    }
 
     let parameters = sqlx::query_as::<_, LabParameterRow>(
         // `lab_results` carries two vocabularies for the same facts. Result
@@ -2183,20 +2200,29 @@ pub async fn get_lab_report_full_print_data(
     let age_display = row
         .age
         .map_or("Unknown".to_string(), |a| format!("{a:.0} Y"));
-    let barcode_data = format!("LAB:{}", row.accession_number);
+    let barcode_data = row
+        .accession_number
+        .as_ref()
+        .map_or_else(String::new, |a| format!("LAB:{a}"));
 
     Ok(Json(LabReportFullPrintData {
         patient_name: row.patient_name,
         uhid: row.uhid,
         age_display,
         gender: row.gender,
-        sample_id: row.sample_id,
-        accession_number: row.accession_number,
-        order_date: row.order_date.format("%d-%b-%Y").to_string(),
+        sample_id: row.sample_id.unwrap_or_default(),
+        accession_number: row.accession_number.unwrap_or_default(),
+        order_date: row
+            .order_date
+            .map(|d| d.format("%d-%b-%Y").to_string())
+            .unwrap_or_default(),
         collection_date: row
             .collection_date
             .map(|d| d.format("%d-%b-%Y %H:%M").to_string()),
-        report_date: row.report_date.format("%d-%b-%Y %H:%M").to_string(),
+        report_date: row
+            .report_date
+            .map(|d| d.format("%d-%b-%Y %H:%M").to_string())
+            .unwrap_or_default(),
         referring_doctor: row.referring_doctor,
         department: row.department_name,
         ward_name: row.ward_name,

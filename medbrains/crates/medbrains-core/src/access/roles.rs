@@ -682,6 +682,9 @@ pub const BUILT_IN_ROLES: &[BuiltInRole] = &[
             permissions::lab::orders::CREATE,
             permissions::lab::results::CREATE,
             permissions::lab::results::UPDATE,
+            // The single lab role releases as well as enters; the four-eyes
+            // rule on critical values is what keeps the duties apart.
+            permissions::lab::results::VERIFY,
             permissions::lab::results::AMEND,
             permissions::lab::qc::LIST,
             permissions::lab::qc::CREATE,

@@ -1105,12 +1105,10 @@ pub async fn verify_results(
     Extension(claims): Extension<Claims>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<LabOrder>, AppError> {
-    // Still `UPDATE`, which is the same code that enters and edits a value --
-    // so the account that types a result also releases it. Splitting that
-    // needs a new `lab.results.verify` constant in `medbrains-core`, and that
-    // file currently carries another change in progress; the split lands on
-    // its own once that is in.
-    require_permission(&claims, permissions::lab::results::UPDATE)?;
+    // Releasing is its own act, so it is its own code. It used to be `UPDATE`
+    // — the code that types the value in — so nothing could grant release to a
+    // supervisor without also granting result entry.
+    require_permission(&claims, permissions::lab::results::VERIFY)?;
 
     // The URL names a child record; the care relationship is one hop away on
     // its parent. Resolve then authorize — see medbrains_authz_gate::links.
