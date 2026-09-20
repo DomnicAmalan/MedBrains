@@ -916,6 +916,7 @@ import type {
   // Blood Bank
   DonorListResponse,
   DpdpConsentPrintData,
+  DispensingLabelPrintData,
   DrugExpiryAlertPrintData,
   DrugInteraction,
   DrugInteractionCheckRequest,
@@ -13592,6 +13593,11 @@ export const api = {
 
   getNdpsRegisterPrintData: (period: string) =>
     request<NdpsRegisterPrintData>(`/print-data/ndps-register/${period}`),
+
+  // One label per dispensed line, not per order: a bag of three medicines
+  // needs three labels, each with its own directions.
+  getDispensingLabelPrintData: (orderItemId: string) =>
+    request<DispensingLabelPrintData>(`/print-data/dispensing-label/${orderItemId}`),
 
   getDrugExpiryAlertPrintData: (storeId: string) =>
     request<DrugExpiryAlertPrintData>(`/print-data/drug-expiry-alert/${storeId}`),

@@ -4593,6 +4593,31 @@ export interface NdpsTransaction {
   reference_number: string;
 }
 
+/** The label that goes on the box a patient carries home. */
+export interface DispensingLabelPrintData {
+  hospital_name: string;
+  patient_name: string;
+  uhid: string;
+  patient_age_sex: string | null;
+  drug_name: string;
+  generic_name: string | null;
+  strength: string | null;
+  dosage_form: string | null;
+  quantity_dispensed: string;
+  directions: string | null;
+  route: string | null;
+  duration: string | null;
+  batch_number: string | null;
+  expiry_date: string | null;
+  storage_conditions: string | null;
+  schedule_warning: string | null;
+  black_box_warning: string | null;
+  is_controlled: boolean;
+  dispensed_on: string;
+  dispensed_by: string | null;
+  prescriber_name: string | null;
+}
+
 export interface DrugExpiryAlertPrintData {
   report_date: string;
   store_name: string;

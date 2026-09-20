@@ -5381,3 +5381,41 @@ pub struct HospitalRegistration {
     pub registration_number: String,
     pub valid_until: Option<String>,
 }
+
+/// The label that goes on the box a patient carries home.
+///
+/// Not a receipt: a receipt says what was paid for, a label says what to take
+/// and when. It is the only part of a dispense the patient still has at
+/// 2am, so it carries the directions, the batch and expiry that make a recall
+/// possible, and the schedule warning the Drugs and Cosmetics Act requires on
+/// a prescription-only medicine.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DispensingLabelPrintData {
+    pub hospital_name: String,
+    pub patient_name: String,
+    pub uhid: String,
+    /// Age and sex, printed together the way a label prints them — a second
+    /// identifier beside the name, per IPSG-1.
+    pub patient_age_sex: Option<String>,
+    pub drug_name: String,
+    pub generic_name: Option<String>,
+    pub strength: Option<String>,
+    pub dosage_form: Option<String>,
+    pub quantity_dispensed: String,
+    /// "1 tablet twice daily after food" — assembled from the prescription,
+    /// blank when the dispense has no prescription behind it.
+    pub directions: Option<String>,
+    pub route: Option<String>,
+    pub duration: Option<String>,
+    pub batch_number: Option<String>,
+    pub expiry_date: Option<String>,
+    pub storage_conditions: Option<String>,
+    /// "Schedule H — to be sold by retail on the prescription of a registered
+    /// medical practitioner only", and the rest of the D&C Act wording.
+    pub schedule_warning: Option<String>,
+    pub black_box_warning: Option<String>,
+    pub is_controlled: bool,
+    pub dispensed_on: String,
+    pub dispensed_by: Option<String>,
+    pub prescriber_name: Option<String>,
+}

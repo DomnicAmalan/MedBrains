@@ -115,6 +115,13 @@ export const GENERATED_PRINT_DOCUMENTS: readonly PrintDocumentDef[] = [
     fetch: (id) => api.getDischargePrintData(id),
   },
   {
+    key: "dispensing-label",
+    label: "Dispensing Label",
+    idKind: "record",
+    permission: "pharmacy.dispensing.create",
+    fetch: (id) => api.getDispensingLabelPrintData(id),
+  },
+  {
     key: "dpdp-consent",
     label: "Dpdp Consent",
     idKind: "consent",
