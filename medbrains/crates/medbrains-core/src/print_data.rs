@@ -4705,16 +4705,22 @@ pub struct RestraintDocumentationPrintData {
     pub hospital_name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+/// One recorded monitoring round on a restrained patient.
+///
+/// The fields follow `restraint_monitoring_logs`, which records what the
+/// nurse observed rather than which boxes they ticked. The previous shape had
+/// five booleans — hydration offered, toileting offered, position changed —
+/// that nothing in the system stores, so they could only ever be invented.
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RestraintMonitoring {
     pub datetime: String,
     pub nurse_name: String,
     pub patient_condition: String,
+    /// True only because a circulation observation was written down.
     pub circulation_checked: bool,
-    pub hydration_offered: bool,
-    pub toileting_offered: bool,
-    pub position_changed: bool,
-    pub continued_need_assessed: bool,
+    pub skin_checked: bool,
+    pub circulation_finding: Option<String>,
+    pub skin_finding: Option<String>,
     pub remarks: Option<String>,
 }
 
