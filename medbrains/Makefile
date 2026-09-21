@@ -11,7 +11,7 @@
        check-ui-api check-types check-ui-seam check-raw-html check-secrets check-all \
        check-field-classes check-authz-collapse check-query-collapse check-boundary-filter check-conditional-authz check-permission-codes check-permission-reachable check-ui-permission-match check-ui-permission-match-strict check-ui-permission-match-update-baseline check-relation-parity check-parent-id-scoping check-phi-audit-coverage authz-ledger coverage-ledger coverage-ledger-check coverage-ledger-update-baseline \
        check-rls check-sharing check-authz-posture check-print-placeholders check-requirement-flags check-surface-drift check-role-templates check-tx-error-discard check-pg-enum-parity check-default-parity check-unbounded-reads check-permission-enforcement check-tenant-registry-reads check-pool-reads check-rls-only-writes check-tenant-leak check-runtime-sqlx check-audit check-tracing \
-       check-migration-headers check-migration-immutable e2e-generate e2e-screens e2e-linkages e2e-writes e2e-writes-generate native-tokens native-core native-ios native-ios-test native-android \
+       check-migration-headers check-migration-immutable e2e-generate e2e-screens e2e-linkages e2e-writes e2e-writes-generate e2e-rbac-generate native-tokens native-core native-ios native-ios-test native-android \
        check-region-pinning check-no-card-logging check-egress-allowlist check-cert-readiness check-encryption-at-rest check-redaction-masking \
        smoke-test e2e-test e2e-smoke e2e-crud e2e-forms e2e-analytics e2e-rbac e2e-journeys e2e-ui-aaa e2e-full e2e-all generate-smoke generate-e2e \
        test-rust test-unit test-ts test-all test-coverage \
@@ -614,7 +614,11 @@ native-ios-test: ## Run the Swift package tests (MedBrainsKit)
 native-android: ## Build the Android staff app and run the kit unit tests
 	cd apps/android && JAVA_HOME=$$(/usr/libexec/java_home -v 17) ./gradlew :kit:testDebugUnitTest :app-staff:assembleDebug -q
 
-e2e-generate: e2e-smoke-generate e2e-writes-generate ## Regenerate everything the e2e layers derive from source (smoke specs, write + permission negatives, page gates)
+e2e-rbac-generate: ## Regenerate Layer 1c permission denials (every guarded route as a role lacking its permission → 403)
+	python3 scripts/emit_rbac_routes.py apps/web/e2e/generated/rbac-routes.json
+	node apps/web/scripts/generate-api-rbac-deny.mjs
+
+e2e-generate: e2e-smoke-generate e2e-writes-generate e2e-rbac-generate ## Regenerate everything the e2e layers derive from source (smoke specs, write + permission negatives, page gates)
 	python3 scripts/coverage_ledger.py --emit-page-gates apps/web/e2e/generated/page-gates.json
 
 e2e-writes: ## Layer 1b — generated write negatives
@@ -859,3 +863,6 @@ hybrid-tf-validate: ## Validate every hybrid TF module without applying
 	    (cd "$$d" && terraform init -backend=false -no-color > /dev/null && terraform validate -no-color) || exit $$?; \
 	done
 	@echo "✓ all hybrid modules valid"
+
+check-fabricated-print: ## Find printed documents that invent their contents
+	python3 scripts/check_fabricated_print_data.py

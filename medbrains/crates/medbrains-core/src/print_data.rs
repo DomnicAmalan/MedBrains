@@ -1038,10 +1038,24 @@ pub struct OrganDonationConsentPrintData {
     pub age: Option<String>,
     pub gender: String,
     pub address: Option<String>,
+    /// Empty on a blank form. A consent sheet with today's date on it reads as
+    /// consent given today.
     pub consent_date: String,
     pub consent_type: String, // pledge, family_consent, cadaver
+    /// False when no consent is on record and this is a blank form to be
+    /// filled in and signed. The endpoint used to print a completed pledge for
+    /// any patient — every organ and tissue listed as consented, dated today,
+    /// with their name and UHID on it — having asked nobody. Under the
+    /// Transplantation of Human Organs Act that sheet is the consent.
+    pub is_recorded_consent: bool,
+    /// What the donor actually agreed to. Nothing in this system records an
+    /// organ-by-organ selection yet, so on a recorded consent this stays empty
+    /// rather than assuming everything, and `organs_offered` is what the form
+    /// lists for someone to tick.
     pub organs_consented: Vec<String>,
     pub tissues_consented: Vec<String>,
+    pub organs_offered: Vec<String>,
+    pub tissues_offered: Vec<String>,
     pub next_of_kin_name: Option<String>,
     pub next_of_kin_relation: Option<String>,
     pub next_of_kin_phone: Option<String>,
