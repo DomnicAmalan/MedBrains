@@ -1,3 +1,4 @@
+-- RLS-Posture: tenant-scoped
 -- A nurse call that nobody answers has to reach somebody.
 --
 -- Escalation was computed on read: the ward board coloured the row amber at
