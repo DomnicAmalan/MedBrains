@@ -1057,29 +1057,49 @@ pub async fn get_abdm_consent_print_data(
         .await?
         .flatten();
 
-    tx.commit().await?;
+    // Whether this patient ever gave one. Absent prints a blank form.
+    let recorded_date: Option<chrono::DateTime<chrono::Utc>> = sqlx::query_scalar(
+        "SELECT created_at FROM dpdp_consents \
+          WHERE patient_id = $1 AND tenant_id = $2 AND consent_given = true \
+            AND deleted_at IS NULL \
+          ORDER BY created_at DESC LIMIT 1",
+    )
+    .bind(patient_id)
+    .bind(claims.tenant_id)
+    .fetch_optional(&mut *tx)
+    .await?
+    .flatten();
 
-    let now = chrono::Utc::now();
+    tx.commit().await?;
 
     Ok(Json(AbdmConsentPrintData {
         patient_name: row.0,
         uhid: row.1,
         abha_number: row.2,
         abha_address: row.3,
-        consent_date: now.format("%d-%b-%Y").to_string(),
+        consent_date: recorded_date
+            .map(|d| d.format("%d-%b-%Y").to_string())
+            .unwrap_or_default(),
         consent_type: "data_sharing".to_string(),
-        purposes_consented: vec![
-            "Care Management".to_string(),
-            "Disease Research".to_string(),
-            "Public Health".to_string(),
-        ],
-        health_info_types: vec![
-            "Prescription".to_string(),
-            "Diagnostic Report".to_string(),
-            "OP Consultation".to_string(),
-            "Discharge Summary".to_string(),
-            "Immunization Record".to_string(),
-        ],
+        is_recorded_consent: recorded_date.is_some(),
+        // Nothing stores a purpose-by-purpose breakdown, so nothing is
+        // claimed; the lists below are what the form offers.
+        purposes_consented: Vec::new(),
+        health_info_types: Vec::new(),
+        purposes_offered: ["Care Management", "Disease Research", "Public Health"]
+            .iter()
+            .map(|p| (*p).to_owned())
+            .collect(),
+        health_info_types_offered: [
+            "Prescription",
+            "Diagnostic Report",
+            "OP Consultation",
+            "Discharge Summary",
+            "Immunization Record",
+        ]
+        .iter()
+        .map(|t| (*t).to_owned())
+        .collect(),
         hip_name: h_name.unwrap_or_else(|| "Hospital".to_string()),
         hiu_name: None,
         validity_period: Some("1 year".to_string()),

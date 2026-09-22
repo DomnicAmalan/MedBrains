@@ -1096,8 +1096,22 @@ pub struct AbdmConsentPrintData {
     pub abha_address: Option<String>,
     pub consent_date: String,
     pub consent_type: String, // registration, linking, data_sharing
+    /// False when nothing is on record and this is a blank ABDM consent form
+    /// to be filled in and signed. It used to print a completed one for any
+    /// patient — care management, disease research and public health, with
+    /// prescriptions, diagnostic reports, consultations and discharge
+    /// summaries all shared, dated today. ABDM consent is governed by the DPDP
+    /// Act; a sheet that says someone agreed to share their record is the
+    /// evidence they did.
+    pub is_recorded_consent: bool,
+    /// What was actually agreed to. Empty on a blank form, and empty on a
+    /// recorded consent too: `dpdp_consents` stores that consent was given,
+    /// not a purpose-by-purpose breakdown, so the purposes below are the ones
+    /// the form offers rather than ones anybody ticked.
     pub purposes_consented: Vec<String>,
     pub health_info_types: Vec<String>,
+    pub purposes_offered: Vec<String>,
+    pub health_info_types_offered: Vec<String>,
     pub hip_name: String,
     pub hiu_name: Option<String>,
     pub validity_period: Option<String>,

@@ -27,6 +27,16 @@ CLINICAL = re.compile(
     re.I,
 )
 
+# Fields that name which form is printing rather than asserting a fact about a
+# patient. `consent_type: "general_admission"` says which consent this is; it
+# is not a claim that anybody consented.
+FORM_IDENTIFIER_FIELDS = {"consent_type", "form_type", "document_type", "report_type"}
+
+# In a hospital "sample" is also a tube of blood, so the word alone is not a
+# confession. `// Generate barcode data for sample collection` is a barcode,
+# not a fabrication.
+SAMPLE_VOCABULARY = re.compile(r"sample[_ ](collection|collected|type|id|barcode|number|rejection)", re.I)
+
 # `field: true,` / `field: "Some sentence".to_string(),` / vec![" … "]
 # Only `true` is dangerous. A hardcoded `false` prints a blank checkbox, which
 # is a document admitting nobody has done the thing — the honest direction, and
@@ -67,12 +77,17 @@ def main() -> int:
                 SUSPECT_COMMENT.search(line)
                 and line.strip().startswith("//")
                 and not REMEDIATION.search(line)
+                and not SAMPLE_VOCABULARY.search(line)
             ):
                 note = f"comment: {line.strip()[:70]}"
             else:
                 for pattern in (LITERAL_BOOL, LITERAL_STR, LITERAL_VEC):
                     m = pattern.match(line)
-                    if m and CLINICAL.search(m.group(1)):
+                    if (
+                        m
+                        and CLINICAL.search(m.group(1))
+                        and m.group(1) not in FORM_IDENTIFIER_FIELDS
+                    ):
                         note = f"{m.group(1)} = {line.strip()[:60]}"
                         break
             if note:
