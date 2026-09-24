@@ -6,7 +6,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="MedBrains Staff"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
-        android:usesCleartextTraffic="true"
+        android:usesCleartextTraffic="${usesCleartext}"
         android:supportsRtl="true">
         <activity
             android:name=".MainActivity"

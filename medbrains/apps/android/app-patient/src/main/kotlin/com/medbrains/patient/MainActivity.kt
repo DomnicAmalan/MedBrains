@@ -47,10 +47,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** Where the hospital lives, and which hospital. Intent extras override for emulator runs and tests. */
+/**
+ * Where the hospital lives, and which hospital. Intent extras override in debug builds only
+ * (emulator runs and tests): the activity is exported, so in a release build any app on the
+ * phone could point it — and the patient's session — at its own server.
+ */
 object AppConfig {
-    fun baseUrl(intent: Intent?): String = intent?.getStringExtra("baseUrl") ?: "http://10.0.2.2:3000"
-    fun hospitalCode(intent: Intent?): String = intent?.getStringExtra("hospitalCode") ?: "DEFAULT"
+    fun baseUrl(intent: Intent?): String = debugExtra(intent, "baseUrl") ?: "http://10.0.2.2:3000"
+    fun hospitalCode(intent: Intent?): String = debugExtra(intent, "hospitalCode") ?: "DEFAULT"
+
+    private fun debugExtra(intent: Intent?, key: String): String? =
+        if (BuildConfig.DEBUG) intent?.getStringExtra(key) else null
 }
 
 @Composable

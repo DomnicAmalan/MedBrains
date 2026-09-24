@@ -48,11 +48,16 @@ class MainActivity : ComponentActivity() {
 
 /**
  * Where the hospital lives. `adb shell am start ... --es baseUrl http://10.0.2.2:3000`
- * overrides (emulator runs and UI tests); the default is the emulator's host loopback.
+ * overrides in debug builds only (emulator runs and UI tests): the activity is exported,
+ * so in a release build any app on the phone could point it — and the stored bearer
+ * token — at its own server.
  */
 object AppConfig {
     fun baseUrl(intent: android.content.Intent?): String =
-        intent?.getStringExtra("baseUrl") ?: "http://10.0.2.2:3000"
+        debugExtra(intent, "baseUrl") ?: "http://10.0.2.2:3000"
+
+    private fun debugExtra(intent: android.content.Intent?, key: String): String? =
+        if (BuildConfig.DEBUG) intent?.getStringExtra(key) else null
 }
 
 @Composable

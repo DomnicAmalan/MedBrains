@@ -17,7 +17,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
-        release { isMinifyEnabled = false }
+        // Cleartext and the launch-intent server override are for the emulator
+        // and UI tests only; see AppConfig.
+        debug { manifestPlaceholders["usesCleartext"] = "true" }
+        release {
+            isMinifyEnabled = false
+            manifestPlaceholders["usesCleartext"] = "false"
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -27,7 +33,10 @@ android {
         jvmToolchain(17)
         compilerOptions { allWarningsAsErrors.set(true) }
     }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
 }
 dependencies {
     implementation(project(":kit"))
