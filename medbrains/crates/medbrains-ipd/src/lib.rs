@@ -5475,12 +5475,12 @@ pub async fn finalize_discharge_summary(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(row) = row else {
-        let exists: bool = sqlx::query_scalar(
+        let exists: bool = sqlx::query_scalar!(
             "SELECT EXISTS(SELECT 1 FROM ipd_discharge_summaries \
-             WHERE admission_id = $1 AND tenant_id = $2)",
+             WHERE admission_id = $1 AND tenant_id = $2) AS \"exists!\"",
+            admission_id,
+            claims.tenant_id,
         )
-        .bind(admission_id)
-        .bind(claims.tenant_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {
@@ -6790,13 +6790,13 @@ pub async fn resolve_clinical_doc(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(row) = row else {
-        let exists: bool = sqlx::query_scalar(
+        let exists: bool = sqlx::query_scalar!(
             "SELECT EXISTS(SELECT 1 FROM ipd_clinical_documentations \
-             WHERE id = $1 AND tenant_id = $2 AND admission_id = $3)",
+             WHERE id = $1 AND tenant_id = $2 AND admission_id = $3) AS \"exists!\"",
+            doc_id,
+            claims.tenant_id,
+            admission_id,
         )
-        .bind(doc_id)
-        .bind(claims.tenant_id)
-        .bind(admission_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {

@@ -1484,11 +1484,11 @@ pub async fn check_polypharmacy(
 
     // Bypass roles pass the gate above unconditionally; an unknown patient
     // must not answer with an empty (clean-looking) interaction list.
-    let patient_exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM patients WHERE id = $1 AND tenant_id = $2)",
+    let patient_exists: bool = sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM patients WHERE id = $1 AND tenant_id = $2) AS \"exists!\"",
+        patient_id,
+        claims.tenant_id,
     )
-    .bind(patient_id)
-    .bind(claims.tenant_id)
     .fetch_one(&mut *tx)
     .await?;
     if !patient_exists {

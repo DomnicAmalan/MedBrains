@@ -469,11 +469,12 @@ pub async fn submit_requisition(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(req) = req else {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM indent_requisitions WHERE id = $1 AND tenant_id = $2)",
+        let exists: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM indent_requisitions WHERE id = $1 AND tenant_id = $2) \
+             AS \"exists!\"",
+            id,
+            claims.tenant_id,
         )
-        .bind(id)
-        .bind(claims.tenant_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {
@@ -576,11 +577,12 @@ pub async fn approve_requisition(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(requisition) = requisition else {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM indent_requisitions WHERE id = $1 AND tenant_id = $2)",
+        let exists: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM indent_requisitions WHERE id = $1 AND tenant_id = $2) \
+             AS \"exists!\"",
+            id,
+            claims.tenant_id,
         )
-        .bind(id)
-        .bind(claims.tenant_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {
@@ -796,11 +798,12 @@ pub async fn reject_requisition(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(req) = req else {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM indent_requisitions WHERE id = $1 AND tenant_id = $2)",
+        let exists: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM indent_requisitions WHERE id = $1 AND tenant_id = $2) \
+             AS \"exists!\"",
+            id,
+            claims.tenant_id,
         )
-        .bind(id)
-        .bind(claims.tenant_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {
@@ -984,11 +987,12 @@ pub async fn cancel_requisition(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(req) = req else {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM indent_requisitions WHERE id = $1 AND tenant_id = $2)",
+        let exists: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM indent_requisitions WHERE id = $1 AND tenant_id = $2) \
+             AS \"exists!\"",
+            id,
+            claims.tenant_id,
         )
-        .bind(id)
-        .bind(claims.tenant_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {

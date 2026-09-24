@@ -697,10 +697,11 @@ pub async fn public_record_view(
     Path(post_id): Path<Uuid>,
 ) -> Result<StatusCode, (StatusCode, String)> {
     // Public route: no tenant claims, so only a published post is acknowledged.
-    let exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM cms_posts WHERE id = $1 AND status = 'published')",
+    let exists: bool = sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM cms_posts WHERE id = $1 AND status = 'published') \
+         AS \"exists!\"",
+        post_id,
     )
-    .bind(post_id)
     .fetch_one(&state.db)
     .await
     .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Could not look up the post".to_string()))?;

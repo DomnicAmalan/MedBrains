@@ -163,13 +163,14 @@ pub async fn get_duty_roster_print_data(
     // This printed Morning 07:00, Evening 15:00 and Night 23:00 with fixed
     // colours regardless of how the hospital actually runs its day.
     // `shift_definitions` is where its shifts live.
-    let shifts = sqlx::query_as::<_, ShiftRow>(
-        "SELECT name, start_time, end_time \
+    let shifts = sqlx::query_as!(
+        ShiftRow,
+        "SELECT name AS \"name!\", start_time AS \"start_time!\", end_time AS \"end_time!\" \
            FROM shift_definitions \
           WHERE tenant_id = $1 AND is_active = true AND deleted_at IS NULL \
           ORDER BY start_time",
+        claims.tenant_id,
     )
-    .bind(claims.tenant_id)
     .fetch_all(&mut *conn)
     .await?
     .into_iter()
@@ -217,20 +218,22 @@ pub async fn get_duty_roster_print_data(
     //
     // `duty_rosters` holds the real assignments. A day nobody rostered prints
     // blank, because an empty rota is one that has not been written yet.
-    let rostered = sqlx::query_as::<_, RosterDayRow>(
-        "SELECT r.employee_id, r.roster_date, r.is_on_call, \
-                COALESCE(sd.code, sd.name) AS shift_code \
+    let rostered = sqlx::query_as!(
+        RosterDayRow,
+        "SELECT r.employee_id AS \"employee_id!\", r.roster_date AS \"roster_date!\", \
+                r.is_on_call AS \"is_on_call?\", \
+                COALESCE(sd.code, sd.name) AS \"shift_code?\" \
            FROM duty_rosters r \
            LEFT JOIN shift_definitions sd ON sd.id = r.shift_id AND sd.tenant_id = r.tenant_id \
           WHERE r.tenant_id = $1 AND r.department_id = $2 \
             AND EXTRACT(YEAR FROM r.roster_date)::int = $3 \
             AND EXTRACT(MONTH FROM r.roster_date)::int = $4 \
             AND r.deleted_at IS NULL",
+        claims.tenant_id,
+        department_id,
+        year,
+        i32::try_from(month).unwrap_or(1),
     )
-    .bind(claims.tenant_id)
-    .bind(department_id)
-    .bind(year)
-    .bind(i32::try_from(month).unwrap_or(1))
     .fetch_all(&mut *conn)
     .await?;
 
@@ -453,18 +456,20 @@ pub async fn get_staff_attendance_print_data(
     // `attendance_records` is where the real marks live. A month nobody
     // recorded prints as a month of blanks, which is what an empty register
     // looks like and is a thing a hospital needs to be able to see.
-    let marks = sqlx::query_as::<_, AttendanceMarkRow>(
-        "SELECT employee_id, attendance_date, status::text AS status, \
-                check_in, check_out, is_late \
+    let marks = sqlx::query_as!(
+        AttendanceMarkRow,
+        "SELECT employee_id AS \"employee_id!\", attendance_date AS \"attendance_date!\", \
+                status::text AS \"status!\", check_in AS \"check_in?\", \
+                check_out AS \"check_out?\", is_late AS \"is_late?\" \
            FROM attendance_records \
           WHERE tenant_id = $1 \
             AND EXTRACT(YEAR FROM attendance_date)::int = $2 \
             AND EXTRACT(MONTH FROM attendance_date)::int = $3 \
             AND deleted_at IS NULL",
+        claims.tenant_id,
+        year,
+        i32::try_from(month).unwrap_or(1),
     )
-    .bind(claims.tenant_id)
-    .bind(year)
-    .bind(i32::try_from(month).unwrap_or(1))
     .fetch_all(&mut *conn)
     .await?;
 

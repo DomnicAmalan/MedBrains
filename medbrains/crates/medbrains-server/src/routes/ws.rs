@@ -57,12 +57,14 @@ pub async fn queue_ws_handler(
 /// nobody owns means a misconfigured board, and it gets no feed at all rather
 /// than everybody's.
 async fn tenant_of_department(state: &AppState, department_id: Uuid) -> Option<Uuid> {
-    sqlx::query_scalar::<_, Uuid>("SELECT tenant_id FROM departments WHERE id = $1")
-        .bind(department_id)
-        .fetch_optional(&state.db)
-        .await
-        .ok()
-        .flatten()
+    sqlx::query_scalar!( // allow-raw-sql: resolves the tenant itself, so none can scope it
+        "SELECT tenant_id FROM departments WHERE id = $1",
+        department_id,
+    )
+    .fetch_optional(&state.db)
+    .await
+    .ok()
+    .flatten()
 }
 
 /// WebSocket endpoint for all-department updates (multi-display).

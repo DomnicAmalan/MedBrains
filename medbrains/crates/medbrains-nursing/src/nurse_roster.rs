@@ -148,7 +148,7 @@ pub async fn create_roster_entry(
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
-    let inserted = sqlx::query_scalar!(
+    let id = sqlx::query_scalar!(
         "INSERT INTO nurse_shift_assignments \
            (tenant_id, nurse_user_id, ward_id, shift_date, shift_type, patient_ids, \
             primary_assigned, charge_nurse_user_id) \
@@ -165,20 +165,18 @@ pub async fn create_roster_entry(
         body.is_charge,
     )
     .fetch_one(&mut *tx)
-    .await;
-
-    let id = match inserted {
-        Ok(id) => id,
+    .await
+    .map_err(|err| match err {
         // The unique index added in migration 1014. Rostering the same nurse
         // twice is a double-click, not a failure worth a 500 — and the ward
         // board counts these rows, so a duplicate would show one nurse as two.
-        Err(sqlx::Error::Database(err)) if err.code().as_deref() == Some("23505") => {
-            return Err(AppError::Conflict(
+        sqlx::Error::Database(db) if db.code().as_deref() == Some("23505") => {
+            AppError::Conflict(
                 "That nurse is already rostered on this ward for that shift.".to_owned(),
-            ));
+            )
         }
-        Err(err) => return Err(err.into()),
-    };
+        err => err.into(),
+    })?;
 
     tx.commit().await?;
     Ok(Json(serde_json::json!({ "id": id })))

@@ -885,6 +885,7 @@ import type {
   DischargeSummary,
   DischargeSummaryPrintData,
   DischargeSummaryTemplate,
+  DispensingLabelPrintData,
   DisposalQuery,
   DispositionRow,
   DltTemplate,
@@ -916,7 +917,6 @@ import type {
   // Blood Bank
   DonorListResponse,
   DpdpConsentPrintData,
-  DispensingLabelPrintData,
   DrugExpiryAlertPrintData,
   DrugInteraction,
   DrugInteractionCheckRequest,

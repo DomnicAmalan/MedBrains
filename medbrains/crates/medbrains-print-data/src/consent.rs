@@ -855,17 +855,19 @@ pub async fn get_organ_donation_consent_print_data(
     // The consent itself, if this patient ever gave one. Absent is the common
     // case and prints a blank form — a legitimate thing to hand somebody,
     // unlike a completed one they never signed.
-    let recorded = sqlx::query_as::<_, RecordedOrganConsent>(
-        "SELECT consent_date, consented_by, consented_by_relation \
+    let recorded = sqlx::query_as!(
+        RecordedOrganConsent,
+        "SELECT consent_date AS \"consent_date!\", consented_by AS \"consented_by?\", \
+                consented_by_relation AS \"consented_by_relation?\" \
            FROM patient_consents \
           WHERE patient_id = $1 AND tenant_id = $2 \
             AND consent_type::text ILIKE '%organ%' \
             AND revoked_at IS NULL AND deleted_at IS NULL \
           ORDER BY consent_date DESC \
           LIMIT 1",
+        patient_id,
+        claims.tenant_id,
     )
-    .bind(patient_id)
-    .bind(claims.tenant_id)
     .fetch_optional(&mut *tx)
     .await?;
 
@@ -1058,14 +1060,14 @@ pub async fn get_abdm_consent_print_data(
         .flatten();
 
     // Whether this patient ever gave one. Absent prints a blank form.
-    let recorded_date: Option<chrono::DateTime<chrono::Utc>> = sqlx::query_scalar(
-        "SELECT created_at FROM dpdp_consents \
+    let recorded_date: Option<chrono::DateTime<chrono::Utc>> = sqlx::query_scalar!(
+        "SELECT created_at AS \"created_at?\" FROM dpdp_consents \
           WHERE patient_id = $1 AND tenant_id = $2 AND consent_given = true \
             AND deleted_at IS NULL \
           ORDER BY created_at DESC LIMIT 1",
+        patient_id,
+        claims.tenant_id,
     )
-    .bind(patient_id)
-    .bind(claims.tenant_id)
     .fetch_optional(&mut *tx)
     .await?
     .flatten();

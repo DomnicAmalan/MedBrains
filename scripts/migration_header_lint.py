@@ -66,6 +66,11 @@ IMMUTABLE_APPLIED = {
     "1011_ward_clinical_scores.sql",
     "1012_blood_component_quarantine.sql",
     "1013_pharmacy_day_settlement_upsert_key.sql",
+    # Applied before they were linted; adding the header to 1016 is what
+    # produced VersionMismatch(1016) in e3f49fba. 1017 declares its posture,
+    # which check_rls.py reads; the other three keys can never be added.
+    "1016_nurse_call_escalation.sql",
+    "1017_partition_rls.sql",
 }
 
   # migrations >= this must comply

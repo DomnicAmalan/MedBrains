@@ -262,14 +262,14 @@ pub async fn start_code_blue(
     };
     let announcement = format!("CODE BLUE — {where_it_is}");
     let announcement_id = Uuid::new_v4();
-    sqlx::query(
+    sqlx::query!(
         "INSERT INTO tv_announcements (id, tenant_id, message, priority, created_by) \
          VALUES ($1, $2, $3, 'emergency', $4)",
+        announcement_id,
+        claims.tenant_id,
+        &announcement,
+        claims.sub,
     )
-    .bind(announcement_id)
-    .bind(claims.tenant_id)
-    .bind(&announcement)
-    .bind(claims.sub)
     .execute(&mut *tx)
     .await?;
 

@@ -244,13 +244,13 @@ pub async fn create_payroll_run(
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
-    let exists: bool = sqlx::query_scalar(
+    let exists: bool = sqlx::query_scalar!(
         "SELECT EXISTS(SELECT 1 FROM payroll_runs \
-         WHERE tenant_id = $1 AND period_month = $2 AND period_year = $3)",
+         WHERE tenant_id = $1 AND period_month = $2 AND period_year = $3) AS \"exists!\"",
+        claims.tenant_id,
+        body.period_month,
+        body.period_year,
     )
-    .bind(claims.tenant_id)
-    .bind(body.period_month)
-    .bind(body.period_year)
     .fetch_one(&mut *tx)
     .await?;
     if exists {

@@ -3476,11 +3476,12 @@ pub async fn validate_order(
     medbrains_db::pool::set_full_context(&mut tx, &claims.tenant_id, &claims.department_ids)
         .await?;
 
-    let order_exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM pharmacy_orders WHERE id = $1 AND tenant_id = $2)",
+    let order_exists: bool = sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM pharmacy_orders WHERE id = $1 AND tenant_id = $2) \
+         AS \"exists!\"",
+        id,
+        claims.tenant_id,
     )
-    .bind(id)
-    .bind(claims.tenant_id)
     .fetch_one(&mut *tx)
     .await?;
     if !order_exists {
@@ -5305,19 +5306,21 @@ async fn transfer_state_error(
     id: Uuid,
     state_msg: &str,
 ) -> AppError {
-    let exists: Result<bool, sqlx::Error> = sqlx::query_scalar(
+    sqlx::query_scalar!(
         "SELECT EXISTS(SELECT 1 FROM pharmacy_transfer_requests \
-         WHERE id = $1 AND tenant_id = $2)",
+         WHERE id = $1 AND tenant_id = $2) AS \"exists!\"",
+        id,
+        tenant_id,
     )
-    .bind(id)
-    .bind(tenant_id)
     .fetch_one(&mut **tx)
-    .await;
-    match exists {
-        Ok(false) => AppError::NotFound,
-        Ok(true) => AppError::BadRequest(state_msg.to_owned()),
-        Err(e) => e.into(),
-    }
+    .await
+    .map_or_else(AppError::from, |exists| {
+        if exists {
+            AppError::BadRequest(state_msg.to_owned())
+        } else {
+            AppError::NotFound
+        }
+    })
 }
 
 /// `POST /api/pharmacy/transfers/{id}/dispatch` — FEFO-decrement the source location's

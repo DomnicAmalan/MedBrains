@@ -485,17 +485,19 @@ pub async fn get_equipment_history_print_data(
     // machine attached to patients has been serviced and calibrated, so a
     // fabricated "Pass" is a fabricated compliance record on a medical device.
     // An empty card is a machine with no history on file, which is a finding.
-    let maintenance_history = sqlx::query_as::<_, MaintenanceRow>(
-        "SELECT w.completed_at, w.order_type::text AS order_type, w.description, \
-                u.full_name AS performed_by, w.total_cost \
+    let maintenance_history = sqlx::query_as!(
+        MaintenanceRow,
+        "SELECT w.completed_at AS \"completed_at?\", w.order_type::text AS \"order_type!\", \
+                w.description AS \"description?\", u.full_name AS \"performed_by?\", \
+                w.total_cost AS \"total_cost?\" \
            FROM bme_work_orders w \
            LEFT JOIN users u ON u.id = w.technician_sign_off_by \
           WHERE w.equipment_id = $1 AND w.completed_at IS NOT NULL \
             AND w.deleted_at IS NULL \
           ORDER BY w.completed_at DESC \
           LIMIT 50",
+        equipment_id,
     )
-    .bind(equipment_id)
     .fetch_all(&mut *conn)
     .await?
     .into_iter()
@@ -510,14 +512,17 @@ pub async fn get_equipment_history_print_data(
     })
     .collect::<Vec<_>>();
 
-    let breakdown_history = sqlx::query_as::<_, BreakdownRow>(
-        "SELECT reported_at, description, downtime_minutes, total_repair_cost \
+    let breakdown_history = sqlx::query_as!(
+        BreakdownRow,
+        "SELECT reported_at AS \"reported_at!\", description AS \"description?\", \
+                downtime_minutes AS \"downtime_minutes?\", \
+                total_repair_cost AS \"total_repair_cost?\" \
            FROM bme_breakdowns \
           WHERE equipment_id = $1 AND deleted_at IS NULL \
           ORDER BY reported_at DESC \
           LIMIT 50",
+        equipment_id,
     )
-    .bind(equipment_id)
     .fetch_all(&mut *conn)
     .await?
     .into_iter()
@@ -529,16 +534,19 @@ pub async fn get_equipment_history_print_data(
     })
     .collect::<Vec<_>>();
 
-    let calibration_history = sqlx::query_as::<_, CalibrationRow>(
-        "SELECT c.last_calibrated_date, c.next_due_date, c.is_in_tolerance, \
-                c.certificate_number, v.name AS agency \
+    let calibration_history = sqlx::query_as!(
+        CalibrationRow,
+        "SELECT c.last_calibrated_date AS \"last_calibrated_date?\", \
+                c.next_due_date AS \"next_due_date?\", \
+                c.is_in_tolerance AS \"is_in_tolerance?\", \
+                c.certificate_number AS \"certificate_number?\", v.name AS \"agency?\" \
            FROM bme_calibrations c \
            LEFT JOIN vendors v ON v.id = c.calibration_vendor_id \
           WHERE c.equipment_id = $1 AND c.deleted_at IS NULL \
           ORDER BY c.last_calibrated_date DESC NULLS LAST \
           LIMIT 50",
+        equipment_id,
     )
-    .bind(equipment_id)
     .fetch_all(&mut *conn)
     .await?
     .into_iter()

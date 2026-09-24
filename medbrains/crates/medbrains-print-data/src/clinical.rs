@@ -3730,17 +3730,20 @@ pub async fn get_restraint_documentation_print_data(
     //
     // `restraint_monitoring_logs` is where the real rounds live. An empty list
     // prints as an empty list, which is the document saying nobody checked.
-    let monitoring = sqlx::query_as::<_, RestraintMonitoringRow>(
-        "SELECT m.check_time, u.full_name AS checked_by, m.status, \
-                m.circulation_status, m.skin_status, m.patient_response, m.notes \
+    let monitoring = sqlx::query_as!(
+        RestraintMonitoringRow,
+        "SELECT m.check_time AS \"check_time!\", u.full_name AS \"checked_by?\", \
+                m.status::text AS \"status?\", m.circulation_status AS \"circulation_status?\", \
+                m.skin_status AS \"skin_status?\", \
+                m.patient_response AS \"patient_response?\", m.notes AS \"notes?\" \
            FROM restraint_monitoring_logs m \
            LEFT JOIN users u ON u.id = m.checked_by \
           WHERE m.clinical_doc_id = $1 AND m.tenant_id = $2 AND m.deleted_at IS NULL \
           ORDER BY m.check_time \
           LIMIT 200",
+        restraint_id,
+        claims.tenant_id,
     )
-    .bind(restraint_id)
-    .bind(claims.tenant_id)
     .fetch_all(&mut *conn)
     .await?
     .into_iter()

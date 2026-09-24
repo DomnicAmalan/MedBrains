@@ -409,11 +409,12 @@ pub async fn ai_extract_stub(
     // Stub, but the review it is asked about must exist
     let mut tx = state.db.begin().await?;
     set_tenant_context(&mut tx, &claims.tenant_id).await?;
-    let exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM utilization_reviews WHERE id = $1 AND tenant_id = $2)",
+    let exists: bool = sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM utilization_reviews WHERE id = $1 AND tenant_id = $2) \
+         AS \"exists!\"",
+        id,
+        claims.tenant_id,
     )
-    .bind(id)
-    .bind(claims.tenant_id)
     .fetch_one(&mut *tx)
     .await?;
     tx.commit().await?;

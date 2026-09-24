@@ -41,7 +41,7 @@ function humanise(key: string): string {
  * because nobody has drawn it yet. Curated templates supersede this per key.
  */
 function renderSheet(title: string, data: Record<string, unknown>): string {
-  return `<h1>${esc(title)}</h1>` + renderFields(data);
+  return `<h1>${esc(title)}</h1>${renderFields(data)}`;
 }
 
 /**

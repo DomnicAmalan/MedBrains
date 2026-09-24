@@ -1733,13 +1733,13 @@ pub async fn get_dispensing_label_print_data(
     // The patient is two hops off the path id — item, order, patient — and
     // there is no single-column link for that, so resolve then authorize. A
     // label carries a name, a UHID and what somebody is taking.
-    let patient_id = sqlx::query_scalar::<_, Uuid>(
-        "SELECT o.patient_id FROM pharmacy_order_items i \
+    let patient_id = sqlx::query_scalar!(
+        "SELECT o.patient_id AS \"patient_id!\" FROM pharmacy_order_items i \
            JOIN pharmacy_orders o ON o.id = i.order_id AND o.tenant_id = i.tenant_id \
           WHERE i.id = $1 AND i.tenant_id = $2 AND i.deleted_at IS NULL",
+        order_item_id,
+        claims.tenant_id,
     )
-    .bind(order_item_id)
-    .bind(claims.tenant_id)
     .fetch_optional(&state.db)
     .await?
     .ok_or(AppError::NotFound)?;
@@ -1749,28 +1749,31 @@ pub async fn get_dispensing_label_print_data(
     medbrains_db::pool::set_full_context(&mut tx, &claims.tenant_id, &claims.department_ids)
         .await?;
 
-    let row = sqlx::query_as::<_, DispensingLabelRow>(
+    let row = sqlx::query_as!(
+        DispensingLabelRow,
         "SELECT \
-           (p.first_name || ' ' || p.last_name) AS patient_name, \
-           p.uhid, \
-           EXTRACT(YEAR FROM age(p.date_of_birth))::float8 AS age, \
-           p.gender::text AS gender, \
-           i.drug_name, \
-           c.generic_name, \
-           c.strength, \
-           c.dosage_form, \
-           i.quantity_dispensed, \
-           i.quantity, \
-           i.batch_number, \
-           i.expiry_date, \
-           c.storage_conditions, \
-           c.black_box_warning, \
-           c.drug_schedule::text AS drug_schedule, \
-           c.is_controlled, \
-           pi.dosage, pi.frequency, pi.duration, pi.route, pi.instructions, \
-           o.dispensed_at, \
-           disp.full_name AS dispensed_by, \
-           presc.full_name AS prescriber_name \
+           (p.first_name || ' ' || p.last_name) AS \"patient_name!\", \
+           p.uhid AS \"uhid!\", \
+           EXTRACT(YEAR FROM age(p.date_of_birth))::float8 AS \"age?\", \
+           p.gender::text AS \"gender?\", \
+           i.drug_name AS \"drug_name!\", \
+           c.generic_name AS \"generic_name?\", \
+           c.strength AS \"strength?\", \
+           c.dosage_form AS \"dosage_form?\", \
+           i.quantity_dispensed::numeric AS \"quantity_dispensed?\", \
+           i.quantity::numeric AS \"quantity?\", \
+           i.batch_number AS \"batch_number?\", \
+           i.expiry_date AS \"expiry_date?\", \
+           c.storage_conditions AS \"storage_conditions?\", \
+           c.black_box_warning AS \"black_box_warning?\", \
+           c.drug_schedule::text AS \"drug_schedule?\", \
+           c.is_controlled AS \"is_controlled?\", \
+           pi.dosage AS \"dosage?\", pi.frequency AS \"frequency?\", \
+           pi.duration AS \"duration?\", pi.route AS \"route?\", \
+           pi.instructions AS \"instructions?\", \
+           o.dispensed_at AS \"dispensed_at?\", \
+           disp.full_name AS \"dispensed_by?\", \
+           presc.full_name AS \"prescriber_name?\" \
          FROM pharmacy_order_items i \
          JOIN pharmacy_orders o ON o.id = i.order_id AND o.tenant_id = i.tenant_id \
          JOIN patients p ON p.id = o.patient_id AND p.tenant_id = o.tenant_id \
@@ -1782,20 +1785,18 @@ pub async fn get_dispensing_label_print_data(
          LEFT JOIN users presc ON presc.id = o.ordered_by \
          WHERE i.id = $1 AND i.tenant_id = $2 AND i.deleted_at IS NULL \
          LIMIT 1",
+        order_item_id,
+        claims.tenant_id,
     )
-    .bind(order_item_id)
-    .bind(claims.tenant_id)
     .fetch_optional(&mut *tx)
     .await?
     .ok_or(AppError::NotFound)?;
 
-    let hospital_name = sqlx::query_scalar::<_, String>(
-        "SELECT name FROM tenants WHERE id = $1",
-    )
-    .bind(claims.tenant_id)
-    .fetch_optional(&mut *tx)
-    .await?
-    .unwrap_or_default();
+    let hospital_name =
+        sqlx::query_scalar!("SELECT name FROM tenants WHERE id = $1", claims.tenant_id)
+            .fetch_optional(&mut *tx)
+            .await?
+            .unwrap_or_default();
     tx.commit().await?;
 
     // The dispensed quantity, falling back to what was ordered only when the

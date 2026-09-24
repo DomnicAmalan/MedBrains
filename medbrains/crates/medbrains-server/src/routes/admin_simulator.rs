@@ -331,10 +331,10 @@ async fn require_run_exists(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     run_id: Uuid,
 ) -> Result<(), AppError> {
-    let exists: bool = sqlx::query_scalar( // allow-raw-sql: test simulator generates arbitrary data
-        "SELECT EXISTS(SELECT 1 FROM simulator_runs WHERE id = $1)",
+    let exists: bool = sqlx::query_scalar!( // allow-raw-sql: test simulator generates arbitrary data
+        "SELECT EXISTS(SELECT 1 FROM simulator_runs WHERE id = $1) AS \"exists!\"",
+        run_id,
     )
-    .bind(run_id)
     .fetch_one(&mut **tx)
     .await?;
     if exists {

@@ -848,14 +848,16 @@ pub async fn grant_admission_care_team(
     let Some(ward_id) = team.ward_id else {
         return Ok(());
     };
-    let ward_dept: Option<Uuid> =
-        sqlx::query_scalar("SELECT department_id FROM wards WHERE id = $1 AND tenant_id = $2")
-            .bind(ward_id)
-            .bind(claims.tenant_id)
-            .fetch_optional(&state.db)
-            .await
-            .ok()
-            .flatten();
+    let ward_dept: Option<Uuid> = sqlx::query_scalar!(
+        "SELECT department_id FROM wards WHERE id = $1 AND tenant_id = $2",
+        ward_id,
+        claims.tenant_id,
+    )
+    .fetch_optional(&state.db)
+    .await
+    .ok()
+    .flatten()
+    .flatten();
     if let Some(dept) = ward_dept {
         state
             .authz

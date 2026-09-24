@@ -902,12 +902,12 @@ async fn emergency_department_id(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     claims: &Claims,
 ) -> Result<Option<Uuid>, AppError> {
-    let emergency = sqlx::query_scalar::<_, Uuid>(
+    let emergency = sqlx::query_scalar!(
         "SELECT id FROM departments \
           WHERE tenant_id = $1 AND code = 'EMERGENCY' AND is_active AND deleted_at IS NULL \
           LIMIT 1",
+        claims.tenant_id,
     )
-    .bind(claims.tenant_id)
     .fetch_optional(&mut **tx)
     .await?;
     Ok(emergency.or_else(|| claims.department_ids.first().copied()))

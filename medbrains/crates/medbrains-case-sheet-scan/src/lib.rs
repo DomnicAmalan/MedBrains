@@ -143,18 +143,21 @@ async fn scan_state_error(
     tenant_id: Uuid,
     state_msg: &str,
 ) -> AppError {
-    let exists: Result<bool, sqlx::Error> = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM case_sheet_scans WHERE id = $1 AND tenant_id = $2)",
+    sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM case_sheet_scans WHERE id = $1 AND tenant_id = $2) \
+         AS \"exists!\"",
+        id,
+        tenant_id,
     )
-    .bind(id)
-    .bind(tenant_id)
     .fetch_one(&mut **tx)
-    .await;
-    match exists {
-        Ok(true) => AppError::BadRequest(state_msg.to_owned()),
-        Ok(false) => AppError::NotFound,
-        Err(err) => err.into(),
-    }
+    .await
+    .map_or_else(AppError::from, |exists| {
+        if exists {
+            AppError::BadRequest(state_msg.to_owned())
+        } else {
+            AppError::NotFound
+        }
+    })
 }
 
 /// `POST /api/case-sheets/scans/{id}/submit` — queue for parsing (worker picks it up).

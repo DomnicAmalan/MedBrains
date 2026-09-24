@@ -215,11 +215,11 @@ pub async fn issue_verify_link(
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
     // Bypass roles pass the gate above without the encounter existing.
-    let encounter_exists: bool = sqlx::query_scalar( // allow-raw-sql: existence check
-        "SELECT EXISTS(SELECT 1 FROM encounters WHERE id = $1 AND tenant_id = $2)",
+    let encounter_exists: bool = sqlx::query_scalar!( // allow-raw-sql: existence check
+        "SELECT EXISTS(SELECT 1 FROM encounters WHERE id = $1 AND tenant_id = $2) AS \"exists!\"",
+        encounter_id,
+        claims.tenant_id,
     )
-    .bind(encounter_id)
-    .bind(claims.tenant_id)
     .fetch_one(&mut *tx)
     .await?;
     if !encounter_exists {

@@ -352,25 +352,25 @@ async fn on_opd_queue_called(
 
     let mut tx = pool.begin().await?;
 
-    let enabled: Option<Value> = sqlx::query_scalar(
+    let enabled: Option<Value> = sqlx::query_scalar!(
         "SELECT value FROM tenant_settings \
          WHERE tenant_id = $1 AND category = 'notifications' AND key = 'token_call_sms' \
          LIMIT 1",
+        tenant_id,
     )
-    .bind(tenant_id)
     .fetch_optional(&mut *tx)
     .await?;
     if enabled.and_then(|v| v.as_bool()) != Some(true) {
         return Ok(());
     }
 
-    let phone: Option<String> =
-        sqlx::query_scalar("SELECT phone FROM patients WHERE id = $1 AND tenant_id = $2")
-            .bind(patient_id)
-            .bind(tenant_id)
-            .fetch_optional(&mut *tx)
-            .await?
-            .flatten();
+    let phone: Option<String> = sqlx::query_scalar!(
+        "SELECT phone FROM patients WHERE id = $1 AND tenant_id = $2",
+        patient_id,
+        tenant_id,
+    )
+    .fetch_optional(&mut *tx)
+    .await?;
 
     let Some(phone) = phone.as_deref().and_then(e164) else {
         tracing::debug!(%patient_id, "token-call SMS skipped — no dialable phone on file");
@@ -487,14 +487,14 @@ async fn on_billing_invoice_finalized(
     };
     let mut tx = pool.begin().await?;
 
-    let row: Option<(Uuid, rust_decimal::Decimal)> = sqlx::query_as(
+    let row = sqlx::query!(
         "SELECT patient_id, total_amount FROM invoices WHERE id = $1 AND tenant_id = $2",
+        inv,
+        tenant_id,
     )
-    .bind(inv)
-    .bind(tenant_id)
     .fetch_optional(&mut *tx)
     .await?;
-    let Some((patient_id, total)) = row else {
+    let Some((patient_id, total)) = row.map(|r| (r.patient_id, r.total_amount)) else {
         return Ok(());
     };
     if total <= rust_decimal::Decimal::ZERO {
@@ -621,12 +621,13 @@ async fn on_opd_encounter_created(
 
     // The SMS handler dead-letters anything without an E.164 `to` and a
     // body; a row it cannot send is a confirmation the patient never gets.
-    let phone: Option<String> =
-        sqlx::query_scalar("SELECT phone FROM patients WHERE id = $1 AND tenant_id = $2")
-            .bind(patient)
-            .bind(tenant_id)
-            .fetch_optional(&mut *tx)
-            .await?;
+    let phone: Option<String> = sqlx::query_scalar!(
+        "SELECT phone FROM patients WHERE id = $1 AND tenant_id = $2",
+        patient,
+        tenant_id,
+    )
+    .fetch_optional(&mut *tx)
+    .await?;
     let Some(to) = phone.as_deref().and_then(e164) else {
         tracing::warn!(
             encounter = %enc,

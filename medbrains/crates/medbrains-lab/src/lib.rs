@@ -156,37 +156,37 @@ pub async fn grant_lab_order_access(
             .map_err(|e| AppError::Internal(format!("lab order authz grant failed: {e}")))?;
     }
 
-    let encounter_id: Option<Uuid> =
-        sqlx::query_scalar("SELECT encounter_id FROM lab_orders WHERE id = $1 AND tenant_id = $2")
-            .bind(order_id)
-            .bind(claims.tenant_id)
-            .fetch_optional(&state.db)
-            .await?
-            .flatten();
+    let encounter_id: Option<Uuid> = sqlx::query_scalar!(
+        "SELECT encounter_id FROM lab_orders WHERE id = $1 AND tenant_id = $2",
+        order_id,
+        claims.tenant_id,
+    )
+    .fetch_optional(&state.db)
+    .await?;
     let Some(encounter_id) = encounter_id else {
         return Ok(());
     };
-    let lab_department: Option<Uuid> = sqlx::query_scalar(
+    let lab_department: Option<Uuid> = sqlx::query_scalar!(
         "SELECT id FROM departments \
           WHERE tenant_id = $1 AND code = 'PATHOLOGY' AND is_active AND deleted_at IS NULL \
           LIMIT 1",
+        claims.tenant_id,
     )
-    .bind(claims.tenant_id)
     .fetch_optional(&state.db)
     .await?;
     let Some(lab_department) = lab_department else {
         return Ok(());
     };
     // One link per encounter, however many tests the lab is asked for.
-    let linked: bool = sqlx::query_scalar(
+    let linked: bool = sqlx::query_scalar!(
         "SELECT EXISTS(SELECT 1 FROM relation_tuples \
           WHERE tenant_id = $1 AND object_type = 'encounter' AND object_id = $2 \
             AND relation = 'dept_member' AND subject_type = 'department' AND subject_id = $3 \
-            AND status = 'active')",
+            AND status = 'active') AS \"exists!\"",
+        claims.tenant_id,
+        encounter_id,
+        lab_department.to_string(),
     )
-    .bind(claims.tenant_id)
-    .bind(encounter_id)
-    .bind(lab_department.to_string())
     .fetch_one(&state.db)
     .await?;
     if linked {
@@ -2994,12 +2994,12 @@ pub async fn review_qc_result(
     let mut tx = state.db.begin().await?;
     medbrains_db::pool::set_tenant_context(&mut tx, &claims.tenant_id).await?;
 
-    let exists: bool = sqlx::query_scalar(
+    let exists: bool = sqlx::query_scalar!(
         "SELECT EXISTS(SELECT 1 FROM lab_qc_results \
-         WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL)",
+         WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL) AS \"exists!\"",
+        id,
+        claims.tenant_id,
     )
-    .bind(id)
-    .bind(claims.tenant_id)
     .fetch_one(&mut *tx)
     .await?;
     if !exists {

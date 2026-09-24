@@ -910,11 +910,12 @@ pub async fn send_purchase_order(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(po) = po else {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM purchase_orders WHERE id = $1 AND tenant_id = $2)",
+        let exists: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM purchase_orders WHERE id = $1 AND tenant_id = $2) \
+             AS \"exists!\"",
+            id,
+            claims.tenant_id,
         )
-        .bind(id)
-        .bind(claims.tenant_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {
@@ -949,11 +950,12 @@ pub async fn cancel_purchase_order(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(po) = po else {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM purchase_orders WHERE id = $1 AND tenant_id = $2)",
+        let exists: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM purchase_orders WHERE id = $1 AND tenant_id = $2) \
+             AS \"exists!\"",
+            id,
+            claims.tenant_id,
         )
-        .bind(id)
-        .bind(claims.tenant_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {
@@ -1400,11 +1402,12 @@ pub async fn complete_grn(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(grn) = grn else {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM goods_receipt_notes WHERE id = $1 AND tenant_id = $2)",
+        let exists: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM goods_receipt_notes WHERE id = $1 AND tenant_id = $2) \
+             AS \"exists!\"",
+            id,
+            claims.tenant_id,
         )
-        .bind(id)
-        .bind(claims.tenant_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {

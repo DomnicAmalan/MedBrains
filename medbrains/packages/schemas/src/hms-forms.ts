@@ -5712,9 +5712,7 @@ export type ChronicProgramFormInput = z.infer<typeof chronicProgramFormSchema>;
 export type ChronicEnrollmentFormInput = z.infer<typeof chronicEnrollmentFormSchema>;
 export type MobileShellLoginFormInput = z.infer<typeof mobileShellLoginFormSchema>;
 export type MobileLoginFormInput = z.infer<typeof mobileLoginFormSchema>;
-export type MobileCampRegistrationFormInput = z.infer<
-  typeof mobileCampRegistrationFormSchema
->;
+export type MobileCampRegistrationFormInput = z.infer<typeof mobileCampRegistrationFormSchema>;
 export type MobileVitalsEntryFormInput = z.infer<typeof mobileVitalsEntryFormSchema>;
 export type MobileStaffPatientRegistrationFormInput = z.infer<
   typeof mobileStaffPatientRegistrationFormSchema

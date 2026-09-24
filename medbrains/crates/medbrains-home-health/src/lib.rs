@@ -986,11 +986,12 @@ pub async fn consume_package_visit(
     .fetch_optional(&mut *tx)
     .await?;
     let Some(row) = row else {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM home_care_packages WHERE id = $1 AND tenant_id = $2)",
+        let exists: bool = sqlx::query_scalar!(
+            "SELECT EXISTS(SELECT 1 FROM home_care_packages WHERE id = $1 AND tenant_id = $2) \
+             AS \"exists!\"",
+            id,
+            claims.tenant_id,
         )
-        .bind(id)
-        .bind(claims.tenant_id)
         .fetch_one(&mut *tx)
         .await?;
         if !exists {

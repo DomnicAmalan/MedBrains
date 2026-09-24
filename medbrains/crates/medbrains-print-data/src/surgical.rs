@@ -572,17 +572,18 @@ pub async fn get_surgical_safety_checklist_print_data(
     .ok_or(AppError::NotFound)?;
 
     // One query for all three phases; the phases are then matched in memory.
-    let recorded = sqlx::query_as::<_, ChecklistPhaseRow>(
-        "SELECT c.phase::text AS phase, c.items, c.completed, \
-                done.full_name AS completed_by, c.completed_at, \
-                checker.full_name AS verified_by \
+    let recorded = sqlx::query_as!(
+        ChecklistPhaseRow,
+        "SELECT c.phase::text AS \"phase!\", c.items AS \"items!\", \
+                c.completed AS \"completed!\", done.full_name AS \"completed_by?\", \
+                c.completed_at AS \"completed_at?\", checker.full_name AS \"verified_by?\" \
          FROM ot_surgical_safety_checklists c \
          LEFT JOIN users done ON done.id = c.completed_by \
          LEFT JOIN users checker ON checker.id = c.verified_by \
          WHERE c.booking_id = $1 AND c.tenant_id = $2 AND c.deleted_at IS NULL",
+        booking_id,
+        claims.tenant_id,
     )
-    .bind(booking_id)
-    .bind(claims.tenant_id)
     .fetch_all(&mut *tx)
     .await?;
     tx.commit().await?;

@@ -84,12 +84,16 @@ async fn escalate_unanswered(pool: &PgPool) -> Result<u64, AppError> {
     // each tenant's own settings, falling back to the same defaults the board
     // uses, so a hospital that widened its window does not get notifications
     // its own board calls premature.
-    let late = sqlx::query_as::<_, LateCall>(
-        "SELECT r.id, r.tenant_id, r.request_type::text AS request_type, \
-                GREATEST(0, EXTRACT(EPOCH FROM (now() - r.created_at))::int) AS waiting_seconds, \
-                r.escalation_level, \
-                b.bed_number, w.name AS ward_name, a.department_id, \
-                ack.supervisor_id \
+    let late = sqlx::query_as!(
+        LateCall,
+        "SELECT r.id AS \"id!\", r.tenant_id AS \"tenant_id!\", \
+                r.request_type::text AS \"request_type!\", \
+                GREATEST(0, EXTRACT(EPOCH FROM (now() - r.created_at))::int) \
+                  AS \"waiting_seconds!\", \
+                r.escalation_level AS \"escalation_level?\", \
+                b.bed_number AS \"bed_number?\", w.name AS \"ward_name?\", \
+                a.department_id AS \"department_id?\", \
+                ack.supervisor_id AS \"supervisor_id?\" \
            FROM bedside_nurse_requests r \
            LEFT JOIN admissions a ON a.id = r.admission_id AND a.tenant_id = r.tenant_id \
            LEFT JOIN beds b ON b.id = a.bed_id AND b.tenant_id = r.tenant_id \
@@ -104,8 +108,8 @@ async fn escalate_unanswered(pool: &PgPool) -> Result<u64, AppError> {
                 COALESCE((esc.value #>> '{}')::int, $1) \
           ORDER BY r.created_at \
           LIMIT 500",
+        DEFAULT_ESCALATE_SECS,
     )
-    .bind(DEFAULT_ESCALATE_SECS)
     .fetch_all(pool)
     .await?;
 
@@ -160,30 +164,37 @@ async fn escalate_unanswered(pool: &PgPool) -> Result<u64, AppError> {
         if let Some(user_id) = recipient {
             // A notification failure must not abandon the batch or roll back
             // the mark: re-firing every thirty seconds would bury the ward in
-            // the same message.
-            if let Err(error) = sqlx::query(
+            // the same message. A failed statement aborts the whole
+            // transaction, so the insert runs under a savepoint — rolling
+            // back to it keeps the mark below writable.
+            let mut notify = sqlx::Connection::begin(&mut *tx).await?;
+            let sent = sqlx::query!(
                 "INSERT INTO notifications \
                     (tenant_id, user_id, kind, title, body, category, \
                      entity_type, entity_id, action_url) \
                  VALUES ($1, $2, 'sla_breach', $3, $4, 'nursing', \
                          'bedside_nurse_request', $5, '/nursing#calls')",
+                call.tenant_id,
+                user_id,
+                if tier == "supervisor" {
+                    "Nurse call still unanswered"
+                } else {
+                    "Nurse call overdue"
+                },
+                format!(
+                    "A {} call from {where_it_is} has been waiting {minutes} minutes.",
+                    call.request_type.replace('_', " ")
+                ),
+                call.id,
             )
-            .bind(call.tenant_id)
-            .bind(user_id)
-            .bind(if tier == "supervisor" {
-                "Nurse call still unanswered"
-            } else {
-                "Nurse call overdue"
-            })
-            .bind(format!(
-                "A {} call from {where_it_is} has been waiting {minutes} minutes.",
-                call.request_type.replace('_', " ")
-            ))
-            .bind(call.id)
-            .execute(&mut *tx)
-            .await
-            {
-                tracing::error!(%error, call_id = %call.id, "nurse call escalation notify failed");
+            .execute(&mut *notify)
+            .await;
+            match sent {
+                Ok(_) => notify.commit().await?,
+                Err(error) => {
+                    notify.rollback().await?;
+                    tracing::error!(%error, call_id = %call.id, "nurse call escalation notify failed");
+                }
             }
         } else {
             tracing::error!(
@@ -193,15 +204,15 @@ async fn escalate_unanswered(pool: &PgPool) -> Result<u64, AppError> {
             );
         }
 
-        sqlx::query(
+        sqlx::query!(
             "UPDATE bedside_nurse_requests \
                 SET escalation_level = $1, escalated_at = now(), escalated_to = $2 \
               WHERE id = $3 AND tenant_id = $4",
+            tier,
+            recipient,
+            call.id,
+            call.tenant_id,
         )
-        .bind(tier)
-        .bind(recipient)
-        .bind(call.id)
-        .bind(call.tenant_id)
         .execute(&mut *tx)
         .await?;
 

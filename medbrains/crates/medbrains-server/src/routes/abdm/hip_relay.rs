@@ -184,11 +184,12 @@ pub async fn ack_callback(
     .await?;
     if updated.rows_affected() == 0 {
         // Already-acked stays an idempotent `acked: 0`; only an absent row is a 404.
-        let exists: bool =
-            sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM abdm_gateway_callbacks WHERE id = $1)")
-                .bind(id)
-                .fetch_one(&mut *tx)
-                .await?;
+        let exists: bool = sqlx::query_scalar!( // allow-raw-sql: relay-scoped like the UPDATE above
+            "SELECT EXISTS(SELECT 1 FROM abdm_gateway_callbacks WHERE id = $1) AS \"exists!\"",
+            id,
+        )
+        .fetch_one(&mut *tx)
+        .await?;
         if !exists {
             return Err(AppError::NotFound);
         }

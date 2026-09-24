@@ -190,16 +190,18 @@ pub async fn start_bedside_transfusion(
     // transfusion errors — was accepted without complaint. The scanned bag
     // number now has to resolve to a real unit, and that unit has to be this
     // patient's.
-    let unit = sqlx::query_as::<_, UnitOnRecord>(
-        "SELECT c.id, c.blood_group::text AS blood_group, c.expiry_at, c.status::text AS status, \
-                c.issued_to_patient \
+    let unit = sqlx::query_as!(
+        UnitOnRecord,
+        "SELECT c.id AS \"id!\", c.blood_group::text AS \"blood_group!\", \
+                c.expiry_at AS \"expiry_at!\", c.status::text AS \"status!\", \
+                c.issued_to_patient AS \"issued_to_patient?\" \
            FROM blood_components c \
           WHERE c.tenant_id = $1 AND upper(c.bag_number) = upper($2) \
             AND c.deleted_at IS NULL \
           LIMIT 1",
+        claims.tenant_id,
+        body.bag_number.trim(),
     )
-    .bind(claims.tenant_id)
-    .bind(body.bag_number.trim())
     .fetch_optional(&mut *tx)
     .await?;
 
@@ -211,11 +213,11 @@ pub async fn start_bedside_transfusion(
         )));
     };
 
-    let patient_id = sqlx::query_scalar::<_, Uuid>(
-        "SELECT patient_id FROM admissions WHERE id = $1 AND tenant_id = $2",
+    let patient_id = sqlx::query_scalar!(
+        "SELECT patient_id AS \"patient_id!\" FROM admissions WHERE id = $1 AND tenant_id = $2",
+        admission_id,
+        claims.tenant_id,
     )
-    .bind(admission_id)
-    .bind(claims.tenant_id)
     .fetch_optional(&mut *tx)
     .await?
     .ok_or(AppError::NotFound)?;
@@ -235,14 +237,14 @@ pub async fn start_bedside_transfusion(
 
     // A crossmatch for this unit that belongs to somebody else says the same
     // thing from the other direction.
-    let crossmatched_elsewhere = sqlx::query_scalar::<_, bool>(
+    let crossmatched_elsewhere = sqlx::query_scalar!(
         "SELECT EXISTS(SELECT 1 FROM crossmatch_requests \
           WHERE tenant_id = $1 AND component_id = $2 AND patient_id <> $3 \
-            AND deleted_at IS NULL)",
+            AND deleted_at IS NULL) AS \"exists!\"",
+        claims.tenant_id,
+        unit.id,
+        patient_id,
     )
-    .bind(claims.tenant_id)
-    .bind(unit.id)
-    .bind(patient_id)
     .fetch_one(&mut *tx)
     .await?;
     if crossmatched_elsewhere {
@@ -255,10 +257,12 @@ pub async fn start_bedside_transfusion(
 
     // Expiry from the record, not from the form. The date on the screen is
     // whatever was typed there.
-    let expired_on_record = sqlx::query_scalar::<_, bool>("SELECT $1::timestamptz < now()")
-        .bind(unit.expiry_at)
-        .fetch_one(&mut *tx)
-        .await?;
+    let expired_on_record = sqlx::query_scalar!(
+        "SELECT $1::timestamptz < now() AS \"expired!\"",
+        unit.expiry_at,
+    )
+    .fetch_one(&mut *tx)
+    .await?;
     if expired_on_record {
         return Err(AppError::BadRequest(
             "This unit is past its expiry on the blood bank's own record. Do not transfuse it; \

@@ -748,11 +748,11 @@ pub async fn submit_feedback(
 
     // Bypass roles pass the gate above unconditionally, and the table carries no
     // FK on admission_id — so the admission's existence is checked here.
-    let admission_exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM admissions WHERE id = $1 AND tenant_id = $2)",
+    let admission_exists: bool = sqlx::query_scalar!(
+        "SELECT EXISTS(SELECT 1 FROM admissions WHERE id = $1 AND tenant_id = $2) AS \"exists!\"",
+        admission_id,
+        claims.tenant_id,
     )
-    .bind(admission_id)
-    .bind(claims.tenant_id)
     .fetch_one(&mut *tx)
     .await?;
     if !admission_exists {
